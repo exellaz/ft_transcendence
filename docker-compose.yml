@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "4242:4242"
+    # If you use a custom command to run your PHP server, add it here:
+    command: php src/server.php
