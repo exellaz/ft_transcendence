@@ -37,17 +37,30 @@ function createUI() {
 	document.body.appendChild(canvas);
 }
 
+function generateUUID() {
+    if (crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = (crypto.getRandomValues(new Uint8Array(1))[0] % 15) >> 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+    });
+}
+
 export function startConnection() {
 	createUI();
 
 	// generate the clientID follow by the same tab in browser
 	let clientID = sessionStorage.getItem("clientID");
 	if (!clientID) {
-		clientID = crypto.randomUUID(); // generate a new UUID
-		sessionStorage.setItem("clientID", clientID); // persist it for this tab
+		clientID = generateUUID(); // generate a new UUID
+		sessionStorage.setItem("clientID", clientID); // persist it for this tab~
 	}
 
-	const socket = new WebSocket("ws://localhost:4242");
+	//const socket = new WebSocket("ws://localhost:4242");
+    const socket = new WebSocket(`ws://${window.location.hostname}:4242`); //set it to the same host as the webpage
 	let role = "spectator";
 	const roleText = document.getElementById("roleText")!;
 	const scoreText = document.getElementById("scoreText")!;
