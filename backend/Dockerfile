@@ -1,16 +1,11 @@
-FROM php:8.2-cli
+FROM node:20-alpine
 
-# Install sockets extension
-RUN docker-php-ext-install sockets
-
-# Set working directory
 WORKDIR /app
 
-# Copy your backend code
-COPY . /app/
+COPY package.json package-lock.json* ./
+RUN npm install
 
-# Expose the WebSocket port
+COPY . .
+
 EXPOSE 4242
-
-# Start the server
-CMD ["php", "src/server.php"]
+CMD ["npm", "run", "dev"]

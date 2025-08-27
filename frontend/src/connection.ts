@@ -1,23 +1,79 @@
-// src/connection.ts
-function draw_container(state: any) {
-	let ctx: CanvasRenderingContext2D;
-	const PADDLE_HEIGHT = 80;
-
-	const canvas = document.getElementById("game") as HTMLCanvasElement;
-	if (!canvas) throw new Error("Canvas not found!");
-	ctx = canvas.getContext("2d")!;
-	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-	// ball
-	ctx.beginPath();
-	ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
-	ctx.fill();
-
-	// paddles
-	ctx.fillRect(1, state.paddles.left, 10, PADDLE_HEIGHT);
-	ctx.fillRect(canvas.width - 11, state.paddles.right, 10, PADDLE_HEIGHT);
+//declare these two custom properties
+declare global {
+	interface Window {
+		pongCountdownStarted?: boolean;
+		pongCountdownEnd?: number;
+	}
 }
 
+/**
+ * @brief draw container in html (pong game)
+ * @param state - current game state from server
+*/
+function draw_container(state: any) {
+	const canvas = document.getElementById("game") as HTMLCanvasElement;
+	if (!canvas) throw new Error("Canvas not found!");
+	const ctx = canvas.getContext("2d")!;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Get expected team size from backend (TEAM_SIZE)
+	const expectedPlayers = state.teams?.left?.length + state.teams?.right?.length;
+	// Only draw if all players are connected
+	if (state.teams?.left?.length === state.teams?.right?.length && state.teams?.left?.length > 0 && expectedPlayers === state.teams?.left?.length * 2) {
+		// Countdown logic
+		const timer = 5000;
+		if (!window.pongCountdownStarted) {
+			window.pongCountdownStarted = true;
+			window.pongCountdownEnd = Date.now() + timer;
+		}
+		const now = Date.now();
+		const countdownEnd = window.pongCountdownEnd ?? (now + timer);
+		const remaining = Math.max(0, Math.ceil((countdownEnd - now) / 1000));
+
+		// Draw countdown text
+		if (remaining > 0) {
+			ctx.font = "48px Arial";
+			ctx.fillStyle = "gray";
+			ctx.textAlign = "center";
+			ctx.fillText(`Game starts in ${remaining}...`, canvas.width / 2, canvas.height / 2);
+			return;
+		}
+
+		// Draw ball
+		ctx.beginPath();
+		ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
+		ctx.fillStyle = "black";
+		ctx.fill();
+
+		// Draw paddles (loop through all player paddles)
+		const paddleWidth = 10;
+		const paddleHeight = 80;
+		//check for player paddles
+		for (const key in state.paddles) {
+			const y = state.paddles[key];
+			let x;
+			if (key.startsWith("left_player")) { //if is left player
+				x = 1;
+			} else if (key.startsWith("right_player")) { //if is right player
+				x = canvas.width - paddleWidth - 1;
+			} else {
+				// Spectator or unknown role, skip drawing
+				continue;
+			}
+			ctx.fillStyle = "black";
+			ctx.fillRect(x, y, paddleWidth, paddleHeight);
+		}
+	} else {
+		// Not all players connected, show waiting message
+		ctx.font = "32px Arial";
+		ctx.fillStyle = "gray";
+		ctx.textAlign = "center";
+		ctx.fillText("Waiting for all players to connect...", canvas.width / 2, canvas.height / 2);
+		window.pongCountdownStarted = false;
+	}
+}
+
+// Create basic UI elements
 function createUI() {
 	const roleText = document.createElement("h1");
 	roleText.id = "roleText";
@@ -31,99 +87,88 @@ function createUI() {
 
 	const canvas = document.createElement("canvas");
 	canvas.id = "game";
-	canvas.width = Math.min(window.innerWidth * 0.9, 600);  // 90% of window or max 600
-	canvas.height = Math.min(window.innerHeight * 0.7, 400); // 70% of window or max 400
-	canvas.style.border = "0.5px solid black";
+	canvas.width = Math.min(window.innerWidth * 0.9, 800); //set fixed size (800)
+	canvas.height = Math.min(window.innerHeight * 0.7, 600); //set fixed size(600)
+	canvas.style.border = "5px solid black";
 	document.body.appendChild(canvas);
-}
-
-function generateUUID() {
-    if (crypto && crypto.randomUUID) {
-        return crypto.randomUUID();
-    }
-
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = (crypto.getRandomValues(new Uint8Array(1))[0] % 15) >> 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
 }
 
 export function startConnection() {
 	createUI();
 
-	// generate the clientID follow by the same tab in browser
-	let clientID = sessionStorage.getItem("clientID");
-	if (!clientID) {
-		clientID = generateUUID(); // generate a new UUID
-		sessionStorage.setItem("clientID", clientID); // persist it for this tab~
-	}
-
-	//const socket = new WebSocket("ws://localhost:4242");
-    const socket = new WebSocket(`ws://${window.location.hostname}:4242`); //set it to the same host as the webpage
+	const canvas = document.getElementById("game") as HTMLCanvasElement;
 	let role = "spectator";
 	const roleText = document.getElementById("roleText")!;
 	const scoreText = document.getElementById("scoreText")!;
-	const canvas = document.getElementById("game") as HTMLCanvasElement;
 
-	// --- CONNECTED TO SERVER ---
+	//get the client ID from session storage or create a new one
+	let clientId = sessionStorage.getItem("pongClientId");
+	if (!clientId) { // if client ID does not exist
+	  clientId = crypto.randomUUID(); // function for create unique ID and store it
+	  sessionStorage.setItem("pongClientId", clientId);
+	}
+
+	// Connect to Fastify server WebSocket (?id=<clientId> : is a query parameter)
+	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=` + clientId);
+
+	//handle the WebSocket events
 	socket.onopen = () => {
-			console.log("WebSocket connected");
-			// Send the clientID to the server so it knows this is a reconnect
-			socket.send(JSON.stringify({ type: "connect", clientID }));
-			// Send the canvas height to the server
-			if (canvas) {
-				socket.send(JSON.stringify({ type: "setHeight", height: canvas.height }));
-				socket.send(JSON.stringify({ type: "setWidth", width: canvas.width }));
-			}
+		console.log("WebSocket connected");
+
+		// Send canvas size to server
+		if (canvas) {
+			socket.send(JSON.stringify({ type: "setHeight", height: canvas.height }));
+			socket.send(JSON.stringify({ type: "setWidth", width: canvas.width }));
+		}
 	};
 
-	// --- ERROR FROM SERVER ---
 	socket.onerror = (err) => console.error("WebSocket error:", err);
-
-	// --- DISCONNECTED FROM SERVER ---
 	socket.onclose = () => console.log("WebSocket closed");
 
-	// --- MESSAGE FROM SERVER ---
-  	socket.onmessage = (event) => {
-  	  try {
-  		const data = JSON.parse(event.data);
-		console.log("Received from server:", data);
+	//handle incoming messages from server
+	socket.onmessage = (event) => {
+		try {
+			const data = JSON.parse(event.data);
 
-		// --- ASSIGN ROLE ---
-		if (data.type === "role") {
-		  role = data.role;
-		  roleText.textContent =
-			role === "player1" ? "Player 1" : role === "player2" ? "Player 2" : "Spectator";
+			// Role assign to print
+			if (data.type === "role") {
+				role = data.role;
+				if (role.startsWith("left_player")) {
+					roleText.textContent = `Left Team (${role})`;
+				} else if (role.startsWith("right_player")) {
+					roleText.textContent = `Right Team (${role})`;
+				} else {
+					roleText.textContent = "Spectator";
+				}
+			}
+
+			// Game state update
+			if (data.type === "state") {
+				draw_container(data.gameState);
+				scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
+			}
+		} catch (err) {
+			console.error("Invalid JSON from server:", event.data);
 		}
+	};
 
-		// --- GAME STATE UPDATE ---
-  		if (data.type === "state") {
-			draw_container(data.gameState);
-			scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
-		}
-  	  } catch (err) {
-  		console.error("Invalid JSON from server:", event.data);
-  	  }
-  	};
-
-	// key tracking
+	// Key handling
 	const keys = { up: false, down: false };
-	window.addEventListener("keydown", e => {
-	  if (role === "spectator") return;
-	  if (e.key === "ArrowUp") keys.up = true;
-	  if (e.key === "ArrowDown") keys.down = true;
+	window.addEventListener("keydown", (e) => {
+		if (role === "spectator") return;
+		if (e.key === "ArrowUp") keys.up = true;
+		if (e.key === "ArrowDown") keys.down = true;
 	});
-	window.addEventListener("keyup", e => {
-	  if (role === "spectator") return;
-	  if (e.key === "ArrowUp") keys.up = false;
-	  if (e.key === "ArrowDown") keys.down = false;
+	window.addEventListener("keyup", (e) => {
+		if (role === "spectator") return;
+		if (e.key === "ArrowUp") keys.up = false;
+		if (e.key === "ArrowDown") keys.down = false;
 	});
 
-	// send movement to server
+	// Send movement to server
 	setInterval(() => {
-	  if (role === "spectator") return;
-	  if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
-	  if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
-	}, 60);
+		if (role === "spectator") return;
+		if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
+		if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+	}, 1000 / 60);
 }
