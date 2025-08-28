@@ -12,16 +12,19 @@ await fastify.register(websocketPlugin);
 let gameWidth = 0;
 let gameHeight = 0;
 let TEAM_SIZE = 1; //1 => 1vs1, 2 => 2vs2 and so on
+let gameStarted = false
 const gameState: { //assign thier type
   ball: { x: number; y: number; dx: number; dy: number };
   paddles: { [key: string]: number };
   teams: { left: string[]; right: string[] };
   score: { left: number; right: number };
+  countdown: number;
 } = {	//assign their initial values
   ball: { x: 300, y: 200, dx: 2, dy: 2 },	//position of the ball
   paddles: {},								//number of paddle will be number of players
   teams: { left: [], right: [] },			//initialize teams
   score: { left: 0, right: 0 },				//game score
+  countdown: 0,								//countdown timer
 };
 
 // ---- INITIALIZE CLIENTS ----
@@ -185,6 +188,7 @@ function updatePaddlePosition(current: number, dy: number, gameHeight: number, p
  * @brief update the ball position
 */
 function updateBall() {
+	if (!gameStarted) return; // Do not update ball if game hasn't started
 	const ball = gameState.ball;
 	ball.x += ball.dx;
 	ball.y += ball.dy;
@@ -237,8 +241,25 @@ function updateBall() {
 function gameLoop() {
 	// Only update ball and game state if both teams have exactly TEAM_SIZE players
 	if (gameState.teams.left.length === TEAM_SIZE && gameState.teams.right.length === TEAM_SIZE) {
-		updateBall();
+		if (!gameStarted) {
+			// Start countdown
+			if (!gameState.countdown || gameState.countdown <= 0) {
+				gameState.countdown = 5 * 60; // 5 seconds at 60 FPS
+		} else {
+			gameState.countdown--;
+			if (gameState.countdown <= 0) {
+				gameStarted = true;
+			}
+		}
+		} else {
+			updateBall();
+		}
+	} else {
+		// Not enough players, reset game
+		gameStarted = false;
+		gameState.countdown = 0;
 	}
+
 
 	// Broadcast game state to all connected clients
 	for (const client of clients) {

@@ -6,6 +6,14 @@ declare global {
 	}
 }
 
+//generate UID
+function generateUID(): string {
+  return (
+	Date.now().toString(36) +      // timestamp part
+	Math.random().toString(36).substr(2, 8) // random part
+  );
+}
+
 /**
  * @brief draw container in html (pong game)
  * @param state - current game state from server
@@ -87,8 +95,8 @@ function createUI() {
 
 	const canvas = document.createElement("canvas");
 	canvas.id = "game";
-	canvas.width = Math.min(window.innerWidth * 0.9, 800); //set fixed size (800)
-	canvas.height = Math.min(window.innerHeight * 0.7, 600); //set fixed size(600)
+	canvas.width = Math.min(window.innerWidth * 0.9, 600); //set fixed size (600)
+	canvas.height = Math.min(window.innerHeight * 0.7, 400); //set fixed size(400)
 	canvas.style.border = "5px solid black";
 	document.body.appendChild(canvas);
 }
@@ -104,8 +112,8 @@ export function startConnection() {
 	//get the client ID from session storage or create a new one
 	let clientId = sessionStorage.getItem("pongClientId");
 	if (!clientId) { // if client ID does not exist
-	  clientId = crypto.randomUUID(); // function for create unique ID and store it
-	  sessionStorage.setItem("pongClientId", clientId);
+		clientId = generateUID(); // function for create unique ID and store it
+		sessionStorage.setItem("pongClientId", clientId);
 	}
 
 	// Connect to Fastify server WebSocket (?id=<clientId> : is a query parameter)
