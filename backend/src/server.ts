@@ -1,5 +1,6 @@
 // server.ts
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import websocketPlugin, { WebSocket } from "@fastify/websocket";
 import { URL } from "url";
 import crypto from "crypto";
@@ -11,7 +12,7 @@ await fastify.register(websocketPlugin);
 
 // ---- WEBSOCKET ROUTE ----
 await fastify.register(async function (fastify) {
-  fastify.get("/ws", { websocket: true }, (socket, req) => {
+    fastify.get("/ws", { websocket: true }, (socket, req) => {
     const url = new URL(req.url!, `http://${req.headers.host}`);
     const clientId = url.searchParams.get("id") || crypto.randomUUID(); //check the client any id created if not create one
     const roomId = url.searchParams.get("room") || "default"; //get the room name from client if not create a default one
@@ -109,8 +110,48 @@ await fastify.register(async function (fastify) {
           room.gameState.teams.right = room.gameState.teams.right.filter(r => r !== role);
           delete room.gameState.paddles[role];
         }
+
+        // If no clients left, delete the room
+        if (room.clients.size === 0) {
+          Game.rooms.delete(roomId);
+          console.log(`Room ${roomId} deleted due to no players.`);
+        }
     });
   });
+});
+
+
+// ---- CORS ----
+await fastify.register(cors, {
+  origin: "*", // Allow all origins (for development)
+});
+
+//get a list of all active rooms
+fastify.get("/rooms", async (req, reply) => {
+    const list = [];
+    for (const [id, room] of Game.rooms.entries()) {
+        list.push({
+            id,
+            leftPlayers: room.gameState.teams.left.length,
+            rightPlayers: room.gameState.teams.right.length,
+            teamSize: room.teamSize,
+            gameStarted: room.gameStarted
+        });
+    }
+    return list;
+});
+
+//make a new room
+fastify.post("/create-room", async (req, reply) => {
+  const body: any = req.body;
+  const roomId = body.id || "default";
+  const teamSize = body.teamSize || 1;
+
+  if (!Game.rooms.has(roomId)) {
+    Game.rooms.set(roomId, Game.createRoom(roomId, teamSize));
+  }
+
+  return { roomId, teamSize };
 });
 
 // ---- START SERVER ----
