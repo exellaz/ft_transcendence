@@ -6,101 +6,6 @@ declare global {
 	}
 }
 
-//generate UID
-function generateUID(): string {
-  return (
-	Date.now().toString(36) +      // timestamp part
-	Math.random().toString(36).substr(2, 8) // random part
-  );
-}
-
-/**
- * @brief draw container in html (pong game)
- * @param state - current game state from server
-*/
-function draw_container(state: any) {
-	const canvas = document.getElementById("game") as HTMLCanvasElement;
-	if (!canvas) throw new Error("Canvas not found!");
-	const ctx = canvas.getContext("2d")!;
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-	// Get expected team size from backend (TEAM_SIZE)
-	const expectedPlayers = state.teams?.left?.length + state.teams?.right?.length;
-	// Only draw if all players are connected
-	if (state.teams?.left?.length === state.teams?.right?.length && state.teams?.left?.length > 0 && expectedPlayers === state.teams?.left?.length * 2) {
-		// Countdown logic
-		const timer = 5000;
-		if (!window.pongCountdownStarted) {
-			window.pongCountdownStarted = true;
-			window.pongCountdownEnd = Date.now() + timer;
-		}
-		const now = Date.now();
-		const countdownEnd = window.pongCountdownEnd ?? (now + timer);
-		const remaining = Math.max(0, Math.ceil((countdownEnd - now) / 1000));
-
-		// Draw countdown text
-		if (remaining > 0) {
-			ctx.font = "48px Arial";
-			ctx.fillStyle = "gray";
-			ctx.textAlign = "center";
-			ctx.fillText(`Game starts in ${remaining}...`, canvas.width / 2, canvas.height / 2);
-			return;
-		}
-
-		// Draw ball
-		ctx.beginPath();
-		ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
-		ctx.fillStyle = "black";
-		ctx.fill();
-
-		// Draw paddles (loop through all player paddles)
-		const paddleWidth = 10;
-		const paddleHeight = 80;
-		//check for player paddles
-		for (const key in state.paddles) {
-			const y = state.paddles[key];
-			let x;
-			if (key.startsWith("left_player")) { //if is left player
-				x = 1;
-			} else if (key.startsWith("right_player")) { //if is right player
-				x = canvas.width - paddleWidth - 1;
-			} else {
-				// Spectator or unknown role, skip drawing
-				continue;
-			}
-			ctx.fillStyle = "black";
-			ctx.fillRect(x, y, paddleWidth, paddleHeight);
-		}
-	} else {
-		// Not all players connected, show waiting message
-		ctx.font = "32px Arial";
-		ctx.fillStyle = "gray";
-		ctx.textAlign = "center";
-		ctx.fillText("Waiting for all players to connect...", canvas.width / 2, canvas.height / 2);
-		window.pongCountdownStarted = false;
-	}
-}
-
-// Create basic UI elements
-function createUI() {
-	const roleText = document.createElement("h1");
-	roleText.id = "roleText";
-	roleText.textContent = "Connecting...";
-	document.body.appendChild(roleText);
-
-	const scoreText = document.createElement("h2");
-	scoreText.id = "scoreText";
-	scoreText.textContent = "Score: 0 - 0";
-	document.body.appendChild(scoreText);
-
-	const canvas = document.createElement("canvas");
-	canvas.id = "game";
-	canvas.width = Math.min(window.innerWidth * 0.9, 600); //set fixed size (600)
-	canvas.height = Math.min(window.innerHeight * 0.7, 400); //set fixed size(400)
-	canvas.style.border = "5px solid black";
-	document.body.appendChild(canvas);
-}
-
 export function startConnection() {
 	createUI();
 
@@ -117,7 +22,15 @@ export function startConnection() {
 	}
 
 	// Connect to Fastify server WebSocket (?id=<clientId> : is a query parameter)
-	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=` + clientId);
+	let roomId: string | null = null;
+    while (!roomId) {
+        roomId = prompt("enter room name:");
+        if (!roomId) {
+            alert("Room name is required!");
+            continue;
+        }
+    }
+	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}`);
 
 	//handle the WebSocket events
 	socket.onopen = () => {
@@ -141,18 +54,19 @@ export function startConnection() {
 			// Role assign to print
 			if (data.type === "role") {
 				role = data.role;
-				if (role.startsWith("left_player")) {
-					roleText.textContent = `Left Team (${role})`;
-				} else if (role.startsWith("right_player")) {
-					roleText.textContent = `Right Team (${role})`;
-				} else {
-					roleText.textContent = "Spectator";
-				}
+				roleText.textContent = `Room: ${data.roomId} | Role: ${role}`;
+				//if (role.startsWith("left_player")) {
+				//	roleText.textContent = `Left Team (${role})`;
+				//} else if (role.startsWith("right_player")) {
+				//	roleText.textContent = `Right Team (${role})`;
+				//} else {
+				//	roleText.textContent = "Spectator";
+				//}
 			}
 
 			// Game state update
 			if (data.type === "state") {
-				draw_container(data.gameState);
+				draw_container(data.gameState, data.isSpectator);
 				scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
 			}
 		} catch (err) {
@@ -179,4 +93,126 @@ export function startConnection() {
 		if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
 		if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
 	}, 1000 / 60);
+}
+
+/////////////////////////////////// EXTERNAL FUNCTIONS ///////////////////////////////////
+
+//generate UID
+function generateUID(): string {
+  return (
+	Date.now().toString(36) +      // timestamp part
+	Math.random().toString(36).substr(2, 8) // random part
+  );
+}
+
+/**
+ * @brief draw container in html (pong game)
+ * @param state - current game state from server
+*/
+function draw_container(state: any, isSpectator?: boolean) {
+	const canvas = document.getElementById("game") as HTMLCanvasElement;
+	if (!canvas) throw new Error("Canvas not found!");
+	const ctx = canvas.getContext("2d")!;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Get expected team size from backend (TEAM_SIZE)
+	const expectedPlayers = state.teams?.left?.length + state.teams?.right?.length;
+	const allPlayersConnected = state.teams?.left?.length === state.teams?.right?.length && state.teams?.left?.length > 0 && expectedPlayers === state.teams?.left?.length * 2;
+
+	// Spectator: always draw game, ignore countdown
+	if (isSpectator) {
+		// Draw ball
+		ctx.beginPath();
+		ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
+		ctx.fillStyle = "black";
+		ctx.fill();
+
+		// Draw paddles
+		const paddleWidth = 10;
+		const paddleHeight = 80;
+		for (const key in state.paddles) {
+			const y = state.paddles[key];
+			let x;
+			if (key.startsWith("left_player")) {
+				x = 1;
+			} else if (key.startsWith("right_player")) {
+				x = canvas.width - paddleWidth - 1;
+			} else {
+				continue;
+			}
+			ctx.fillStyle = "black";
+			ctx.fillRect(x, y, paddleWidth, paddleHeight);
+		}
+
+        if (!allPlayersConnected) {
+            // Not all players connected, show waiting message
+            ctx.font = "32px Arial";
+            ctx.fillStyle = "gray";
+            ctx.textAlign = "center";
+            ctx.fillText("Waiting for all players to connect...", canvas.width / 2, canvas.height / 2);
+        }
+		return;
+	}
+
+	// Player: only draw if all players are connected
+	if (allPlayersConnected) {
+		// Use backend countdown and gameStarted
+		if (!state.gameStarted && state.countdown > 0) {
+			const remaining = Math.ceil(state.countdown / 60); // assuming 60 ticks per second
+			ctx.font = "48px Arial";
+			ctx.fillStyle = "gray";
+			ctx.textAlign = "center";
+			ctx.fillText(`Game starts in ${remaining}...`, canvas.width / 2, canvas.height / 2);
+			return;
+		}
+
+		// Draw ball
+		ctx.beginPath();
+		ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
+		ctx.fillStyle = "black";
+		ctx.fill();
+
+		// Draw paddles
+		const paddleWidth = 10;
+		const paddleHeight = 80;
+		for (const key in state.paddles) {
+			const y = state.paddles[key];
+			let x;
+			if (key.startsWith("left_player")) {
+				x = 1;
+			} else if (key.startsWith("right_player")) {
+				x = canvas.width - paddleWidth - 1;
+			} else {
+				continue;
+			}
+			ctx.fillStyle = "black";
+			ctx.fillRect(x, y, paddleWidth, paddleHeight);
+		}
+	} else {
+		// Not all players connected, show waiting message
+		ctx.font = "32px Arial";
+		ctx.fillStyle = "gray";
+		ctx.textAlign = "center";
+		ctx.fillText("Waiting for all players to connect...", canvas.width / 2, canvas.height / 2);
+	}
+}
+
+// Create basic UI elements
+function createUI() {
+	const roleText = document.createElement("h1");
+	roleText.id = "roleText";
+	roleText.textContent = "Connecting...";
+	document.body.appendChild(roleText);
+
+	const scoreText = document.createElement("h2");
+	scoreText.id = "scoreText";
+	scoreText.textContent = "Score: 0 - 0";
+	document.body.appendChild(scoreText);
+
+	const canvas = document.createElement("canvas");
+	canvas.id = "game";
+	canvas.width = Math.min(window.innerWidth * 0.9, 600); //set fixed size (600)
+	canvas.height = Math.min(window.innerHeight * 0.7, 400); //set fixed size(400)
+	canvas.style.border = "5px solid black";
+	document.body.appendChild(canvas);
 }

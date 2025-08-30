@@ -6,91 +6,118 @@ import crypto from "crypto";
 import * as Game from "./game.ts";
 
 // ---- SETUP SERVER ----
-const fastify = Fastify();                  // Create Fastify instance
-await fastify.register(websocketPlugin);    // Register WebSocket plugin
+const fastify = Fastify();
+await fastify.register(websocketPlugin);
 
 // ---- WEBSOCKET ROUTE ----
 await fastify.register(async function (fastify) {
-  fastify.get("/ws", { websocket: true }, (socket, req) => {            //handle receive a socket(for comunication) and req(request info)
-    // ----- CLIENT CONNECTION -----
+  fastify.get("/ws", { websocket: true }, (socket, req) => {
     const url = new URL(req.url!, `http://${req.headers.host}`);
-    const clientId = url.searchParams.get("id") || crypto.randomUUID(); //get Client ID from client, if not then generate one
-    Game.sockets.set(socket, clientId);
-    Game.clients.add(socket);                             // Add socket to active clients (track connected clients)
+    const clientId = url.searchParams.get("id") || crypto.randomUUID(); //check the client any id created if not create one
+    const roomId = url.searchParams.get("room") || "default"; //get the room name from client if not create a default one
 
-    // Assign role to client (left_player, right_player, or spectator)
-    let role = Game.clientRoles.get(clientId);
-    if (!role) {
-      // Assigns left/right player or spectator based on team sizes
-      const leftCount = Game.gameState.teams.left.length;
-      const rightCount = Game.gameState.teams.right.length;
-      if (leftCount < Game.TEAM_SIZE) {
-        role = `left_player${leftCount + 1}`;
-        Game.gameState.teams.left.push(role);
-      } else if (rightCount < Game.TEAM_SIZE) {
-        role = `right_player${rightCount + 1}`;
-        Game.gameState.teams.right.push(role);
-      } else role = "spectator";
-
-      // Updates game state and paddle positions
-      Game.clientRoles.set(clientId, role);
-      if (role !== "spectator") {
-        Game.set_paddle_position_with_team();
-        Game.gameState.score.left = 0;
-        Game.gameState.score.right = 0;
-      }
-    } else {
-      if (role.startsWith("left_player") && !Game.gameState.teams.left.includes(role))
-        Game.gameState.teams.left.push(role);
-      else if (role.startsWith("right_player") && !Game.gameState.teams.right.includes(role))
-        Game.gameState.teams.right.push(role);
+    // Create room if not exist
+    if (!Game.rooms.has(roomId)) {
+      Game.rooms.set(roomId, Game.createRoom(roomId, 1)); // default 1v1
     }
 
-    console.log(`Client (${role}) connected with id=${clientId}`);
-    socket.send(JSON.stringify({ type: "role", role }));
+    //initialize the room
+    const room = Game.rooms.get(roomId)!;
+    // Add socket to room
+    room.sockets.set(socket, clientId);
+    room.clients.add(socket);
 
-    // ----- INCOMING MESSAGE/EVENT HANDLING -----
-    socket.on("message", (raw) => {
-      const msg = JSON.parse(raw.toString());
-      if (msg.type === "move") {    // update paddle position
-        const dy = msg.dy;
-        const paddleHeight = 80;
-        if (role.startsWith("left_player") || role.startsWith("right_player")) {
-          Game.gameState.paddles[role] = Game.updatePaddlePosition(
-            Game.gameState.paddles[role] ?? 0,
-            dy,
-            Game.gameHeight,
-            paddleHeight
-          );
+    //initialize the role
+    let role = room.clientRoles.get(clientId);
+    //assign the role if not exist
+    if (!role) {
+        //get how many players in each team
+        const leftCount = room.gameState.teams.left.length;
+        const rightCount = room.gameState.teams.right.length;
+
+        //check which team for the player
+        if (leftCount < room.teamSize) {
+            role = `left_player${leftCount + 1}`;
+            room.gameState.teams.left.push(role);
+        } else if (rightCount < room.teamSize) {
+            role = `right_player${rightCount + 1}`;
+            room.gameState.teams.right.push(role);
+        } else
+            role = "spectator";
+
+        // assign the role to the client
+        room.clientRoles.set(clientId, role);
+
+        //initialize thier position and score (prevent garbage value)
+        if (role !== "spectator") {
+            Game.setPaddlePositionWithTeam(room);
+            room.gameState.score.left = 0;
+            room.gameState.score.right = 0;
         }
-      } else if (msg.type === "setWidth") {     // set game width
-        Game.setGameDimensions(msg.width, Game.gameHeight);
-      } else if (msg.type === "setHeight") {    // set game height
-        Game.setGameDimensions(Game.gameWidth, msg.height);
-      }
+
+        console.log(`Client (${role}) [ ${clientId} ] joined room=${roomId}`);
+    } else {
+        //if is exist mean is reconnect
+        console.log(`Client (${role}) [ ${clientId} ] reconnected as ${role} in room ${roomId}`);
+
+        // Ensure the role is back in the teams
+        if (role.startsWith("left_") && !room.gameState.teams.left.includes(role))
+            room.gameState.teams.left.push(role);
+        if (role.startsWith("right_") && !room.gameState.teams.right.includes(role))
+            room.gameState.teams.right.push(role);
+    }
+
+    // Send initial role and roomId to client
+    socket.send(JSON.stringify({ type: "role", role, roomId }));
+
+    // ----- INCOMING MESSAGES -----
+    socket.on("message", (raw) => {
+        const msg = JSON.parse(raw.toString());
+        //update the paddle position from client
+        if (msg.type === "move") {
+          const dy = msg.dy;
+          const paddleHeight = 80;
+          if (role!.startsWith("left_player") || role!.startsWith("right_player")) {
+            room.gameState.paddles[role!] = Game.updatePaddlePosition(
+                room.gameState.paddles[role!] ?? 0,
+                dy,
+                room.height,
+                paddleHeight
+            );
+          }
+        }
+        //update the size from client (game)
+        else if (msg.type === "setWidth") {
+            room.width = msg.width;
+        }
+        else if (msg.type === "setHeight") {
+            room.height = msg.height;
+        }
     });
 
-    // ----- CLIENT DISCONNECTION HANDLING -----
+    // ----- CLIENT DISCONNECT -----
     socket.on("close", () => {
-      Game.sockets.delete(socket);
-      console.log(`Client (${role}) disconnected (id=${clientId})`);
 
-        // Removes player from team if not a spectator
-      if (role && role !== "spectator") {
-        const leftIdx = Game.gameState.teams.left.indexOf(role);
-        if (leftIdx !== -1) Game.gameState.teams.left.splice(leftIdx, 1);
-        const rightIdx = Game.gameState.teams.right.indexOf(role);
-        if (rightIdx !== -1) Game.gameState.teams.right.splice(rightIdx, 1);
-      }
+        // Remove socket and client from room
+        room.sockets.delete(socket);
+        room.clients.delete(socket);
+        console.log(`Client (${role}) [ ${clientId} ] left room=${roomId}`);
+
+        // Remove role from teams and paddles
+        if (role && role !== "spectator") {
+          room.gameState.teams.left = room.gameState.teams.left.filter(r => r !== role);
+          room.gameState.teams.right = room.gameState.teams.right.filter(r => r !== role);
+          delete room.gameState.paddles[role];
+        }
     });
   });
 });
 
-// ---- START THE GAME LOOP ----
-setInterval(Game.gameLoop, 1000 / 60); //run at 60 fps
-
-// ---- start the server to listen on port 4242 ----
-fastify.listen({ port: 4242, host: "0.0.0.0" }, (err, addr) => {
-  if (err) throw err;
-  console.log(`Server running at ${addr}`);
-});
+// ---- START SERVER ----
+try {
+    const addr = await fastify.listen({ port: 4242, host: "0.0.0.0" });
+    console.log(`Server running at ${addr}`);
+} catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+}
