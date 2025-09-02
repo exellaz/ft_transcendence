@@ -1,82 +1,24 @@
 // game.ts
-import { WebSocket } from "@fastify/websocket";
+import { Room, rooms } from "./room.ts"
 
-// ---- ROOM TYPE ----
-export interface Room {
-  id: string;
-  teamSize: number;
-  gameStarted: boolean;
-  gameState: {
-    ball: { x: number; y: number; dx: number; dy: number };
-    paddles: { [key: string]: number };
-    teams: { left: string[]; right: string[] };
-    score: { left: number; right: number };
-    countdown: number;
-  };
-  clients: Set<WebSocket>;
-  clientRoles: Map<string, string>;
-  sockets: Map<WebSocket, string>;
-  width: number;
-  height: number;
-}
-
-// ---- INITIALIZE ROOMS ----
-export const rooms: Map<string, Room> = new Map();
-
-// ---- CREATE A NEW ROOM ----
-export function createRoom(id: string, teamSize = 1, width = 800, height = 400): Room {
-  const room: Room = {
-    id,
-    teamSize,
-    gameStarted: false,
-    gameState: {
-      ball: { x: width / 2, y: height / 2, dx: 2, dy: 2 },
-      paddles: {},
-      teams: { left: [], right: [] },
-      score: { left: 0, right: 0 },
-      countdown: 0,
-    },
-    clients: new Set(),
-    clientRoles: new Map(),
-    sockets: new Map(),
-    width,
-    height,
-  };
-
-  startRoomLoop(room);
-  return room;
-}
-
-// ---- START GAME LOOP PER ROOM ----
-function startRoomLoop(room: Room) {
-  let interval: NodeJS.Timeout | null = null;
-
-  const runLoop = () => {
-    // Only start loop if not running
-    if (!interval) {
-        interval = setInterval(() => {
-            // If room has no players, stop loop
-            if (room.clients.size === 0) {
-                clearInterval(interval!);
-                interval = null;
-                return;
-            }
-            gameLoop(room);
-        }, 1000 / 60);
-    }
-  };
-
-  runLoop(); // start immediately
-}
+const ballSpeed = 2;
 
 // ---- RESET BALL ----
 function resetBall(room: Room, scoredSide: "left" | "right") {
-  room.gameState.ball.x = room.width / 2;
-  room.gameState.ball.y = room.height / 2;
-  room.gameState.ball.dx = scoredSide === "left" ? -2 : 2;
-  room.gameState.ball.dy =
-    (Math.random() < 0.5 ? -1 : 1) * (2 + Math.floor(Math.random() * 2));
-}
+	const ball = room.gameState.ball;
+
+	ball.x = room.width / 2;
+	ball.y = room.height / 2;
+
+	// Pick random direction
+	let dx = scoredSide === "left" ? -1 : 1;
+	let dy = (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 0.5 + 0.5); // random vertical
+
+	// Normalize to constant speed
+	const length = Math.sqrt(dx * dx + dy * dy);
+	ball.dx = (dx / length) * ballSpeed;
+	ball.dy = (dy / length) * ballSpeed;
+  }
 
 // ---- SET INITIAL PADDLES ----
 export function setPaddlePositionWithTeam(room: Room) {
@@ -93,25 +35,6 @@ export function setPaddlePositionWithTeam(room: Room) {
         room.gameState.paddles["right_player1"] = h / 4;
         room.gameState.paddles["right_player2"] = (h * 3) / 4 - paddleHeight;
     }
-    else if (room.teamSize === 3) {
-        room.gameState.paddles["left_player1"] = h / 6;
-        room.gameState.paddles["left_player2"] = h / 2 - paddleHeight / 2;
-        room.gameState.paddles["left_player3"] = (h * 5) / 6 - paddleHeight;
-        room.gameState.paddles["right_player1"] = h / 6;
-        room.gameState.paddles["right_player2"] = h / 2 - paddleHeight / 2;
-        room.gameState.paddles["right_player3"] = (h * 5) / 6 - paddleHeight;
-    }
-    else if (room.teamSize === 4) {
-        room.gameState.paddles["left_player1"] = h / 8;
-        room.gameState.paddles["left_player2"] = (h * 3) / 8 - paddleHeight / 2;
-        room.gameState.paddles["left_player3"] = (h * 5) / 8 - paddleHeight / 2;
-        room.gameState.paddles["left_player4"] = (h * 7) / 8 - paddleHeight;
-        room.gameState.paddles["right_player1"] = h / 8;
-        room.gameState.paddles["right_player2"] = (h * 3) / 8 - paddleHeight / 2;
-        room.gameState.paddles["right_player3"] = (h * 5) / 8 - paddleHeight / 2;
-        room.gameState.paddles["right_player4"] = (h * 7) / 8 - paddleHeight;
-    }
-
 }
 
 // ---- UPDATE PADDLE ----
@@ -172,7 +95,7 @@ function updateBall(room: Room) {
 }
 
 // ---- GAME LOOP ----
-function gameLoop(room: Room) {
+export function gameLoop(room: Room) {
 
     // if no player in room
     if (room.clients.size === 0) {
