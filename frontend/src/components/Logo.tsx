@@ -6,7 +6,7 @@ interface PongLogoProps {
 }
 
 const PongLogo: React.FC<PongLogoProps> = ({ className = "" }) => (
-  <div className={`${className}`}>
+  <div className={`mb-6 ${className}`}>
     <img src={pongLogo} alt="Pong Logo" />
   </div>
 );
