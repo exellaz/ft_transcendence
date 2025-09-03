@@ -6,7 +6,7 @@ declare global {
 	}
 }
 
-export function startConnection(roomId: string) {
+export function startConnection(roomName: string) {
 	createUI();
 
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -22,7 +22,7 @@ export function startConnection(roomId: string) {
 	}
 
 
-	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}`);
+	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomName}`);
 
 	//handle the WebSocket events
 	socket.onopen = () => {
@@ -54,6 +54,16 @@ export function startConnection(roomId: string) {
 				draw_container(data.gameState, data.isSpectator);
 				scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
 			}
+
+					// -------- CHAT --------
+			if (data.type === "chat") {
+				const chatBox = document.getElementById("chatBox")!;
+				const msgDiv = document.createElement("div");
+				const time = new Date(data.time).toLocaleTimeString();
+				msgDiv.textContent = `[${time}] ${data.from}: ${data.text}`;
+				chatBox.appendChild(msgDiv);
+				chatBox.scrollTop = chatBox.scrollHeight; // auto scroll
+			}
 		} catch (err) {
 			console.error("Invalid JSON from server:", event.data);
 		}
@@ -70,6 +80,18 @@ export function startConnection(roomId: string) {
 		if (role === "spectator") return;
 		if (e.key === "ArrowUp") keys.up = false;
 		if (e.key === "ArrowDown") keys.down = false;
+	});
+
+	// Chat input handling
+	const chatInput = document.getElementById("chatInput") as HTMLInputElement;
+	chatInput.addEventListener("keydown", (e) => {
+		if (e.key === "Enter" && chatInput.value.trim() !== "") {
+			socket.send(JSON.stringify({
+				type: "chat",
+				text: chatInput.value.trim()
+			}));
+			chatInput.value = "";
+		}
 	});
 
 	// Send movement to server
@@ -189,4 +211,23 @@ function createUI() {
 	canvas.height = Math.min(window.innerHeight * 0.7, 400); //set fixed size(400)
 	canvas.style.border = "5px solid black";
 	document.body.appendChild(canvas);
+
+	const chatBox = document.createElement("div");
+	chatBox.id = "chatBox";
+	chatBox.style.width = "600px";
+	chatBox.style.height = "200px";
+	chatBox.style.overflowY = "auto";
+	chatBox.style.border = "2px solid gray";
+	chatBox.style.marginTop = "10px";
+	chatBox.style.padding = "5px";
+	document.body.appendChild(chatBox);
+
+	// Chat input
+	const chatInput = document.createElement("input");
+	chatInput.id = "chatInput";
+	chatInput.type = "text";
+	chatInput.placeholder = "Type a message and press Enter...";
+	chatInput.style.width = "600px";
+	chatInput.style.marginTop = "5px";
+	document.body.appendChild(chatInput);
 }
