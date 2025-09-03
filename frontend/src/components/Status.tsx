@@ -1,0 +1,26 @@
+import React from "react";
+
+interface StatusProps {
+  text: string;
+  color?: "green" | "red";
+  className?: string;
+}
+
+const Status: React.FC<StatusProps> = ({
+  text,
+  color = "green",
+  className = "",
+}) => (
+  <div className={`flex items-center self-start ml-2 -mt-3 mb-2 ${className}`}>
+    <span
+      className={`w-2 h-2 rounded-full mr-2 ${
+        color === "green" ? "bg-green-400" : "bg-red-500"
+      }`}
+    ></span>
+    <span className={color === "green" ? "text-green-400" : "text-red-500"}>
+      {text}
+    </span>
+  </div>
+);
+
+export default Status;
