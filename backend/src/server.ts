@@ -8,6 +8,8 @@ import * as Game from "./game.ts";
 import { rooms, createRoom } from "./room.ts";
 import { createChatMessage } from "./chat.ts";
 
+const globalClients = new Set<any>();
+
 // ---- SETUP SERVER ----
 const fastify = Fastify();
 await fastify.register(websocketPlugin);
@@ -17,20 +19,43 @@ await fastify.register(async function (fastify) {
     fastify.get("/ws", { websocket: true }, (socket, req) => {
     const url = new URL(req.url!, `http://${req.headers.host}`);
     const clientId = url.searchParams.get("id") || crypto.randomUUID(); //check the client any id created if not create one
-    const roomId = url.searchParams.get("room") || "default"; //get the room name from client if not create a default one
+    const roomName = url.searchParams.get("room") || "default"; //get the room name from client if not create a default one
+    const scope = url.searchParams.get("scope");
+
+    if (scope === "global") {
+        globalClients.add(socket);
+        socket.on("message", (raw) => {
+            const msg = JSON.parse(raw.toString());
+            if (msg.type === "chat") {
+                const chatMsg = createChatMessage(clientId, String(msg.text));
+                for (const client of globalClients) {
+                    if (client.readyState === 1) {
+                        client.send(JSON.stringify({ ...chatMsg, scope: "global"}));
+                    }
+                }
+            }
+        });
+
+        socket.on("close", () => {
+            globalClients.delete(socket);
+            handleDisconnect(socket, globalClients, clientId, "global", "global");
+        });
+
+        return;
+    }
 
     // Create room if not exist
-    if (!rooms.has(roomId)) {
-      rooms.set(roomId, createRoom(roomId, 1)); // default 1v1
+    if (!rooms.has(roomName)) {
+      rooms.set(roomName, createRoom(roomName, 1)); // default 1v1
     }
 
     //initialize the room
-    const room = rooms.get(roomId)!;
+    const room = rooms.get(roomName)!;
 
-	const role = assignRole(room, clientId, socket, roomId);
+	const role = assignRole(room, clientId, socket, room.id);
 
     // Send initial role and roomId to client
-    socket.send(JSON.stringify({ type: "role", role, roomId }));
+    socket.send(JSON.stringify({ type: "role", role, roomId: room.name }));
 
     // ----- INCOMING MESSAGES/EVENT -----
     socket.on("message", (raw) => {
@@ -39,12 +64,12 @@ await fastify.register(async function (fastify) {
 
     // ----- CLIENT DISCONNECT -----
     socket.on("close", () => {
-		handleDisconnect(socket, room, clientId, role, roomId);
+		handleDisconnect(socket, room, clientId, role, room.id);
     });
   });
 });
 
-function assignRole(room: any, clientId: string, socket: WebSocket, roomId: string) {
+function assignRole(room: any, clientId: string, socket: any, roomId: string) {
 	// Add socket to room
 	room.sockets.set(socket, clientId);
 	room.clients.add(socket);
@@ -95,7 +120,7 @@ function assignRole(room: any, clientId: string, socket: WebSocket, roomId: stri
 	return role;
 }
 
-function handleMsgOrEvent(socket: WebSocket, room: any, role:string, raw:string) {
+function handleMsgOrEvent(socket: any, room: any, role:string, raw:string) {
 	const msg = JSON.parse(raw);
     //update the paddle position from client
     if (msg.type === "move") {
@@ -123,8 +148,9 @@ function handleMsgOrEvent(socket: WebSocket, room: any, role:string, raw:string)
 }
 
 
-function handleDisconnect(socket: WebSocket, room: any, clientId: string, role:string, roomId: string) {
-	// Remove socket and client from room
+function handleDisconnect(socket: any, room: any, clientId: string, role:string, roomId: string) {
+    if (!room || !room.sockets) return; // Prevent errors if room is already deleted
+    // Remove socket and client from room
 	room.sockets.delete(socket);
 	room.clients.delete(socket);
 
@@ -166,7 +192,7 @@ fastify.get("/rooms", async (req, reply) => {
     const list = [];
     for (const [id, room] of rooms.entries()) {
         list.push({
-            id,
+            name: room.name,
             leftPlayers: room.gameState.teams.left.length,
             rightPlayers: room.gameState.teams.right.length,
             teamSize: room.teamSize,
@@ -179,14 +205,14 @@ fastify.get("/rooms", async (req, reply) => {
 //make a new room
 fastify.post("/create-room", async (req, reply) => {
   const body: any = req.body;
-  const roomId = body.id || "default";
+  const roomName = body.id || "default";
   const teamSize = body.teamSize || 1;
 
-  if (!rooms.has(roomId)) {
-    rooms.set(roomId, createRoom(roomId, teamSize));
+  if (!rooms.has(roomName)) {
+    rooms.set(roomName, createRoom(roomName, teamSize));
   }
 
-  return { roomId, teamSize };
+  return { roomName, teamSize };
 });
 
 // ---- START SERVER ----

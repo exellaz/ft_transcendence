@@ -6,7 +6,7 @@ declare global {
 	}
 }
 
-export function startConnection(roomId: string) {
+export function startConnection(roomName: string) {
 	createUI();
 
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -22,7 +22,7 @@ export function startConnection(roomId: string) {
 	}
 
 
-	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}`);
+	const socket = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomName}`);
 
 	//handle the WebSocket events
 	socket.onopen = () => {

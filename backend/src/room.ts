@@ -7,6 +7,7 @@ const ballSpeed = 2;
 // ---- ROOM TYPE ----
 export interface Room {
   id: string;
+  name: string;
   teamSize: number;
   gameStarted: boolean;
   gameState: {
@@ -28,10 +29,17 @@ export interface Room {
 // ---- INITIALIZE ROOMS ----
 export const rooms: Map<string, Room> = new Map();
 
+function generateRoomId(length = 6): string {
+    return Math.floor(Math.random() * Math.pow(10, length))
+        .toString()
+        .padStart(length, "0");
+}
+
 // ---- CREATE A NEW ROOM ----
-export function createRoom(id: string, teamSize = 1, width = 800, height = 400): Room {
+export function createRoom(name: string, teamSize = 1, width = 800, height = 400): Room {
   const room: Room = {
-    id,
+    id: generateRoomId(),
+    name,
     teamSize,
     gameStarted: false,
     gameState: {

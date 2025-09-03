@@ -1,4 +1,5 @@
 import { startConnection } from "./connection";
+import { startGlobalChat } from "./globalChat"
 
 const API_URL = `http://${window.location.hostname}:4242`;
 
@@ -43,7 +44,7 @@ function showLobby() {
             alert("Room name is required!");
         }
 		const room = await createRoom(teamSize, roomName);
-		startGame(room.roomId);
+		startGame(room.roomName);
 	};
 	lobbyDiv.appendChild(createBtn);
 
@@ -52,29 +53,33 @@ function showLobby() {
 	listDiv.id = "roomList";
 	lobbyDiv.appendChild(listDiv);
 
+    startGlobalChat();
+
 	// Refresh rooms every 2s
 	async function refreshRooms() {
 		const rooms = await fetchRooms();
 		listDiv.innerHTML = "";
-		rooms.forEach((room: any) => {
-			const item = document.createElement("div");
-			item.textContent = `${room.id} — ${room.leftPlayers + room.rightPlayers}/${room.teamSize * 2} players ${
-				room.gameStarted ? "(in progress)" : "(waiting)"
-			}`;
-			const joinBtn = document.createElement("button");
-			joinBtn.textContent = "Join";
-			joinBtn.onclick = () => startGame(room.id);
-			item.appendChild(joinBtn);
-			listDiv.appendChild(item);
-		});
+		rooms
+			.filter((room: any) => room.leftPlayers + room.rightPlayers > 0) // Only show rooms with players
+			.forEach((room: any) => {
+				const item = document.createElement("div");
+				item.textContent = `${room.name} — ${room.leftPlayers + room.rightPlayers}/${room.teamSize * 2} players ${
+					room.gameStarted ? "(in progress)" : "(waiting)"
+				}`;
+				const joinBtn = document.createElement("button");
+				joinBtn.textContent = "Join";
+				joinBtn.onclick = () => startGame(room.name);
+				item.appendChild(joinBtn);
+				listDiv.appendChild(item);
+			});
 	}
 	setInterval(refreshRooms, 2000);
 	refreshRooms();
 }
 
-function startGame(roomId: string) {
+function startGame(roomName: string) {
 	document.body.innerHTML = ""; // clear lobby UI
-	startConnection(roomId); // call your existing connection.ts
+	startConnection(roomName); // call your existing connection.ts
 }
 
 showLobby();
