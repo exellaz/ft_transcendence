@@ -1,14 +1,14 @@
 import React from "react";
 import pongLogo from "../assets/pong-logo.png";
 
-interface PongLogoProps {
+interface LogoProps {
   className?: string;
 }
 
-const PongLogo: React.FC<PongLogoProps> = ({ className = "" }) => (
+const Logo: React.FC<LogoProps> = ({ className = "" }) => (
   <div className={`mb-6 ${className}`}>
     <img src={pongLogo} alt="Pong Logo" />
   </div>
 );
 
-export default PongLogo;
+export default Logo;

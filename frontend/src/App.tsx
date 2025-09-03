@@ -3,14 +3,18 @@ import React from "react";
 // (switching pages without a full reload).
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginView from "./views/LoginView";
+import MainMenuView from "./views/MainMenuView";
 import SignUpView from "./views/SignUpView";
-// import SignupView from "./views/SignupView"; // when you create it
+import SignUpSuccessView from "./views/SignUpSuccessView";
 
 const App: React.FC = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<LoginView />} />
+      <Route path="/login" element={<LoginView />} />
+      <Route path="/main-menu" element={<MainMenuView />} />
       <Route path="/signup" element={<SignUpView />} />
+      <Route path="/signup-success" element={<SignUpSuccessView />} />
     </Routes>
   </BrowserRouter>
 );
