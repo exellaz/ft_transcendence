@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 // react-router-dom is a library that lets you do client-side routing
 // (switching pages without a full reload).
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -6,17 +6,27 @@ import LoginView from "./views/LoginView";
 import MainMenuView from "./views/MainMenuView";
 import SignUpView from "./views/SignUpView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
+import Popup from "./popups/Popup";
+import PopupTest from "./views/PopupTest";
 
-const App: React.FC = () => (
-  <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<LoginView />} />
-      <Route path="/login" element={<LoginView />} />
-      <Route path="/main-menu" element={<MainMenuView />} />
-      <Route path="/signup" element={<SignUpView />} />
-      <Route path="/signup-success" element={<SignUpSuccessView />} />
-    </Routes>
-  </BrowserRouter>
-);
+const App: React.FC = () => {
+  const [showPopup, setShowPopup] = useState(false);
+
+  return (
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LoginView />} />
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/main-menu" element={<MainMenuView />} />
+          <Route path="/signup" element={<SignUpView />} />
+          <Route path="/signup-success" element={<SignUpSuccessView />} />
+          <Route path="/popup" element={<PopupTest />} />
+        </Routes>
+      </BrowserRouter>
+      <Popup open={showPopup} onClose={() => setShowPopup(false)} />
+    </>
+  );
+};
 
 export default App;
