@@ -1,18 +1,14 @@
-import { useState } from 'react'
+import React from "react";
+import Background from "./components/Background";
+import Card from "./components/Card";
+import Logo from "./components/Logo";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => (
+  <Background>
+    <Card>
+      <Logo />
+    </Card>
+  </Background>
+);
 
-  return (
-    <>
-      <h1>Pong</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
-  )
-}
-
-export default App
+export default App;
