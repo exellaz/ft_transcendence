@@ -17,6 +17,15 @@ async function createRoom(teamSize: number, roomName: string) { //input id
   return await res.json();
 }
 
+async function joinRoom(roomName: string, playerId: string) {
+  const res = await fetch(`${API_URL}/join-room`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roomName, playerId }),
+  });
+  return await res.json();
+}
+
 function showLobby() {
 	const lobbyDiv = document.createElement("div");
 	lobbyDiv.id = "lobby";
@@ -75,9 +84,16 @@ function showLobby() {
 	}
 	setInterval(refreshRooms, 2000);
 	refreshRooms();
+    (window as any).showLobby = showLobby;
+
 }
 
-function startGame(roomName: string) {
+async function startGame(roomName: string) {
+    const playerId = localStorage.getItem("clientId") || crypto.randomUUID();
+    localStorage.setItem("clientId", playerId);
+    // tell backend we joined
+    await joinRoom(roomName, playerId);
+
 	document.body.innerHTML = ""; // clear lobby UI
 	startConnection(roomName); // call your existing connection.ts
 }

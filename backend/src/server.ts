@@ -189,17 +189,26 @@ await fastify.register(cors, {
 });
 
 //get a list of all active rooms
+// get a list of all active rooms
 fastify.get("/rooms", async (req, reply) => {
   const stmt = db.prepare("SELECT * FROM rooms");
   const rows = stmt.all();
-  return rows.map((r: any) => ({
-    name: r.name,
-    teamSize: r.teamSize,
-    leftPlayers: r.leftPlayers,
-    rightPlayers: r.rightPlayers,
-    gameStarted: !!r.gameStarted,
-  }));
+
+  return rows.map((r: any) => {
+    const liveRoom = rooms.get(r.name);
+    const leftPlayers = liveRoom ? liveRoom.gameState.teams.left.length : r.leftPlayers;
+    const rightPlayers = liveRoom ? liveRoom.gameState.teams.right.length : r.rightPlayers;
+
+    return {
+      name: r.name,
+      teamSize: r.teamSize,
+      leftPlayers,
+      rightPlayers,
+      gameStarted: liveRoom ? liveRoom.gameStarted : !!r.gameStarted,
+    };
+  });
 });
+
 
 //make a new room
 fastify.post("/create-room", async (req, reply) => {
@@ -217,6 +226,81 @@ if (!exists) {
 
   return { roomName, teamSize };
 });
+
+// join a room
+fastify.post("/join-room", async (req, reply) => {
+  const body: any = req.body;
+  const { roomId, team } = body; // team = "left" or "right"
+
+  interface Room {
+    id: string;
+    name: string;
+    teamSize: number;
+    leftPlayers: number;
+    rightPlayers: number;
+    gameStarted: number;
+  }
+
+  const room = db.prepare("SELECT * FROM rooms WHERE id = ?").get(roomId) as Room | undefined;
+  if (!room) {
+    reply.code(404).send({ error: "Room not found" });
+    return;
+  }
+
+  if (team === "left") {
+    if (room.leftPlayers >= room.teamSize) {
+      reply.code(400).send({ error: "Left team is full" });
+      return;
+    }
+    db.prepare("UPDATE rooms SET leftPlayers = leftPlayers + 1 WHERE id = ?").run(roomId);
+  } else if (team === "right") {
+    if (room.rightPlayers >= room.teamSize) {
+      reply.code(400).send({ error: "Right team is full" });
+      return;
+    }
+    db.prepare("UPDATE rooms SET rightPlayers = rightPlayers + 1 WHERE id = ?").run(roomId);
+  } else {
+    reply.code(400).send({ error: "Invalid team" });
+    return;
+  }
+
+  const updated = db.prepare("SELECT * FROM rooms WHERE id = ?").get(roomId) as Room;
+  return updated;
+});
+
+// leave a room
+fastify.post("/leave-room", async (req, reply) => {
+  const body: any = req.body;
+  const { roomId, team } = body;
+
+    interface Room {
+    id: string;
+    name: string;
+    teamSize: number;
+    leftPlayers: number;
+    rightPlayers: number;
+    gameStarted: number;
+  }
+
+  const room = db.prepare("SELECT * FROM rooms WHERE id = ?").get(roomId) as Room | undefined;
+  if (!room) {
+    reply.code(404).send({ error: "Room not found" });
+    return;
+  }
+
+  if (team === "left" && room.leftPlayers > 0) {
+    db.prepare("UPDATE rooms SET leftPlayers = leftPlayers - 1 WHERE id = ?").run(roomId);
+  } else if (team === "right" && room.rightPlayers > 0) {
+    db.prepare("UPDATE rooms SET rightPlayers = rightPlayers - 1 WHERE id = ?").run(roomId);
+  } else {
+    reply.code(400).send({ error: "Invalid team or no players to remove" });
+    return;
+  }
+
+  const updated = db.prepare("SELECT * FROM rooms WHERE id = ?").get(roomId);
+  return updated;
+});
+
 
 // ---- START SERVER ----
 try {

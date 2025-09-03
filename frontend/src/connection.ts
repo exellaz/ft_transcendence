@@ -6,6 +6,17 @@ declare global {
 	}
 }
 
+const API_URL = `http://${window.location.hostname}:4242`;
+
+async function leaveRoom(roomName: string, playerId: string) {
+  const res = await fetch(`${API_URL}/leave-room`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ roomName, playerId }),
+  });
+  return await res.json();
+}
+
 export function startConnection(roomName: string) {
 	createUI();
 
@@ -33,6 +44,20 @@ export function startConnection(roomName: string) {
 			socket.send(JSON.stringify({ type: "setHeight", height: canvas.height }));
 			socket.send(JSON.stringify({ type: "setWidth", width: canvas.width }));
 		}
+
+
+        // ----- Leave Button -----
+        const leaveBtn = document.createElement("button");
+        leaveBtn.textContent = "Leave Room";
+        leaveBtn.style.marginTop = "10px";
+        leaveBtn.onclick = async () => {
+          const playerId = clientId!;
+          await leaveRoom(roomName, playerId);
+          socket.close(); // close WebSocket
+          document.body.innerHTML = ""; // clear game UI
+           (window as any).showLobby();
+        };
+        document.body.appendChild(leaveBtn);
 	};
 
 	socket.onerror = (err) => console.error("WebSocket error:", err);
