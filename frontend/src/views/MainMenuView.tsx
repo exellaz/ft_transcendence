@@ -3,19 +3,14 @@ import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
-import Input from "../components/Input";
-import Status from "../components/Status";
 
 const MainMenuView: React.FC = () => (
   <Background>
     <Card>
       <Logo />
-      <Input placeholder="Username" />
-      <Status text="Username is available" color="green" />
-      <Input placeholder="Email" type="email" />
-      <Input placeholder="Password" type="password" />
-      <Input placeholder="Confirm password" type="password" />
-      <Button>SIGN UP</Button>
+      <Button variant="big">TOURNAMENT MODE</Button>
+      <Button variant="big">NORMAL MODE</Button>
+      <Button variant="big">SETTINGS</Button>
     </Card>
   </Background>
 );
