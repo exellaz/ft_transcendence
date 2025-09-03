@@ -6,7 +6,7 @@ import LoginView from "./views/LoginView";
 import MainMenuView from "./views/MainMenuView";
 import SignUpView from "./views/SignUpView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
-import Popup from "./popups/Popup";
+import Popup from "./popups/SettingsPopup";
 import PopupTest from "./views/PopupTest";
 
 const App: React.FC = () => {
