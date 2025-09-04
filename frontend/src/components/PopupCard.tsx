@@ -9,21 +9,26 @@ interface PopupCardProps {
   className?: string;
 }
 
-const PopupCard: React.FC<PopupCardProps> = ({ open, onClose, children, className = "" }) => (
+const PopupCard: React.FC<PopupCardProps> = ({
+  open,
+  onClose,
+  children,
+  className = "",
+}) => (
   <Popup open={open} onClose={onClose}>
-    <div className="relative">
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded bg-red-500 hover:bg-red-600 text-white text-xl font-bold z-10"
-        aria-label="Close"
-      >
-        ×
-      </button>
-      <Card className={`pt-8 ${className}`}>
-        {children}
-      </Card>
-    </div>
+    <Card className={`w-3/5 ${className}`}>
+      <div className="w-full flex justify-end">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="w-8 h-8 rounded bg-red-500 hover:bg-red-600 text-white text-xl font-bold"
+          aria-label="Close"
+        >
+          X
+        </button>
+      </div>
+      {children}
+    </Card>
   </Popup>
 );
 

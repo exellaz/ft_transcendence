@@ -22,7 +22,7 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, children }) => {
         onClick={onClose}
       />
       {/* Popup content */}
-      <div className="relative z-10">
+      <div className="z-10 w-screen h-screen flex items-center justify-center">
         {children}
       </div>
     </div>

@@ -7,7 +7,6 @@ import MainMenuView from "./views/MainMenuView";
 import SignUpView from "./views/SignUpView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import Popup from "./popups/SettingsPopup";
-import PopupTest from "./views/PopupTest";
 
 const App: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -21,7 +20,6 @@ const App: React.FC = () => {
           <Route path="/main-menu" element={<MainMenuView />} />
           <Route path="/signup" element={<SignUpView />} />
           <Route path="/signup-success" element={<SignUpSuccessView />} />
-          <Route path="/popup" element={<PopupTest />} />
         </Routes>
       </BrowserRouter>
       <Popup open={showPopup} onClose={() => setShowPopup(false)} />

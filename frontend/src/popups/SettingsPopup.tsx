@@ -4,11 +4,11 @@ import PopupCard from "../components/PopupCard";
 
 interface PopupProps {
   open: boolean;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
 const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => (
-  <PopupCard open={open} onClose={onClose} className="p-6 w-96">
+  <PopupCard open={open} onClose={onClose}>
     <Button>Close</Button>
   </PopupCard>
 );
