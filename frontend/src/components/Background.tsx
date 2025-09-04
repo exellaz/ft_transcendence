@@ -7,7 +7,7 @@ interface BackgroundProps {
 
 const Background: React.FC<BackgroundProps> = ({ children }) => (
   <div
-    className="w-screen h-screen flex items-center justify-center"
+    className="min-h-screen w-full flex items-center justify-center"
     style={{
       backgroundImage: `url(${grass})`,
       backgroundRepeat: "repeat",

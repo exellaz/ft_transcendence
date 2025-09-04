@@ -12,7 +12,7 @@ interface ButtonProps {
 const variantClasses: Record<string, string> = {
   default: "w-full rounded-full py-2",
   slim: "w-full rounded-full py-1",
-  big: "w-full rounded-3xl h-1/5 text-2xl my-3",
+  big: "w-full rounded-3xl h-20 text-2xl my-3",
   "small-rectangle-brown": "px-4 py-2 rounded-lg bg-brown-700 text-white",
   "small-rectangle-yellow": "px-4 py-2 rounded-lg text-black",
 };
