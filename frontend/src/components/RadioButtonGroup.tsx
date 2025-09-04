@@ -13,7 +13,7 @@ const RadioButtonGroup: React.FC<RadioButtonGroupProps> = ({
   onChange,
   className = "",
 }) => (
-  <div className={`w-4/5 flex gap-6 justify-center mb-4 ${className}`}>
+  <div className={`w-4/5 flex gap-6 mb-4 ${className}`}>
     {options.map((option) => (
       <button
         key={option}

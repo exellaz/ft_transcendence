@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Button from "../components/Button";
 import Header from "../components/Header";
 import PopupCard from "../components/PopupCard";
 import RadioButtonGroup from "../components/RadioButtonGroup";
@@ -15,7 +14,7 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const [camera, setCamera] = useState("Static");
 
   return (
-    <PopupCard open={open} onClose={onClose}>
+    <PopupCard size="large" open={open} onClose={onClose}>
       <Header>Settings</Header>
       <Subheader>Language</Subheader>
       <RadioButtonGroup
