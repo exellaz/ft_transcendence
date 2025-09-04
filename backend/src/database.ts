@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+
 const db = new Database('rooms.db');
 
 // Create table if not exists
