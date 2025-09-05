@@ -13,6 +13,8 @@ import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
 import BlockListPopup from "../popups/BlockListPopup";
 
+import avatar from "../assets/yellow-ghost.png";
+
 const MainMenuView: React.FC = () => {
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
@@ -29,6 +31,7 @@ const MainMenuView: React.FC = () => {
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
         setShowBlockList={setShowBlockList}
+        src={avatar}
       />
       <Card>
         <Logo />
@@ -55,6 +58,7 @@ const MainMenuView: React.FC = () => {
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
+        src={avatar}
       />
       <TournamentStatsPopup
         open={showTournamentStats}

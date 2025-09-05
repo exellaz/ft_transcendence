@@ -1,13 +1,13 @@
 import React from "react";
 
-interface ProfileIconProps {
+interface AvatarProps {
   src: string;
   alt?: string;
   size?: number;
 }
 
 // rounded-full makes the media fill its container completely while preserving the aspect ratio
-const ProfileIcon: React.FC<ProfileIconProps> = ({ src, alt = "Profile", size = 80 }) => (
+const Avatar: React.FC<AvatarProps> = ({ src, alt = "Avatar", size = 80 }) => (
   <div
     className="rounded-full bg-white border-4 border-card-blue"
     style={{ width: size, height: size, overflow: "hidden" }}
@@ -20,4 +20,4 @@ const ProfileIcon: React.FC<ProfileIconProps> = ({ src, alt = "Profile", size = 
   </div>
 );
 
-export default ProfileIcon;
+export default Avatar;

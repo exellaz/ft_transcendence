@@ -2,15 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "./Button";
-import ProfileIcon from "./ProfileIcon";
-
-import avatar from "../assets/yellow-ghost.png";
+import Avatar from "./Avatar";
 
 interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
   setShowBlockList: (open: boolean) => void;
+  src: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -18,6 +17,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowFriends,
   setShowTournamentStats,
   setShowBlockList,
+  src,
 }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +27,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       onClick: () => {
         setOpen(false);
         setShowBasicInfo(true);
-        console.log(showBasicInfo);
       },
     },
     {
@@ -65,7 +64,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         onClick={() => setOpen(!open)}
         className="flex items-center rounded-full px-4 shadow"
       >
-        <ProfileIcon src={avatar} size={80} />
+        <Avatar src={src} size={80} />
         <span className="w-24 mx-2 font-bold text-lg text-card-blue overflow-hidden">
           Username
         </span>

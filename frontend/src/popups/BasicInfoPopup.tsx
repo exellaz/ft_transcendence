@@ -1,33 +1,33 @@
-import React, { useState } from "react";
+import React from "react";
+
+import Avatar from "../components/Avatar";
+import Button from "../components/Button";
 import Header from "../components/Header";
+import Input from "../components/Input";
+import Status from "../components/Status";
 import PopupCard from "../components/PopupCard";
-import RadioButtonGroup from "../components/RadioButtonGroup";
-import Subheader from "../components/Subheader";
 
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  src: string;
 }
 
-const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
-  const [language, setLanguage] = useState("English");
-  const [camera, setCamera] = useState("Static");
-
+const BlockListPopup: React.FC<PopupProps> = ({ open, onClose, src }) => {
   return (
-    <PopupCard size="large" open={open} onClose={onClose}>
+    <PopupCard open={open} onClose={onClose}>
       <Header>Basic Info</Header>
-      <Subheader>Language</Subheader>
-      <RadioButtonGroup
-        options={["English", "中文", "Bahasa Melayu"]}
-        value={language}
-        onChange={setLanguage}
-      />
-      <Subheader>In-Game Camera Tracking</Subheader>
-      <RadioButtonGroup
-        options={["Static", "Dynamic"]}
-        value={camera}
-        onChange={setCamera}
-      />
+      <div className="flex flex-col items-center p-4">
+        <p className="text-white">ID: 1234567</p>
+        <p className="text-white">Joined on: 5/9/25</p>
+      </div>
+      <div className="flex">
+        <Avatar src={src} size={150} />
+        <Button>Update Avatar</Button>
+      </div>
+      <Input className="w-32" placeholder="Username" />
+      <Status text="Username is available" color="green" />
+      <Input placeholder="Email" type="email" />
     </PopupCard>
   );
 };
