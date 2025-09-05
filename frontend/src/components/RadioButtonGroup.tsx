@@ -22,7 +22,7 @@ const RadioButtonGroup: React.FC<RadioButtonGroupProps> = ({
         className={`flex-1 py-4 my-6 rounded font-mono font-bold text-2xl
           ${value === option
             ? "bg-yellow-400 text-black"
-            : "bg-[#5a4a24] text-white"}
+            : "bg-brown text-white"}
         `}
       >
         {option}

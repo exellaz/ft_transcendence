@@ -9,8 +9,8 @@ interface AvatarProps {
 // rounded-full makes the media fill its container completely while preserving the aspect ratio
 const Avatar: React.FC<AvatarProps> = ({ src, alt = "Avatar", size = 80 }) => (
   <div
-    className="rounded-full bg-white border-4 border-card-blue"
-    style={{ width: size, height: size, overflow: "hidden" }}
+    className="rounded-full bg-white border-4 border-card-blue overflow-hidden"
+    style={{ width: size, height: size }}
   >
     <img
       src={src}
