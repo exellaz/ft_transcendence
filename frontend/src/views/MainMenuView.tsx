@@ -9,6 +9,7 @@ import ProfileDropdown from "../components/ProfileDropdown";
 
 import SettingsPopup from "../popups/SettingsPopup";
 import JoinTournamentPopup from "../popups/JoinTournamentPopup";
+import ProfilePopup from "../popups/ProfilePopup";
 import BasicInfoPopup from "../popups/BasicInfoPopup";
 import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
@@ -19,6 +20,7 @@ import avatar from "../assets/yellow-ghost.png";
 const MainMenuView: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showJoinTournament, setShowJoinTournament] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
@@ -28,6 +30,7 @@ const MainMenuView: React.FC = () => {
   return (
     <Background>
       <ProfileDropdown
+        setShowProfile={setShowProfile}
         setShowBasicInfo={setShowBasicInfo}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
@@ -53,6 +56,10 @@ const MainMenuView: React.FC = () => {
       <JoinTournamentPopup
         open={showJoinTournament}
         onClose={() => setShowJoinTournament(false)}
+      />
+      <ProfilePopup
+        open={showProfile}
+        onClose={() => setShowProfile(false)}
       />
       <BasicInfoPopup
         open={showBasicInfo}

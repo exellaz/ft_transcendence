@@ -5,6 +5,7 @@ import Button from "./Button";
 import Avatar from "./Avatar";
 
 interface ProfileDropdownProps {
+  setShowProfile: (open: boolean) => void;
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
@@ -13,6 +14,7 @@ interface ProfileDropdownProps {
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  setShowProfile,
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
@@ -22,6 +24,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const menuItems = [
+    {
+      label: "PROFILE",
+      onClick: () => {
+        setOpen(false);
+        setShowProfile(true);
+      },
+    },
     {
       label: "BASIC INFO",
       onClick: () => {
