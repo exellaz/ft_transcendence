@@ -9,7 +9,7 @@ interface PopupProps {
   onClose: () => void;
 }
 
-const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const [language, setLanguage] = useState("English");
   const [camera, setCamera] = useState("Static");
 
@@ -32,4 +32,4 @@ const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   );
 };
 
-export default BlockListPopup;
+export default TournamentStatsPopup;

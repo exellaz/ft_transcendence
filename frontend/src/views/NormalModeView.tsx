@@ -8,15 +8,28 @@ import Logo from "../components/Logo";
 import ProfileDropdown from "../components/ProfileDropdown";
 
 import CreateGamePopup from "../popups/CreateGamePopup";
+import BasicInfoPopup from "../popups/BasicInfoPopup";
+import TournamentStatsPopup from "../popups/TournamentStatsPopup";
+import FriendsPopup from "../popups/FriendsPopup";
+import BlockListPopup from "../popups/BlockListPopup";
 
 const MainMenuView: React.FC = () => {
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
+  const [showBasicInfo, setShowBasicInfo] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
+  const [showTournamentStats, setShowTournamentStats] = useState(false);
+  const [showBlockList, setShowBlockList] = useState(false);
   const navigate = useNavigate();
 
   return (
     <Background>
-      <ProfileDropdown />
+      <ProfileDropdown
+        setShowBasicInfo={setShowBasicInfo}
+        setShowTournamentStats={setShowTournamentStats}
+        setShowFriends={setShowFriends}
+        setShowBlockList={setShowBlockList}
+      />
       <Card>
         <Logo />
         <Button variant="big" onClick={() => setShowCreateSinglesGame(true)}>
@@ -38,6 +51,19 @@ const MainMenuView: React.FC = () => {
         gameType="doubles"
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
+      />
+      <BasicInfoPopup
+        open={showBasicInfo}
+        onClose={() => setShowBasicInfo(false)}
+      />
+      <TournamentStatsPopup
+        open={showTournamentStats}
+        onClose={() => setShowTournamentStats(false)}
+      />
+      <FriendsPopup open={showFriends} onClose={() => setShowFriends(false)} />
+      <BlockListPopup
+        open={showBlockList}
+        onClose={() => setShowBlockList(false)}
       />
     </Background>
   );

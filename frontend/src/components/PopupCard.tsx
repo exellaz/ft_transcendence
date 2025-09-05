@@ -18,7 +18,7 @@ const PopupCard: React.FC<PopupCardProps> = ({
 }) => {
   let sizeClass = "";
   if (size === "large") sizeClass = "w-3/5";
-  else if (size === "small") sizeClass = "w-1/5";
+  else if (size === "small") sizeClass = "w-1/4";
   else sizeClass = "w-full max-w-lg";
 
   return (

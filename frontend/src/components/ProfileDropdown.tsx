@@ -6,32 +6,49 @@ import ProfileIcon from "./ProfileIcon";
 
 import avatar from "../assets/yellow-ghost.png";
 
-const ProfileDropdown: React.FC = () => {
+interface ProfileDropdownProps {
+  setShowBasicInfo: (open: boolean) => void;
+  setShowFriends: (open: boolean) => void;
+  setShowTournamentStats: (open: boolean) => void;
+  setShowBlockList: (open: boolean) => void;
+}
+
+const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  setShowBasicInfo,
+  setShowFriends,
+  setShowTournamentStats,
+  setShowBlockList,
+}) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const menuItems = [
     {
       label: "BASIC INFO",
       onClick: () => {
-        /* handle basic info */
+        setOpen(false);
+        setShowBasicInfo(true);
+        console.log(showBasicInfo);
       },
     },
     {
       label: "TOURNAMENT STATS",
       onClick: () => {
-        /* handle stats */
+        setOpen(false);
+        setShowTournamentStats(true);
       },
     },
     {
       label: "FRIENDS",
       onClick: () => {
-        /* handle friends */
+        setOpen(false);
+        setShowFriends(true);
       },
     },
     {
       label: "BLOCK LIST",
       onClick: () => {
-        /* handle block list */
+        setOpen(false);
+        setShowBlockList(true);
       },
     },
     {

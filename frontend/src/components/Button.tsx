@@ -10,15 +10,15 @@ interface ButtonProps {
 
 const variantClasses: Record<string, string> = {
   default:
-    "w-full rounded-full py-2 bg-yellow-400 hover:bg-yellow-500 transition-colors",
+    "w-full rounded-full py-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white transition-colors",
   defaultRed:
-    "w-full rounded-full py-2 bg-red-500 text-white hover:bg-red-600 transition-colors",
-  big: "w-full rounded-3xl h-20 text-2xl my-3 bg-yellow-400 hover:bg-yellow-500 transition-colors",
+    "w-full rounded-full py-2 bg-red-500 text-white hover:bg-red-600 hover:text-black transition-colors",
+  big: "w-full rounded-3xl h-20 text-2xl my-3 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white transition-colors",
   green:
-    "w-32 rounded bg-green-500 hover:bg-green-600 text-black py-2 transition-colors",
-  red: "w-32 rounded bg-red-500 hover:bg-red-600 text-white py-2 transition-colors",
+    "w-32 rounded bg-green-500 hover:bg-green-600 text-black hover:text-white py-2 transition-colors",
+  red: "w-32 rounded bg-red-500 hover:bg-red-600 text-black hover:text-white py-2 transition-colors",
   dropdown:
-    "bg-white border border-gray-400 text-card-blue py-2 rounded shadow font-bold w-48 hover:bg-gray-100 hover:border-card-blue transition-colors",
+    "bg-white border border-gray-400 text-card-blue py-2 rounded shadow font-bold w-48 hover:bg-gray-100 hover:border-card-blue hover:text-black transition-colors",
 };
 
 const Button: React.FC<ButtonProps> = ({
