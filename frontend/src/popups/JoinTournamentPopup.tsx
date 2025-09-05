@@ -8,23 +8,19 @@ import Text from "../components/Text";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  gameType: "singles" | "doubles";
   redirectPath?: string;
 }
 
-const CreateGamePopup: React.FC<PopupProps> = ({
+const JoinTournamentPopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  gameType,
-  redirectPath = "/normal",
+  redirectPath ="/main-menu",
 }) => {
   const navigate = useNavigate();
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
-      <Text className="text-yellow-400">
-        Create a {gameType} game?
-      </Text>
+      <Text className="text-yellow-400">Join a tournament?</Text>
       <div className="flex gap-3 justify-center mb-4">
         <Button variant="green" 
         onClick={() => {
@@ -41,4 +37,4 @@ const CreateGamePopup: React.FC<PopupProps> = ({
   );
 };
 
-export default CreateGamePopup;
+export default JoinTournamentPopup;
