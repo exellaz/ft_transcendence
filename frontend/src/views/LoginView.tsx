@@ -15,7 +15,7 @@ const LoginView: React.FC = () => (
       <Input placeholder="Password" type="password" />
       <Button>LOGIN</Button>
       <Divider />
-      <Button color="bg-red-500 text-white">GOOGLE</Button>
+      <Button variant="defaultRed">GOOGLE</Button>
       <TextButton>Don’t have an account? Sign up</TextButton>
     </Card>
   </Background>
