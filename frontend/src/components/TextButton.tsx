@@ -9,7 +9,7 @@ interface TextButtonProps {
 const TextButton: React.FC<TextButtonProps> = ({ children, onClick, className = "" }) => (
   <button
     onClick={onClick}
-    className={`text-yellow-300 text-sm p-6 ${className}`}
+    className={`text-yellow-300 hover:text-yellow-400 hover:underline transition-colors text-sm p-6 ${className}`}
   >
     {children}
   </button>

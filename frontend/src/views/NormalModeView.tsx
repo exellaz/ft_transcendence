@@ -5,6 +5,7 @@ import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 import CreateGamePopup from "../popups/CreateGamePopup";
 
@@ -15,6 +16,7 @@ const MainMenuView: React.FC = () => {
 
   return (
     <Background>
+      <ProfileDropdown />
       <Card>
         <Logo />
         <Button variant="big" onClick={() => setShowCreateSinglesGame(true)}>

@@ -1,4 +1,5 @@
 import React from "react";
+
 import grass from "../assets/grass.png";
 
 interface BackgroundProps {

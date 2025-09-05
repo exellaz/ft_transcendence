@@ -5,6 +5,7 @@ import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
+import ProfileDropdown from "../components/ProfileDropdown";
 
 import SettingsPopup from "../popups/SettingsPopup";
 import JoinTournamentPopup from "../popups/JoinTournamentPopup";
@@ -16,6 +17,7 @@ const MainMenuView: React.FC = () => {
 
   return (
     <Background>
+      <ProfileDropdown />
       <Card>
         <Logo />
         <Button variant="big" onClick={() => setShowJoinTournament(true)}>

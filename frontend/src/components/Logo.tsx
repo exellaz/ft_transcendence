@@ -1,4 +1,5 @@
 import React from "react";
+
 import pongLogo from "../assets/pong-logo.png";
 
 interface LogoProps {
