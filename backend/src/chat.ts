@@ -1,5 +1,6 @@
-// ---- Chat properties ----
-//using websocket as a transport protocol and on top of that, a custom JSON message protocol
+/**
+ * @brief Represents a chat message in the game.
+ */
 export interface ChatMessage {
 	type: "chat";
 	from: string;
@@ -7,12 +8,17 @@ export interface ChatMessage {
 	time: number;
 }
 
-// ---- Create Chat Message ----
+/**
+ * @brief Creates a new chat message
+ * @param from - The sender of the message
+ * @param text - The content of the message
+ * @returns A ChatMessage object (a message with info about sender and timestamp)
+*/
 export function createChatMessage(from: string, text: string): ChatMessage {
 	return {
-	  type: "chat",
-	  from,
-	  text,
-	  time: Date.now(),
+		type: "chat",
+		from,
+		text,
+		time: Date.now(),
 	};
-  }
+}
