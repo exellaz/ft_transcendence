@@ -23,7 +23,7 @@ const PopupCard: React.FC<PopupCardProps> = ({
 
   return (
     <Popup open={open} onClose={onClose}>
-      <div className={`bg-card-blue border-yellow-600 shadow-2xl border-10 min-w-[380px] min-h-[520px] p-10 rounded-3xl flex flex-col items-center ${sizeClass} ${className}`}>
+      <div className={`bg-card-blue border-yellow-600 shadow-2xl border-10 min-w-[380px] p-10 rounded-3xl flex flex-col items-center ${sizeClass} ${className}`}>
         <div className="w-full flex justify-end">
           <button
             onClick={onClose}

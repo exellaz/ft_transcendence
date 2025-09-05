@@ -1,29 +1,41 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
+
 import CreateGamePopup from "../popups/CreateGamePopup";
 
 const MainMenuView: React.FC = () => {
-  const [showCreateGame, setShowCreateGame] = useState(false);
+  const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
+  const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
+  const navigate = useNavigate();
+
   return (
     <Background>
       <Card>
         <Logo />
-        <Button variant="big" onClick={() => setShowCreateGame(true)}>
+        <Button variant="big" onClick={() => setShowCreateSinglesGame(true)}>
           SINGLES
         </Button>
-        <Button variant="big" onClick={() => setShowCreateGame(true)}>
+        <Button variant="big" onClick={() => setShowCreateDoublesGame(true)}>
           DOUBLES
         </Button>
-        <Button variant="big">
+        <Button variant="big" onClick={() => navigate("/main-menu")}>
           BACK
         </Button>
       </Card>
       <CreateGamePopup
-        open={showCreateGame}
-        onClose={() => setShowCreateGame(false)}
+        gameType="singles"
+        open={showCreateSinglesGame}
+        onClose={() => setShowCreateSinglesGame(false)}
+      />
+      <CreateGamePopup
+        gameType="doubles"
+        open={showCreateDoublesGame}
+        onClose={() => setShowCreateDoublesGame(false)}
       />
     </Background>
   );
