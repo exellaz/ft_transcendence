@@ -5,7 +5,6 @@ import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Divider from "../components/Divider";
-import Icon from "../components/Icon";
 import Logo from "../components/Logo";
 import Input from "../components/Input";
 import TextButton from "../components/TextButton";
@@ -23,7 +22,7 @@ const LoginView: React.FC = () => {
         <Divider />
         <Button variant="defaultWhite" className="flex justify-center items-center gap-2">
           <div>
-            <Icon src="/assets/google.png" alt="google.png" className="w-5" />
+            <img src="/assets/google.png" alt="google.png" className="w-5" />
           </div>
           CONTINUE WITH GOOGLE
         </Button>

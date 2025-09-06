@@ -74,7 +74,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="flex items-center rounded-full px-4 shadow"
       >
         <Avatar src={user?.avatarUrl} size={80} />
-        <span className="w-24 mx-2 font-bold text-lg text-card-blue overflow-hidden">
+        <span className="w-24 mx-2 font-bold text-lg hover:text-white text-card-blue overflow-hidden">
           {user?.username || "Username"}
         </span>
       </Button>
