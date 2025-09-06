@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-// react-router-dom is a library that lets you do client-side routing
-// (switching pages without a full reload).
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginView from "./views/LoginView";
 import MainMenuView from "./views/MainMenuView";

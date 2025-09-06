@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
 import Background from "../components/Background";
 import Button from "../components/Button";
@@ -14,8 +15,6 @@ import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
 import BlockListPopup from "../popups/BlockListPopup";
 
-import avatar from "../assets/yellow-ghost.png";
-
 const MainMenuView: React.FC = () => {
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
@@ -25,6 +24,7 @@ const MainMenuView: React.FC = () => {
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showBlockList, setShowBlockList] = useState(false);
   const navigate = useNavigate();
+  const { user } = useUser();
 
   return (
     <Background>
@@ -34,7 +34,7 @@ const MainMenuView: React.FC = () => {
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
         setShowBlockList={setShowBlockList}
-        src={avatar}
+        src={user?.avatarUrl}
       />
       <Card>
         <Logo />
@@ -58,11 +58,15 @@ const MainMenuView: React.FC = () => {
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
       />
-      <ProfilePopup open={showProfile} onClose={() => setShowProfile(false)} />
+      <ProfilePopup
+        open={showProfile}
+        onClose={() => setShowProfile(false)}
+        src={user?.avatarUrl}
+      />
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
-        src={avatar}
+        src={user?.avatarUrl}
       />
       <TournamentStatsPopup
         open={showTournamentStats}

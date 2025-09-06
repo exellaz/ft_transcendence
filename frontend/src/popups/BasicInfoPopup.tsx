@@ -10,7 +10,7 @@ import PopupCard from "../components/PopupCard";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  src: string;
+  src?: string;
 }
 
 const BlockListPopup: React.FC<PopupProps> = ({ open, onClose, src }) => {

@@ -10,7 +10,7 @@ interface ProfileDropdownProps {
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
   setShowBlockList: (open: boolean) => void;
-  src: string;
+  src?: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({

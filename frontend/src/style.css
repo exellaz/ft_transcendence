@@ -3,5 +3,9 @@
 @theme {
   --color-card-blue: #081334;
   --color-input-gray: #1F2B4F;
-  --color-brown: #5a4a24;
+  --color-brown: #5A4A24;
+
+  --color-gold: #FDD602;
+  --color-silver: #8EBAC5;
+  --color-bronze: #EA9B58;
 }
