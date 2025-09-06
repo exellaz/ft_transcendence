@@ -18,16 +18,29 @@ async function fetchMatches(limit = 10) {
   }
 }
 
-async function createRoom(teamSize: number, roomName: string) { //input id
+async function createRoom(teamSize: number, roomName: string, leaderId: string) {
   const res = await fetch(`${API_URL}/create-room`, {
 	method: "POST",
 	headers: { "Content-Type": "application/json" },
-	body: JSON.stringify({ teamSize, name: roomName }),
+	body: JSON.stringify({ teamSize, name: roomName, leaderId }),
   });
   return await res.json();
 }
 
-function showLobby() {
+async function detemineSide(roomId: string): Promise<"left" | "right"> {
+	const rooms = await fetchRooms();
+	const room = rooms.find((r: any) => r.id === roomId);
+    if (!room) return "left";
+    return room.leftPlayers <= room.rightPlayers ? "left" : "right";
+}
+
+export function showLobby() {
+	let clientId = sessionStorage.getItem("pongClientId");
+	if (!clientId) {
+		clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+		sessionStorage.setItem("pongClientId", clientId);
+	}
+
 	const lobbyDiv = document.createElement("div");
 	lobbyDiv.id = "lobby";
 	document.body.appendChild(lobbyDiv);
@@ -53,8 +66,9 @@ function showLobby() {
 				break;
 			alert("Room name is required!");
 		}
-		const room = await createRoom(teamSize, roomName);
-		startGame(room.roomId);
+		console.log(`check clientid in create room: ${clientId}`); ////debug
+		const room = await createRoom(teamSize, roomName, clientId);
+		startGame(room.roomId, room.leaderId);
 	};
 	lobbyDiv.appendChild(createBtn);
 
@@ -77,7 +91,7 @@ function showLobby() {
 
 				const joinBtn = document.createElement("button");
 				joinBtn.textContent = "Join";
-				joinBtn.onclick = () => startGame(room.id); //join using room id
+				joinBtn.onclick = () => startGame(room.id, room.leaderId); //join using room id
 				item.appendChild(joinBtn);
 
 				listDiv.appendChild(item);
@@ -143,7 +157,7 @@ function showLobby() {
     refreshMatches();
 }
 
-async function startGame(roomId: string) {
+async function startGame(roomId: string, leaderId: string) {
 	document.body.innerHTML = ""; // clear lobby UI
 
 	// get or generate client ID
@@ -152,8 +166,165 @@ async function startGame(roomId: string) {
 		clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
 		sessionStorage.setItem("pongClientId", clientId);
 	}
+	console.log(`start game client id: ${clientId}`); ////debug
+	console.log(`leaderId in start game: ${leaderId}`); ////debug
 
-	startConnection(roomId); // call your existing connection.ts
+	// Create room lobby container
+	const lobbyDiv = document.createElement("div");
+	lobbyDiv.id = "roomLobby";
+	document.body.appendChild(lobbyDiv);
+
+	const statusText = document.createElement("h2");
+	statusText.id = "lobbyStatus";
+	statusText.textContent = "Connecting to room...";
+	lobbyDiv.appendChild(statusText);
+
+	//chatbox display
+	const chatBox = document.createElement("div");
+	chatBox.id = "chatBox";
+	chatBox.style.width = "600px";
+	chatBox.style.height = "200px";
+	chatBox.style.overflowY = "auto";
+	chatBox.style.border = "2px solid gray";
+	chatBox.style.marginTop = "10px";
+	chatBox.style.padding = "5px";
+	document.body.appendChild(chatBox);
+
+	//chat input
+	const chatInput = document.createElement("input");
+	chatInput.id = "chatInput";
+	chatInput.type = "text";
+	chatInput.placeholder = "Type a message and press Enter...";
+	chatInput.style.width = "600px";
+	chatInput.style.marginTop = "5px";
+	document.body.appendChild(chatInput);
+
+	// Add buttons
+	const btnSwitch = document.createElement("button");
+	btnSwitch.textContent = "Switch Side";
+	lobbyDiv.appendChild(btnSwitch);
+
+	const btnReady = document.createElement("button");
+	const btnStart = document.createElement("button");
+	btnStart.textContent = "Start Game";
+	btnStart.style.display = "none"; // only leader can start
+	btnStart.disabled = true; // disabled until all ready
+	lobbyDiv.appendChild(btnStart);
+
+	 // Leader check
+    let role = "spectator";
+    let isLeader = clientId === leaderId;
+    let ready = false;
+    let gameStarted = false;
+
+    if (!isLeader) {
+        btnReady.textContent = "Ready";
+        lobbyDiv.appendChild(btnReady);
+    }
+
+	// --- Start WebSocket ---
+	const chooseSide = await detemineSide(roomId);
+	const socket = new WebSocket(
+		`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`
+	);
+
+	socket.onopen = () => {
+		console.log("Connected to room lobby");
+	};
+
+	socket.onmessage = (event) => {
+		const data = JSON.parse(event.data);
+
+		// Update leaderId from backend
+    	if (data.leaderId) leaderId = data.leaderId;
+    	isLeader = clientId === leaderId;
+
+		btnStart.style.display = isLeader ? "inline-block" : "none";
+
+		// Role assignment / update
+		if (data.type === "role" || data.type === "roleUpdate") {
+			role = data.newRole || data.role;
+
+			if (role === "spectator") {
+				btnSwitch.style.display = "none";
+				btnReady.style.display = "none";
+			}
+
+			// Update switch button label to show current side
+			btnSwitch.textContent = ready
+				? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
+				: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
+
+			statusText.textContent = `Room: ${roomId} | Role: ${role} | Leader: ${isLeader ? "Yes" : "No"}`;
+			console.log(`client Id: ${clientId}, leaderId: ${leaderId}`); ////debug
+		}
+
+        // state update
+        if (data.type === "state") {
+            const leftCount = data.gameState.teams.left.length;
+            const rightCount = data.gameState.teams.right.length;
+            statusText.textContent = `Room ${roomId} | Left: ${leftCount}, Right: ${rightCount}`;
+
+			//only update if canStart changed
+			const canStart = data.canStart ?? false;
+			btnStart.disabled = canStart;
+
+			// switch to game view if countdown started
+            if (!gameStarted && data.gameState.countdown > 0) {
+                gameStarted = true;
+                document.body.innerHTML = ""; // clear lobby
+                startConnection(roomId);
+            }
+        }
+
+		if (data.type === "chat") {
+				const chatBox = document.getElementById("chatBox")!;
+				const msgDiv = document.createElement("div");
+				const time = new Date(data.time).toLocaleTimeString();
+				msgDiv.textContent = `[${time}] ${data.from}: ${data.text}`;
+				chatBox.appendChild(msgDiv);
+				chatBox.scrollTop = chatBox.scrollHeight;
+		}
+
+		const chatInput = document.getElementById("chatInput") as HTMLInputElement;
+		chatInput.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && chatInput.value.trim() !== "") {
+				socket.send(JSON.stringify({ type: "chat", text: chatInput.value.trim() }));
+				chatInput.value = "";
+			}
+		});
+	};
+
+	// Button handlers
+	btnSwitch.onclick = () => {
+		if (ready) return; // cannot switch when ready
+
+		const newSide = role.startsWith("left") ? "right" : "left";
+		socket.send(JSON.stringify({ type: "switchSide", side: newSide }));
+	};
+
+	btnReady.onclick = () => {
+    	// Leader does not need to click ready
+    	if (isLeader)
+			return;
+
+		ready = !ready;
+		socket.send(JSON.stringify({ type: "ready", ready }));
+		btnReady.textContent = ready ? "Unready" : "Ready";
+
+		// Update switch button label to show locked when ready
+		btnSwitch.textContent = ready
+			? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
+			: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
+	};
+
+	btnStart.onclick = () => {
+		if (!isLeader) {
+			alert("Only the leader can start the game!");
+			return;
+		}
+		socket.send(JSON.stringify({ type: "start" }));
+	};
 }
 
 showLobby();

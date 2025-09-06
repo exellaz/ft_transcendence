@@ -39,6 +39,7 @@ export interface Room {
     readyStatus: Map<string, boolean>; // key: client id, value: ready status
     canStart: boolean; // Flag to indicate if the game can start
     startRequestedBy?: string; // clientId of who requested the game start
+	leaderId: string; // clientId of the room leader
 }
 
 /**
@@ -68,7 +69,7 @@ export function generateRoomId(length = 6): string {
  * @param height room height (default: 400)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, width = 800, height = 400): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string, width = 800, height = 400): Room {
 	const room: Room = {
 		id,
 		name,
@@ -91,6 +92,7 @@ export function createRoom(id: string, name: string, teamSize = 1, width = 800, 
 		game: new Game(),
         readyStatus: new Map(),
         canStart: false,
+		leaderId: leaderId,
 	};
 	return room;
 }
@@ -125,7 +127,6 @@ export function startRoomLoop(room: Room) {
 export function roomStartGame(room: Room) {
 	if (!room.gameStarted && !room.gameState.countdown) {
 		room.startTime = new Date();
-		console.log(`Countdown started for room ${room.id}`);
 	}
 }
 

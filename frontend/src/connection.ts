@@ -1,3 +1,5 @@
+import { showLobby } from "./main.ts";
+
 //declare these two custom properties
 declare global {
 	interface Window {
@@ -17,6 +19,16 @@ export function startConnection(roomName: string) {
 	let clientId = sessionStorage.getItem("pongClientId");
 	let gameOver = false; // game over flag
 	let winner: string | null = null; // winner player
+
+	//prevent accidental refresh/close while in game
+	const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+		if (!gameOver) {
+			e.preventDefault();
+			e.returnValue = ""; // show default broswer confirm message
+			return "";
+		}
+	};
+	window.addEventListener("beforeunload", beforeUnloadHandler);
 
 	// get the client ID from session storage or create a new one
 	if (!clientId) {
@@ -56,6 +68,7 @@ export function startConnection(roomName: string) {
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner) {
 					gameOver = true;
+					cleanUp();
 					winner = data.gameState.result.winner;
 				}
 
@@ -105,6 +118,10 @@ export function startConnection(roomName: string) {
 		if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
 		if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
 	}, 1000 / 60);
+
+	function cleanUp() {
+		window.removeEventListener("beforeunload", beforeUnloadHandler);
+	}
 }
 
 /////////////////////////////////// EXTERNAL FUNCTIONS ///////////////////////////////////
@@ -124,6 +141,22 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		ctx.fillStyle = "green";
 		ctx.textAlign = "center";
 		ctx.fillText(`Player ${winner} wins!`, canvas.width / 2, canvas.height / 2);
+
+		//back to lobby
+		if (!document.getElementById("backLobbyBtn")) {
+			const btn = document.createElement("button");
+			btn.id = "backLobbyBtn";
+			btn.textContent = "Back to Lobby";
+			btn.style.display = "block";
+			btn.style.margin = "20px auto";
+			btn.style.fontSize = "18px";
+			document.body.appendChild(btn);
+
+			btn.onclick = () => {
+				document.body.innerHTML = "";
+				showLobby();
+			};
+		}
 		return;
 	}
 
@@ -233,3 +266,4 @@ function createUI() {
 	chatInput.style.marginTop = "5px";
 	document.body.appendChild(chatInput);
 }
+

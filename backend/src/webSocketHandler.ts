@@ -39,27 +39,17 @@ export class WebSocketHandler implements IWebSocketHandler {
 		//assign the role if not exist
 		if (!role) {
 			// if player request a side
-            if (preferredSide === "left" && room.gameState.teams.left.length < room.teamSize) {
-                role = `left_player${room.gameState.teams.left.length + 1}`;
-                room.gameState.teams.left.push(role);
-            }
-            else if (preferredSide === "right" && room.gameState.teams.right.length < room.teamSize) {
-                role = `right_player${room.gameState.teams.right.length + 1}`;
-                room.gameState.teams.right.push(role);
-            }
-            else {
-                if (room.gameState.teams.left.length <= room.teamSize) {
-                    role = `left_player${room.gameState.teams.left.length + 1}`;
-                    room.gameState.teams.left.push(role);
-                }
-                else if (room.gameState.teams.right.length <= room.teamSize) {
-                    role = `right_player${room.gameState.teams.right.length + 1}`;
-                    room.gameState.teams.right.push(role);
-                }
-                else {
-                    role = "spectator"; // default to spectator if no player slots available
-                }
-            }
+			if (preferredSide === "left" && room.gameState.teams.left.length < room.teamSize) {
+				role = `left_player${room.gameState.teams.left.length + 1}`;
+				room.gameState.teams.left.push(role);
+			}
+			else if (preferredSide === "right" && room.gameState.teams.right.length < room.teamSize) {
+				role = `right_player${room.gameState.teams.right.length + 1}`;
+				room.gameState.teams.right.push(role);
+			}
+			else {
+				role = "spectator";
+			}
 
 			// assign the role to the client
 			room.clientRoles.set(clientId, role);
@@ -71,13 +61,14 @@ export class WebSocketHandler implements IWebSocketHandler {
 				room.gameState.score.right = 0;
 			}
 
-			//player join the game (chat)
 			if (socket) {
 				// send initial state immediately
 				socket.send(JSON.stringify({
 					type: "state",
 					gameState: room.gameState,
-					isSpectator: role === "spectator"
+					isSpectator: role === "spectator",
+					leaderId: room.leaderId,
+					canStart: room.canStart || false
 				}));
 
 				console.log(`Player (${role}) [ ${clientId} ] joined room ${room.name} (${roomId})`);
@@ -105,6 +96,13 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 					console.log(`Player (${role}) [ ${clientId} ] reconnected as ${role} in room ${room.name} (${roomId})`);
 					this.broadcast(room, createChatMessage("system", `${role} reconnect the game.`));
+
+					this.broadcast(room, {
+            		    type: "state",
+            		    gameState: room.gameState,
+            		    leaderId: room.leaderId,
+            		    canStart: room.canStart
+            		});
 				}
 			}
 		}
@@ -122,6 +120,17 @@ export class WebSocketHandler implements IWebSocketHandler {
 	*/
 	handleMsgOrEvent(socket: any, room: any, role:string, raw:string) {
 		const msg = JSON.parse(raw);
+
+		const broadcastState = (room: any) => {
+			this.updateCanStart(room);
+			console.log(`check can start: ${room.canStart}`); //debug
+			this.broadcast(room, {
+				type: "state",
+				gameState: room.gameState,
+				leaderId: room.leaderId,
+				canStart: room.canStart || false
+			});
+		};
 
 		if (msg.type === "move") {
 			const dy = msg.dy;
@@ -144,83 +153,163 @@ export class WebSocketHandler implements IWebSocketHandler {
 		else if (msg.type === "chat") {
 			this.broadcast(room, createChatMessage(role ?? "spectator", String(msg.text)));
 		}
-        else if (msg.type === "switchSide") {
-            if (room.gameState.countdown > 0) {
-                socket.send(JSON.stringify({ type: "error", text: "Cannot switch side during countdown" }));
-                return;
-            }
+		else if (msg.type === "switchSide") {
+			const clientId = room.sockets.get(socket);
+			const currentRole = room.clientRoles.get(clientId);
 
-            this.handleSwitchSide(room, socket, msg.side as "left" | "right");
-        }
-        else if (msg.type === "ready") {
-            //mark player as ready
-            room.readyStatus.set(role, true);
-            this.broadcast(room, createChatMessage("system", `${role} is ready.`));
+			//ignore if spectator or no role
+			if (!currentRole || currentRole === "spectator")
+				return;
 
-            //check if all player are ready
-            const leftReady = room.gameState.teams.left.every((r: string) => room.readyStatus.get(r));
-            const rightReady = room.gameState.teams.right.every((r: string) => room.readyStatus.get(r));
+			//if countdown started, cannot switch side
+			if (room.gameState.countdown > 0) {
+				socket.send(JSON.stringify({ type: "error", text: "Cannot switch side during countdown" }));
+				console.log(`Player (${role}) fail to switch side during countdown in room ${room.name} (${room.id})`);
+				return;
+			}
 
-            if (leftReady && rightReady) {
-                room.canStart = true;
-                this.broadcast(room, createChatMessage("system", `All players are ready. leader can start the game`));
-            }
-        }
-        else if (msg.type === "start") {
-            if (!room.canStart) {
-                socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
-                return;
-            }
+			if (room.readyStatus.get(currentRole)) {
+				socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
+				console.log(`Player (${role}) fail to switch side when ready in room ${room.name} (${room.id})`);
+				return;
+			}
 
-            //only leader can start the game
-            const leader = room.gameState.teams.left[0]; //left team first player is the leader
-            if (role !== leader) {
-                socket.send(JSON.stringify({ type: "error", text: "Only the leader can start the game" }));
-                return;
-            }
+			//assign new role after switch side
+			const newRole = this.handleSwitchSide(room, socket, msg.side as "left" | "right");
+			if (newRole)
+				role = newRole;
 
-            room.gameState.countdown = 5 * 60; //? 5 seconds countdown
-            room.startRequestedBy = role;
-            room.gameStarted = false;
-            room.gamePaused = false;
-            this.broadcast(room, createChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
-        }
+			broadcastState(room);
+		}
+		else if (msg.type === "ready") {
+			const clientId = room.sockets.get(socket);
+			const currentRole = room.clientRoles.get(clientId);
+
+			// Ignore if spectator, no role, or leader
+			if (!currentRole || currentRole === "spectator" || clientId === room.leaderId)
+				return;
+
+			//mark player as ready
+			room.readyStatus.set(currentRole, msg.ready);
+			this.broadcast(room, createChatMessage("system", `${currentRole} is ${msg.ready ? "ready" : "unready"}.`));
+			console.log(`Player (${currentRole}) is ${msg.ready ? "ready" : "unready"} in room ${room.name} (${room.id})`);
+			broadcastState(room);
+		}
+		else if (msg.type === "start") {
+			const clientId = room.sockets.get(socket);
+			const currentRoleMsg = room.clientRoles.get(clientId);
+
+			//only leader can start the game
+			if (clientId != room.leaderId) {
+				socket.send(JSON.stringify({ type: "error", text: "Only the leader can start the game" }));
+				console.log(`Player (${currentRoleMsg}) tried to start the game but is not the leader in room ${room.name} (${room.id})`);
+				return;
+			}
+
+			if (room.teamSize < 1) {
+				socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
+				console.log(`Player (${currentRoleMsg}) tried to start the game but insufficient player in room ${room.name} (${room.id})`);
+				this.broadcast(room, createChatMessage("system", `Cannot start: insufficient players`));
+				return;
+			}
+
+			//can start only if all players are ready
+			if (!room.canStart) {
+				socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
+				console.log(`Player (${currentRoleMsg}) tried to start the game but not all players are ready in room ${room.name} (${room.id})`);
+				this.broadcast(room, createChatMessage("system", `Cannot start: player not ready`));
+				return;
+			}
+
+			console.log(`Player (${currentRoleMsg}) started the game in room ${room.name} (${room.id})`);
+			room.gameState.countdown = 5 * 60; //? 5 seconds countdown
+			room.startRequestedBy = clientId;
+			room.gameStarted = false;
+			room.gamePaused = false;
+			this.broadcast(room, createChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
+			broadcastState(room);
+		}
 	}
 
-    handleSwitchSide(room: any, socket: any, newSide: "left" | "right") {
-        const clientId = room.sockets.get(socket);
-        if (!clientId)
-            return;
+	updateCanStart(room: any) {
+		const prevCanStart = room.canStart;
 
-        const currentRole = room.clientRoles.get(clientId);
-        if (!currentRole || currentRole === "spectator")
-            return;
+		// get leader's role
+	    const leaderId = room.leaderId;
+	    const leaderRole = [...room.clientRoles.entries()]
+	        .find(([cid, role]) => cid === leaderId)?.[1];
 
-        //check if the new side has space
-        if (newSide === "left" && room.gameState.teams.left.length >= room.teamSize) {
-            socket.send(JSON.stringify({ type: "error", text: "left side is full" }));
-            return;
-        }
-        if (newSide === "right" && room.gameState.teams.right.length >= room.teamSize) {
-            socket.send(JSON.stringify({ type: "error", text: "right side is full" }));
-            return;
-        }
+	    const allPlayers = [...room.gameState.teams.left, ...room.gameState.teams.right].filter(r => r !== "spectator");
+	    const nonLeaderPlayers = leaderRole ? allPlayers.filter(r => r !== leaderRole) : allPlayers;
+	    const allReady = nonLeaderPlayers.every((r: string) => room.readyStatus.get(r));
+	    const totalPlayers = allPlayers.length;
 
-        //remove from current side
-        room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== currentRole);
-        room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== currentRole);
+	    room.canStart = allReady && totalPlayers > 1;
 
-        //assign new role
-        const newRole = `${newSide}_player${room.gameState.teams[newSide].lenght + 1}`;
-        room.gameState.teams[newSide].push(newRole);
+		if (room.canStart !== prevCanStart) {
+    	    this.broadcast(room, {
+    	        type: "state",
+    	        gameState: room.gameState,
+    	        leaderId: room.leaderId,
+    	        canStart: room.canStart
+    	    });
+    	}
 
-        room.clientRoles.set(clientId, newRole);
+	    console.log("updateCanStart:", {
+	        allPlayers,
+	        leaderRole,
+	        nonLeaderPlayers,
+	        allReady,
+	        totalPlayers,
+	        canStart: room.canStart
+	    });
+	}
 
-        game.setPaddlePositionWithTeam(room);
 
-        this.broadcast(room, createChatMessage("system", `${currentRole} switched to ${newRole}`));
-        console.log(`Player (${currentRole}) [ ${clientId} ] switched to ${newRole} in room ${room.name} (${room.id})`);
-    }
+	handleSwitchSide(room: any, socket: any, newSide: "left" | "right"): string | undefined {
+		const clientId = room.sockets.get(socket);
+		if (!clientId)
+			return;
+
+		const currentRole = room.clientRoles.get(clientId);
+		if (!currentRole || currentRole === "spectator")
+			return;
+
+		delete room.gameState.paddles[currentRole]; // Remove old paddle position
+
+		//remove from current side
+		room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== currentRole);
+		room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== currentRole);
+
+		//assign new role
+		const newRole = `${newSide}_player${room.gameState.teams[newSide].length + 1}`;
+		room.gameState.teams[newSide].push(newRole);
+
+		room.clientRoles.set(clientId, newRole);
+
+		// Transfer ready status to new role and remove old
+		room.readyStatus.set(newRole, room.readyStatus.get(currentRole) || false);
+		room.readyStatus.delete(currentRole);
+
+
+		game.setPaddlePositionWithTeam(room);
+
+		this.broadcast(room, createChatMessage("system", `${currentRole} switched to ${newRole}`));
+		this.broadcast(room, {
+			type: "state",
+			gameState: room.gameState,
+			leaderId: room.leaderId,
+			canStart: room.canStart
+		});
+		console.log(`Player (${currentRole}) [ ${clientId} ] switched to ${newRole} in room ${room.name} (${room.id})`);
+
+		// Notify the client of their new role
+		if (socket) {
+			socket.send(JSON.stringify({ type: "roleUpdate", newRole }));
+		}
+
+		return newRole;
+	}
 
 	/**
 	 * @brief handle client disconnection from the WebSocket.
@@ -235,8 +324,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 		if (!room || !room.sockets)
 				return;
 
-        delete room.gameState.paddles[role]; // Remove paddle position
-        delete room.gameState.ball; // Remove ball position if no players left
+		delete room.gameState.paddles[role]; // Remove paddle position
+		delete room.gameState.ball; // Remove ball position if no players left
 
 		// Remove socket and client from room
 		room.sockets.delete(socket);
@@ -272,11 +361,19 @@ export class WebSocketHandler implements IWebSocketHandler {
 			room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== role);
 			room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== role);
 
-            delete room.gameState.paddles[role]; // Remove paddle position
-            delete room.gameState.ball; // Remove ball position if no players left
+			delete room.gameState.paddles[role]; // Remove paddle position
+			delete room.gameState.ball; // Remove ball position if no players left
 
 			console.log(`Player (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
 			this.broadcast(room, createChatMessage("system", `${role} disconnect.`))
+
+			this.updateCanStart(room);           // recalc canStart after player left
+    		this.broadcast(room, {               // broadcast updated state to all remaining clients
+    		    type: "state",
+    		    gameState: room.gameState,
+    		    leaderId: room.leaderId,
+    		    canStart: room.canStart || false
+    		});
 
 			//set timeout for permanent disconnect
 			const timeoutId = setTimeout(() => {

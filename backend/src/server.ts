@@ -95,22 +95,24 @@ fastify.post("/create-room", async (req, reply) => {
 	const body: any = req.body;
 	const teamSize = body.teamSize;
 	const name = body.name;
+	const leaderId = body.leaderId;
 
 	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
 	  return reply.code(400).send({ error: "team size and name are required" });
 	}
 
 	const roomId = generateRoomId();
-	const room = createRoom(roomId, name, teamSize);
+	const room = createRoom(roomId, name, teamSize, leaderId);
 	rooms.set(roomId, room);
 
-	console.log(`Room ${name} (${roomId}) created with team size ${teamSize} and name ${name}`);
+	console.log(`Room ${name} (${roomId}) created with team size ${teamSize} and name ${name} by leader ${leaderId}`);
 
 	return {
 		roomId,
 		name,
 		teamSize,
 		gameStarted: room.gameStarted,
+		leaderId
 	};
 });
 

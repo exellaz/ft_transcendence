@@ -5,54 +5,38 @@ import fetch from "node-fetch";
 const API_URL = "http://localhost:4242";
 const WS_URL = "ws://localhost:4242/ws";
 
-async function createRoom(name = "testroom", teamSize = 1) {
+async function createRoom(name, teamSize, leaderId, paddle) {
   const res = await fetch(`${API_URL}/create-room`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, teamSize }),
+    body: JSON.stringify({ name, teamSize, leaderId, paddle }),
   });
   const data = await res.json();
   console.log("Room created:", data);
   return data.roomId;
 }
 
-function createPlayer(roomId, playerId, side) {
-  const ws = new WebSocket(`${WS_URL}?room=${roomId}&id=${playerId}&side=${side}`);
-
-  ws.on("open", () => {
-    console.log(`${playerId} connected as ${side}`);
-  });
-
-  ws.on("message", (msg) => {
-    const data = JSON.parse(msg.toString());
-    //if (data.type === "state") {
-    //  console.log(`[${playerId}] game state: countdown=${data.gameState.countdown} started=${data.gameState.gameStarted}`);
-    //} else if (data.type === "chat") {
-    //  console.log(`[${playerId}] chat: ${data.from} -> ${data.text}`);
-    //} else if (data.type === "error") {
-    //  console.log(`[${playerId}] error: ${data.text}`);
-    //}
-  });
-
-  return ws;
-}
-
 async function testGame() {
   // 1. Create room
-  const roomId = await createRoom();
+  const roomId = await createRoom("testroom", 1, "p1", "left");
+  const player1 = new WebSocket(`${WS_URL}?room=${roomId}&id=p1&side=left`);
+  const player2 = new WebSocket(`${WS_URL}?room=${roomId}&id=p2&side=right`);
 
-  // 2. Connect two players
-  const player1 = createPlayer(roomId, "p1", "left");
-  const player2 = createPlayer(roomId, "p2", "right");
+  setTimeout(() => {
+    // console.log("Leader starting the game...");
+    // player1.send(JSON.stringify({ type: "start" }));
+    // console.log("Player1 switching side to left");
+    // player1.send(JSON.stringify({ type: "switchSide", side: "right" }));
+}, 1000);
 
-  // 3. Wait 1 second, then mark both players ready
+  // 3. then mark both players ready
   setTimeout(() => {
     console.log("Both players sending ready...");
     player1.send(JSON.stringify({ type: "ready" }));
     player2.send(JSON.stringify({ type: "ready" }));
-  }, 1000);
+  }, 2000);
 
-  // 4. Wait 2 seconds, leader starts the game
+  // 4. leader starts the game
   setTimeout(() => {
     console.log("Leader starting the game...");
     player1.send(JSON.stringify({ type: "start" }));
