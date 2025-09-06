@@ -21,8 +21,8 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       onClose={onClose}
       className="overflow-y-auto scrollbar-hide"
     >
-      <Header>Tournament Stats</Header>
-      <div className="flex flex-col items-center gap-6">
+      <Header>Tournament Statistics</Header>
+      <div className="w-full flex flex-col items-center gap-6">
         <Subheader>Summary</Subheader>
         <Medals
           gold={user?.stats.medals.gold}
