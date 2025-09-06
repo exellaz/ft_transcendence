@@ -16,11 +16,21 @@ const LoginView: React.FC = () => {
     <Background>
       <Card>
         <Logo />
-        <Input placeholder="Username" />
-        <Input placeholder="Password" type="password" />
+        <Input
+          placeholder="Username"
+          icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+        />
+        <Input
+          placeholder="Password"
+          type="password"
+          icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+        />
         <Button onClick={() => navigate("/main-menu")}>LOGIN</Button>
         <Divider />
-        <Button variant="defaultWhite" className="flex justify-center items-center gap-2">
+        <Button
+          variant="defaultWhite"
+          className="flex justify-center items-center gap-2"
+        >
           <div>
             <img src="/assets/google.png" alt="google.png" className="w-5" />
           </div>

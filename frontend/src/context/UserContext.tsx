@@ -12,9 +12,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // todo: update with real user data from backend
   const fakeUser: User = {
-    id: "1",
+    id: "12958433",
     username: "ghosty",
-    email: "ghosty@transcendence.com",
+    email: "ghosty@gmail.com",
     avatarUrl: "/assets/red-ghost.png",
     isActive: true,
     createdAt: "2025-01-01",
@@ -38,8 +38,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     friends: [
       {
         id: "f1",
-        userId: "1",
-        friendId: "2",
+        userId: "12958433",
+        friendId: "48392017",
         status: "accepted",
         createdAt: "2025-02-01",
         updatedAt: "2025-09-01",
