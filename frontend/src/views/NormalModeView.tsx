@@ -34,7 +34,6 @@ const MainMenuView: React.FC = () => {
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
         setShowBlockList={setShowBlockList}
-        src={user?.avatarUrl}
       />
       <Card>
         <Logo />
@@ -66,7 +65,6 @@ const MainMenuView: React.FC = () => {
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
-        src={user?.avatarUrl}
       />
       <TournamentStatsPopup
         open={showTournamentStats}

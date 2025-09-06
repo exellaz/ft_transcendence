@@ -5,7 +5,7 @@ export interface User {
   email: string;
   avatarUrl: string;
   isActive: boolean;
-  joinedAt: string;
+  createdAt: string;
   updatedAt: string;
   status: "online" | "offline" | "in-game";
 

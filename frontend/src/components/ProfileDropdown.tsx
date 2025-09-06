@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
 
-import Button from "./Button";
 import Avatar from "./Avatar";
+import Button from "./Button";
 
 interface ProfileDropdownProps {
   setShowProfile: (open: boolean) => void;
@@ -10,7 +11,6 @@ interface ProfileDropdownProps {
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
   setShowBlockList: (open: boolean) => void;
-  src?: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -19,10 +19,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowFriends,
   setShowTournamentStats,
   setShowBlockList,
-  src,
 }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { user } = useUser();
   const menuItems = [
     {
       label: "PROFILE",
@@ -73,9 +73,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         onClick={() => setOpen(!open)}
         className="flex items-center rounded-full px-4 shadow"
       >
-        <Avatar src={src} size={80} />
+        <Avatar src={user?.avatarUrl} size={80} />
         <span className="w-24 mx-2 font-bold text-lg text-card-blue overflow-hidden">
-          Username
+          {user?.username || "Username"}
         </span>
       </Button>
 

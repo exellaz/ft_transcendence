@@ -15,9 +15,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     id: "1",
     username: "ghosty",
     email: "ghosty@transcendence.com",
-    avatarUrl: "/assets/green-tick.png",
+    avatarUrl: "/assets/red-ghost.png",
     isActive: true,
-    joinedAt: "2025-01-01",
+    createdAt: "2025-01-01",
     updatedAt: "2025-09-06",
     status: "online",
     settings: {

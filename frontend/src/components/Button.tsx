@@ -2,7 +2,7 @@ import React from "react";
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: "default" | "defaultRed" | "big" | "green" | "red" | "yellow" | "brown" | "dropdown";
+  variant?: "default" | "defaultWhite" | "big" | "green" | "red" | "yellow" | "brown" | "dropdown";
   onClick?: () => void;
   className?: string;
   icon?: React.ReactNode;
@@ -11,8 +11,8 @@ interface ButtonProps {
 const variantClasses: Record<string, string> = {
   default:
     "w-full rounded-full py-2 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white transition-colors",
-  defaultRed:
-    "w-full rounded-full py-2 bg-red-500 text-white hover:bg-red-600 hover:text-black transition-colors",
+  defaultWhite:
+    "w-full rounded-full py-2 bg-white text-black hover:bg-gray-300 transition-colors",
   big: "w-full rounded-3xl h-20 text-2xl my-3 bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white transition-colors",
   green:
     "w-32 rounded bg-green-500 hover:bg-green-600 text-black hover:text-white py-2 transition-colors",
