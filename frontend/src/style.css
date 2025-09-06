@@ -2,10 +2,16 @@
 
 @theme {
   --color-card-blue: #081334;
+  --color-card-blue-accent: #0D1D4D;
   --color-input-gray: #1F2B4F;
   --color-brown: #5A4A24;
 
   --color-gold: #FDD602;
   --color-silver: #8EBAC5;
   --color-bronze: #EA9B58;
+}
+
+/* hide scrollbar */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

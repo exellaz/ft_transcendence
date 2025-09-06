@@ -30,8 +30,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       averageRanking: 2.5,
       detailed: {
         tournaments: [
-          { tournamentId: "t1", date: "2025-08-01", finalRanking: 1 },
-          { tournamentId: "t2", date: "2025-08-15", finalRanking: 3 },
+          { tournamentId: "t1", date: "2025-08-01", ranking: 1 },
+          { tournamentId: "t2", date: "2025-08-15", ranking: 3 },
+          { tournamentId: "t3", date: "2025-08-15", ranking: 2 },
+          { tournamentId: "t4", date: "2025-08-15", ranking: 7 },
+          { tournamentId: "t5", date: "2025-08-15", ranking: 4 },
+          { tournamentId: "t6", date: "2025-08-15", ranking: 3 },
+          { tournamentId: "t7", date: "2025-08-15", ranking: 8 },
+          { tournamentId: "t8", date: "2025-08-15", ranking: 3 },
         ],
       },
     },

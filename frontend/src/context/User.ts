@@ -33,7 +33,7 @@ export interface DetailedStats {
 export interface TournamentHistoryEntry {
   tournamentId: string;
   date: string; // ISO date string
-  finalRanking: number;
+  ranking: number;
 }
 
 export interface Friendship {
