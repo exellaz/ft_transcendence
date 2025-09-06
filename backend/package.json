@@ -13,12 +13,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@fastify/cors": "^11.1.0",
     "@fastify/static": "^8.2.0",
     "@fastify/websocket": "^11.2.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.2.0",
     "fastify": "^5.5.0",
+    "node-fetch": "^3.3.2",
     "ws": "^8.18.3"
   },
   "devDependencies": {
