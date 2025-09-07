@@ -1,4 +1,10 @@
-import { startConnection } from "./connection";
+import { startConnection, createChatUI } from "./connection";
+
+const baseWeight = 800;
+const baseHeight = 400;
+const scale = Math.min(window.innerWidth / baseWeight, window.innerHeight / baseHeight, 1);
+export const scaledWidth = baseWeight * scale;
+export const scaledHeight = baseHeight * scale;
 
 const API_URL = `http://${window.location.hostname}:4242`;
 
@@ -18,11 +24,11 @@ async function fetchMatches(limit = 10) {
   }
 }
 
-async function createRoom(teamSize: number, roomName: string, leaderId: string) {
+async function createRoom(teamSize: number, roomName: string, leaderId: string, width: number, height: number) {
   const res = await fetch(`${API_URL}/create-room`, {
 	method: "POST",
 	headers: { "Content-Type": "application/json" },
-	body: JSON.stringify({ teamSize, name: roomName, leaderId }),
+	body: JSON.stringify({ teamSize, name: roomName, leaderId, width, height }),
   });
   return await res.json();
 }
@@ -37,7 +43,9 @@ async function detemineSide(roomId: string): Promise<"left" | "right"> {
 export function showLobby() {
 	let clientId = sessionStorage.getItem("pongClientId");
 	if (!clientId) {
-		clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
+		clientId = "P" + Math.floor(Math.random() * Math.pow(10, 6)) ////set player ID
+			.toString()
+			.padStart(6, "0");
 		sessionStorage.setItem("pongClientId", clientId);
 	}
 
@@ -67,7 +75,7 @@ export function showLobby() {
 			alert("Room name is required!");
 		}
 		console.log(`check clientid in create room: ${clientId}`); ////debug
-		const room = await createRoom(teamSize, roomName, clientId);
+		const room = await createRoom(teamSize, roomName, clientId, scaledWidth, scaledHeight);
 		startGame(room.roomId, room.leaderId);
 	};
 	lobbyDiv.appendChild(createBtn);
@@ -160,15 +168,6 @@ export function showLobby() {
 async function startGame(roomId: string, leaderId: string) {
 	document.body.innerHTML = ""; // clear lobby UI
 
-	// get or generate client ID
-	let clientId = sessionStorage.getItem("pongClientId");
-	if (!clientId) {
-		clientId = Date.now().toString(36) + Math.random().toString(36).substr(2, 8);
-		sessionStorage.setItem("pongClientId", clientId);
-	}
-	console.log(`start game client id: ${clientId}`); ////debug
-	console.log(`leaderId in start game: ${leaderId}`); ////debug
-
 	// Create room lobby container
 	const lobbyDiv = document.createElement("div");
 	lobbyDiv.id = "roomLobby";
@@ -178,26 +177,6 @@ async function startGame(roomId: string, leaderId: string) {
 	statusText.id = "lobbyStatus";
 	statusText.textContent = "Connecting to room...";
 	lobbyDiv.appendChild(statusText);
-
-	//chatbox display
-	const chatBox = document.createElement("div");
-	chatBox.id = "chatBox";
-	chatBox.style.width = "600px";
-	chatBox.style.height = "200px";
-	chatBox.style.overflowY = "auto";
-	chatBox.style.border = "2px solid gray";
-	chatBox.style.marginTop = "10px";
-	chatBox.style.padding = "5px";
-	document.body.appendChild(chatBox);
-
-	//chat input
-	const chatInput = document.createElement("input");
-	chatInput.id = "chatInput";
-	chatInput.type = "text";
-	chatInput.placeholder = "Type a message and press Enter...";
-	chatInput.style.width = "600px";
-	chatInput.style.marginTop = "5px";
-	document.body.appendChild(chatInput);
 
 	// Add buttons
 	const btnSwitch = document.createElement("button");
@@ -210,6 +189,18 @@ async function startGame(roomId: string, leaderId: string) {
 	btnStart.style.display = "none"; // only leader can start
 	btnStart.disabled = true; // disabled until all ready
 	lobbyDiv.appendChild(btnStart);
+
+	// get or generate client ID
+	let clientId = sessionStorage.getItem("pongClientId");
+	if (!clientId) {
+		clientId = "P" + Math.floor(Math.random() * Math.pow(10, 6))
+			.toString()
+			.padStart(6, "0");
+	}
+	sessionStorage.setItem("pongClientId", clientId);
+
+	console.log(`start game client id: ${clientId}`); ////debug
+	console.log(`leaderId in start game: ${leaderId}`); ////debug
 
 	 // Leader check
     let role = "spectator";
@@ -230,6 +221,7 @@ async function startGame(roomId: string, leaderId: string) {
 
 	socket.onopen = () => {
 		console.log("Connected to room lobby");
+		createChatUI(socket); //chat UI
 	};
 
 	socket.onmessage = (event) => {
@@ -277,8 +269,9 @@ async function startGame(roomId: string, leaderId: string) {
 			// switch to game view if countdown started
             if (!gameStarted && data.gameState.countdown > 0) {
                 gameStarted = true;
-                document.body.innerHTML = ""; // clear lobby
-                startConnection(roomId);
+				const lobbyDiv = document.getElementById("roomLobby");
+				if (lobbyDiv) lobbyDiv.remove();
+                startConnection(roomId, socket);
             }
         }
 
@@ -290,14 +283,6 @@ async function startGame(roomId: string, leaderId: string) {
 				chatBox.appendChild(msgDiv);
 				chatBox.scrollTop = chatBox.scrollHeight;
 		}
-
-		const chatInput = document.getElementById("chatInput") as HTMLInputElement;
-		chatInput.addEventListener("keydown", (e) => {
-			if (e.key === "Enter" && chatInput.value.trim() !== "") {
-				socket.send(JSON.stringify({ type: "chat", text: chatInput.value.trim() }));
-				chatInput.value = "";
-			}
-		});
 	};
 
 	// Button handlers
@@ -334,10 +319,12 @@ async function startGame(roomId: string, leaderId: string) {
 
 window.addEventListener("DOMContentLoaded", () => {
     const saveRoom = sessionStorage.getItem("pongRoomName");
-    const saveClient = sessionStorage.getItem("pongClientId");
+    const saveClient = sessionStorage.getItem("pongClientId") || "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padEnd(6, "0");
 
-    if (saveRoom && saveClient) {
-        startConnection(saveRoom);
+	sessionStorage.setItem("pongClientId", saveClient); // ensure not null
+
+    if (saveRoom) {
+		startGame(saveRoom, saveClient);
     } else
         showLobby();
 });

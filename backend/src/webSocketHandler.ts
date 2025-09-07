@@ -87,7 +87,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (room.pendingDisconnects.has(clientId)) {
 					clearTimeout(room.pendingDisconnects.get(clientId)); //remove timeout
 					room.pendingDisconnects.delete(clientId); //remove from pending disconnects
-
                     room.disconnectPlayers.delete(clientId); // mark as reconnected
 
                     //if all player reconnected, unpause game
@@ -95,6 +94,7 @@ export class WebSocketHandler implements IWebSocketHandler {
                         room.gamePaused = false;
                     }
 
+					const role = room.clientRoles.get(clientId);
 					console.log(`Player (${role}) [ ${clientId} ] reconnected as ${role} in room ${room.name} (${roomId})`);
 					this.broadcast(room, createChatMessage("system", `${role} reconnect the game.`));
 
@@ -110,18 +110,6 @@ export class WebSocketHandler implements IWebSocketHandler {
                         leaderId: room.leaderId,
                         canStart: room.canStart
                     }));
-
-                    //broadcast update to all remaining clients
-					this.broadcast(room, {
-            		    type: "state",
-                        gameState: {
-                            ...room.gameState,
-                            paused: room.gamePaused,
-                            countdown: room.gameState.countdown
-                        },
-            		    leaderId: room.leaderId,
-            		    canStart: room.canStart
-            		});
 				}
 			}
 		}
@@ -300,35 +288,41 @@ export class WebSocketHandler implements IWebSocketHandler {
 	    });
 	}
 
-
+	/**
+	 * @brief handle player switching sides (left/right).
+	 * @param room The game room object
+	 * @param socket The WebSocket connection for the client
+	 * @param newSide The side to switch to ("left" or "right")
+	 * @return The new role assigned after switching sides, or undefined if switch failed
+	*/
 	handleSwitchSide(room: any, socket: any, newSide: "left" | "right"): string | undefined {
 		const clientId = room.sockets.get(socket);
-		if (!clientId)
-			return;
+		if (!clientId) return;
 
+		//check if the new side is full
 		const currentRole = room.clientRoles.get(clientId);
-		if (!currentRole || currentRole === "spectator")
-			return;
+		if (!currentRole || currentRole === "spectator") return;
 
-		delete room.gameState.paddles[currentRole]; // Remove old paddle position
+		// Remove old paddle position when change side
+		delete room.gameState.paddles[currentRole];
 
-		//remove from current side
+		//remove current role from team if the player is switching side
 		room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== currentRole);
 		room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== currentRole);
 
 		//assign new role
 		const newRole = `${newSide}_player${room.gameState.teams[newSide].length + 1}`;
 		room.gameState.teams[newSide].push(newRole);
-
 		room.clientRoles.set(clientId, newRole);
 
-		// Transfer ready status to new role and remove old
+		// Transfer ready status to new role
 		room.readyStatus.set(newRole, room.readyStatus.get(currentRole) || false);
 		room.readyStatus.delete(currentRole);
 
-
+		//reset paddle position for all players
 		game.setPaddlePositionWithTeam(room);
 
+		//broadcast to all client
 		this.broadcast(room, createChatMessage("system", `${currentRole} switched to ${newRole}`));
 		this.broadcast(room, {
 			type: "state",
@@ -360,76 +354,107 @@ export class WebSocketHandler implements IWebSocketHandler {
 	*/
 	handleDisconnect(socket: any, room: any, clientId: string, role:string, roomId: string) {
 		//if no room, no socket exit this function
-		if (!room || !room.sockets)
-				return;
-
-        //if no client then exit this function
-        if (!room.clientRoles.has(clientId))
-            return;
+		if (!room || !room.sockets) return;
 
 		// Remove socket and client from room
 		room.sockets.delete(socket);
 		room.clients.delete(socket);
 
-		//if only no player
-		if (room.clients.size === 0) {
-			console.log(`Room ${room.name} (${roomId}) is empty. countdown 10s to delete`);
+		//handle disconnect during game
+		if (role && role !== "spectator") {
+			//prevent duplicate disconnect handling
+			if (!room.disconnectPlayers.has(clientId)) {
+				// mark as disconnected instead of removing
+				room.disconnectPlayers.add(clientId);
 
-            const timeoutId = setTimeout(() => {
-                if (room.clients.size === 0) {
-                    console.log(`Room ${room.name} (${roomId}) deleted due to empty.`);
-                    rooms.delete(roomId);
-                }
-            }, 10000);
-            room.pendingDisconnects.set(clientId, timeoutId); // Store timeout ID for potential reconnection
+				//if game start and not paused, pause it
+				if (!room.gamePaused)
+				{
+					room.gamePaused = true;
+					console.log(`Player (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
+					this.broadcast(room, createChatMessage("system", `${role} disconnect.`));
+				}
+			}
+
+			this.broadcast(room, { // broadcast updated state to all remaining clients
+				type: "state",
+				gameState: {
+					...room.gameState,
+					paused: room.gamePaused,
+					countdown: room.gameState.countdown,
+				},
+				leaderId: room.leaderId,
+				canStart: room.canStart
+			});
+
+			this.scheduleTimeout(room, clientId, 50000, () => {
+				if (room.gameState.gameStarted && room.disconnectPlayers.has(clientId)) {
+					console.log(`Player (${role}) [ ${clientId} ] exited the room ${room.name} (${roomId}) due to timeout.`);
+					this.broadcast(room, createChatMessage("system", `${role} exited the game.`));
+					this.broadcast(room, createChatMessage("system", `Game ended due to player disconnect for long time`));
+					roomEndGame(room, true); // true: forced to end game
+					rooms.delete(roomId);
+				}
+			});
 			return;
 		}
 
-        //remove player from team
-        if (role && role !== "spectator") {
-            //prevent duplicate disconnect handling
-            if (!room.disconnectPlayers.has(clientId)) {
-                // mark as disconnected instead of removing
-                room.disconnectPlayers.add(clientId);
+		// handle leave game before game start
+		if (!room.gameState.gameStarted && room.gameState.countdown === 0) {
+			console.log(`Player (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`);
+			this.broadcast(room, createChatMessage("system", `${role} left.`));
 
-                //if game start and not paused, pause it
-                if (!room.gamePaused)
-                {
-                    room.gamePaused = true;
-                    console.log(`Player (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
-                    this.broadcast(room, createChatMessage("system", `${role} disconnect.`));
-                }
-            }
+			if (role && role !== "spectator") {
+				room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== role);
+				room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== role);
+				room.readyStatus.delete(role);
+				room.clientRoles.delete(clientId);
+			}
 
-            this.broadcast(room, { // broadcast updated state to all remaining clients
-                type: "state",
-                gameState: {
-                    ...room.gameState,
-                    paused: room.gamePaused,
-                    countdown: room.gameState.countdown,
-                },
-                leaderId: room.leaderId,
-                canStart: room.canStart
-            });
+			this.broadcast(room, {
+				type: "state",
+				gameState: { ...room.gameState },
+				leaderId: room.leaderId,
+				canStart: room.canStart
+			});
+			return;
+		}
 
-            // if player disconnect, schedule foreced game end if not return in time
-			const timeoutId = setTimeout(() => {
-                if (room.disconnectPlayers.has(clientId)) {
-                    console.log(`Player (${role}) [ ${clientId} ] exited the room ${room.name} (${roomId}) due to timeout.`);
-                    this.broadcast(room, createChatMessage("system", `${role} exited the game.`));
-                    this.broadcast(room, createChatMessage("system", `Game ended due to player disconnect for long time`));
+		//handle empty room
+		if (room.clients.size === 0) {
+			console.log(`Room ${room.name} (${roomId}) is empty. countdown 10s to delete`);
 
-                    //end game and save result if player no return
-                    roomEndGame(room, true); // true: forced to end game
+			this.scheduleTimeout(room, clientId, 10000, () => {
+				if (room.clients.size === 0) {
+					console.log(`Room ${room.name} (${roomId}) deleted due to empty.`);
 
-                    // Clean up room
-                    rooms.delete(roomId);
-                }
-			}, 10000); // 10 seconds timeout
+					// Clean up any pending disconnect timeouts
+					for (const tid of room.pendingDisconnects.values())
+						clearTimeout(tid);
+					rooms.delete(roomId);
+				}
+			});
+			return;
+		}
 
-			room.pendingDisconnects.set(clientId, timeoutId); // Store timeout ID for potential reconnection
-        }
+
     }
+
+	scheduleTimeout(room: any, clientId: string, timeout: number, callback: () => void) {
+	    // clear existing timeout for this client if exists
+	    if (room.pendingDisconnects.has(clientId)) {
+	        clearTimeout(room.pendingDisconnects.get(clientId));
+	        room.pendingDisconnects.delete(clientId);
+	    }
+
+	    const timeoutId = setTimeout(() => {
+	        callback();
+	        room.pendingDisconnects.delete(clientId);
+	    }, timeout);
+
+	    room.pendingDisconnects.set(clientId, timeoutId);
+	}
+
 
 	/**
 	 * @brief Broadcast a message to all clients in the room.
@@ -438,6 +463,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @note Adds message to room chat history and sends to all connected clients
 	*/
 	broadcast(room: any, msg: any) {
+		console.log("Broadcasting message:", msg);
 		room.chatHistory.push(msg);
 		for(const client of room.clients) {
 			if (client.readyState === 1) {

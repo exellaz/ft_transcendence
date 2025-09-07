@@ -1,14 +1,16 @@
-import { showLobby } from "./main.ts";
+import { showLobby, scaledWidth, scaledHeight } from "./main.ts";
 
 //declare these two custom properties
 declare global {
 	interface Window {
 		pongCountdownStarted?: boolean;
 		pongCountdownEnd?: number;
+		chatInitialized?: boolean;
 	}
 }
 
-export function startConnection(roomName: string) {
+
+export function startConnection(roomName: string, socket: WebSocket) {
 	createUI();
 
 	sessionStorage.setItem("pongRoomName", roomName);
@@ -22,39 +24,59 @@ export function startConnection(roomName: string) {
 	let gameOver = false; // game over flag
 	let winner: string | null = null; // winner player
 
+
 	//prevent accidental refresh/close while in game
 	const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
 		if (!gameOver) {
 			e.preventDefault();
-			e.returnValue = ""; // show default broswer confirm message
-			return "";
+			e.returnValue = "Game in progress. Are you sure you want to leave?";
+			return e.returnValue;
 		}
 	};
+
+	const keys = { up: false, down: false };
+	const keyhandler = (e: KeyboardEvent) => {
+		if (!gameOver) {
+			if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
+				e.preventDefault();
+				return;
+			}
+			if (role !== "spectator") {
+				if (e.type === "keydown") {
+					if (e.key === "ArrowUp") keys.up = true;
+					if (e.key === "ArrowDown") keys.down = true;
+				}
+				if (e.type === "keyup") {
+					if (e.key === "ArrowUp") keys.up = false;
+					if (e.key === "ArrowDown") keys.down = false;
+				}
+			}
+		}
+	};
+	window.addEventListener("contextmenu", (e) => e.preventDefault()); // disable right-click context menu
 	window.addEventListener("beforeunload", beforeUnloadHandler);
+	window.addEventListener("keydown", keyhandler);
+	window.addEventListener("keyup", keyhandler);
 
 	// get the client ID from session storage or create a new one
 	if (!clientId) {
-		clientId = Math.floor(Math.random() * Math.pow(10, 6))
+		clientId = "P" + Math.floor(Math.random() * Math.pow(10, 6))
 			.toString()
 			.padStart(6, "0");
 		sessionStorage.setItem("pongClientId", clientId);
 	}
-	console.log("clientId:", clientId);
 
-	// open WebSocket connection
-	const socket = new WebSocket(
-		`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomName}`
-	);
+	// Notify server about the game size once connection is open
+	socket.addEventListener("open", () => {
+		// Send room size to server
+		sendRoomSize(socket, scaledWidth, scaledHeight);
+	});
 
-	socket.onopen = () => {
-		console.log("WebSocket connected");
-		socket.send(JSON.stringify({ type: "setHeight", height: canvas.height }));
-		socket.send(JSON.stringify({ type: "setWidth", width: canvas.width }));
-	};
-
+	socket.onopen = () => console.log("WebSocket connected");
 	socket.onerror = (err) => console.error("WebSocket error:", err);
 	socket.onclose = () => console.log("WebSocket closed");
 
+	//receive message from server
 	socket.onmessage = (event) => {
 		try {
 			const data = JSON.parse(event.data);
@@ -92,42 +114,27 @@ export function startConnection(roomName: string) {
 		}
 	};
 
-	// Key handling
-	const keys = { up: false, down: false };
-	window.addEventListener("keydown", (e) => {
-		if(!gameOver && (e.key === "F5" || (e.ctrlKey && e.key.toLowerCase() === "r"))) {
-			e.preventDefault();
-			e.stopPropagation();
-			alert("Cannot refresh/close during an active game!");
-		}
-		if (role === "spectator" || gameOver) return;
-		if (e.key === "ArrowUp") keys.up = true;
-		if (e.key === "ArrowDown") keys.down = true;
-	});
-	window.addEventListener("keyup", (e) => {
-		if (role === "spectator" || gameOver) return;
-		if (e.key === "ArrowUp") keys.up = false;
-		if (e.key === "ArrowDown") keys.down = false;
+	//handle resize dynamically
+	window.addEventListener("resize", () => {
+		canvas.width = scaledWidth;
+		canvas.height = scaledHeight;
+		sendRoomSize(socket, scaledWidth, scaledHeight);
 	});
 
-	// Chat input
-	const chatInput = document.getElementById("chatInput") as HTMLInputElement;
-	chatInput.addEventListener("keydown", (e) => {
-		if (e.key === "Enter" && chatInput.value.trim() !== "") {
-			socket.send(JSON.stringify({ type: "chat", text: chatInput.value.trim() }));
-			chatInput.value = "";
-		}
-	});
-
-	// Send movement
+	// Send key presses at 60 FPS to server
 	setInterval(() => {
-		if (role === "spectator" || gameOver) return;
-		if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
-		if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+		if (role !== "spectator" && !gameOver) {
+			if (keys.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
+			if (keys.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+		}
 	}, 1000 / 60);
 
+	// clean up all event and room after end game
 	function cleanUp() {
+		window.removeEventListener("contextmenu", (e) => e.preventDefault());
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
+		window.removeEventListener("keydown", keyhandler);
+		window.removeEventListener("keyup", keyhandler);
 		sessionStorage.removeItem("pongRoomName");
 	}
 }
@@ -233,9 +240,12 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		return;
 	}
 
+	const scaleX = canvas.width / 800;
+	const scaleY = canvas.height / 400;
+
 	// Draw ball
 	ctx.beginPath();
-	ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
+	ctx.arc(state.ball.x, state.ball.y * scaleY, 10 * scaleX, 0, Math.PI * 2);
 	ctx.fillStyle = "black";
 	ctx.fill();
 
@@ -244,14 +254,14 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		const y = state.paddles[key];
 		let x: number;
 		if (key.startsWith("left_player")) {
-			x = 1;
+			x = 1 * scaleX;
 		} else if (key.startsWith("right_player")) {
-			x = canvas.width - paddleWidth - 1;
+			x = canvas.width - paddleWidth * scaleX - 1;
 		} else {
 			continue;
 		}
 		ctx.fillStyle = "black";
-		ctx.fillRect(x, y, paddleWidth, paddleHeight);
+		ctx.fillRect(x, y, paddleWidth * scaleX, paddleHeight * scaleY);
 	}
 }
 
@@ -268,27 +278,59 @@ function createUI() {
 
 	const canvas = document.createElement("canvas");
 	canvas.id = "game";
-	canvas.width = Math.min(window.innerWidth * 0.9, 600);
-	canvas.height = Math.min(window.innerHeight * 0.7, 400);
+	canvas.width = scaledWidth
+	canvas.height = scaledHeight;
 	canvas.style.border = "5px solid black";
 	document.body.appendChild(canvas);
-
-	const chatBox = document.createElement("div");
-	chatBox.id = "chatBox";
-	chatBox.style.width = "600px";
-	chatBox.style.height = "200px";
-	chatBox.style.overflowY = "auto";
-	chatBox.style.border = "2px solid gray";
-	chatBox.style.marginTop = "10px";
-	chatBox.style.padding = "5px";
-	document.body.appendChild(chatBox);
-
-	const chatInput = document.createElement("input");
-	chatInput.id = "chatInput";
-	chatInput.type = "text";
-	chatInput.placeholder = "Type a message and press Enter...";
-	chatInput.style.width = "600px";
-	chatInput.style.marginTop = "5px";
-	document.body.appendChild(chatInput);
 }
 
+function sendRoomSize(ws: WebSocket, width: number, height: number) {
+	if (ws.readyState === WebSocket.OPEN) {
+		ws.send(JSON.stringify({ type: "setWidth", width }));
+		ws.send(JSON.stringify({ type: "setHeight", height }));
+		console.log(`send room size: ${width}x${height}`);
+	}
+}
+
+
+// --- Shared Chat UI ---
+export function createChatUI(socket: WebSocket) {
+    let chatBox = document.getElementById("chatBox");
+    if (!chatBox) {
+        chatBox = document.createElement("div");
+        chatBox.id = "chatBox";
+        chatBox.style.position = "absolute";
+        chatBox.style.bottom = "60px";
+        chatBox.style.right = "20px";
+        chatBox.style.width = "300px";
+        chatBox.style.height = "200px";
+        chatBox.style.overflowY = "auto";
+        chatBox.style.border = "2px solid gray";
+        chatBox.style.background = "rgba(255,255,255,0.8)";
+        chatBox.style.padding = "5px";
+        document.body.appendChild(chatBox);
+    }
+
+    let chatInput = document.getElementById("chatInput") as HTMLInputElement;
+    if (!chatInput) {
+        chatInput = document.createElement("input");
+        chatInput.id = "chatInput";
+        chatInput.type = "text";
+        chatInput.placeholder = "Type a message and press Enter...";
+        chatInput.style.position = "absolute";
+        chatInput.style.bottom = "20px";
+        chatInput.style.right = "20px";
+        chatInput.style.width = "300px";
+        document.body.appendChild(chatInput);
+    }
+
+    if (!chatInput.dataset.bound) {
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && chatInput.value.trim() !== "") {
+                socket.send(JSON.stringify({ type: "chat", text: chatInput.value.trim() }));
+                chatInput.value = "";
+            }
+        });
+        chatInput.dataset.bound = "true";  // mark as bound
+    }
+}

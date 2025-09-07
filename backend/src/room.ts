@@ -10,6 +10,8 @@ export interface Room {
 	id: string;
 	name: string;
 	teamSize: number;
+	width: number;
+	height: number;
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number };
 		paddles: { [key: string]: number }; //key: client id, value: paddle y position
@@ -21,8 +23,6 @@ export interface Room {
 	clients: Set<WebSocket>;
 	clientRoles: Map<string, string>; //key: client id, value: role ("left" or "right")
 	sockets: Map<WebSocket, string>; //key: socket, value: client id
-	width: number;
-	height: number;
 	chatHistory: ChatMessage[]; // Array to store chat messages
 	startTime?: Date; //start game time
 	endTime?: Date; //end game time
@@ -62,7 +62,7 @@ export function generateRoomId(length = 6): string {
 }
 
 /**
- * @brief create a room
+ * @brief create a room from client input parameters
  * @param id room id
  * @param name room name
  * @param teamSize team size (default: 1)
@@ -70,11 +70,13 @@ export function generateRoomId(length = 6): string {
  * @param height room height (default: 400)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string, width = 800, height = 400): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string, width: number, height: number): Room {
 	const room: Room = {
 		id,
 		name,
 		teamSize,
+		width,
+		height,
 		gameState: {
             ball: { x: width / 2, y: height / 2, dx: ballSpeed, dy: ballSpeed },
 			paddles: {},
@@ -86,8 +88,6 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		clients: new Set(),
 		clientRoles: new Map(),
 		sockets: new Map(),
-		width,
-		height,
 		chatHistory: [] as any [],
         disconnectPlayers: new Set(),
         gamePaused: false,
@@ -97,6 +97,7 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
         canStart: false,
 		leaderId: leaderId,
 	};
+	console.log(`widht: ${width}, height: ${height}`);
 	return room;
 }
 
@@ -116,7 +117,7 @@ export function startRoomLoop(room: Room) {
 			clearInterval(room.loopHandle!);
 			room.loopHandle = null;
 			rooms.delete(room.id);
-			console.log(`Room ${room.id} deleted due to no players.`);
+			console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
 			return;
 		}
 		room.game.gameLoop(room);
@@ -128,7 +129,7 @@ export function startRoomLoop(room: Room) {
 }
 
 /**
- * @brief start the game time
+ * @brief start the game time use date for later calculate duration
  * @param room Room object
 */
 export function roomStartGame(room: Room) {
@@ -138,7 +139,7 @@ export function roomStartGame(room: Room) {
 }
 
 /**
- * @brief end the game time
+ * @brief end the game time and calculate duration
  * @param room Room object
  * @param forced Whether to force end the game
 */
@@ -147,6 +148,7 @@ export function roomEndGame(room: any, forced = false) {
 	if (room.result)
 		return;
 
+	// close the game when is end
 	room.gameStarted = false;
 	room.endTime = new Date();
 
@@ -156,9 +158,8 @@ export function roomEndGame(room: any, forced = false) {
 		room.loopHandle = null;
 	}
 
-	let winner: "left" | "right" | "draw";
-
 	//if not force to end then determine winner by score
+	let winner: "left" | "right" | "draw";
 	if (!forced) {
 		if (room.gameState.score.left > room.gameState.score.right)
 			winner = "left";
@@ -167,7 +168,8 @@ export function roomEndGame(room: any, forced = false) {
 		else
 			winner = "draw";
 	}
-	else { // if forced, determine winner by current score
+	else {
+		// if forced, determine winner by current score
 		const left = room.gameState.score.left;
 		const right = room.gameState.score.right;
 		if (left > right)
@@ -190,8 +192,6 @@ export function roomEndGame(room: any, forced = false) {
 	const end = room.endTime ?? new Date(); //if the end time is undefined, use current time
 	const ms = end.getTime() - start.getTime(); // milliseconds
 	room.duration = ms;                    // store raw ms (number)
-
-	console.log (`Game ended at ${room.endTime}\nResult: ${JSON.stringify(room.result)}`);
 
 	// Save match result to database
 	saveMatchResult(room, room.duration);

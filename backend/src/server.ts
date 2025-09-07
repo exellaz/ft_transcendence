@@ -37,12 +37,12 @@ const wsHandler = new WebSocketHandler();
 */
 await fastify.register(async function (fastify) {
 	fastify.get("/ws", { websocket: true }, (socket, req) => {
-	const url = new URL(req.url!, `http://${req.headers.host}`); // Parse the request URL
-	const clientId = url.searchParams.get("id") || Math.floor(Math.random() * Math.pow(10, 6)).toString().padStart(6, "0"); //check the client any id created if not create one
-	const roomId = url.searchParams.get("room");
-    const side = url.searchParams.get("side") as "left" | "right" | null;
+	const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
+	const clientId = url.searchParams.get("id") || "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padStart(6, "0"); //search client id
+	const roomId = url.searchParams.get("room"); //search room id
+    const side = url.searchParams.get("side") as "left" | "right" | null; //search player side
 
-	//fetch the room by id
+	//fetch the room by room id of the client
 	const room = rooms.get(roomId!);
 	if (!room) {
 		socket.close(1008, "Room not found");
@@ -69,7 +69,7 @@ await fastify.register(async function (fastify) {
 
 /**
  * @brief HTTP endpoint to list all available rooms.
- * @return Array of room objects with id, name, team size, player counts, and game status.
+ * @return Array of room objects with id, name, team size, player counts, and game status to client
 */
 fastify.get("/rooms", async (req, reply) => {
 	return Array.from(rooms.values()).map(room => ({
@@ -86,7 +86,10 @@ fastify.get("/rooms", async (req, reply) => {
  * @brief HTTP endpoint to create a new game room.
  * @param teamSize Number of players per team (from request body)
  * @param name Name of the room (from request body)
- * @return Object with roomId, name, teamSize, and gameStarted status.
+ * @param leaderId Client ID of the room creator (from request body)
+ * @param width Width of the game area (from request body)
+ * @param height Height of the game area (from request body)
+ * @return Object with roomId, name, teamSize, and gameStarted status to client
  * @note req body should be JSON with "teamSize" and "name" fields.
  * @note reply with 400 error if parameters are missing.
 */
@@ -96,13 +99,15 @@ fastify.post("/create-room", async (req, reply) => {
 	const teamSize = body.teamSize;
 	const name = body.name;
 	const leaderId = body.leaderId;
+	const width = body.width;
+	const height = body.height;
 
 	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
 	  return reply.code(400).send({ error: "team size and name are required" });
 	}
 
 	const roomId = generateRoomId();
-	const room = createRoom(roomId, name, teamSize, leaderId);
+	const room = createRoom(roomId, name, teamSize, leaderId, width, height);
 	rooms.set(roomId, room);
 
 	console.log(`Room ${name} (${roomId}) created with team size ${teamSize} and name ${name} by leader ${leaderId}`);
@@ -116,6 +121,12 @@ fastify.post("/create-room", async (req, reply) => {
 	};
 });
 
+/**
+ * @brief HTTP endpoint to get recent match records.
+ * @param limit Optional query parameter to limit number of records (default 10)
+ * @return Array of match records to client
+ * @note reply with 500 error if database retrieval fails.
+*/
 fastify.get("/matches", async (req, reply) => {
 	try {
 		const { limit } = req.query as { limit?: string };

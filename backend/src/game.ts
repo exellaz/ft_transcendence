@@ -131,11 +131,13 @@ export class Game implements IGame {
 					ball.x = paddleWidth;
 				}
 			}
-			if (key.startsWith("right_player") && ball.x + ballRadius >= room.width - paddleWidth) {
-				if (ball.y >= paddleY && ball.y <= paddleY + paddleHeight) {
-					ball.dx *= -1;
-					ball.x = room.width - paddleWidth - ballRadius;
-				}
+			const nextBallX = ball.x + ball.dx;
+			if (key.startsWith("right_player") &&
+			    (ball.x <= room.width - paddleWidth && nextBallX + ballRadius >= room.width - paddleWidth)) {
+			    if (ball.y + ballRadius >= paddleY && ball.y - ballRadius <= paddleY + paddleHeight) {
+			        ball.dx *= -1;
+			        ball.x = room.width - paddleWidth - ballRadius;
+			    }
 			}
 		}
 
@@ -189,7 +191,7 @@ export class Game implements IGame {
 			if (room.gameState.countdown > 0) {
 				room.gameState.countdown--;
 				const secondsLeft = Math.ceil(room.gameState.countdown / 60);
-				console.log(`Game countdown: ${secondsLeft}`);
+				// console.log(`Game countdown: ${secondsLeft}`);
 
                 //broadcast countdown to all clients
                 for (const client of room.clients) {
