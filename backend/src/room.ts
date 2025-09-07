@@ -10,13 +10,13 @@ export interface Room {
 	id: string;
 	name: string;
 	teamSize: number;
-	gameStarted: boolean;
 	gameState: {
-		ball: { x: number; y: number; dx: number; dy: number };
+        ball: { x: number; y: number; dx: number; dy: number };
 		paddles: { [key: string]: number }; //key: client id, value: paddle y position
 		teams: { left: string[]; right: string[] }; //key: team side, value: array of client ids
 		score: { left: number; right: number }; //key: team side, value: score
 		countdown: number;
+        gameStarted: boolean;
 	};
 	clients: Set<WebSocket>;
 	clientRoles: Map<string, string>; //key: client id, value: role ("left" or "right")
@@ -31,6 +31,7 @@ export interface Room {
 		scoreLeft: number;
 		scoreRight: number;
 	};
+    disconnectPlayers: Set<string>; // Set of client ids who disconnected
 	pendingDisconnects: Map<string, NodeJS.Timeout>; // key: client id, value: timeout handle
 	game: Game; // Game instance for the room
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
@@ -74,13 +75,13 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		id,
 		name,
 		teamSize,
-		gameStarted: false,
 		gameState: {
-			ball: { x: width / 2, y: height / 2, dx: ballSpeed, dy: ballSpeed },
+            ball: { x: width / 2, y: height / 2, dx: ballSpeed, dy: ballSpeed },
 			paddles: {},
 			teams: { left: [], right: [] },
 			score: { left: 0, right: 0 },
 			countdown: 0,
+            gameStarted: false,
 		},
 		clients: new Set(),
 		clientRoles: new Map(),
@@ -88,6 +89,8 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		width,
 		height,
 		chatHistory: [] as any [],
+        disconnectPlayers: new Set(),
+        gamePaused: false,
 		pendingDisconnects: new Map(),
 		game: new Game(),
         readyStatus: new Map(),
@@ -117,6 +120,10 @@ export function startRoomLoop(room: Room) {
 			return;
 		}
 		room.game.gameLoop(room);
+
+        //if game is paused, skip sending state update
+        if (room.gamePaused)
+            return;
 	}, 1000 / 60);
 }
 
@@ -125,7 +132,7 @@ export function startRoomLoop(room: Room) {
  * @param room Room object
 */
 export function roomStartGame(room: Room) {
-	if (!room.gameStarted && !room.gameState.countdown) {
+	if (!room.gameState.gameStarted && !room.gameState.countdown) {
 		room.startTime = new Date();
 	}
 }

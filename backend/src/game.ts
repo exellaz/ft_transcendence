@@ -1,9 +1,10 @@
+import { count } from "console";
 import type { Room } from "./room.ts";
 import { rooms, roomEndGame } from "./room.ts";
 
 
 // Ball speed constant
-export const ballSpeed = 10;
+export const ballSpeed = 1;
 
 /**
  * @brief Interface for Game class method
@@ -102,7 +103,7 @@ export class Game implements IGame {
 	 * @param room The game room
 	*/
 	updateBall(room: Room) {
-		if (!room.gameStarted) return;
+		if (!room.gameState.gameStarted) return;
 		const ball = room.gameState.ball;
 		ball.x += ball.dx;
 		ball.y += ball.dy;
@@ -163,41 +164,72 @@ export class Game implements IGame {
 			return;
 		}
 
+        // helper: check if all roles in a team are connected
+        const teamConnected = (team: string[]): boolean => {
+            return team.every(role => {
+                const playerId = Array.from(room.clientRoles.entries())
+                    .find(([_, r]) => r === role)?.[0];
+                return playerId && !room.disconnectPlayers.has(playerId);
+            });
+        };
+
 		// get players
-		const leftReady = room.gameState.teams.left.length === room.teamSize;
-		const rightReady = room.gameState.teams.right.length === room.teamSize;
+		const leftReady = teamConnected(room.gameState.teams.left);
+		const rightReady = teamConnected(room.gameState.teams.right);
 
 		//check if both team is available
 		if (leftReady && rightReady) {
+            //if game was paused, resume it
 			if (room.gamePaused) {
 				room.gamePaused = false;
-				room.gameState.countdown = 5 * 60; //? 5 seconds countdown
 				console.log("Game resumed");
 			}
 
-			if (room.gameState.countdown > 0) {  //if the game not started yet
+            //if the game not started yet
+			if (room.gameState.countdown > 0) {
 				room.gameState.countdown--;
 				const secondsLeft = Math.ceil(room.gameState.countdown / 60);
 				console.log(`Game countdown: ${secondsLeft}`);
+
+                //broadcast countdown to all clients
+                for (const client of room.clients) {
+                    if (client.readyState === 1) {
+                        client.send(JSON.stringify({
+                            type: "state",
+                            gameState: {
+                                ...room.gameState,
+                                countdown: room.gameState.countdown,
+                            },
+                            leaderId: room.leaderId,
+                            canStart: room.canStart
+                        }));
+                    }
+                }
+
+                // Start game when countdown reaches 0
 				if (room.gameState.countdown === 0) {
-					room.gameStarted = true;
+					room.gameState.gameStarted = true;
 					room.startTime = new Date();
 					console.log(`Game started in room ${room.id}`);
 				}
 				return; // Skip updating ball until game starts
 			}
 
-			if (room.gameStarted) { // If the game is already started keep updating the ball
+			if (room.gameState.gameStarted) { // If the game is already started keep updating the ball
 				this.updateBall(room);
 			}
 		}
 		else { // Not enough players, get "waiting for players" state
-			if (room.gameStarted && !room.gamePaused) {
+			if (room.gameState.gameStarted && !room.gamePaused) {
 				room.gamePaused = true;
-				room.gameStarted = false;
+				room.gameState.gameStarted = false;
 				console.log (`Game paused`);
 			}
-			room.gameState.countdown = 0;
+			if (room.gameState.countdown !== 0) {
+                room.gameState.countdown = 0;
+                room.gameState.gameStarted = false;
+                console.log(`Game paused`);
+            }
 		}
 
 		// Check for game end condition (first to 5 points)
@@ -211,7 +243,11 @@ export class Game implements IGame {
 				const playerId = room.sockets.get(client); //get player id from socket
 				const role = room.clientRoles.get(playerId!); //get player role from player id
 				const isSpectator = role === "spectator"; //check if the player is a spectator
-				const gameStateWithResult = {...room.gameState, result: room.result || null}; //include result if game ended (winner and scores)
+				const gameStateWithResult = {
+                    ...room.gameState,
+                    paused: room.gamePaused,
+                    result: room.result || null
+                }; //include result if game ended (winner and scores)
 				client.send(JSON.stringify({
 					type: "state",
 					gameState: gameStateWithResult,
@@ -221,4 +257,3 @@ export class Game implements IGame {
 		}
 	}
 }
-

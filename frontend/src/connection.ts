@@ -11,6 +11,8 @@ declare global {
 export function startConnection(roomName: string) {
 	createUI();
 
+	sessionStorage.setItem("pongRoomName", roomName);
+
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
 	const roleText = document.getElementById("roleText")!;
 	const scoreText = document.getElementById("scoreText")!;
@@ -93,6 +95,11 @@ export function startConnection(roomName: string) {
 	// Key handling
 	const keys = { up: false, down: false };
 	window.addEventListener("keydown", (e) => {
+		if(!gameOver && (e.key === "F5" || (e.ctrlKey && e.key.toLowerCase() === "r"))) {
+			e.preventDefault();
+			e.stopPropagation();
+			alert("Cannot refresh/close during an active game!");
+		}
 		if (role === "spectator" || gameOver) return;
 		if (e.key === "ArrowUp") keys.up = true;
 		if (e.key === "ArrowDown") keys.down = true;
@@ -121,6 +128,7 @@ export function startConnection(roomName: string) {
 
 	function cleanUp() {
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
+		sessionStorage.removeItem("pongRoomName");
 	}
 }
 
@@ -166,8 +174,35 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		(leftPlayers === 2 && rightPlayers === 2) ||
 		(leftPlayers === 1 && rightPlayers === 1 && leftPlayers + rightPlayers === 2);
 
+	//pause message
+	if (state.paused) {
+		ctx.font = "48px Arial";
+		ctx.fillStyle = "red";
+		ctx.textAlign = "center";
+		ctx.fillText(`Game Paused`, canvas.width / 2, canvas.height / 2);
+
+		// Optional: also show frozen countdown if it exists
+    	if (!state.gameStarted && state.countdown > 0) {
+    	    const remaining = Math.ceil(state.countdown / 60);
+    	    ctx.font = "32px Arial";
+    	    ctx.fillStyle = "gray";
+    	    ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width / 2, canvas.height / 2 + 50);
+    	}
+    	return;
+	}
+
+	// Countdown before start
+	if (!state.gameStarted && state.countdown > 0) {
+		const remaining = Math.ceil(state.countdown / 60);
+		ctx.font = "48px Arial";
+		ctx.fillStyle = "gray";
+		ctx.textAlign = "center";
+		ctx.fillText(`Game starts in ${remaining}...`, canvas.width / 2, canvas.height / 2);
+		return;
+	}
+
 	// Waiting message
-	if (!allPlayersConnected) {
+	if (!allPlayersConnected && !state.gameStarted) {
 		ctx.font = "32px Arial";
 		ctx.fillStyle = "gray";
 		ctx.textAlign = "center";
@@ -195,16 +230,6 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 			ctx.fillStyle = "black";
 			ctx.fillRect(x, y, paddleWidth, paddleHeight);
 		}
-		return;
-	}
-
-	// Countdown before start
-	if (!state.gameStarted && state.countdown > 0) {
-		const remaining = Math.ceil(state.countdown / 60);
-		ctx.font = "48px Arial";
-		ctx.fillStyle = "gray";
-		ctx.textAlign = "center";
-		ctx.fillText(`Game starts in ${remaining}...`, canvas.width / 2, canvas.height / 2);
 		return;
 	}
 

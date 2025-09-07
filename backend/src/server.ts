@@ -78,7 +78,7 @@ fastify.get("/rooms", async (req, reply) => {
 		teamSize: room.teamSize,
 		leftPlayers: room.gameState.teams.left.length,
 		rightPlayers: room.gameState.teams.right.length,
-		gameStarted: room.gameStarted,
+		gameStarted: room.gameState.gameStarted,
 	}));
 });
 
@@ -111,7 +111,7 @@ fastify.post("/create-room", async (req, reply) => {
 		roomId,
 		name,
 		teamSize,
-		gameStarted: room.gameStarted,
+		gameStarted: room.gameState.gameStarted,
 		leaderId
 	};
 });

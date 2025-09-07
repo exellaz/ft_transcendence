@@ -268,6 +268,11 @@ async function startGame(roomId: string, leaderId: string) {
 			//only update if canStart changed
 			const canStart = data.canStart ?? false;
 			btnStart.disabled = canStart;
+            if (btnStart.disabled === false)
+                console.log(`start button: yes`);
+            else
+                console.log(`start button: no`);
+
 
 			// switch to game view if countdown started
             if (!gameStarted && data.gameState.countdown > 0) {
@@ -327,4 +332,12 @@ async function startGame(roomId: string, leaderId: string) {
 	};
 }
 
-showLobby();
+window.addEventListener("DOMContentLoaded", () => {
+    const saveRoom = sessionStorage.getItem("pongRoomName");
+    const saveClient = sessionStorage.getItem("pongClientId");
+
+    if (saveRoom && saveClient) {
+        startConnection(saveRoom);
+    } else
+        showLobby();
+});
