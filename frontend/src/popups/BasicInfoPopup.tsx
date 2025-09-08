@@ -13,7 +13,7 @@ interface PopupProps {
   onClose: () => void;
 }
 
-const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const { user } = useUser();
 
   return (
@@ -57,4 +57,4 @@ const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   );
 };
 
-export default BlockListPopup;
+export default BasicInfoPopup;

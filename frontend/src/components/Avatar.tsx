@@ -13,7 +13,7 @@ const Avatar: React.FC<AvatarProps> = ({
   size = 80,
 }) => (
   <div
-    className="rounded-full bg-white border-4 border-card-blue overflow-hidden"
+    className="rounded-full bg-white overflow-hidden"
     style={{ width: size, height: size }}
   >
     <img

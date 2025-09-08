@@ -1,7 +1,7 @@
-import React from "react";
-
-import Header from "../components/Header";
+import React, { useState } from "react";
 import PopupCard from "../components/PopupCard";
+import SocialHub from "../components/SocialHub";
+import type { SocialUser } from "../components/SocialHub";
 
 interface PopupProps {
   open: boolean;
@@ -9,10 +9,173 @@ interface PopupProps {
 }
 
 const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+  // TODO: Replace with real data from context or props
+  const friends = [
+    {
+      uid: "u1",
+      username: "Alice",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "See you at the tournament!",
+      timestamp: "2025-09-07 14:32",
+    },
+    {
+      uid: "u2",
+      username: "Bob",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "GG!",
+      timestamp: "2025-09-07 13:10",
+    },
+    {
+      uid: "u1",
+      username: "Alice",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "See you at the tournament!",
+      timestamp: "2025-09-07 14:32",
+    },
+    {
+      uid: "u2",
+      username: "Bob",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "GG!",
+      timestamp: "2025-09-07 13:10",
+    },
+    {
+      uid: "u1",
+      username: "Alice",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "See you at the tournament!",
+      timestamp: "2025-09-07 14:32",
+    },
+    {
+      uid: "u2",
+      username: "Bob",
+      avatarUrl: "/assets/red-ghost.png",
+      lastMessage: "GG!",
+      timestamp: "2025-09-07 13:10",
+    },
+  ];
+
+  const requests = [
+    {
+      uid: "u5",
+      username: "Eve",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u6",
+      username: "Frank",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u5",
+      username: "Eve",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u6",
+      username: "Frank",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u5",
+      username: "Eve",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u6",
+      username: "Frank",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u5",
+      username: "Eve",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u6",
+      username: "Frank",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+  ];
+
+  const blocked = [
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Charlie",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
+      username: "Dana",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+  ];
+
+  const [selectedUser, setSelectedUser] = useState<SocialUser | null>(null);
 
   return (
-    <PopupCard open={open} onClose={onClose}>
-      <Header>Friends</Header>
+    <PopupCard
+      open={open}
+      onClose={onClose}
+      size={selectedUser ? "social" : undefined}
+    >
+      <SocialHub
+        friends={friends}
+        requests={requests}
+        blocked={blocked}
+        selectedUser={selectedUser}
+        setSelectedUser={setSelectedUser}
+      />
     </PopupCard>
   );
 };

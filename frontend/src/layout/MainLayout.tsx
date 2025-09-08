@@ -8,7 +8,6 @@ import ProfilePopup from "../popups/ProfilePopup";
 import BasicInfoPopup from "../popups/BasicInfoPopup";
 import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
-import BlockListPopup from "../popups/BlockListPopup";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -19,7 +18,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
-  const [showBlockList, setShowBlockList] = useState(false);
   const { user } = useUser();
 
   return (
@@ -29,7 +27,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         setShowBasicInfo={setShowBasicInfo}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
-        setShowBlockList={setShowBlockList}
       />
       {children}
       <ProfilePopup
@@ -46,10 +43,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         onClose={() => setShowTournamentStats(false)}
       />
       <FriendsPopup open={showFriends} onClose={() => setShowFriends(false)} />
-      <BlockListPopup
-        open={showBlockList}
-        onClose={() => setShowBlockList(false)}
-      />
     </Background>
   );
 };

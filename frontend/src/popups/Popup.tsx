@@ -7,7 +7,7 @@ interface PopupProps {
   onClose: () => void;
 }
 
-const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const Popup: React.FC<PopupProps> = ({ open, onClose }) => {
 
   return (
     <PopupCard open={open} onClose={onClose}>
@@ -16,4 +16,4 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   );
 };
 
-export default BasicInfoPopup;
+export default Popup;

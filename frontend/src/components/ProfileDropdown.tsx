@@ -10,7 +10,6 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
-  setShowBlockList: (open: boolean) => void;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -18,7 +17,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
-  setShowBlockList,
 }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -50,13 +48,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       onClick: () => {
         setOpen(false);
         setShowFriends(true);
-      },
-    },
-    {
-      label: "BLOCK LIST",
-      onClick: () => {
-        setOpen(false);
-        setShowBlockList(true);
       },
     },
     {
