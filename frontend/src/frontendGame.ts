@@ -1,29 +1,32 @@
-import { showLobby, scaledWidth, scaledHeight } from "./main.ts";
+import { showLobby } from "./frontendLobby.ts";
+import { scaledWidth, scaledHeight } from "./main.ts";
+import { initChatConnection, initChatUI } from "./globalChat.ts";
 
 //declare these two custom properties
 declare global {
 	interface Window {
 		pongCountdownStarted?: boolean;
 		pongCountdownEnd?: number;
-		chatInitialized?: boolean;
 	}
 }
 
-
-export function startConnection(roomName: string, socket: WebSocket) {
+export function startGame(roomName: string) {
 	createUI();
+
+	initChatConnection();
+	initChatUI();
 
 	sessionStorage.setItem("pongRoomName", roomName);
 
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
 	const roleText = document.getElementById("roleText")!;
 	const scoreText = document.getElementById("scoreText")!;
+	const backBtn = document.getElementById("backLobbyBtn") as HTMLButtonElement;
 
 	let role = "spectator";
 	let clientId = sessionStorage.getItem("pongClientId");
 	let gameOver = false; // game over flag
 	let winner: string | null = null; // winner player
-
 
 	//prevent accidental refresh/close while in game
 	const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
@@ -53,7 +56,8 @@ export function startConnection(roomName: string, socket: WebSocket) {
 			}
 		}
 	};
-	window.addEventListener("contextmenu", (e) => e.preventDefault()); // disable right-click context menu
+	const disableContextMenu = (e: Event) => e.preventDefault();
+	window.addEventListener("contextmenu", disableContextMenu); // disable right-click context menu
 	window.addEventListener("beforeunload", beforeUnloadHandler);
 	window.addEventListener("keydown", keyhandler);
 	window.addEventListener("keyup", keyhandler);
@@ -66,15 +70,26 @@ export function startConnection(roomName: string, socket: WebSocket) {
 		sessionStorage.setItem("pongClientId", clientId);
 	}
 
+	const socket = new WebSocket(
+		`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomName}`
+	);
+
 	// Notify server about the game size once connection is open
 	socket.addEventListener("open", () => {
-		// Send room size to server
 		sendRoomSize(socket, scaledWidth, scaledHeight);
 	});
 
 	socket.onopen = () => console.log("WebSocket connected");
-	socket.onerror = (err) => console.error("WebSocket error:", err);
 	socket.onclose = () => console.log("WebSocket closed");
+	socket.onerror = (err) => console.error("WebSocket error:", err);
+
+	// Back button logic (different for spectators vs players)
+	backBtn.onclick = () => {
+		if (backBtn.disabled) return;
+		cleanUp(false);
+		document.body.innerHTML = "";
+		showLobby();
+	};
 
 	//receive message from server
 	socket.onmessage = (event) => {
@@ -85,6 +100,12 @@ export function startConnection(roomName: string, socket: WebSocket) {
 			if (data.type === "role") {
 				role = data.role;
 				roleText.textContent = `Room: ${data.roomId} | Role: ${role}`;
+
+				//enable back button if is spectator
+				if (role === "spectator")
+					backBtn.disabled = false;
+				else
+					backBtn.disabled = true;
 			}
 
 			// Game state update
@@ -92,22 +113,15 @@ export function startConnection(roomName: string, socket: WebSocket) {
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner) {
 					gameOver = true;
-					cleanUp();
+					cleanUp(true);
 					winner = data.gameState.result.winner;
+
+					//enable back button after game over
+					backBtn.disabled = false;
 				}
 
 				draw_container(data.gameState, data.isSpectator, winner);
 				scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
-			}
-
-			// Chat messages
-			if (data.type === "chat") {
-				const chatBox = document.getElementById("chatBox")!;
-				const msgDiv = document.createElement("div");
-				const time = new Date(data.time).toLocaleTimeString();
-				msgDiv.textContent = `[${time}] ${data.from}: ${data.text}`;
-				chatBox.appendChild(msgDiv);
-				chatBox.scrollTop = chatBox.scrollHeight;
 			}
 		} catch (err) {
 			console.error("Invalid JSON from server:", event.data);
@@ -130,12 +144,19 @@ export function startConnection(roomName: string, socket: WebSocket) {
 	}, 1000 / 60);
 
 	// clean up all event and room after end game
-	function cleanUp() {
-		window.removeEventListener("contextmenu", (e) => e.preventDefault());
+	function cleanUp(quitGame = false) {
+		window.removeEventListener("contextmenu", disableContextMenu);
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
 		window.removeEventListener("keydown", keyhandler);
 		window.removeEventListener("keyup", keyhandler);
 		sessionStorage.removeItem("pongRoomName");
+
+		//if player quit the game
+		if (!quitGame) {
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.close();
+			}
+		}
 	}
 }
 
@@ -156,22 +177,6 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		ctx.fillStyle = "green";
 		ctx.textAlign = "center";
 		ctx.fillText(`Player ${winner} wins!`, canvas.width / 2, canvas.height / 2);
-
-		//back to lobby
-		if (!document.getElementById("backLobbyBtn")) {
-			const btn = document.createElement("button");
-			btn.id = "backLobbyBtn";
-			btn.textContent = "Back to Lobby";
-			btn.style.display = "block";
-			btn.style.margin = "20px auto";
-			btn.style.fontSize = "18px";
-			document.body.appendChild(btn);
-
-			btn.onclick = () => {
-				document.body.innerHTML = "";
-				showLobby();
-			};
-		}
 		return;
 	}
 
@@ -189,13 +194,13 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		ctx.fillText(`Game Paused`, canvas.width / 2, canvas.height / 2);
 
 		// Optional: also show frozen countdown if it exists
-    	if (!state.gameStarted && state.countdown > 0) {
-    	    const remaining = Math.ceil(state.countdown / 60);
-    	    ctx.font = "32px Arial";
-    	    ctx.fillStyle = "gray";
-    	    ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width / 2, canvas.height / 2 + 50);
-    	}
-    	return;
+		if (!state.gameStarted && state.countdown > 0) {
+			const remaining = Math.ceil(state.countdown / 60);
+			ctx.font = "32px Arial";
+			ctx.fillStyle = "gray";
+			ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width / 2, canvas.height / 2 + 50);
+		}
+		return;
 	}
 
 	// Countdown before start
@@ -278,10 +283,19 @@ function createUI() {
 
 	const canvas = document.createElement("canvas");
 	canvas.id = "game";
-	canvas.width = scaledWidth
+	canvas.width = scaledWidth;
 	canvas.height = scaledHeight;
 	canvas.style.border = "5px solid black";
 	document.body.appendChild(canvas);
+
+	// Always show Back to Lobby button
+	const backBtn = document.createElement("button");
+	backBtn.id = "backLobbyBtn";
+	backBtn.textContent = "Back to Lobby";
+	backBtn.style.display = "block";
+	backBtn.style.margin = "20px auto";
+	backBtn.style.fontSize = "18px";
+	document.body.appendChild(backBtn);
 }
 
 function sendRoomSize(ws: WebSocket, width: number, height: number) {
@@ -290,47 +304,4 @@ function sendRoomSize(ws: WebSocket, width: number, height: number) {
 		ws.send(JSON.stringify({ type: "setHeight", height }));
 		console.log(`send room size: ${width}x${height}`);
 	}
-}
-
-
-// --- Shared Chat UI ---
-export function createChatUI(socket: WebSocket) {
-    let chatBox = document.getElementById("chatBox");
-    if (!chatBox) {
-        chatBox = document.createElement("div");
-        chatBox.id = "chatBox";
-        chatBox.style.position = "absolute";
-        chatBox.style.bottom = "60px";
-        chatBox.style.right = "20px";
-        chatBox.style.width = "300px";
-        chatBox.style.height = "200px";
-        chatBox.style.overflowY = "auto";
-        chatBox.style.border = "2px solid gray";
-        chatBox.style.background = "rgba(255,255,255,0.8)";
-        chatBox.style.padding = "5px";
-        document.body.appendChild(chatBox);
-    }
-
-    let chatInput = document.getElementById("chatInput") as HTMLInputElement;
-    if (!chatInput) {
-        chatInput = document.createElement("input");
-        chatInput.id = "chatInput";
-        chatInput.type = "text";
-        chatInput.placeholder = "Type a message and press Enter...";
-        chatInput.style.position = "absolute";
-        chatInput.style.bottom = "20px";
-        chatInput.style.right = "20px";
-        chatInput.style.width = "300px";
-        document.body.appendChild(chatInput);
-    }
-
-    if (!chatInput.dataset.bound) {
-        chatInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && chatInput.value.trim() !== "") {
-                socket.send(JSON.stringify({ type: "chat", text: chatInput.value.trim() }));
-                chatInput.value = "";
-            }
-        });
-        chatInput.dataset.bound = "true";  // mark as bound
-    }
 }
