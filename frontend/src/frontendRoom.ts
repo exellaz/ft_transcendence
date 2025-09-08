@@ -1,5 +1,6 @@
 import { detemineSide } from "./utils.ts";
 import { startGame } from "./frontendGame.ts";
+import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
 export async function startRoom(roomId: string, leaderId: string) {
@@ -45,6 +46,11 @@ export async function startRoom(roomId: string, leaderId: string) {
 	btnStart.style.display = "none";
 	btnStart.disabled = true;
 	lobbyDiv.appendChild(btnStart);
+
+	const btnLeave = document.createElement("button");
+	btnLeave.textContent = "Leave Room";
+	lobbyDiv.appendChild(btnLeave);
+
 
 	// --- Client ID ---
 	let clientId = sessionStorage.getItem("pongClientId");
@@ -115,13 +121,16 @@ export async function startRoom(roomId: string, leaderId: string) {
 			}
 		}
 
-		// clean up all event before starting the game
-		function cleanUp() {
-			window.removeEventListener("contextmenu", (e) => e.preventDefault());
-			window.removeEventListener("beforeunload", beforeUnloadHandler);
-			window.removeEventListener("keydown", keyhandler);
-		}
-  };
+	};
+
+	// clean up all event before starting the game
+	function cleanUp() {
+		window.removeEventListener("contextmenu", (e) => e.preventDefault());
+		window.removeEventListener("beforeunload", beforeUnloadHandler);
+		window.removeEventListener("keydown", keyhandler);
+
+		if (socket.readyState === WebSocket.OPEN) socket.close();
+	}
 
 	// --- Button handlers ---
 	btnSwitch.onclick = () => {
@@ -149,4 +158,10 @@ export async function startRoom(roomId: string, leaderId: string) {
 		}
 		socket.send(JSON.stringify({ type: "start" }));
   	};
+
+	btnLeave.onclick = () => {
+	    cleanUp();
+	    document.body.innerHTML = ""; // clear the room UI
+	    showLobby(); // go back to the lobby
+	};
 }
