@@ -82,32 +82,53 @@ export async function startRoom(roomId: string, leaderId: string) {
 	socket.onmessage = (event) => {
 		const data = JSON.parse(event.data);
 
-		if (data.type === "state" || data.type === "roleUpdate")
-			isLeader = clientId === leaderId;
+		// handle leader change
+		if (data.type === "state" || data.type === "roleUpdate") {
+			// if leaderId is changed, update it
+			if (data.leaderId) {
+				leaderId = data.leaderId;
+				isLeader = clientId === leaderId;
+				btnStart.style.display = isLeader ? "inline-block" : "none";
+			}
+
+			// if the client is the leader, hide the ready button
+			if (isLeader && btnReady) {
+				btnReady.style.display = "none";
+			}
+
+			// debug info
+			if (!isLeader) {
+				console.log(`new leader is ${leaderId}`);
+			}
+		}
 
 		btnStart.style.display = isLeader ? "inline-block" : "none";
 
 		if (data.type === "role" || data.type === "roleUpdate") {
 			role = data.newRole || data.role;
 
+			// hide switch and ready button if spectator
 			if (role === "spectator") {
 				btnSwitch.style.display = "none";
 				btnReady.style.display = "none";
 			}
 
+			// if roles object is provided, update the role accordingly
+			if (data.roles && data.roles[clientId]) {
+				role = data.roles[clientId];
+			}
+
 			btnSwitch.textContent = ready
 				? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
 				: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
-
-			statusText.textContent = `Room: ${roomId} | Role: ${role} | Leader: ${
-				isLeader ? "Yes" : "No"
-			}`;
 		}
 
 		if (data.type === "state") {
 			const leftCount = data.gameState.teams.left.length;
 			const rightCount = data.gameState.teams.right.length;
-			statusText.textContent = `Room ${roomId} | Left: ${leftCount}, Right: ${rightCount}`;
+			statusText.textContent = `Room ${roomId} | Left: ${leftCount} | Right: ${rightCount} | Role: ${role} | Leader: ${
+				isLeader ? "Yes" : "No"
+			}`;
 
 			const canStart = data.canStart ?? false;
 			btnStart.disabled = canStart;

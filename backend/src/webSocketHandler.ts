@@ -93,30 +93,30 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (room.pendingDisconnects.has(clientId)) {
 					clearTimeout(room.pendingDisconnects.get(clientId)); //remove timeout
 					room.pendingDisconnects.delete(clientId); //remove from pending disconnects
-                    room.disconnectPlayers.delete(clientId); // mark as reconnected
+					room.disconnectPlayers.delete(clientId); // mark as reconnected
 
-                    //if all player reconnected, unpause game
-                    if (room.disconnectPlayers.size === 0) {
-                        room.gamePaused = false;
-                    }
+					//if all player reconnected, unpause game
+					if (room.disconnectPlayers.size === 0) {
+						room.gamePaused = false;
+					}
 
 					const role = room.clientRoles.get(clientId);
 					console.log(`Player (${role}) [ ${clientId} ] reconnected as ${role} in room ${room.name} (${roomId})`);
 					this.broadcast(room, createChatMessage("system", `${role} reconnect the game.`));
 
-                    //send full state immediately tp reconnect player
-                    socket.send(JSON.stringify({
-                        type: "state",
-                        gameState: {
-                            ...room.gameState,
-                            paused: room.gamePaused,
-                            countdown: room.gameState,
+					//send full state immediately tp reconnect player
+					socket.send(JSON.stringify({
+						type: "state",
+						gameState: {
+							...room.gameState,
+							paused: room.gamePaused,
+							countdown: room.gameState,
 							gameStarted: room.gameState.gameStarted
-                        },
-                        isSpectator: role === "spectator",
-                        leaderId: room.leaderId,
-                        canStart: room.canStart
-                    }));
+						},
+						isSpectator: role === "spectator",
+						leaderId: room.leaderId,
+						canStart: room.canStart
+					}));
 				}
 			}
 		}
@@ -140,10 +140,10 @@ export class WebSocketHandler implements IWebSocketHandler {
 			this.broadcast(room, {
 				type: "state",
 				gameState: {
-                    ...room.gameState,
-                    paused: room.gamePaused,
-                    countdown: room.gameState.countdown,
-                },
+					...room.gameState,
+					paused: room.gamePaused,
+					countdown: room.gameState.countdown,
+				},
 				leaderId: room.leaderId,
 				canStart: room.canStart || false
 			});
@@ -252,47 +252,47 @@ export class WebSocketHandler implements IWebSocketHandler {
 		const prevCanStart = room.canStart;
 
 		// get leader's role
-	    const leaderId = room.leaderId;
-	    const leaderRole = [...room.clientRoles.entries()]
-	        .find(([cid, role]) => cid === leaderId)?.[1];
+		const leaderId = room.leaderId;
+		const leaderRole = [...room.clientRoles.entries()]
+			.find(([cid, role]) => cid === leaderId)?.[1];
 
-        const leftPlayers = room.gameState.teams.left.filter((r: string) => r !== "spectator");
-        const rightPlayers = room.gameState.teams.right.filter((r: string) => r !== "spectator");
+		const leftPlayers = room.gameState.teams.left.filter((r: string) => r !== "spectator");
+		const rightPlayers = room.gameState.teams.right.filter((r: string) => r !== "spectator");
 
-	    const allPlayers = [...leftPlayers, ...rightPlayers];
-        const totalPlayers = allPlayers.length;
+		const allPlayers = [...leftPlayers, ...rightPlayers];
+		const totalPlayers = allPlayers.length;
 
-        const nonLeaderPlayers = leaderRole ? allPlayers.filter(r => r !== leaderRole) : allPlayers;
-        const allReady = nonLeaderPlayers.every((r: string) => room.readyStatus.get(r));
+		const nonLeaderPlayers = leaderRole ? allPlayers.filter(r => r !== leaderRole) : allPlayers;
+		const allReady = nonLeaderPlayers.every((r: string) => room.readyStatus.get(r));
 
 
-        // check if teams are balanced
-        const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
+		// check if teams are balanced
+		const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
 
-        room.canStart = allReady && totalPlayers > 1 && teamsBalanced;
+		room.canStart = allReady && totalPlayers > 1 && teamsBalanced;
 
 		if (room.canStart !== prevCanStart) {
-    	    this.broadcast(room, {
-    	        type: "state",
-    	        gameState: {
-                    ...room.gameState,
-                    paused: room.gamePaused,
-                    countdown: room.gameState.countdown
-                },
-    	        leaderId: room.leaderId,
-    	        canStart: room.canStart,
-                allReady: allReady
-    	    });
-    	}
+			this.broadcast(room, {
+				type: "state",
+				gameState: {
+					...room.gameState,
+					paused: room.gamePaused,
+					countdown: room.gameState.countdown
+				},
+				leaderId: room.leaderId,
+				canStart: room.canStart,
+				allReady: allReady
+			});
+		}
 
-	    // console.log("updateCanStart:", { ////debug
-	    //     allPlayers,
-	    //     leaderRole,
-	    //     nonLeaderPlayers,
-	    //     allReady,
-	    //     totalPlayers,
-	    //     canStart: room.canStart
-	    // });
+		// console.log("updateCanStart:", { ////debug
+		//     allPlayers,
+		//     leaderRole,
+		//     nonLeaderPlayers,
+		//     allReady,
+		//     totalPlayers,
+		//     canStart: room.canStart
+		// });
 	}
 
 	/**
@@ -366,6 +366,31 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// Remove socket and client from room
 		room.sockets.delete(socket);
 		room.clients.delete(socket);
+
+		// --- handle leader leaving ---
+		let leaderChanged = false;
+		if (clientId === room.leaderId) {
+			//check for remaining players except spectators and the leaving leader
+			const remainingPlayers = room.clientRoles
+				? Array.from(room.clientRoles.entries() as Iterable<[any, any]>)
+					  .filter(([id, r]) => r !== "spectator" && id !== clientId)
+					  .map(([id]) => id)
+				: [];
+
+			if (remainingPlayers.length > 0) {
+				room.leaderId = remainingPlayers[0];
+				leaderChanged = true;
+				this.broadcast(room, createChatMessage("system", `leader change to [ ${room.leaderId} ].`));
+				console.log(`Leader [ ${clientId} ] left. New leader is [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
+				this.broadcast(room, {
+					type: "roleUpdate",
+					leaderId: room.leaderId,
+					roles: Object.fromEntries(room.clientRoles)
+				});
+			} else {
+				room.leaderId = "";
+			}
+		}
 
 		//handle disconnect during game
 		if (role && role !== "spectator" && room.gameState.gameStarted) {
@@ -450,21 +475,21 @@ export class WebSocketHandler implements IWebSocketHandler {
 			});
 			return;
 		}
-    }
+	}
 
 	scheduleTimeout(room: any, clientId: string, timeout: number, callback: () => void) {
-	    // clear existing timeout for this client if exists
-	    if (room.pendingDisconnects.has(clientId)) {
-	        clearTimeout(room.pendingDisconnects.get(clientId));
-	        room.pendingDisconnects.delete(clientId);
-	    }
+		// clear existing timeout for this client if exists
+		if (room.pendingDisconnects.has(clientId)) {
+			clearTimeout(room.pendingDisconnects.get(clientId));
+			room.pendingDisconnects.delete(clientId);
+		}
 
-	    const timeoutId = setTimeout(() => {
-	        callback();
-	        room.pendingDisconnects.delete(clientId);
-	    }, timeout);
+		const timeoutId = setTimeout(() => {
+			callback();
+			room.pendingDisconnects.delete(clientId);
+		}, timeout);
 
-	    room.pendingDisconnects.set(clientId, timeoutId);
+		room.pendingDisconnects.set(clientId, timeoutId);
 	}
 
 
