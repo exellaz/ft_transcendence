@@ -200,6 +200,7 @@ export class Game implements IGame {
                             type: "state",
                             gameState: {
                                 ...room.gameState,
+								paused: room.gamePaused,
                                 countdown: room.gameState.countdown,
                             },
                             leaderId: room.leaderId,

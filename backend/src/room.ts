@@ -149,7 +149,7 @@ export function roomEndGame(room: any, forced = false) {
 		return;
 
 	// close the game when is end
-	room.gameStarted = false;
+	room.gameState.gameStarted = false;
 	room.endTime = new Date();
 
 	//stop loop

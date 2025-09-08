@@ -2,6 +2,7 @@ import { WebSocket } from "@fastify/websocket"
 import { Game } from "./game.ts";
 import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "./room.ts";
 import { createChatMessage } from "./chat.ts";
+import { globalChatClients } from "./server.ts";
 
 const game = new Game(); //create game object
 
@@ -65,7 +66,12 @@ export class WebSocketHandler implements IWebSocketHandler {
 				// send initial state immediately
 				socket.send(JSON.stringify({
 					type: "state",
-					gameState: room.gameState,
+					gameState: {
+						...room.gameState,
+						paused: room.gamePaused,
+						countdown: room.gameState.countdown,
+						gameStarted: room.gameState.gameStarted
+					},
 					isSpectator: role === "spectator",
 					leaderId: room.leaderId,
 					canStart: room.canStart || false
@@ -104,7 +110,8 @@ export class WebSocketHandler implements IWebSocketHandler {
                         gameState: {
                             ...room.gameState,
                             paused: room.gamePaused,
-                            countdown: room.gameState.countdown
+                            countdown: room.gameState,
+							gameStarted: room.gameState.gameStarted
                         },
                         isSpectator: role === "spectator",
                         leaderId: room.leaderId,
@@ -278,14 +285,14 @@ export class WebSocketHandler implements IWebSocketHandler {
     	    });
     	}
 
-	    console.log("updateCanStart:", {
-	        allPlayers,
-	        leaderRole,
-	        nonLeaderPlayers,
-	        allReady,
-	        totalPlayers,
-	        canStart: room.canStart
-	    });
+	    // console.log("updateCanStart:", { ////debug
+	    //     allPlayers,
+	    //     leaderRole,
+	    //     nonLeaderPlayers,
+	    //     allReady,
+	    //     totalPlayers,
+	    //     canStart: room.canStart
+	    // });
 	}
 
 	/**
@@ -361,15 +368,14 @@ export class WebSocketHandler implements IWebSocketHandler {
 		room.clients.delete(socket);
 
 		//handle disconnect during game
-		if (role && role !== "spectator") {
+		if (role && role !== "spectator" && room.gameState.gameStarted) {
 			//prevent duplicate disconnect handling
 			if (!room.disconnectPlayers.has(clientId)) {
 				// mark as disconnected instead of removing
 				room.disconnectPlayers.add(clientId);
 
 				//if game start and not paused, pause it
-				if (!room.gamePaused)
-				{
+				if (!room.gamePaused) {
 					room.gamePaused = true;
 					console.log(`Player (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
 					this.broadcast(room, createChatMessage("system", `${role} disconnect.`));
@@ -399,11 +405,19 @@ export class WebSocketHandler implements IWebSocketHandler {
 			return;
 		}
 
-		// handle leave game before game start
+		if (role === "spectator") {
+			console.log(`Spectator [ ${clientId} ] left the room ${room.name} (${roomId}).`);
+			this.broadcast(room, createChatMessage("system", `Spectator left.`));
+			room.clientRoles.delete(clientId);
+			return;
+		}
+
+		// handle leave game before game start / game has ended
 		if (!room.gameState.gameStarted && room.gameState.countdown === 0) {
 			console.log(`Player (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`);
 			this.broadcast(room, createChatMessage("system", `${role} left.`));
 
+			//remove player from team
 			if (role && role !== "spectator") {
 				room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== role);
 				room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== role);
@@ -436,8 +450,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 			});
 			return;
 		}
-
-
     }
 
 	scheduleTimeout(room: any, clientId: string, timeout: number, callback: () => void) {
@@ -463,12 +475,21 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @note Adds message to room chat history and sends to all connected clients
 	*/
 	broadcast(room: any, msg: any) {
-		console.log("Broadcasting message:", msg);
+		// console.log("Broadcasting message:", msg); ////debug
 		room.chatHistory.push(msg);
 		for(const client of room.clients) {
 			if (client.readyState === 1) {
 				client.send(JSON.stringify(msg));
 			}
 		}
+
+		//send this broadcast to global chat as well
+		if (msg.type === "chat") {
+			for (const client of globalChatClients) {
+				if (client.readyState === 1) {
+					client.send(JSON.stringify(msg));
+				}
+			}
+		}
 	}
-};
+}
