@@ -40,9 +40,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
   if (activeTab === "Blocked") users = blocked;
 
   return (
-    <div className="flex flex-row w-full h-full">
+    <div className="flex flex-row w-full h-full gap-6">
       {/* Main View: Tabs and List */}
-      <div className="flex flex-col w-full h-full items-center p-4">
+      <div className="flex flex-col w-[450px] items-center py-2">
         {/* Tabs Header (fixed) */}
         <div className="flex gap-6 border-b border-yellow-400 mb-6">
           {tabs.map((tab) => (
@@ -63,7 +63,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
           ))}
         </div>
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="w-full overflow-y-auto scrollbar-hide">
           {/* Friends Tab */}
           {activeTab === "Friends" && (
             <div className="flex flex-col gap-4">
@@ -126,7 +126,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       </div>
       {/* Extended View: Cascade Card */}
       {selectedUser && (
-        <div className="w-[500px] bg-input-gray rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg animate-slide-in">
+        <div className="w-[450px] bg-input-gray rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg animate-slide-in">
           <Avatar src={selectedUser.avatarUrl} size={80} />
           <span className="text-white font-bold text-2xl mb-4 mt-2">
             {selectedUser.username}
