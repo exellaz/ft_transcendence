@@ -8,6 +8,7 @@ interface FriendTileProps {
   timestamp?: string;
   online?: boolean;
   onClick?: () => void;
+  active?: boolean;
 }
 
 const FriendTile: React.FC<FriendTileProps> = ({
@@ -17,9 +18,13 @@ const FriendTile: React.FC<FriendTileProps> = ({
   timestamp,
   online,
   onClick,
+  active,
 }) => (
   <div
-    className="bg-input-gray rounded-xl p-4 flex items-center cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all gap-4 min-h-[80px]"
+    className={`bg-input-gray rounded-xl p-4 flex items-center cursor-pointer transition-all gap-4 min-h-[80px] 
+      ${
+        active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
+      }`}
     onClick={onClick}
   >
     <Avatar
@@ -36,7 +41,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
         <span
           className={`font-bold ${online ? "text-green-400" : "text-red-400"}`}
         >
-          {username.length > 10 ? username.slice(0,10) + "…" : username}
+          {username.length > 10 ? username.slice(0, 10) + "…" : username}
         </span>
         <span className="text-xs text-gray-400 whitespace-nowrap">
           {timestamp ?? "N/A"}

@@ -7,6 +7,7 @@ interface FriendRequestTileProps {
   onClick?: () => void;
   onAccept?: () => void;
   onReject?: () => void;
+  active?: boolean;
 }
 
 const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
@@ -15,9 +16,13 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
   onClick,
   onAccept,
   onReject,
+  active,
 }) => (
   <div
-    className="bg-input-gray cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all rounded-xl p-4 flex items-center gap-4 w-full min-h-[80px]"
+    className={`bg-input-gray cursor-pointer transition-all rounded-xl p-4 flex items-center gap-4 w-full min-h-[80px] 
+      ${
+        active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
+      }`}
     onClick={onClick}
   >
     <Avatar src={avatarUrl} size={48} />

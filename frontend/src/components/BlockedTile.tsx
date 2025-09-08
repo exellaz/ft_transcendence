@@ -5,15 +5,20 @@ interface BlockedTileProps {
   username: string;
   avatarUrl: string;
   onClick?: () => void;
+  active ?: boolean;
 }
 
 const BlockedTile: React.FC<BlockedTileProps> = ({
   username,
   avatarUrl,
   onClick,
+  active
 }) => (
   <div
-    className="bg-input-gray rounded-xl p-3 flex flex-col items-center cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all "
+    className={`bg-input-gray rounded-xl p-3 flex flex-col items-center cursor-pointer transition-all 
+      ${
+        active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
+      }`}
     onClick={onClick}
   >
     <Avatar src={avatarUrl} size={50} />

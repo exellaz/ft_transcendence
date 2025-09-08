@@ -16,7 +16,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({
   showActions = true,
 }) => (
   <>
-    <Header>Profile</Header>
+    
     <div className="flex flex-col items-center gap-6">
       <div className="flex items-center gap-6">
         <Avatar src={user?.avatarUrl} size={100} />

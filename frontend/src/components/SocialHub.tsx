@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { UserProfile } from "../context/User";
 
 import Avatar from "./Avatar";
 import BlockedTile from "./BlockedTile";
@@ -6,6 +7,7 @@ import Button from "./Button";
 import FriendTile from "./FriendTile";
 import FriendRequestTile from "./FriendRequestTile";
 import Input from "./Input";
+import ProfileContents from "./ProfileContents";
 
 export interface SocialUser {
   uid: string;
@@ -14,6 +16,7 @@ export interface SocialUser {
   lastMessage?: string;
   timestamp?: string;
   online?: boolean;
+  profile: UserProfile;
 }
 
 interface SocialHubProps {
@@ -100,6 +103,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                       ? setSelectedUser(null)
                       : setSelectedUser(user)
                   }
+                  active={selectedUser?.uid === user.uid}
                 />
               ))}
               </div>
@@ -120,6 +124,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                       ? setSelectedUser(null)
                       : setSelectedUser(user)
                   }
+                  active={selectedUser?.uid === user.uid}
                 />
               ))}
             </div>
@@ -136,6 +141,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                       ? setSelectedUser(null)
                       : setSelectedUser(user)
                   }
+                  active={selectedUser?.uid === user.uid}
                 />
               ))}
             </div>
@@ -145,10 +151,10 @@ const SocialHub: React.FC<SocialHubProps> = ({
       {/* Extended View: Cascade Card */}
       {selectedUser && (
         <div className="w-[450px] bg-input-gray rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg animate-slide-in">
-          <Avatar src={selectedUser.avatarUrl} size={80} />
+          {/* <Avatar src={selectedUser.avatarUrl} size={80} />
           <span className="text-white font-bold text-2xl mb-4 mt-2">
             {selectedUser.username}
-          </span>
+          </span> */}
           {activeTab === "Friends" && (
             <>
               <button className="bg-yellow-400 text-black font-bold rounded-full px-6 py-2 mb-2">
@@ -163,24 +169,14 @@ const SocialHub: React.FC<SocialHubProps> = ({
             </>
           )}
           {activeTab === "Blocked" && (
-            <>
-              <button className="bg-yellow-400 text-black font-bold rounded-full px-6 py-2 mb-2">
-                View Profile
-              </button>
-              <button className="bg-green-500 text-white font-bold rounded-full px-6 py-2">
-                Unblock
-              </button>
-            </>
+            <div className="flex flex-col items-center">
+              <ProfileContents user={selectedUser.profile} />
+            </div>
           )}
           {activeTab === "Requests" && (
-            <>
-              <button className="bg-green-500 text-white font-bold rounded-full px-6 py-2 mb-2">
-                Approve
-              </button>
-              <button className="bg-red-500 text-white font-bold rounded-full px-6 py-2">
-                Reject
-              </button>
-            </>
+            <div className="flex flex-col items-center">
+              <ProfileContents user={selectedUser.profile} />
+            </div>
           )}
         </div>
       )}

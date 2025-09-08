@@ -23,7 +23,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const { user } = useUser();
   const menuItems = [
     {
-      label: "PROFILE",
+      label: "MY PROFILE",
       onClick: () => {
         setOpen(false);
         setShowProfile(true);
