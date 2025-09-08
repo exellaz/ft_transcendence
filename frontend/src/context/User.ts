@@ -1,3 +1,11 @@
+export interface UserProfile {
+  id: string;
+  username: string;
+  avatarUrl: string;
+  createdAt: string;
+  stats?: Stats;
+}
+
 export interface User {
   // Basic info
   id: string;
@@ -11,6 +19,7 @@ export interface User {
 
   // Stats
   stats: Stats;
+  detailedStats: DetailedStats;
 
   // Friendships
   friends: Friendship[];
@@ -23,7 +32,6 @@ export interface Stats {
   medals: { gold: number; silver: number; bronze: number };
   tournamentsPlayed: number;
   averageRanking: number;
-  detailed: DetailedStats;
 }
 
 export interface DetailedStats {

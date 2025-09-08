@@ -51,7 +51,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
             </tr>
           </thead>
           <tbody>
-            {user?.stats.detailed.tournaments.map((t, idx) => (
+            {user?.detailedStats.tournaments.map((t, idx) => (
               <tr
                 key={t.tournamentId}
                 className={`text-white ${

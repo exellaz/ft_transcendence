@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
 import type { ReactNode } from "react";
-import type { User } from "./User";
+import type { User, UserProfile } from "./User";
 
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  userProfile: UserProfile | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -28,18 +29,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       medals: { gold: 3, silver: 2, bronze: 1 },
       tournamentsPlayed: 10,
       averageRanking: 2.5,
-      detailed: {
-        tournaments: [
-          { tournamentId: "t1", date: "2025-08-01", ranking: 1 },
-          { tournamentId: "t2", date: "2025-08-15", ranking: 3 },
-          { tournamentId: "t3", date: "2025-08-15", ranking: 2 },
-          { tournamentId: "t4", date: "2025-08-15", ranking: 7 },
-          { tournamentId: "t5", date: "2025-08-15", ranking: 4 },
-          { tournamentId: "t6", date: "2025-08-15", ranking: 3 },
-          { tournamentId: "t7", date: "2025-08-15", ranking: 8 },
-          { tournamentId: "t8", date: "2025-08-15", ranking: 3 },
-        ],
-      },
+    },
+    detailedStats: {
+      tournaments: [
+        { tournamentId: "t1", date: "2025-08-01", ranking: 1 },
+        { tournamentId: "t2", date: "2025-08-15", ranking: 3 },
+        { tournamentId: "t3", date: "2025-08-15", ranking: 2 },
+        { tournamentId: "t4", date: "2025-08-15", ranking: 7 },
+        { tournamentId: "t5", date: "2025-08-15", ranking: 4 },
+        { tournamentId: "t6", date: "2025-08-15", ranking: 3 },
+        { tournamentId: "t7", date: "2025-08-15", ranking: 8 },
+        { tournamentId: "t8", date: "2025-08-15", ranking: 3 },
+      ],
     },
     friends: [
       {
@@ -55,8 +56,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const [user, setUser] = useState<User | null>(fakeUser);
 
+  const userProfile = useMemo(() => {
+    if (!user) return null;
+    return {
+      id: user.id,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
+      stats: user.stats,
+    };
+  }, [user]);
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, userProfile }}>
       {children}
     </UserContext.Provider>
   );

@@ -18,7 +18,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
-  const { user } = useUser();
+  const { userProfile } = useUser();
 
   return (
     <Background>
@@ -32,7 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
-        src={user?.avatarUrl}
+        user={userProfile}
       />
       <BasicInfoPopup
         open={showBasicInfo}
