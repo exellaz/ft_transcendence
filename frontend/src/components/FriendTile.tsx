@@ -6,6 +6,7 @@ interface FriendTileProps {
   avatarUrl: string;
   lastMessage?: string;
   timestamp?: string;
+  online?: boolean;
   onClick?: () => void;
 }
 
@@ -14,22 +15,23 @@ const FriendTile: React.FC<FriendTileProps> = ({
   avatarUrl,
   lastMessage,
   timestamp,
+  online,
   onClick,
 }) => (
   <div
-    className="bg-blue-900 rounded-xl p-4 flex items-center cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all gap-4 w-full min-h-[80px]"
+    className="bg-input-gray rounded-xl p-4 flex items-center cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all gap-4 min-h-[80px]"
     onClick={onClick}
   >
-    <Avatar src={avatarUrl} size={48} />
+    <Avatar src={avatarUrl} size={48} className={online ? "ring-2 ring-green-500 rounded-full" : "ring-2 ring-red-500 rounded-full"}/>
     <div className="flex flex-col flex-1">
-      <span className="text-white font-bold mb-1">{username}</span>
-      <span className="text-xs text-gray-400">
+      <div className="flex flex-row justify-between items-center mb-1">
+        <span className={`font-bold ${online ? "text-green-400" : "text-red-400"}`}>{username}</span>
+        <span className="text-xs text-gray-400 whitespace-nowrap">{timestamp ?? "N/A"}</span>
+      </div>
+      <span className="text-xs text-gray-400 w-full block">
         {lastMessage ?? "No messages"}
       </span>
     </div>
-    <span className="text-xs text-gray-400 whitespace-nowrap">
-      {timestamp ?? "N/A"}
-    </span>
   </div>
 );
 

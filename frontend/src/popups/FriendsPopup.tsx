@@ -17,6 +17,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "See you at the tournament!",
       timestamp: "2025-09-07 14:32",
+      online: true,
     },
     {
       uid: "u2",
@@ -24,45 +25,60 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "GG!",
       timestamp: "2025-09-07 13:10",
+      online: false,
     },
     {
-      uid: "u1",
+      uid: "u3",
       username: "Alice",
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "See you at the tournament!",
       timestamp: "2025-09-07 14:32",
+      online: true,
     },
     {
-      uid: "u2",
+      uid: "u4",
       username: "Bob",
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "GG!",
       timestamp: "2025-09-07 13:10",
+      online: false,
     },
     {
-      uid: "u1",
+      uid: "u5",
       username: "Alice",
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "See you at the tournament!",
       timestamp: "2025-09-07 14:32",
+      online: true,
     },
     {
-      uid: "u2",
+      uid: "u6",
       username: "Bob",
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "GG!",
       timestamp: "2025-09-07 13:10",
+      online: true,
     },
   ];
 
   const requests = [
     {
-      uid: "u5",
+      uid: "u1",
       username: "Eve",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u6",
+      uid: "u2",
+      username: "Frank",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u3",
+      username: "Eve",
+      avatarUrl: "/assets/red-ghost.png",
+    },
+    {
+      uid: "u4",
       username: "Frank",
       avatarUrl: "/assets/red-ghost.png",
     },
@@ -77,22 +93,12 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u5",
+      uid: "u7",
       username: "Eve",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u6",
-      username: "Frank",
-      avatarUrl: "/assets/red-ghost.png",
-    },
-    {
-      uid: "u5",
-      username: "Eve",
-      avatarUrl: "/assets/red-ghost.png",
-    },
-    {
-      uid: "u6",
+      uid: "u8",
       username: "Frank",
       avatarUrl: "/assets/red-ghost.png",
     },
@@ -100,12 +106,12 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
 
   const blocked = [
     {
-      uid: "u3",
+      uid: "u1",
       username: "Charlie",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u4",
+      uid: "u2",
       username: "Dana",
       avatarUrl: "/assets/red-ghost.png",
     },
@@ -120,42 +126,42 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u3",
+      uid: "u5",
       username: "Charlie",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u4",
+      uid: "u6",
       username: "Dana",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u3",
+      uid: "u7",
       username: "Charlie",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u4",
+      uid: "u8",
       username: "Dana",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u3",
+      uid: "u9",
       username: "Charlie",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u4",
+      uid: "u10",
       username: "Dana",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u3",
+      uid: "u11",
       username: "Charlie",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
-      uid: "u4",
+      uid: "u12",
       username: "Dana",
       avatarUrl: "/assets/red-ghost.png",
     },

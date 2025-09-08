@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 
 import Avatar from "./Avatar";
+import BlockedTile from "./BlockedTile";
 import FriendTile from "./FriendTile";
+import FriendRequestTile from "./FriendRequestTile";
+import Input from "./Input";
 
 export interface SocialUser {
   uid: string;
@@ -9,6 +12,7 @@ export interface SocialUser {
   avatarUrl: string;
   lastMessage?: string;
   timestamp?: string;
+  online?: boolean;
 }
 
 interface SocialHubProps {
@@ -40,7 +44,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       {/* Main View: Tabs and List */}
       <div className="flex flex-col w-full h-full items-center p-4">
         {/* Tabs Header (fixed) */}
-        <div className="flex gap-6 border-b border-yellow-400 mb-6 sticky">
+        <div className="flex gap-6 border-b border-yellow-400 mb-6">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -59,11 +63,13 @@ const SocialHub: React.FC<SocialHubProps> = ({
           ))}
         </div>
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto pr-2 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           {/* Friends Tab */}
           {activeTab === "Friends" && (
             <div className="flex flex-col gap-4">
-              {/* TODO: Add search bar and add friend button here */}
+              <div className="flex sticky top-0 bg-card-blue">
+                <Input icon={<img src="/assets/search.png" alt="search.png" className="w-10" />} placeholder="Search friend" />
+              </div>
               {users.map((user) => (
                 <FriendTile
                   key={user.uid}
@@ -71,7 +77,12 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   avatarUrl={user.avatarUrl}
                   lastMessage={user.lastMessage}
                   timestamp={user.timestamp}
-                  onClick={() => setSelectedUser(user)}
+                  online={user.online}
+                  onClick={() =>
+                    selectedUser?.uid === user.uid
+                      ? setSelectedUser(null)
+                      : setSelectedUser(user)
+                  }
                 />
               ))}
             </div>
@@ -80,21 +91,18 @@ const SocialHub: React.FC<SocialHubProps> = ({
           {activeTab === "Requests" && (
             <div className="flex flex-col gap-4">
               {users.map((user) => (
-                <div
+                <FriendRequestTile
                   key={user.uid}
-                  className="bg-blue-900 rounded-xl p-4 flex items-center gap-4"
-                >
-                  <Avatar src={user.avatarUrl} size={48} />
-                  <span className="text-white font-bold flex-1">
-                    {user.username}
-                  </span>
-                  <button className="bg-green-500 text-white font-bold rounded-full px-4 py-1 mr-2">
-                    ✓
-                  </button>
-                  <button className="bg-red-500 text-white font-bold rounded-full px-4 py-1">
-                    ✗
-                  </button>
-                </div>
+                  username={user.username}
+                  avatarUrl={user.avatarUrl}
+                  onAccept={() => alert("Friend request accepted!")}
+                  onReject={() => alert("Friend request rejected!")}
+                  onClick={() =>
+                    selectedUser?.uid === user.uid
+                      ? setSelectedUser(null)
+                      : setSelectedUser(user)
+                  }
+                />
               ))}
             </div>
           )}
@@ -102,16 +110,15 @@ const SocialHub: React.FC<SocialHubProps> = ({
           {activeTab === "Blocked" && (
             <div className="grid grid-cols-3 gap-4">
               {users.map((user) => (
-                <div
-                  key={user.uid}
-                  className="bg-blue-900 rounded-xl p-4 flex flex-col items-center cursor-pointer hover:ring-2 hover:ring-yellow-400 transition-all"
-                  onClick={() => setSelectedUser(user)}
-                >
-                  <Avatar src={user.avatarUrl} size={48} />
-                  <span className="text-white font-bold mt-2">
-                    {user.username}
-                  </span>
-                </div>
+                <BlockedTile
+                  username={user.username}
+                  avatarUrl={user.avatarUrl}
+                  onClick={() =>
+                    selectedUser?.uid === user.uid
+                      ? setSelectedUser(null)
+                      : setSelectedUser(user)
+                  }
+                />
               ))}
             </div>
           )}
@@ -119,7 +126,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       </div>
       {/* Extended View: Cascade Card */}
       {selectedUser && (
-        <div className="flex-1 bg-blue-800 rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg animate-slide-in ml-6">
+        <div className="w-[500px] bg-input-gray rounded-3xl p-8 flex flex-col items-center justify-center shadow-lg animate-slide-in">
           <Avatar src={selectedUser.avatarUrl} size={80} />
           <span className="text-white font-bold text-2xl mb-4 mt-2">
             {selectedUser.username}
