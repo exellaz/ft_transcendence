@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import Avatar from "./Avatar";
 import BlockedTile from "./BlockedTile";
+import Button from "./Button";
 import FriendTile from "./FriendTile";
 import FriendRequestTile from "./FriendRequestTile";
 import Input from "./Input";
@@ -67,9 +68,25 @@ const SocialHub: React.FC<SocialHubProps> = ({
           {/* Friends Tab */}
           {activeTab === "Friends" && (
             <div className="flex flex-col gap-4">
-              <div className="flex sticky top-0 bg-card-blue">
-                <Input icon={<img src="/assets/search.png" alt="search.png" className="w-10" />} placeholder="Search friend" />
+              {/* Search Bar & Add Friend Button */}
+              <div className="sticky top-0 flex items-center gap-2 -mb-5 bg-card-blue">
+                <div className="flex-2">
+                  <Input
+                    icon={
+                      <img
+                        src="/assets/search.png"
+                        alt="search.png"
+                        className="w-10"
+                      />
+                    }
+                    placeholder="Search friend"
+                  />
+                </div>
+                <Button className="flex-1 mb-5">
+                  Add Friend
+                </Button>
               </div>
+              <div className="my-1 p-1 flex flex-col gap-4">
               {users.map((user) => (
                 <FriendTile
                   key={user.uid}
@@ -85,11 +102,12 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   }
                 />
               ))}
+              </div>
             </div>
           )}
           {/* Requests Tab */}
           {activeTab === "Requests" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 p-1">
               {users.map((user) => (
                 <FriendRequestTile
                   key={user.uid}
@@ -108,7 +126,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
           )}
           {/* Blocked Tab */}
           {activeTab === "Blocked" && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 p-1">
               {users.map((user) => (
                 <BlockedTile
                   username={user.username}
