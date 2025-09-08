@@ -17,7 +17,9 @@ const BlockedTile: React.FC<BlockedTileProps> = ({
     onClick={onClick}
   >
     <Avatar src={avatarUrl} size={50} />
-    <span className="text-white font-bold mt-2">{username}</span>
+    <span className="text-white font-bold mt-2">
+      {username.length > 10 ? username.slice(0, 10) + "…" : username}
+    </span>
   </div>
 );
 

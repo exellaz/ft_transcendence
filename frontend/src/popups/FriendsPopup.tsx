@@ -13,7 +13,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const friends = [
     {
       uid: "u1",
-      username: "Alice",
+      username: "Aliceeeeeeeeeeeeeeeeeeee",
       avatarUrl: "/assets/red-ghost.png",
       lastMessage: "See you at the tournament!",
       timestamp: "2025-09-07 14:32",
@@ -64,7 +64,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const requests = [
     {
       uid: "u1",
-      username: "Eve",
+      username: "Eveeeeeeeeeeeeee",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
@@ -107,7 +107,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const blocked = [
     {
       uid: "u1",
-      username: "Charlie",
+      username: "Charlieeeeeeeeeeeeeee",
       avatarUrl: "/assets/red-ghost.png",
     },
     {
