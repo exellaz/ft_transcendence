@@ -121,6 +121,19 @@ fastify.post("/create-room", async (req, reply) => {
 	};
 });
 
+fastify.post("/room/:roomId/setting", async (req, reply) => {
+	const { roomId } = req.params as { roomId: string };
+	const room = rooms.get(roomId);
+	if (!room) {
+		return reply.code(404).send({ error: "Room not found" });
+	}
+
+	const { ballSpeed, paddleHeight } = req.body as { ballSpeed?: number; paddleHeight?: number };
+	room.ballSpeed = ballSpeed ?? room.ballSpeed;
+	room.paddleHeight = paddleHeight ?? room.paddleHeight;
+	return { success: true };
+});
+
 /**
  * @brief HTTP endpoint to get recent match records.
  * @param limit Optional query parameter to limit number of records (default 10)

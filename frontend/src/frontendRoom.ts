@@ -1,7 +1,10 @@
-import { detemineSide } from "./utils.ts";
+import { detemineSide, roomSetting } from "./utils.ts";
 import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
+
+const BALLSPEED = 20;
+const PADDLEHEIGHT = 10;
 
 export async function startRoom(roomId: string, leaderId: string) {
 	document.body.innerHTML = ""; // clear lobby
@@ -60,6 +63,8 @@ export async function startRoom(roomId: string, leaderId: string) {
 		  .padStart(6, "0");
 	}
 	sessionStorage.setItem("pongClientId", clientId);
+
+	await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT);
 
 	let role = "spectator";
 	let isLeader = clientId === leaderId;

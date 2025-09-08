@@ -1,5 +1,5 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game, ballSpeed } from "./game.ts"; // import game loop
+import { Game } from "./game.ts"; // import game loop
 import { ChatMessage } from "./chat.ts"; // import chat message type
 import { saveMatchResult } from "./database.ts";
 
@@ -12,6 +12,8 @@ export interface Room {
 	teamSize: number;
 	width: number;
 	height: number;
+	ballSpeed: number;
+	paddleHeight: number;
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number };
 		paddles: { [key: string]: number }; //key: client id, value: paddle y position
@@ -77,8 +79,10 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		teamSize,
 		width,
 		height,
+		ballSpeed: 1,
+		paddleHeight: 80,
 		gameState: {
-            ball: { x: width / 2, y: height / 2, dx: ballSpeed, dy: ballSpeed },
+            ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
 			paddles: {},
 			teams: { left: [], right: [] },
 			score: { left: 0, right: 0 },
@@ -135,6 +139,7 @@ export function startRoomLoop(room: Room) {
 export function roomStartGame(room: Room) {
 	if (!room.gameState.gameStarted && !room.gameState.countdown) {
 		room.startTime = new Date();
+		room.game.resetBall(room, "left");
 	}
 }
 

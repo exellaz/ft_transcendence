@@ -2,10 +2,6 @@ import { count } from "console";
 import type { Room } from "./room.ts";
 import { rooms, roomEndGame } from "./room.ts";
 
-
-// Ball speed constant
-export const ballSpeed = 1;
-
 /**
  * @brief Interface for Game class method
 */
@@ -36,8 +32,8 @@ export class Game implements IGame {
 
 		// Normalize to constant speed
 		const length = Math.sqrt(dx * dx + dy * dy);
-		ball.dx = (dx / length) * ballSpeed;
-		ball.dy = (dy / length) * ballSpeed;
+		ball.dx = (dx / length) * room.ballSpeed;
+		ball.dy = (dy / length) * room.ballSpeed;
 	}
 
 	/**
@@ -45,7 +41,7 @@ export class Game implements IGame {
 	 * @param room The game room
 	*/
 	setPaddlePositionWithTeam(room: Room) {
-		const paddleHeight = 80; //paddle size
+		const paddleHeight = room.paddleHeight; //paddle size
 		const h = room.height; //room height
 		const gap = 20; //gap from wall
 
@@ -108,7 +104,7 @@ export class Game implements IGame {
 		ball.x += ball.dx;
 		ball.y += ball.dy;
 
-		const paddleHeight = 80;
+		const paddleHeight = room.paddleHeight;
 		const paddleWidth = 20;
 		const ballRadius = 10;
 
