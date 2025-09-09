@@ -18,11 +18,11 @@ export interface User {
   status: "online" | "offline" | "in-game";
 
   // Stats
-  stats: Stats;
-  detailedStats: DetailedStats;
+  stats?: Stats;
+  detailedStats?: DetailedStats;
 
   // Friendships
-  friends: Friendship[];
+  friends?: Friendship[];
 
   // Settings
   settings: UserSettings;
