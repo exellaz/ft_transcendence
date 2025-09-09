@@ -15,6 +15,7 @@ interface MessagingProps {
   recipient: {
     username: string;
     avatarUrl: string;
+    online: boolean;
     profile: any; // Use your ProfileUser type here
   };
   messages: Message[];
@@ -44,7 +45,7 @@ const Messaging: React.FC<MessagingProps> = ({ recipient, messages }) => {
   }
 
   return (
-    <div className="bg-[#1a2340] rounded-3xl flex flex-col h-full w-full">
+    <div className="rounded-3xl flex flex-col h-full w-full">
       {/* Header */}
       <div
         className="flex items-center gap-4 px-4 py-3 border-b border-gray-300 cursor-pointer"
@@ -54,9 +55,19 @@ const Messaging: React.FC<MessagingProps> = ({ recipient, messages }) => {
         <span className="font-bold text-xl text-white">
           {recipient.username}
         </span>
+        {/* Status */}
+        <span
+          className={`ml-auto text-sm font-semibold px-3 py-1 rounded-full ${
+            recipient.online
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          {recipient.online ? "Online" : "Offline"}
+        </span>
       </div>
       {/* Messages */}
-      <div className="bg-input-gray flex-1 overflow-y-auto scrollbar-hide p-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide p-4">
         <div className="flex flex-col gap-3">
           {messages.map((msg) => (
             <div

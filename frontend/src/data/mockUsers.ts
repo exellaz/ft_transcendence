@@ -18,10 +18,30 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "me", text: "Hey Sophia! Are you joining the tournament tonight?", timestamp: "2025-09-07 14:00" },
-      { id: "m2", sender: "recipient", text: "Hi! Yes, I’ll be there. Are you ready?", timestamp: "2025-09-07 14:05" },
-      { id: "m3", sender: "me", text: "Almost! Just practicing a bit more.", timestamp: "2025-09-07 14:10" },
-      { id: "m4", sender: "recipient", text: "Great! See you soon.", timestamp: "2025-09-07 14:32" },
+      {
+        id: "m1",
+        sender: "me",
+        text: "Hey Sophia! Are you joining the tournament tonight?",
+        timestamp: "2025-09-07 14:00",
+      },
+      {
+        id: "m2",
+        sender: "recipient",
+        text: "Hi! Yes, I’ll be there. Are you ready?",
+        timestamp: "2025-09-07 14:05",
+      },
+      {
+        id: "m3",
+        sender: "me",
+        text: "Almost! Just practicing a bit more.",
+        timestamp: "2025-09-07 14:10",
+      },
+      {
+        id: "m4",
+        sender: "recipient",
+        text: "Great! See you soon.",
+        timestamp: "2025-09-07 14:32",
+      },
     ],
   },
   {
@@ -43,10 +63,30 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "recipient", text: "Hey, did you check the new update?", timestamp: "2025-09-07 12:50" },
-      { id: "m2", sender: "me", text: "Not yet, is it good?", timestamp: "2025-09-07 12:55" },
-      { id: "m3", sender: "recipient", text: "Yeah, lots of bug fixes and a new map!", timestamp: "2025-09-07 13:00" },
-      { id: "m4", sender: "me", text: "Awesome, let’s try it tomorrow.", timestamp: "2025-09-07 13:10" },
+      {
+        id: "m1",
+        sender: "recipient",
+        text: "Hey, did you check the new update?",
+        timestamp: "2025-09-07 12:50",
+      },
+      {
+        id: "m2",
+        sender: "me",
+        text: "Not yet, is it good?",
+        timestamp: "2025-09-07 12:55",
+      },
+      {
+        id: "m3",
+        sender: "recipient",
+        text: "Yeah, lots of bug fixes and a new map!",
+        timestamp: "2025-09-07 13:00",
+      },
+      {
+        id: "m4",
+        sender: "me",
+        text: "Awesome, let’s try it tomorrow.",
+        timestamp: "2025-09-07 13:10",
+      },
     ],
   },
   {
@@ -68,10 +108,30 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "me", text: "Olivia, want to practice later?", timestamp: "2025-09-06 18:00" },
-      { id: "m2", sender: "recipient", text: "Sure! What time?", timestamp: "2025-09-06 18:10" },
-      { id: "m3", sender: "me", text: "How about 7pm?", timestamp: "2025-09-06 18:20" },
-      { id: "m4", sender: "recipient", text: "Works for me. See you then!", timestamp: "2025-09-06 18:45" },
+      {
+        id: "m1",
+        sender: "me",
+        text: "Olivia, want to practice later?",
+        timestamp: "2025-09-06 18:00",
+      },
+      {
+        id: "m2",
+        sender: "recipient",
+        text: "Sure! What time?",
+        timestamp: "2025-09-06 18:10",
+      },
+      {
+        id: "m3",
+        sender: "me",
+        text: "How about 7pm?",
+        timestamp: "2025-09-06 18:20",
+      },
+      {
+        id: "m4",
+        sender: "recipient",
+        text: "Works for me. See you then!",
+        timestamp: "2025-09-06 18:45",
+      },
     ],
   },
   {
@@ -93,8 +153,18 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "recipient", text: "Good luck in the finals!", timestamp: "2025-09-05 20:00" },
-      { id: "m2", sender: "me", text: "Thanks Noah! Root for me!", timestamp: "2025-09-05 20:12" },
+      {
+        id: "m1",
+        sender: "recipient",
+        text: "Good luck in the finals!",
+        timestamp: "2025-09-05 20:00",
+      },
+      {
+        id: "m2",
+        sender: "me",
+        text: "Thanks Noah! Root for me!",
+        timestamp: "2025-09-05 20:12",
+      },
     ],
   },
   {
@@ -116,9 +186,24 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "me", text: "Emma, congrats on your win!", timestamp: "2025-09-04 16:00" },
-      { id: "m2", sender: "recipient", text: "Thank you! You played well too.", timestamp: "2025-09-04 16:10" },
-      { id: "m3", sender: "me", text: "Let’s celebrate soon.", timestamp: "2025-09-04 16:30" },
+      {
+        id: "m1",
+        sender: "me",
+        text: "Emma, congrats on your win!",
+        timestamp: "2025-09-04 16:00",
+      },
+      {
+        id: "m2",
+        sender: "recipient",
+        text: "Thank you! You played well too.",
+        timestamp: "2025-09-04 16:10",
+      },
+      {
+        id: "m3",
+        sender: "me",
+        text: "Let’s celebrate soon.",
+        timestamp: "2025-09-04 16:30",
+      },
     ],
   },
   {
@@ -140,8 +225,18 @@ export const friends = [
       },
     },
     messages: [
-      { id: "m1", sender: "recipient", text: "Let’s team up next time!", timestamp: "2025-09-03 11:00" },
-      { id: "m2", sender: "me", text: "Definitely! We’ll be unstoppable.", timestamp: "2025-09-03 11:05" },
+      {
+        id: "m1",
+        sender: "recipient",
+        text: "Let’s team up next time!",
+        timestamp: "2025-09-03 11:00",
+      },
+      {
+        id: "m2",
+        sender: "me",
+        text: "Definitely! We’ll be unstoppable.",
+        timestamp: "2025-09-03 11:05",
+      },
     ],
   },
 ];

@@ -25,20 +25,20 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       <div className="w-full flex flex-col items-center gap-6">
         <Subheader>Summary</Subheader>
         <Medals
-          gold={user?.stats.medals.gold}
-          silver={user?.stats.medals.silver}
-          bronze={user?.stats.medals.bronze}
+          gold={user?.stats?.medals.gold}
+          silver={user?.stats?.medals.silver}
+          bronze={user?.stats?.medals.bronze}
         />
         <div className="flex gap-6">
           <StatsBadge
             className="flex-1"
             label="Tournaments Played"
-            value={user?.stats.tournamentsPlayed}
+            value={user?.stats?.tournamentsPlayed}
           />
           <StatsBadge
             className="flex-1"
             label="Average Ranking"
-            value={user?.stats.averageRanking}
+            value={user?.stats?.averageRanking}
           />
         </div>
         <Subheader>Tournament History</Subheader>
@@ -51,11 +51,11 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
             </tr>
           </thead>
           <tbody>
-            {user?.detailedStats.tournaments.map((t, idx) => (
+            {user?.detailedStats?.tournaments.map((t, idx) => (
               <tr
                 key={t.tournamentId}
                 className={`text-white ${
-                  idx % 2 === 0 ? "bg-card-blue-accent" : ""
+                  idx % 2 === 0 ? "bg-input-gray" : ""
                 } border-b border-input-gray`}
               >
                 <td className="py-2 px-4">{idx + 1}</td>

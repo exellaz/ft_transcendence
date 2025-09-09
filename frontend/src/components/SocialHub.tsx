@@ -151,7 +151,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       </div>
       {/* Extended View: Cascade Card */}
       {selectedUser && (
-        <div className="w-[450px] border-gray-300 border-3 bg-input-gray rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
+        <div className="w-[450px] border-gray-300 border-3 rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
           {activeTab === "Friends" && (
             <Messaging
               recipient={selectedUser}
