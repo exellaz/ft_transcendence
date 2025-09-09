@@ -234,9 +234,12 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param role The role of the client (player, spectator, etc.)
 	 * @param roomId The ID of the room
 	*/
-	handleDisconnect(socket: any, room: any, clientId: string, role:string, roomId: string) {
+	handleDisconnect(socket: any, room: any, clientId: string, _role:string, roomId: string) {
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;
+
+        // always trust the latest role from the server mapping
+        const role = room.clientRoles.get(clientId);
 
 		// Remove socket and client from room
 		room.sockets.delete(socket);
@@ -323,6 +326,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== role);
 				room.readyStatus.delete(role);
 				room.clientRoles.delete(clientId);
+                delete room.gameState.paddles[role];
 			}
 
 			broadcast(room, {

@@ -110,6 +110,7 @@ export function startGame(roomName: string) {
 
 			// Game state update
 			if (data.type === "state") {
+                console.log("game state role:", data.gameState.teams);
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner) {
 					gameOver = true;
