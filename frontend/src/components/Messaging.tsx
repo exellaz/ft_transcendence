@@ -19,37 +19,20 @@ interface MessagingProps {
     profile: any; // Use your ProfileUser type here
   };
   messages: Message[];
+  onProfileClick?: () => void;
 }
 
-const Messaging: React.FC<MessagingProps> = ({ recipient, messages }) => {
-  const [showProfile, setShowProfile] = useState(false);
-
-  if (showProfile) {
-    return (
-      <div className="flex flex-col items-center">
-        <ProfileContents user={recipient.profile} />
-        <div className="flex gap-6 mt-6">
-          <Button
-            variant="yellow"
-            className="flex-1"
-            onClick={() => setShowProfile(false)}
-          >
-            Back to Chat
-          </Button>
-          <Button variant="red" className="flex-1">
-            Block
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
+const Messaging: React.FC<MessagingProps> = ({
+  recipient,
+  messages,
+  onProfileClick,
+}) => {
   return (
     <div className="rounded-3xl flex flex-col h-full w-full">
       {/* Header */}
       <div
         className="flex items-center gap-4 px-4 py-3 border-b border-gray-300 cursor-pointer"
-        onClick={() => setShowProfile(true)}
+        onClick={onProfileClick}
       >
         <Avatar src={recipient.avatarUrl} size={40} />
         <span className="font-bold text-xl text-white">

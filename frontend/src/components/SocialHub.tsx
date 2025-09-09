@@ -3,11 +3,10 @@ import type { UserProfile } from "../context/User";
 
 import BlockedTile from "./BlockedTile";
 import Button from "./Button";
+import CascadeCard from "./CascadeCard";
 import FriendTile from "./FriendTile";
 import FriendRequestTile from "./FriendRequestTile";
 import Input from "./Input";
-import Messaging from "./Messaging";
-import ProfileContents from "./ProfileContents";
 
 export interface SocialUser {
   uid: string;
@@ -151,30 +150,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       </div>
       {/* Extended View: Cascade Card */}
       {selectedUser && (
-        <div className="w-[450px] border-gray-300 border-3 rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
-          {activeTab === "Friends" && (
-            <Messaging
-              recipient={selectedUser}
-              messages={selectedUser.messages}
-            />
-          )}
-          {activeTab === "Requests" && (
-            <div className="flex flex-col items-center">
-              <ProfileContents user={selectedUser.profile} />
-              <Button variant="red" className="mt-6">
-                Block
-              </Button>
-            </div>
-          )}
-          {activeTab === "Blocked" && (
-            <div className="flex flex-col items-center">
-              <ProfileContents user={selectedUser.profile} />
-              <Button variant="red" className="mt-6">
-                Unblock
-              </Button>
-            </div>
-          )}
-        </div>
+        <CascadeCard selectedUser={selectedUser} activeTab={activeTab} />
       )}
     </div>
   );
