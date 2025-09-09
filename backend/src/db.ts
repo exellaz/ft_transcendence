@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 // Resolve path to data/app.db relative to project root
-const dataDir = path.resolve("./data");
+const dataDir = path.resolve("./database");
 const dbPath = path.join(dataDir, "app.db");
 
 // Ensure the directory exists
