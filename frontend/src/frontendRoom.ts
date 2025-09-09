@@ -66,7 +66,7 @@ export async function startRoom(roomId: string, leaderId: string) {
 
 	await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT);
 
-	let role = "spectator";
+	let role = clientId === leaderId ? "left_player1" : "spectator";
 	let isLeader = clientId === leaderId;
 	let ready = false;
 	let gameStarted = false;
