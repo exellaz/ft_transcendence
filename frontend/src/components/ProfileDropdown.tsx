@@ -61,17 +61,22 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   return (
     <div className="fixed top-10 right-10">
       <Button
+        variant="profile"
         onClick={() => setOpen(!open)}
-        className="flex items-center rounded-full px-4 shadow"
+        className="flex items-center px-4 shadow"
       >
-        <Avatar src={user?.avatarUrl} size={80} />
-        <span className="w-24 mx-2 font-bold text-lg hover:text-white text-card-blue overflow-hidden">
-          {user?.username || "Username"}
-        </span>
+        <div>
+          <Avatar src={user?.avatarUrl} size={80} className="mr-4" />
+        </div>
+        {user?.username
+          ? user.username.length > 8
+            ? user.username.slice(0, 8) + "..."
+            : user.username
+          : "Username"}
       </Button>
 
       {open && (
-        <div className="flex flex-col mt-2 mx-4">
+        <div className="flex flex-col mt-2 ml-6">
           {menuItems.map((item) => (
             <Button variant="dropdown" onClick={item.onClick}>
               {item.label}

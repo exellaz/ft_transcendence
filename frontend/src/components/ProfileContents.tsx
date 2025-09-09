@@ -41,14 +41,6 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({
           value={user?.stats?.averageRanking}
         />
       </div>
-        {/* <div className="flex gap-6">
-          <Button variant="yellow" className="flex-1">
-            Add Friend
-          </Button>
-          <Button variant="yellow" className="flex-1">
-            Block
-          </Button>
-        </div> */}
     </div>
   </>
 );

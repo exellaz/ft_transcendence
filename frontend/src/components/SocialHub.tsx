@@ -86,7 +86,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
                     placeholder="Search friend"
                   />
                 </div>
-                <Button className="flex-1 mb-5">Add Friend</Button>
+                <Button variant="yellow" className="flex-1 mb-5">
+                  Add Friend
+                </Button>
               </div>
               <div className="my-1 p-1 flex flex-col gap-4">
                 {users.map((user) => (
@@ -149,24 +151,27 @@ const SocialHub: React.FC<SocialHubProps> = ({
       </div>
       {/* Extended View: Cascade Card */}
       {selectedUser && (
-        <div className="w-[450px] bg-input-gray rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
+        <div className="w-[450px] border-gray-300 border-3 bg-input-gray rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
           {activeTab === "Friends" && (
             <Messaging
               recipient={selectedUser}
               messages={selectedUser.messages}
             />
           )}
-          {activeTab === "Blocked" && (
-            <div className="flex flex-col items-center">
-              <ProfileContents user={selectedUser.profile} />
-              <Button variant="yellow">
-                Unblock
-              </Button>
-            </div>
-          )}
           {activeTab === "Requests" && (
             <div className="flex flex-col items-center">
               <ProfileContents user={selectedUser.profile} />
+              <Button variant="red" className="mt-6">
+                Block
+              </Button>
+            </div>
+          )}
+          {activeTab === "Blocked" && (
+            <div className="flex flex-col items-center">
+              <ProfileContents user={selectedUser.profile} />
+              <Button variant="red" className="mt-6">
+                Unblock
+              </Button>
             </div>
           )}
         </div>

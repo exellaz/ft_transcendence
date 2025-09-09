@@ -14,7 +14,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // todo: update with real user data from backend
   const fakeUser: User = {
     id: "12958433",
-    username: "ghosty",
+    username: "ghostyyyyyyyyyyyy",
     email: "ghosty@gmail.com",
     avatarUrl: "/assets/red-ghost.png",
     isActive: true,
