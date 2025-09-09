@@ -8,12 +8,10 @@ import type { UserProfile } from "../context/User";
 
 interface ProfileContentsProps {
   user: UserProfile | null;
-  showActions?: boolean;
 }
 
 const ProfileContents: React.FC<ProfileContentsProps> = ({
   user,
-  showActions = true,
 }) => (
   <>
     
@@ -43,16 +41,14 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({
           value={user?.stats?.averageRanking}
         />
       </div>
-      {showActions && (
-        <div className="flex gap-6">
+        {/* <div className="flex gap-6">
           <Button variant="yellow" className="flex-1">
             Add Friend
           </Button>
           <Button variant="yellow" className="flex-1">
             Block
           </Button>
-        </div>
-      )}
+        </div> */}
     </div>
   </>
 );

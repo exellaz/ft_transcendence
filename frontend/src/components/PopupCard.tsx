@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Popup from "./Popup";
 
 interface PopupCardProps {
@@ -16,6 +16,16 @@ const PopupCard: React.FC<PopupCardProps> = ({
   size,
   className = "",
 }) => {
+  // escape key will close the popup
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   let sizeClass = "";
   if (size === "large") sizeClass = "w-3/5";
   else if (size === "small") sizeClass = "w-1/4";

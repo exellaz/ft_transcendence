@@ -159,6 +159,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
           {activeTab === "Blocked" && (
             <div className="flex flex-col items-center">
               <ProfileContents user={selectedUser.profile} />
+              <Button variant="yellow">
+                Unblock
+              </Button>
             </div>
           )}
           {activeTab === "Requests" && (
