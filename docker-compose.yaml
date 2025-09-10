@@ -21,7 +21,7 @@ services:
     volumes:
       - ./backend:/app # bind mount
       - /app/node_modules  # anonymous volume for container's node_modules
-      - sqlite-data:/app/data
+      - sqlite-data:/app/database
 networks:
   appnet:
     driver: bridge
