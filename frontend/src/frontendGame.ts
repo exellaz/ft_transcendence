@@ -117,7 +117,8 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 				console.log("roomName: ", roomName);
 
 				// Set winner/game over if exists
-				if (data.gameState.result?.winner) {
+				if (data.gameState.result?.winner && !gameOver) {
+					console.log("Game Over. Winner:", data.gameState.result.winner);
 					gameOver = true;
 					cleanUp(true);
 					winner = data.gameState.result.winner;
@@ -127,8 +128,8 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 				}
 
 				//prevent player click back button during game
-				if (role !== "spectator")
-					backBtn.disabled = true;
+				if (role !== "spectator" )
+					backBtn.disabled = !gameOver;
 				else
 					backBtn.disabled = false;
 
