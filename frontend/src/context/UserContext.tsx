@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { User, UserProfile } from "./User";
 
@@ -20,7 +20,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     isActive: true,
     createdAt: "2025-01-01",
     updatedAt: "2025-09-06",
-    result: "online",
+    status: "online",
     settings: {
       language: "en",
       inGameCameraTracking: "dynamic",
@@ -188,7 +188,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         id: "f1",
         userId: "12958433",
         friendId: "48392017",
-        result: "accepted",
+        status: "accepted",
         createdAt: "2025-02-01",
         updatedAt: "2025-09-01",
       },

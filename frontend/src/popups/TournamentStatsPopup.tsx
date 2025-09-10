@@ -16,8 +16,13 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const { user } = useUser();
   const [expandedIdx, setExpandedIdx] = React.useState<number | null>(null);
 
+  function handleClose() {
+    onClose();
+    setExpandedIdx(null);
+  }
+
   return (
-    <PopupCard open={open} onClose={onClose}>
+    <PopupCard open={open} onClose={handleClose}>
       <div className="overflow-y-auto scrollbar-hide">
         <Header>Tournament Statistics</Header>
         <div className="w-full flex flex-col items-center gap-6">
@@ -117,8 +122,8 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
                                 >
                                   {m.match}
                                 </td>
-                                <td className="py-1 px-2">
-                                  {m.opponentUsername}
+                                <td className="py-1 px-2" title={m.opponentUsername}>
+                                  {m.opponentUsername.length > 10 ? m.opponentUsername.slice(0, 10) + "…" : m.opponentUsername}
                                 </td>
                                 <td className="py-1 px-2">{m.score}</td>
                                 <td className="py-1 px-2 font-bold">

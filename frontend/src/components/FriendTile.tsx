@@ -40,6 +40,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
       <div className="flex flex-row justify-between items-center mb-1">
         <span
           className={`font-bold ${online ? "text-green-400" : "text-red-400"}`}
+          title={username}
         >
           {username.length > 10 ? username.slice(0, 10) + "…" : username}
         </span>

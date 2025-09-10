@@ -28,7 +28,7 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
     onClick={onClick}
   >
     <Avatar src={avatarUrl} size={48} />
-    <span className="text-white font-bold flex-1">
+    <span className="text-white font-bold flex-1" title={username}>
       {username.length > 10 ? username.slice(0, 10) + "…" : username}
     </span>
     <Button

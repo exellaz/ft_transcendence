@@ -16,7 +16,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ user }) => (
         <Avatar src={user?.avatarUrl} size={100} />
       </div>
       <div className="text-left">
-        <p className="text-white text-xl font-bold">
+        <p className="text-white text-xl font-bold" title={user?.username}>
           {user
             ? user?.username.length > 10
               ? user?.username.slice(0, 10) + "…"
