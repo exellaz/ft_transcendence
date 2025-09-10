@@ -89,6 +89,7 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 		if (backBtn.disabled) return;
 		cleanUp(false);
 		document.body.innerHTML = "";
+		if (socket.readyState === WebSocket.OPEN) socket.close();
 		showLobby();
 	};
 

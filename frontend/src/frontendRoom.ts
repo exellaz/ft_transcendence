@@ -192,6 +192,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	btnLeave.onclick = () => {
 	    cleanUp();
 	    document.body.innerHTML = ""; // clear the room UI
+		if (socket.readyState === WebSocket.OPEN) socket.close(); //close socket connection
 	    showLobby(); // go back to the lobby
 	};
 }
