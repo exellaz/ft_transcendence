@@ -12,11 +12,11 @@ export interface SocialUser {
   uid: string;
   username: string;
   avatarUrl: string;
+  profile: UserProfile;
   lastMessage?: string;
   timestamp?: string;
   online?: boolean;
-  profile: UserProfile;
-  messages: any[];
+  messages?: any[];
 }
 
 interface SocialHubProps {

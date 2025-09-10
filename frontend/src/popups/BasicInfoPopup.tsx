@@ -16,13 +16,20 @@ interface PopupProps {
 const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const { user } = useUser();
   const [showAvatarUpload, setShowAvatarUpload] = React.useState(false);
-  const [avatarUploadStatus, setavatarUploadStatus] = useState<
+  const [avatarUploadStatus, setAvatarUploadStatus] = useState<
     null | "success" | "error"
   >(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  function handleClose() {
+    onClose();
+    setShowAvatarUpload(false);
+    setAvatarUploadStatus(null);
+    setSelectedFile(null);
+  }
+
   return (
-    <PopupCard open={open} onClose={onClose}>
+    <PopupCard open={open} onClose={handleClose}>
       {!showAvatarUpload ? (
         <>
           <Header>Basic Info</Header>
@@ -93,7 +100,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
                       setSelectedFile(e.target.files[0]);
-                      setavatarUploadStatus(null); // Reset status
+                      setAvatarUploadStatus(null); // Reset status
                     }
                   }}
                   className="hidden"
@@ -112,7 +119,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
                   variant="yellow"
                   onClick={() => {
                     // Handle upload logic here (e.g., send to server)
-                    setavatarUploadStatus("success"); // or "error" if upload fails
+                    setAvatarUploadStatus("success"); // or "error" if upload fails
                   }}
                 >
                   Confirm Upload
@@ -130,7 +137,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
             variant="yellow"
             onClick={() => {
               setShowAvatarUpload(false);
-              setavatarUploadStatus(null);
+              setAvatarUploadStatus(null);
               setSelectedFile(null);
             }}
           >

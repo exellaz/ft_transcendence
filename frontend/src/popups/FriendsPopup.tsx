@@ -13,10 +13,15 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   // TODO: Replace with real data from context or props
   const [selectedUser, setSelectedUser] = useState<SocialUser | null>(null);
 
+  function handleClose() {
+    onClose();
+    setSelectedUser(null);
+  }
+
   return (
     <PopupCard
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       size={selectedUser ? "social" : undefined}
     >
       <SocialHub
