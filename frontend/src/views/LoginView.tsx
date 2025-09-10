@@ -18,11 +18,13 @@ const LoginView: React.FC = () => {
         <Logo />
         <Input
           placeholder="Username"
+          className="mb-5"
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
         />
         <Input
           placeholder="Password"
           type="password"
+          className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
         <Button onClick={() => navigate("/main-menu")}>LOGIN</Button>

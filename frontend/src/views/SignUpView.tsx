@@ -15,11 +15,32 @@ const SignUpView: React.FC = () => {
     <Background>
       <Card>
         <Logo />
-        <Input placeholder="Username" />
+        <Input
+          placeholder="Username"
+          className="mb-5"
+          icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+        />
         <Status text="Username is available" color="green" />
-        <Input placeholder="Email" type="email" />
-        <Input placeholder="Password" type="password" />
-        <Input placeholder="Confirm password" type="password" />
+        <Input
+          placeholder="Email"
+          type="email"
+          className="mb-5"
+          icon={
+            <img src="/assets/email.png" alt="email.png" className="w-10" />
+          }
+        />
+        <Input
+          placeholder="Password"
+          type="password"
+          className="mb-5"
+          icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+        />
+        <Input
+          placeholder="Confirm password"
+          type="password"
+          className="mb-5"
+          icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+        />
         <Button onClick={() => navigate("/signup-success")}>SIGN UP</Button>
       </Card>
     </Background>

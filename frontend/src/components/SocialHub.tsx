@@ -43,6 +43,24 @@ const SocialHub: React.FC<SocialHubProps> = ({
   if (activeTab === "Requests") users = requests;
   if (activeTab === "Blocked") users = blocked;
 
+  // Add Friend state
+  const [showAddFriendView, setShowAddFriendView] = useState(false);
+  const [friendUID, setFriendUID] = useState("");
+  const [addFriendStatus, setAddFriendStatus] = useState<
+    null | "success" | "error"
+  >(null);
+
+  function handleAddFriend() {
+    // Simulate UID check
+    const exists = friends.some((f) => f.uid === friendUID);
+    if (exists) {
+      setAddFriendStatus("success");
+      setFriendUID("");
+    } else {
+      setAddFriendStatus("error");
+    }
+  }
+
   return (
     <div className="flex flex-row w-full h-full gap-6">
       {/* Main View: Tabs and List */}
@@ -59,6 +77,8 @@ const SocialHub: React.FC<SocialHubProps> = ({
               onClick={() => {
                 setActiveTab(tab);
                 setSelectedUser(null);
+                setShowAddFriendView(false);
+                setAddFriendStatus(null);
               }}
             >
               {tab}
@@ -67,84 +87,133 @@ const SocialHub: React.FC<SocialHubProps> = ({
         </div>
         {/* Scrollable Content */}
         <div className="w-full overflow-y-auto scrollbar-hide">
-          {/* Friends Tab */}
-          {activeTab === "Friends" && (
-            <div className="flex flex-col gap-4">
-              {/* Search Bar & Add Friend Button */}
-              <div className="sticky top-0 flex items-center gap-2 -mb-5 bg-card-blue">
-                <div className="flex-2">
-                  <Input
-                    icon={
-                      <img
-                        src="/assets/search.png"
-                        alt="search.png"
-                        className="w-10"
+          {(() => {
+            if (activeTab === "Friends") {
+              if (showAddFriendView) {
+                return (
+                  <div className="flex flex-col gap-10 items-center justify-center">
+                    <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
+                      <h2 className="text-white text-xl font-bold">
+                        Enter friend UID
+                      </h2>
+                      <Input
+                        placeholder="Enter UID"
+                        value={friendUID}
+                        onChange={(e) => setFriendUID(e.target.value)}
+                        className="w-full max-w-xs"
                       />
-                    }
-                    placeholder="Search friend"
-                  />
+                      {addFriendStatus === "success" && (
+                        <p className="text-green-400">Friend has been added.</p>
+                      )}
+                      {addFriendStatus === "error" && (
+                        <p className="text-red-400">UID does not exist.</p>
+                      )}
+                      <Button variant="yellow" onClick={handleAddFriend}>
+                        Add Friend
+                      </Button>
+                    </div>
+                    <Button
+                      variant="yellow"
+                      onClick={() => {
+                        setShowAddFriendView(false);
+                        setAddFriendStatus(null);
+                        setSelectedUser(null);
+                      }}
+                    >
+                      Back
+                    </Button>
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="flex flex-col">
+                    {/* Search Bar & Add Friend Button */}
+                    <div className="sticky top-0 flex items-center gap-2 bg-card-blue pb-3">
+                      <div className="flex-2">
+                        <Input
+                          icon={
+                            <img
+                              src="/assets/search.png"
+                              alt="search.png"
+                              className="w-10"
+                            />
+                          }
+                          placeholder="Search friend"
+                        />
+                      </div>
+                      <Button
+                        variant="yellow"
+                        className="flex-1"
+                        onClick={() => {
+                          setShowAddFriendView(true);
+                          setAddFriendStatus(null);
+                        }}
+                      >
+                        Add Friend
+                      </Button>
+                    </div>
+                    <div className="p-1 flex flex-col gap-4">
+                      {users.map((user) => (
+                        <FriendTile
+                          key={user.uid}
+                          username={user.username}
+                          avatarUrl={user.avatarUrl}
+                          lastMessage={user.lastMessage}
+                          timestamp={user.timestamp}
+                          online={user.online}
+                          onClick={() =>
+                            selectedUser?.uid === user.uid
+                              ? setSelectedUser(null)
+                              : setSelectedUser(user)
+                          }
+                          active={selectedUser?.uid === user.uid}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+            } else if (activeTab === "Requests") {
+              return (
+                <div className="flex flex-col gap-4 p-1">
+                  {users.map((user) => (
+                    <FriendRequestTile
+                      key={user.uid}
+                      username={user.username}
+                      avatarUrl={user.avatarUrl}
+                      onAccept={() => alert("Friend request accepted!")}
+                      onReject={() => alert("Friend request rejected!")}
+                      onClick={() =>
+                        selectedUser?.uid === user.uid
+                          ? setSelectedUser(null)
+                          : setSelectedUser(user)
+                      }
+                      active={selectedUser?.uid === user.uid}
+                    />
+                  ))}
                 </div>
-                <Button variant="yellow" className="flex-1 mb-5">
-                  Add Friend
-                </Button>
-              </div>
-              <div className="my-1 p-1 flex flex-col gap-4">
-                {users.map((user) => (
-                  <FriendTile
-                    key={user.uid}
-                    username={user.username}
-                    avatarUrl={user.avatarUrl}
-                    lastMessage={user.lastMessage}
-                    timestamp={user.timestamp}
-                    online={user.online}
-                    onClick={() =>
-                      selectedUser?.uid === user.uid
-                        ? setSelectedUser(null)
-                        : setSelectedUser(user)
-                    }
-                    active={selectedUser?.uid === user.uid}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          {/* Requests Tab */}
-          {activeTab === "Requests" && (
-            <div className="flex flex-col gap-4 p-1">
-              {users.map((user) => (
-                <FriendRequestTile
-                  key={user.uid}
-                  username={user.username}
-                  avatarUrl={user.avatarUrl}
-                  onAccept={() => alert("Friend request accepted!")}
-                  onReject={() => alert("Friend request rejected!")}
-                  onClick={() =>
-                    selectedUser?.uid === user.uid
-                      ? setSelectedUser(null)
-                      : setSelectedUser(user)
-                  }
-                  active={selectedUser?.uid === user.uid}
-                />
-              ))}
-            </div>
-          )}
-          {/* Blocked Tab */}
-          {activeTab === "Blocked" && (
-            <div className="grid grid-cols-3 gap-4 p-1">
-              {users.map((user) => (
-                <BlockedTile
-                  username={user.username}
-                  avatarUrl={user.avatarUrl}
-                  onClick={() =>
-                    selectedUser?.uid === user.uid
-                      ? setSelectedUser(null)
-                      : setSelectedUser(user)
-                  }
-                  active={selectedUser?.uid === user.uid}
-                />
-              ))}
-            </div>
-          )}
+              );
+            } else if (activeTab === "Blocked") {
+              return (
+                <div className="grid grid-cols-3 gap-4 p-1">
+                  {users.map((user) => (
+                    <BlockedTile
+                      username={user.username}
+                      avatarUrl={user.avatarUrl}
+                      onClick={() =>
+                        selectedUser?.uid === user.uid
+                          ? setSelectedUser(null)
+                          : setSelectedUser(user)
+                      }
+                      active={selectedUser?.uid === user.uid}
+                    />
+                  ))}
+                </div>
+              );
+            } else {
+              return null;
+            }
+          })()}
         </div>
       </div>
       {/* Extended View: Cascade Card */}

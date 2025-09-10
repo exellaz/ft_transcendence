@@ -34,6 +34,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
           <Input
             value={user?.username}
             placeholder="Username"
+            className="mb-5"
             icon={
               <img src="/assets/user.png" alt="user.png" className="w-10" />
             }
@@ -43,6 +44,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
             value={user?.email}
             placeholder="Email"
             type="email"
+            className="mb-5"
             icon={
               <img src="/assets/email.png" alt="email.png" className="w-10" />
             }
