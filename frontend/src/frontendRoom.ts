@@ -113,7 +113,13 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 		btnStart.style.display = isLeader ? "inline-block" : "none";
 
 		if (data.type === "role" || data.type === "roleUpdate") {
-			role = data.newRole || data.role;
+			// if role is assigned or updated
+			role = data.role || data.newRole;
+			if (data.roles && data.roles[clientId]) {
+				role = data.roles[clientId];
+			} else if (data.newRole) {
+				role = data.newRole;
+			}
 
 			// hide switch and ready button if spectator
 			if (role === "spectator") {
@@ -121,10 +127,6 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 				btnReady.style.display = "none";
 			}
 
-			// if roles object is provided, update the role accordingly
-			if (data.roles && data.roles[clientId]) {
-				role = data.roles[clientId];
-			}
 
 			btnSwitch.textContent = ready
 				? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
@@ -132,14 +134,13 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 		}
 
 		if (data.type === "state") {
-			console.log("role: ", role, ", isSpectator: ", data.isSpectator);
-			console.log("clientId: ", clientId);
-			console.log("roomName: ", roomName);
-			const leftCount = data.gameState.teams.left.length;
-			const rightCount = data.gameState.teams.right.length;
-			statusText.textContent = `Room ${roomName} [${roomId}] | Left: ${leftCount} | Right: ${rightCount} | Role: ${role} | Leader: ${
-				isLeader ? "Yes" : "No"
-			}`;
+			// console.log("role: ", role, ", isSpectator: ", data.isSpectator);
+			// console.log("clientId: ", clientId);
+			// console.log("roomName: ", roomName);
+			const leftPlayers = data.gameState.teams.left.join(", ") || "None";
+			const rightPlayers = data.gameState.teams.right.join(", ") || "None";
+			statusText.textContent = `Room ${roomName} [${roomId}] | Left: [${leftPlayers}] | Right: [${rightPlayers}] | Role: ${role} | Leader: ${isLeader ? "Yes" : "No"}`;
+
 
 			const canStart = data.canStart ?? false;
 			btnStart.disabled = canStart;

@@ -112,7 +112,7 @@ function broadcastChat(msg: any) {
 }
 
 /* ------------------------------
-		HTTP ENDPOINTS
+			HTTP ENDPOINTS
 ------------------------------ */
 
 /**
