@@ -7,6 +7,10 @@
     "dev": "nodemon --watch src --exec ts-node src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "format": "prettier --check \"src/**/*.{ts,js,json,md}\"",
+    "format:fix": "prettier --write \"src/**/*.{ts,js,json,md}\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -26,6 +30,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.1",
     "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.4.0",
     "jiti": "^2.5.1",

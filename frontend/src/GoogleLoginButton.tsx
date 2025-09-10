@@ -2,8 +2,24 @@ import { useEffect } from "react";
 
 declare global {
   interface Window {
-    google: any;
+    google: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: GoogleCredentialResponse) => void;
+          }) => void;
+          renderButton: (parent: HTMLElement | null, options: Record<string, unknown>) => void;
+          prompt: () => void;
+        };
+      };
+    };
   }
+}
+
+interface GoogleCredentialResponse {
+  credential: string;
+  select_by: string;
 }
 
 interface Props {
@@ -12,12 +28,11 @@ interface Props {
 
 export default function GoogleLoginButton({ onSuccess }: Props) {
   useEffect(() => {
-    // Load Google button
     window.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: (response: any) => {
+      callback: (response: GoogleCredentialResponse) => {
         console.log("Google response:", response);
-        onSuccess(response.credential); // the ID token
+        onSuccess(response.credential);
       },
     });
 
