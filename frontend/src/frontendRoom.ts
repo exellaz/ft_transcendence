@@ -3,10 +3,12 @@ import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
-const BALLSPEED = 20;
+const BALLSPEED = 1;
 const PADDLEHEIGHT = 10;
 
-export async function startRoom(roomId: string, leaderId: string) {
+export let socket: WebSocket;
+
+export async function startRoom(roomId: string, roomName: string, leaderId: string) {
 	document.body.innerHTML = ""; // clear lobby
 
 	initChatConnection();
@@ -70,6 +72,7 @@ export async function startRoom(roomId: string, leaderId: string) {
 	let isLeader = clientId === leaderId;
 	let ready = false;
 	let gameStarted = false;
+	let keys = { up: false, down: false };
 
 	if (!isLeader) {
 		btnReady.textContent = "Ready";
@@ -78,7 +81,7 @@ export async function startRoom(roomId: string, leaderId: string) {
 
 	// --- WebSocket ---
 	const chooseSide = await detemineSide(roomId);
-	const socket = new WebSocket(
+	socket = new WebSocket(
 	  `ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`
 	);
 
@@ -129,9 +132,12 @@ export async function startRoom(roomId: string, leaderId: string) {
 		}
 
 		if (data.type === "state") {
+			console.log("role: ", role, ", isSpectator: ", data.isSpectator);
+			console.log("clientId: ", clientId);
+			console.log("roomName: ", roomName);
 			const leftCount = data.gameState.teams.left.length;
 			const rightCount = data.gameState.teams.right.length;
-			statusText.textContent = `Room ${roomId} | Left: ${leftCount} | Right: ${rightCount} | Role: ${role} | Leader: ${
+			statusText.textContent = `Room ${roomName} [${roomId}] | Left: ${leftCount} | Right: ${rightCount} | Role: ${role} | Leader: ${
 				isLeader ? "Yes" : "No"
 			}`;
 
@@ -143,7 +149,7 @@ export async function startRoom(roomId: string, leaderId: string) {
 				gameStarted = true;
 				lobbyDiv.remove();
 				cleanUp();
-				startGame(roomId);
+				startGame(roomId, roomName, socket, clientId, role, keys);
 			}
 		}
 
@@ -154,8 +160,6 @@ export async function startRoom(roomId: string, leaderId: string) {
 		window.removeEventListener("contextmenu", (e) => e.preventDefault());
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
 		window.removeEventListener("keydown", keyhandler);
-
-		if (socket.readyState === WebSocket.OPEN) socket.close();
 	}
 
 	// --- Button handlers ---

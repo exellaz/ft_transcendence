@@ -39,7 +39,9 @@ export function showLobby() {
 
 	console.log(`check clientid in create room: ${clientId}`); ////debug
 	const room = await createRoom(teamSize, roomName, clientId, scaledWidth, scaledHeight);
-	startRoom(room.roomId, room.leaderId);
+	sessionStorage.setItem("pongRoomId", room.roomId);
+	sessionStorage.setItem("pongRoomName", room.name);
+	startRoom(room.roomId, room.name, room.leaderId);
   };
   lobbyDiv.appendChild(createBtn);
 
@@ -65,7 +67,7 @@ export function showLobby() {
 
 		const joinBtn = document.createElement("button");
 		joinBtn.textContent = "Join";
-		joinBtn.onclick = () => startRoom(room.id, room.leaderId);
+		joinBtn.onclick = () => startRoom(room.id, room.name, room.leaderId);
 		item.appendChild(joinBtn);
 
 		listDiv.appendChild(item);

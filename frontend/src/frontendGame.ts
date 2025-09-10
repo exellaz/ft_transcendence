@@ -10,21 +10,22 @@ declare global {
 	}
 }
 
-export function startGame(roomName: string) {
+export function startGame(roomId: string, roomName: string, socket: WebSocket, clientId: string, role: string, keys: { up: boolean, down: boolean }) {
 	createUI();
 
 	initChatConnection();
 	initChatUI();
 
-	sessionStorage.setItem("pongRoomName", roomName);
+	// sessionStorage.setItem("pongRoomId", roomId);
+	// sessionStorage.setItem("pongRoomName", roomName);
 
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
 	const roleText = document.getElementById("roleText")!;
 	const scoreText = document.getElementById("scoreText")!;
 	const backBtn = document.getElementById("backLobbyBtn") as HTMLButtonElement;
 
-	let role = "spectator";
-	let clientId = sessionStorage.getItem("pongClientId");
+	// let role = "spectator";
+	// let clientId = sessionStorage.getItem("pongClientId");
 	let gameOver = false; // game over flag
 	let winner: string | null = null; // winner player
 
@@ -37,7 +38,7 @@ export function startGame(roomName: string) {
 		}
 	};
 
-	const keys = { up: false, down: false };
+	// const keys = { up: false, down: false };
 	const keyhandler = (e: KeyboardEvent) => {
 		if (!gameOver) {
 			if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
@@ -70,9 +71,9 @@ export function startGame(roomName: string) {
 		sessionStorage.setItem("pongClientId", clientId);
 	}
 
-	const socket = new WebSocket(
-		`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomName}`
-	);
+	// const socket = new WebSocket(
+	// 	`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}`
+	// );
 
 	// Notify server about the game size once connection is open
 	socket.addEventListener("open", () => {
@@ -99,7 +100,7 @@ export function startGame(roomName: string) {
 			// Role assign
 			if (data.type === "role") {
 				role = data.role;
-				roleText.textContent = `Room: ${data.roomId} | Role: ${role}`;
+				roleText.textContent = `Room: ${roomName} [${roomId}] | Role: ${role}`;
 
 				//enable back button if is spectator
 				if (role === "spectator")
@@ -110,7 +111,10 @@ export function startGame(roomName: string) {
 
 			// Game state update
 			if (data.type === "state") {
-                console.log("game state role:", data.gameState.teams);
+                console.log("role: ", role, ", isSpectator: ", data.isSpectator);
+				console.log("clientId: ", clientId);
+				console.log("roomName: ", roomName);
+
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner) {
 					gameOver = true;
@@ -121,7 +125,14 @@ export function startGame(roomName: string) {
 					backBtn.disabled = false;
 				}
 
+				//prevent player click back button during game
+				if (role !== "spectator")
+					backBtn.disabled = true;
+				else
+					backBtn.disabled = false;
+
 				draw_container(data.gameState, data.isSpectator, winner);
+				roleText.textContent = `Room: ${roomName} | Role: ${role}`;
 				scoreText.textContent = `Score: ${data.gameState.score.left} - ${data.gameState.score.right}`;
 			}
 		} catch (err) {
@@ -151,6 +162,7 @@ export function startGame(roomName: string) {
 		window.removeEventListener("keydown", keyhandler);
 		window.removeEventListener("keyup", keyhandler);
 		sessionStorage.removeItem("pongRoomName");
+		sessionStorage.removeItem("pongRoomId");
 
 		//if player quit the game
 		if (!quitGame) {

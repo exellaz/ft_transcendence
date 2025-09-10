@@ -337,14 +337,16 @@ export const scaledHeight = baseHeight * scale;
 
 window.addEventListener("DOMContentLoaded", () => {
   const saveRoom = sessionStorage.getItem("pongRoomName");
+  const saveRoomId = sessionStorage.getItem("pongRoomId") || "";
   const saveClient =
     sessionStorage.getItem("pongClientId") ||
     "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padEnd(6, "0");
 
   sessionStorage.setItem("pongClientId", saveClient);
 
+  //
   if (saveRoom) {
-    startRoom(saveRoom, saveClient);
+    startRoom(saveRoomId, saveRoom, saveClient);
   } else {
     showLobby();
   }

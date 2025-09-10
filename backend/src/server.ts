@@ -67,6 +67,54 @@ await fastify.register(async function (fastify) {
   });
 });
 
+export const globalChatClients = new Set<any>(); // Store all connected chat clients
+
+fastify.get("/chat", { websocket: true }, (connection, req) => {
+	globalChatClients.add(connection); // Add new client to the set
+
+	connection.on("close", () => {
+		globalChatClients.delete(connection); // Remove client on disconnect
+	});
+
+	connection.on("message", (raw) => {
+		const msg = JSON.parse(raw.toString());
+
+		if (msg.type === "chat") {
+			// normal chat
+			const chatMsg = {
+				type: "chat",
+				from: msg.from,
+				text: msg.text,
+				time: Date.now(),
+			};
+			broadcastChat(chatMsg);
+		}
+
+		if (msg.type === "system") {
+			// 🔥 unify format with game broadcast
+			const systemMsg = {
+				type: "chat",
+				from: "system",
+				text: msg.text,
+				time: Date.now(),
+			};
+			broadcastChat(systemMsg);
+		}
+	});
+});
+
+function broadcastChat(msg: any) {
+	for (const client of globalChatClients) {
+		if (client.readyState === 1) { // WebSocket.OPEN
+			client.send(JSON.stringify(msg));
+		}
+	}
+}
+
+/* ------------------------------
+		HTTP ENDPOINTS
+------------------------------ */
+
 /**
  * @brief HTTP endpoint to list all available rooms.
  * @return Array of room objects with id, name, team size, player counts, and game status to client
@@ -149,51 +197,6 @@ fastify.get("/matches", async (req, reply) => {
 		reply.code(500).send({ error: "Failed to get matches" });
 	}
 });
-
-export const globalChatClients = new Set<any>(); // Store all connected chat clients
-
-fastify.get("/chat", { websocket: true }, (connection, req) => {
-	globalChatClients.add(connection); // Add new client to the set
-
-	connection.on("close", () => {
-		globalChatClients.delete(connection); // Remove client on disconnect
-	});
-
-	connection.on("message", (raw) => {
-		const msg = JSON.parse(raw.toString());
-
-		if (msg.type === "chat") {
-			// normal chat
-			const chatMsg = {
-				type: "chat",
-				from: msg.from,
-				text: msg.text,
-				time: Date.now(),
-			};
-			broadcastChat(chatMsg);
-		}
-
-		if (msg.type === "system") {
-			// 🔥 unify format with game broadcast
-			const systemMsg = {
-				type: "chat",
-				from: "system",
-				text: msg.text,
-				time: Date.now(),
-			};
-			broadcastChat(systemMsg);
-		}
-	});
-});
-
-function broadcastChat(msg: any) {
-	for (const client of globalChatClients) {
-		if (client.readyState === 1) { // WebSocket.OPEN
-			client.send(JSON.stringify(msg));
-		}
-	}
-}
-
 
 /**
  * @brief Start the Fastify server on port 4242.
