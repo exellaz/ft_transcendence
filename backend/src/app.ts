@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import dbConnector from "./plugins/db"
-import routes from "./routes"
+import routes from "./plugins/routes"
 
 const app = Fastify({
   logger: true
