@@ -135,8 +135,9 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 		switch (msg.type) {
 			case "move":
+				role = room.clientRoles.get(clientId) || role; // always trust the server mapping
 				const paddleHeight = 80; //? make public
-				if (role?.startsWith("left_player") || role!.startsWith("right_player")) {
+				if (role && (role.startsWith("left_player") || role!.startsWith("right_player"))) {
 					room.gameState.paddles[role!] = game.updatePaddlePosition(
 						room.gameState.paddles[role!] ?? 0,
 						msg.dy,
