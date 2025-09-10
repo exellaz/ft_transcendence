@@ -1,5 +1,7 @@
 import React from "react";
+
 import Avatar from "./Avatar";
+import Button from "./Button";
 
 interface FriendRequestTileProps {
   username: string;
@@ -29,18 +31,18 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
     <span className="text-white font-bold flex-1">
       {username.length > 10 ? username.slice(0, 10) + "…" : username}
     </span>
-    <button
-      className="bg-green-500 text-white font-bold rounded-full px-4 py-1 mr-2 cursor-pointer"
+    <Button
+      variant="greenSmall"
       onClick={onAccept}
     >
       ✓
-    </button>
-    <button
-      className="bg-red-500 text-white font-bold rounded-full px-4 py-1 cursor-pointer"
+    </Button>
+    <Button
+      variant="redSmall"
       onClick={onReject}
     >
       ✗
-    </button>
+    </Button>
   </div>
 );
 

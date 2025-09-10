@@ -91,6 +91,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
             if (activeTab === "Friends") {
               if (showAddFriendView) {
                 return (
+                  // Add Friend View
                   <div className="flex flex-col gap-10 items-center justify-center">
                     <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
                       <h2 className="text-white text-xl font-bold">
