@@ -14,7 +14,7 @@ interface PopupProps {
 const JoinTournamentPopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  redirectPath ="/main-menu",
+  redirectPath ="/tournament",
 }) => {
   const navigate = useNavigate();
 
