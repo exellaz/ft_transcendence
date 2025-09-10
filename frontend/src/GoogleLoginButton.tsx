@@ -9,7 +9,10 @@ declare global {
             client_id: string;
             callback: (response: GoogleCredentialResponse) => void;
           }) => void;
-          renderButton: (parent: HTMLElement | null, options: Record<string, unknown>) => void;
+          renderButton: (
+            parent: HTMLElement | null,
+            options: Record<string, unknown>,
+          ) => void;
           prompt: () => void;
         };
       };
@@ -53,7 +56,7 @@ export default function GoogleLoginButton({ onSuccess }: Props) {
 
     window.google.accounts.id.renderButton(
       document.getElementById("google-button"),
-      { theme: "outline", size: "large" }
+      { theme: "outline", size: "large" },
     );
   }, [onSuccess]);
 

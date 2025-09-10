@@ -47,3 +47,15 @@ export function findOrCreateUserFromGoogle(
 
   return createUser(googleId, email, name);
 }
+
+export function getUserById(id: number): User | undefined {
+  const stmt = db.prepare("SELECT * FROM users WHERE id = ?");
+  return stmt.get(id) as User | undefined;
+}
+
+export function updateLastLogin(id: number): void {
+  const stmt = db.prepare(
+    "UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+  );
+  stmt.run(id);
+}

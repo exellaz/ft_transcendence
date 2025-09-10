@@ -1,10 +1,11 @@
 import pkg from "fastify";
 import cors from "@fastify/cors";
 import dotenv from "dotenv";
-import { verifyGoogleIdToken } from "./authService.ts";
 import jwt from "jsonwebtoken";
-import { findOrCreateUserFromGoogle } from "./userModel.ts";
+import { verifyGoogleIdToken } from "./authService.ts";
+import { findOrCreateUserFromGoogle, updateLastLogin } from "./userModel.ts";
 import { authConfig } from "./config/authConfig.ts";
+import { authenticate } from "./plugins/authenticate.ts";
 
 const Fastify = pkg;
 
@@ -22,32 +23,31 @@ server.get("/health", async () => ({ status: "ok" }));
 server.post("/auth/google", async (request, reply) => {
   const body = request.body as { idToken?: string };
   const idToken = body?.idToken;
-
-  if (!idToken) {
-    return reply.code(400).send({ error: "idToken is required" });
-  }
+  if (!idToken) return reply.code(400).send({ error: "idToken is required" });
 
   try {
     const payload = await verifyGoogleIdToken(idToken);
-
     if (!payload?.sub || !payload?.email) {
       return reply.code(400).send({ error: "Invalid Google payload" });
     }
 
-    // DB lookup or creation
-    const user = findOrCreateUserFromGoogle(
-      payload.sub,
-      payload.email,
-      payload.name || "Anonymous"
-    );
+    // 1) Use Google sub as google_id, name and email
+    const googleId = payload.sub;
+    const email = payload.email;
+    const name = payload.name ?? "Anonymous";
 
-    // Create JWT
+    // 2) Find or create user in DB
+    const user = findOrCreateUserFromGoogle(googleId, email, name);
+
+    // 3) Optional: update last login timestamp
+    updateLastLogin(user.id);
+
+    // 4) Issue JWT that references our DB user id
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       authConfig.jwtSecret,
-      { expiresIn: authConfig.jwtExpiresIn }
+      { expiresIn: authConfig.jwtExpiresIn },
     );
-
 
     return reply.send({ ok: true, user, token });
   } catch (err) {
@@ -56,19 +56,10 @@ server.post("/auth/google", async (request, reply) => {
   }
 });
 
-server.get("/me", async (request, reply) => {
-  const authHeader = request.headers["authorization"];
-  if (!authHeader) {
-    return reply.code(401).send({ error: "Missing Authorization header" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  try {
-    const decoded = jwt.verify(token, authConfig.jwtSecret);
-    return reply.send({ ok: true, user: decoded });
-  } catch {
-    return reply.code(401).send({ error: "Invalid token" });
-  }
+server.get("/me", { preHandler: authenticate }, async (request, reply) => {
+  const user = (request as any).user; // set in authenticate()
+  if (!user) return reply.code(401).send({ error: "Unauthorized" });
+  return reply.send({ ok: true, user });
 });
 
 const PORT = Number(process.env.PORT || 4000);
