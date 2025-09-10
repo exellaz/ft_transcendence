@@ -50,7 +50,7 @@ const Messaging: React.FC<MessagingProps> = ({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto scrollbar-hide p-4">
         <div className="flex flex-col gap-3">
-          {messages.map((msg) => (
+          {(messages ?? []).map((msg) => (
             <div
               key={msg.id}
               className={`flex ${

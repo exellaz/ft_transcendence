@@ -199,6 +199,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                 <div className="grid grid-cols-3 gap-4 p-1">
                   {users.map((user) => (
                     <BlockedTile
+                      key={user.uid}
                       username={user.username}
                       avatarUrl={user.avatarUrl}
                       onClick={() =>

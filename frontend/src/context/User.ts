@@ -42,6 +42,14 @@ export interface TournamentHistoryEntry {
   tournamentId: string;
   date: string; // ISO date string
   ranking: number;
+  matches: MatchDetail[];
+}
+
+export interface MatchDetail {
+  match: string;
+  opponentUsername: string;
+  score: string; // e.g., "10-7"
+  result: "win" | "lost";
 }
 
 export interface Friendship {
