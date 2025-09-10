@@ -7,7 +7,9 @@
       "strict": true,
       "skipLibCheck": true,
       "outDir": "dist",
-      "rootDir": "src"
+      "rootDir": "src",
+      "allowImportingTsExtensions": true,
+      "noEmit": true,
     },
     "include": ["src"]
   }

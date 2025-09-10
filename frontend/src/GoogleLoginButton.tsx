@@ -30,9 +30,24 @@ export default function GoogleLoginButton({ onSuccess }: Props) {
   useEffect(() => {
     window.google.accounts.id.initialize({
       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: (response: GoogleCredentialResponse) => {
+      callback: async (response: GoogleCredentialResponse) => {
         console.log("Google response:", response);
-        onSuccess(response.credential);
+        const idToken = response.credential;
+
+        const res = await fetch("http://localhost:4000/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+
+        const data = await res.json();
+        console.log("Server response", data);
+
+        if (data.ok) {
+          localStorage.setItem("token", data.token); // temporary storage
+        }
+
+        onSuccess(idToken); // keep calling the parent handler
       },
     });
 
