@@ -1,17 +1,20 @@
 import React from "react";
+import type { UserProfile } from "../context/User";
+
 import Avatar from "./Avatar";
 import Medals from "./Medals";
 import StatsBadge from "./StatsBadge";
-import type { UserProfile } from "../context/User";
 
 interface ProfileContentsProps {
   user: UserProfile | null;
 }
 
 const ProfileContents: React.FC<ProfileContentsProps> = ({ user }) => (
-  <div className="flex flex-col items-center gap-6">
-    <div className="flex items-center gap-6">
-      <Avatar src={user?.avatarUrl} size={100} />
+  <div>
+    <div className="py-4 w-full flex items-center justify-center gap-6">
+      <div>
+        <Avatar src={user?.avatarUrl} size={100} />
+      </div>
       <div className="text-left">
         <p className="text-white text-xl font-bold">
           {user
@@ -24,12 +27,14 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ user }) => (
         <p className="text-white">Joined: {user?.createdAt}</p>
       </div>
     </div>
-    <Medals
-      gold={user?.stats?.medals.gold}
-      silver={user?.stats?.medals.silver}
-      bronze={user?.stats?.medals.bronze}
-    />
-    <div className="flex gap-6">
+    <div className="py-4 w-full flex gap-6 justify-center">
+      <Medals
+        gold={user?.stats?.medals.gold}
+        silver={user?.stats?.medals.silver}
+        bronze={user?.stats?.medals.bronze}
+      />
+    </div>
+    <div className="py-4 w-full flex gap-6">
       <StatsBadge
         className="flex-1"
         label="Tournaments Played"

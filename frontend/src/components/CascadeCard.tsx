@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { SocialUser } from "./SocialHub";
+
 import Button from "./Button";
 import ProfileContents from "./ProfileContents";
 import Messaging from "./Messaging";
@@ -78,9 +79,11 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   ) {
     content = (
       <div className="flex flex-col items-center w-full">
-        <ProfileContents user={selectedUser.profile} />
+        <div className="mb-2">
+          <ProfileContents user={selectedUser.profile} />
+        </div>
         {activeTab === "Friends" && (
-          <div className="flex gap-6 mt-6">
+          <div className="flex gap-6">
             <Button
               variant="yellow"
               className="flex-1"
@@ -98,20 +101,12 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
           </div>
         )}
         {activeTab === "Requests" && (
-          <Button
-            variant="red"
-            className="mt-6"
-            onClick={() => handleActionClick("block")}
-          >
+          <Button variant="red" onClick={() => handleActionClick("block")}>
             Block
           </Button>
         )}
         {activeTab === "Blocked" && (
-          <Button
-            variant="red"
-            className="mt-6"
-            onClick={() => handleActionClick("unblock")}
-          >
+          <Button variant="red" onClick={() => handleActionClick("unblock")}>
             Unblock
           </Button>
         )}

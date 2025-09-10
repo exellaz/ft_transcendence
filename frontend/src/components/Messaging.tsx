@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 
 import Avatar from "./Avatar";
-import Button from "./Button";
-import ProfileContents from "./ProfileContents";
 
 interface Message {
   id: string;

@@ -51,8 +51,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
         <div className="flex gap-6 border-b border-yellow-400 mb-6">
           {tabs.map((tab) => (
             <button
-              key={tab}
-              className={`text-lg font-bold pb-2 px-4 transition-colors ${
+              className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${
                 activeTab === tab
                   ? "text-yellow-400 border-b-4 border-yellow-400"
                   : "text-white"
