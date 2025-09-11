@@ -1,3 +1,85 @@
+import type { FriendBasic, FriendRequest, BlockedUser } from "../types/socialTypes";
+
+// Friends (basic)
+export const mockFriends: FriendBasic[] = [
+  {
+    uid: "u1",
+    avatarUrl: "/assets/bronze.png",
+    username: "Sophia",
+    online: true,
+    lastMessage: "Ready for the next match?",
+    lastMessageTimestamp: "2025-09-07 14:32",
+  },
+  {
+    uid: "u2",
+    avatarUrl: "/assets/gold.png",
+    username: "Liam",
+    online: false,
+    lastMessage: "See you tomorrow!",
+    lastMessageTimestamp: "2025-09-07 13:10",
+  },
+  {
+    uid: "u3",
+    avatarUrl: "/assets/silver.png",
+    username: "Olivia",
+    online: true,
+    lastMessage: "Let's practice soon!",
+    lastMessageTimestamp: "2025-09-06 18:45",
+  },
+  {
+    uid: "u4",
+    avatarUrl: "/assets/green-tick.png",
+    username: "Noah",
+    online: false,
+    lastMessage: "Good luck!",
+    lastMessageTimestamp: "2025-09-05 20:12",
+  },
+  {
+    uid: "u5",
+    avatarUrl: "/assets/yellow-ghost.png",
+    username: "Emma",
+    online: true,
+    lastMessage: "Congrats on your win!",
+    lastMessageTimestamp: "2025-09-04 16:30",
+  },
+  {
+    uid: "u6",
+    avatarUrl: "/assets/red-ghost.png",
+    username: "Mason",
+    online: true,
+    lastMessage: "Let's team up next time.",
+    lastMessageTimestamp: "2025-09-03 11:05",
+  },
+];
+
+// Friend Requests
+export const mockRequests: FriendRequest[] = [
+  { uid: "u7", avatarUrl: "/assets/bronze.png", username: "Ava" },
+  { uid: "u8", avatarUrl: "/assets/gold.png", username: "Elijah" },
+  { uid: "u9", avatarUrl: "/assets/silver.png", username: "Isabella" },
+  { uid: "u10", avatarUrl: "/assets/green-tick.png", username: "James" },
+  { uid: "u11", avatarUrl: "/assets/yellow-ghost.png", username: "Mia" },
+  { uid: "u12", avatarUrl: "/assets/red-ghost.png", username: "Benjamin" },
+  { uid: "u13", avatarUrl: "/assets/bronze.png", username: "Charlotte" },
+  { uid: "u14", avatarUrl: "/assets/gold.png", username: "Henry" },
+];
+
+// Blocked Users
+export const mockBlocked: BlockedUser[] = [
+  { uid: "u15", avatarUrl: "/assets/bronze.png", username: "Amelia" },
+  { uid: "u16", avatarUrl: "/assets/gold.png", username: "Lucas" },
+  { uid: "u17", avatarUrl: "/assets/silver.png", username: "Harper" },
+  { uid: "u18", avatarUrl: "/assets/green-tick.png", username: "Jack" },
+  { uid: "u19", avatarUrl: "/assets/yellow-ghost.png", username: "Ella" },
+  { uid: "u20", avatarUrl: "/assets/red-ghost.png", username: "William" },
+  { uid: "u21", avatarUrl: "/assets/bronze.png", username: "Evelyn" },
+  { uid: "u22", avatarUrl: "/assets/gold.png", username: "Alexander" },
+  { uid: "u23", avatarUrl: "/assets/silver.png", username: "Scarlett" },
+  { uid: "u24", avatarUrl: "/assets/green-tick.png", username: "Henry" },
+  { uid: "u25", avatarUrl: "/assets/yellow-ghost.png", username: "Grace" },
+  { uid: "u26", avatarUrl: "/assets/red-ghost.png", username: "Daniel" },
+];
+
 export const friends = [
   {
     uid: "u1",

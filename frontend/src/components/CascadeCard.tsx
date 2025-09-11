@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import type { SocialUser } from "./SocialHub";
+import type {
+  FriendBasic,
+  FriendRequest,
+  BlockedUser,
+} from "../types/socialTypes";
 
 import Button from "./Button";
 import ProfileContents from "./ProfileContents";
 import Messaging from "./Messaging";
 
 interface CascadeCardProps {
-  selectedUser: SocialUser;
+  selectedUser: FriendBasic | FriendRequest | BlockedUser;
   activeTab: string;
 }
 

@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import type { UserProfile } from "../context/User";
+import { useUser } from "../context/UserContext";
+import type {
+  FriendBasic,
+  FriendRequest,
+  BlockedUser,
+} from "../types/socialTypes";
+// TODO: Remove mock data import when integrating real API
+import { mockFriends, mockRequests, mockBlocked } from "../data/mockUsers";
 
 import BlockedTile from "./BlockedTile";
 import Button from "./Button";
@@ -8,40 +15,25 @@ import FriendTile from "./FriendTile";
 import FriendRequestTile from "./FriendRequestTile";
 import Input from "./Input";
 
-export interface SocialUser {
-  uid: string;
-  username: string;
-  avatarUrl: string;
-  profile: UserProfile;
-  lastMessage?: string;
-  timestamp?: string;
-  online?: boolean;
-  messages?: any[];
-}
-
-interface SocialHubProps {
-  friends: SocialUser[];
-  requests: SocialUser[];
-  blocked: SocialUser[];
-  selectedUser: SocialUser | null;
-  setSelectedUser: (user: SocialUser | null) => void;
-}
-
 const tabs = ["Friends", "Requests", "Blocked"];
 
+interface SocialHubProps {
+  selectedUser: FriendBasic | FriendRequest | BlockedUser | null;
+  setSelectedUser: (
+    user: FriendBasic | FriendRequest | BlockedUser | null
+  ) => void;
+}
+
 const SocialHub: React.FC<SocialHubProps> = ({
-  friends,
-  requests,
-  blocked,
   selectedUser,
   setSelectedUser,
 }) => {
   const [activeTab, setActiveTab] = useState("Friends");
+  const [friends, setFriends] = useState<FriendBasic[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [blocked, setBlocked] = useState<BlockedUser[]>([]);
 
-  let users: SocialUser[] = [];
-  if (activeTab === "Friends") users = friends;
-  if (activeTab === "Requests") users = requests;
-  if (activeTab === "Blocked") users = blocked;
+  const userUID = useUser().user?.id;
 
   // Add Friend state
   const [showAddFriendView, setShowAddFriendView] = useState(false);
@@ -49,6 +41,32 @@ const SocialHub: React.FC<SocialHubProps> = ({
   const [addFriendStatus, setAddFriendStatus] = useState<
     null | "success" | "error"
   >(null);
+
+  // TODO: Fetch real data based on userUid
+  // React.useEffect(() => {
+  //   // Replace with real API calls
+  //   fetch(`/api/friends?uid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setFriends);
+  //   fetch(`/api/requests?uid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setRequests);
+  //   fetch(`/api/blocked?uid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setBlocked);
+  // }, [userUid]);
+
+  // TODO: Remove mock data when integrating real API
+  React.useEffect(() => {
+    setFriends(mockFriends);
+    setRequests(mockRequests);
+    setBlocked(mockBlocked);
+  }, []);
+
+  let users: FriendBasic[] | FriendRequest[] | BlockedUser[] = [];
+  if (activeTab === "Friends") users = friends;
+  if (activeTab === "Requests") users = requests;
+  if (activeTab === "Blocked") users = blocked;
 
   function handleAddFriend() {
     // Simulate UID check
@@ -127,6 +145,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                 );
               } else {
                 return (
+                  // Friends List View
                   <div className="flex flex-col">
                     {/* Search Bar & Add Friend Button */}
                     <div className="sticky top-0 flex items-center gap-2 bg-card-blue pb-3">
@@ -154,13 +173,13 @@ const SocialHub: React.FC<SocialHubProps> = ({
                       </Button>
                     </div>
                     <div className="p-1 flex flex-col gap-4">
-                      {users.map((user) => (
+                      {friends.map((user) => (
                         <FriendTile
                           key={user.uid}
                           username={user.username}
                           avatarUrl={user.avatarUrl}
                           lastMessage={user.lastMessage}
-                          timestamp={user.timestamp}
+                          timestamp={user.lastMessageTimestamp}
                           online={user.online}
                           onClick={() =>
                             selectedUser?.uid === user.uid
@@ -176,8 +195,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
               }
             } else if (activeTab === "Requests") {
               return (
+                // Friend Requests List View
                 <div className="flex flex-col gap-4 p-1">
-                  {users.map((user) => (
+                  {requests.map((user) => (
                     <FriendRequestTile
                       key={user.uid}
                       username={user.username}
@@ -196,8 +216,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
               );
             } else if (activeTab === "Blocked") {
               return (
+                // Blocked Users List View
                 <div className="grid grid-cols-3 gap-4 p-1">
-                  {users.map((user) => (
+                  {blocked.map((user) => (
                     <BlockedTile
                       key={user.uid}
                       username={user.username}

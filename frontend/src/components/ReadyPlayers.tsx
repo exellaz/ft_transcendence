@@ -25,7 +25,7 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => (
               Ready
             </span>
           )}
-          <Avatar src={player.avatarUrl} size={60} />
+          <Avatar src={player.skinUrl} size={60} />
           <span
             className={`font-bold ${
               usernameColors[idx % usernameColors.length]

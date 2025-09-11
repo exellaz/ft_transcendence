@@ -5,7 +5,6 @@ import type { User, UserProfile } from "./User";
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
-  userProfile: UserProfile | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -197,19 +196,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const [user, setUser] = useState<User | null>(fakeUser);
 
-  const userProfile = useMemo(() => {
-    if (!user) return null;
-    return {
-      id: user.id,
-      username: user.username,
-      avatarUrl: user.avatarUrl,
-      createdAt: user.createdAt,
-      stats: user.stats,
-    };
-  }, [user]);
-
   return (
-    <UserContext.Provider value={{ user, setUser, userProfile }}>
+    <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
   );
