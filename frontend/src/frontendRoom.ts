@@ -3,7 +3,7 @@ import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
-const BALLSPEED = 1;
+const BALLSPEED = 50;
 const PADDLEHEIGHT = 10;
 
 export let socket: WebSocket;
@@ -27,7 +27,8 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 			return;
 		}
 	}
-	window.addEventListener("contextmenu", (e) => e.preventDefault()); // disable right-click context menu
+	const disableContextMenu = (e: Event) => e.preventDefault();
+	window.addEventListener("contextmenu", disableContextMenu); // disable right-click context menu
 	window.addEventListener("beforeunload", beforeUnloadHandler);
 	window.addEventListener("keydown", keyhandler);
 
@@ -90,67 +91,56 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	socket.onmessage = (event) => {
 		const data = JSON.parse(event.data);
 
-		// handle leader change
-		if (data.type === "state" || data.type === "roleUpdate") {
-			// if leaderId is changed, update it
+		if (data.type === "roleUpdate") {
+			console.log("Role update:", data);
+
+			//update leader
 			if (data.leaderId) {
 				leaderId = data.leaderId;
 				isLeader = clientId === leaderId;
 				btnStart.style.display = isLeader ? "inline-block" : "none";
 			}
 
-			// if the client is the leader, hide the ready button
-			if (isLeader && btnReady) {
+			//update player role if included
+			if (data.newPlayer.id === clientId) {
+				role = data.newPlayer.role;
+				console.log("Your role is now:", role);
+			}
+
+			//spectator
+			if(role === "spectator") {
 				btnReady.style.display = "none";
-			}
-
-			// debug info
-			if (!isLeader) {
-				console.log(`new leader is ${leaderId}`);
-			}
-		}
-
-		btnStart.style.display = isLeader ? "inline-block" : "none";
-
-		if (data.type === "role" || data.type === "roleUpdate") {
-			// if role is assigned or updated
-			role = data.role || data.newRole;
-			if (data.roles && data.roles[clientId]) {
-				role = data.roles[clientId];
-			} else if (data.newRole) {
-				role = data.newRole;
-			}
-
-			// hide switch and ready button if spectator
-			if (role === "spectator") {
 				btnSwitch.style.display = "none";
-				btnReady.style.display = "none";
 			}
 
-
+			//update switch button
 			btnSwitch.textContent = ready
-				? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
-				: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
+			? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
+			: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
+
+
+			const leftside = data.gameState.teams.left.join(", ") || "";
+			const rightside = data.gameState.teams.right.join(", ") || "";
+			statusText.textContent =
+			`Room: ${roomName} [${roomId}] | ${data.newPlayer.id} (${data.newPlayer.role}) | left: [${leftside}] | right: [${rightside}] ` +
+			(isLeader ? " | You are the leader" : "") +
+			(ready ? " | You are ready" : "") +
+			(gameStarted ? " | Game in progress..." : "");
 		}
 
 		if (data.type === "state") {
-			// console.log("role: ", role, ", isSpectator: ", data.isSpectator);
-			// console.log("clientId: ", clientId);
-			// console.log("roomName: ", roomName);
-			const leftPlayers = data.gameState.teams.left.join(", ") || "None";
-			const rightPlayers = data.gameState.teams.right.join(", ") || "None";
-			statusText.textContent = `Room ${roomName} [${roomId}] | Left: [${leftPlayers}] | Right: [${rightPlayers}] | Role: ${role} | Leader: ${isLeader ? "Yes" : "No"}`;
+			console.log("state received:", data);
 
-
+			//enable the start button
 			const canStart = data.canStart ?? false;
-			btnStart.disabled = canStart;
+			btnStart.disabled = !canStart;
 
-			// if (!gameStarted && data.gameState.countdown > 0) {
-			if (!gameStarted && (data.gameState.countdown > 0 || data.gameState.gameStarted)) {
+			//if game started then go to game screen
+			if (!gameStarted && (data.gameState.coundown > 0 || data.gameState.gameStarted)) {
 				gameStarted = true;
 				lobbyDiv.remove();
 				cleanUp();
-				startGame(roomId, roomName, socket, clientId, role, keys);
+				startGame(roomId, roomName, socket, clientId!, role, keys);
 			}
 		}
 
@@ -158,7 +148,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 
 	// clean up all event before starting the game
 	function cleanUp() {
-		window.removeEventListener("contextmenu", (e) => e.preventDefault());
+		window.removeEventListener("contextmenu", disableContextMenu);
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
 		window.removeEventListener("keydown", keyhandler);
 	}
@@ -167,6 +157,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	btnSwitch.onclick = () => {
 		if (ready) return;
 		const newSide = role.startsWith("left") ? "right" : "left";
+		console.log("Switching side to ", newSide);
 		socket.send(JSON.stringify({ type: "switchSide", side: newSide }));
 	};
 

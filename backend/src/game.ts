@@ -238,22 +238,24 @@ export class Game implements IGame {
 		}
 
 		//broadcast the game state to all clients
-		for (const client of room.clients) {
-			if (client.readyState === 1) { //if the connection is open
-				const playerId = room.sockets.get(client); //get player id from socket
-				const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
-                const role = player?.role; //get player role from player id
-				const isSpectator = role === "spectator"; //check if the player is a spectator
-				const gameStateWithResult = {
-                    ...room.gameState,
-                    paused: room.gamePaused,
-                    result: room.result || null
-                }; //include result if game ended (winner and scores)
-				client.send(JSON.stringify({
-					type: "state",
-					gameState: gameStateWithResult,
-					isSpectator
-				}));
+		if (room.gameState.gameStarted) {
+			for (const client of room.clients) {
+				if (client.readyState === 1) { //if the connection is open
+					const playerId = room.sockets.get(client); //get player id from socket
+					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
+        	        const role = player?.role; //get player role from player id
+					const isSpectator = role === "spectator"; //check if the player is a spectator
+					const gameStateWithResult = {
+        	            ...room.gameState,
+        	            paused: room.gamePaused,
+        	            result: room.result || null
+        	        }; //include result if game ended (winner and scores)
+					client.send(JSON.stringify({
+						type: "state",
+						gameState: gameStateWithResult,
+						isSpectator
+					}));
+				}
 			}
 		}
 	}

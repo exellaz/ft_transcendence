@@ -53,7 +53,7 @@ await fastify.register(async function (fastify) {
 	const player = wsHandler.assignRole(room, clientId, socket, room.id, side || undefined);
 
 	// Send role and roomId to client
-	socket.send(JSON.stringify({ type: "role", player, roomId: room.name }));
+	// socket.send(JSON.stringify({type: "role", player, roomId: room.name, gameState: { ...room.gameState } }));
 
 	// ----- INCOMING MESSAGES/EVENT -----
 	socket.on("message", (raw) => {

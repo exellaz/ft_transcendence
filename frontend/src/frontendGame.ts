@@ -265,7 +265,7 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 
 	// Draw ball
 	ctx.beginPath();
-	ctx.arc(state.ball.x, state.ball.y * scaleY, 10 * scaleX, 0, Math.PI * 2);
+	ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, 10 * scaleX, 0, Math.PI * 2);
 	ctx.fillStyle = "black";
 	ctx.fill();
 
