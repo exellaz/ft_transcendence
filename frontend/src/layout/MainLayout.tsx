@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
 
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -18,7 +17,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
-  const { userProfile } = useUser();
 
   return (
     <Background>
@@ -32,7 +30,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
-        user={userProfile}
       />
       <BasicInfoPopup
         open={showBasicInfo}

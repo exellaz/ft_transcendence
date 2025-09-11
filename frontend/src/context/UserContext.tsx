@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
-import type { User, UserProfile } from "./User";
+import type { User } from "./User";
 
 interface UserContextType {
   user: User | null;
@@ -12,7 +12,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // todo: update with real user data from backend
   const fakeUser: User = {
-    id: "12958433",
+    id: "u0",
     username: "ghostyyyyyyyyyyyy",
     email: "ghosty@gmail.com",
     avatarUrl: "/assets/red-ghost.png",

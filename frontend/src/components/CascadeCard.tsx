@@ -84,7 +84,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
     content = (
       <div className="flex flex-col items-center w-full">
         <div className="mb-2">
-          <ProfileContents user={selectedUser.profile} />
+          <ProfileContents userUid={selectedUser.uid} />
         </div>
         {activeTab === "Friends" && (
           <div className="flex gap-6">
@@ -121,13 +121,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   else if (activeTab === "Friends" && !showProfile) {
     content = (
       <Messaging
-        recipient={{
-          username: selectedUser.username,
-          avatarUrl: selectedUser.avatarUrl,
-          online: !!selectedUser.online,
-          profile: selectedUser.profile,
-        }}
-        messages={selectedUser.messages}
+        friendUid = {selectedUser.uid}
         onProfileClick={() => setShowProfile(true)}
       />
     );

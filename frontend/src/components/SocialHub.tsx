@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
+// import { useUser } from "../context/UserContext";
 import type {
   FriendBasic,
   FriendRequest,
@@ -33,16 +33,15 @@ const SocialHub: React.FC<SocialHubProps> = ({
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [blocked, setBlocked] = useState<BlockedUser[]>([]);
 
-  const userUID = useUser().user?.id;
-
   // Add Friend state
   const [showAddFriendView, setShowAddFriendView] = useState(false);
   const [friendUID, setFriendUID] = useState("");
   const [addFriendStatus, setAddFriendStatus] = useState<
-    null | "success" | "error"
+  null | "success" | "error"
   >(null);
-
+  
   // TODO: Fetch real data based on userUid
+  // const userUID = useUser().user?.id;
   // React.useEffect(() => {
   //   // Replace with real API calls
   //   fetch(`/api/friends?uid=${userUid}`)
@@ -62,11 +61,6 @@ const SocialHub: React.FC<SocialHubProps> = ({
     setRequests(mockRequests);
     setBlocked(mockBlocked);
   }, []);
-
-  let users: FriendBasic[] | FriendRequest[] | BlockedUser[] = [];
-  if (activeTab === "Friends") users = friends;
-  if (activeTab === "Requests") users = requests;
-  if (activeTab === "Blocked") users = blocked;
 
   function handleAddFriend() {
     // Simulate UID check

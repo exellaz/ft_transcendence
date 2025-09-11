@@ -1,6 +1,12 @@
-import type { FriendBasic, FriendRequest, BlockedUser } from "../types/socialTypes";
+import type {
+  FriendBasic,
+  FriendRequest,
+  BlockedUser,
+  FriendMessaging,
+  Profile,
+} from "../types/socialTypes";
 
-// Friends (basic)
+// Friends Basic
 export const mockFriends: FriendBasic[] = [
   {
     uid: "u1",
@@ -80,47 +86,31 @@ export const mockBlocked: BlockedUser[] = [
   { uid: "u26", avatarUrl: "/assets/red-ghost.png", username: "Daniel" },
 ];
 
-export const friends = [
+// Friends Messaging
+export const mockMessages: FriendMessaging[] = [
   {
     uid: "u1",
-    username: "Sophia",
     avatarUrl: "/assets/bronze.png",
-    lastMessage: "Ready for the next match?",
-    timestamp: "2025-09-07 14:32",
+    username: "Sophia",
     online: true,
-    profile: {
-      id: "u1",
-      username: "Sophia",
-      avatarUrl: "/assets/bronze.png",
-      createdAt: "2024-11-21",
-      stats: {
-        medals: { gold: 2, silver: 1, bronze: 0 },
-        tournamentsPlayed: 8,
-        averageRanking: 2.3,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "me",
+        senderUid: "u0",
         text: "Hey Sophia! Are you joining the tournament tonight?",
         timestamp: "2025-09-07 14:00",
       },
       {
-        id: "m2",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Hi! Yes, I’ll be there. Are you ready?",
         timestamp: "2025-09-07 14:05",
       },
       {
-        id: "m3",
-        sender: "me",
+        senderUid: "u0",
         text: "Almost! Just practicing a bit more.",
         timestamp: "2025-09-07 14:10",
       },
       {
-        id: "m4",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Great! See you soon.",
         timestamp: "2025-09-07 14:32",
       },
@@ -128,44 +118,27 @@ export const friends = [
   },
   {
     uid: "u2",
-    username: "Liam",
     avatarUrl: "/assets/gold.png",
-    lastMessage: "See you tomorrow!",
-    timestamp: "2025-09-07 13:10",
+    username: "Liam",
     online: false,
-    profile: {
-      id: "u2",
-      username: "Liam",
-      avatarUrl: "/assets/gold.png",
-      createdAt: "2025-01-15",
-      stats: {
-        medals: { gold: 1, silver: 2, bronze: 1 },
-        tournamentsPlayed: 5,
-        averageRanking: 3.1,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Hey, did you check the new update?",
         timestamp: "2025-09-07 12:50",
       },
       {
-        id: "m2",
-        sender: "me",
+        senderUid: "u0",
         text: "Not yet, is it good?",
         timestamp: "2025-09-07 12:55",
       },
       {
-        id: "m3",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Yeah, lots of bug fixes and a new map!",
         timestamp: "2025-09-07 13:00",
       },
       {
-        id: "m4",
-        sender: "me",
+        senderUid: "u0",
         text: "Awesome, let’s try it tomorrow.",
         timestamp: "2025-09-07 13:10",
       },
@@ -173,44 +146,27 @@ export const friends = [
   },
   {
     uid: "u3",
-    username: "Olivia",
     avatarUrl: "/assets/silver.png",
-    lastMessage: "Let's practice soon!",
-    timestamp: "2025-09-06 18:45",
+    username: "Olivia",
     online: true,
-    profile: {
-      id: "u3",
-      username: "Olivia",
-      avatarUrl: "/assets/silver.png",
-      createdAt: "2025-02-10",
-      stats: {
-        medals: { gold: 0, silver: 3, bronze: 2 },
-        tournamentsPlayed: 6,
-        averageRanking: 4.0,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "me",
+        senderUid: "u0",
         text: "Olivia, want to practice later?",
         timestamp: "2025-09-06 18:00",
       },
       {
-        id: "m2",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Sure! What time?",
         timestamp: "2025-09-06 18:10",
       },
       {
-        id: "m3",
-        sender: "me",
+        senderUid: "u0",
         text: "How about 7pm?",
         timestamp: "2025-09-06 18:20",
       },
       {
-        id: "m4",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Works for me. See you then!",
         timestamp: "2025-09-06 18:45",
       },
@@ -218,32 +174,17 @@ export const friends = [
   },
   {
     uid: "u4",
-    username: "Noah",
     avatarUrl: "/assets/green-tick.png",
-    lastMessage: "Good luck!",
-    timestamp: "2025-09-05 20:12",
+    username: "Noah",
     online: false,
-    profile: {
-      id: "u4",
-      username: "Noah",
-      avatarUrl: "/assets/green-tick.png",
-      createdAt: "2025-03-05",
-      stats: {
-        medals: { gold: 1, silver: 0, bronze: 3 },
-        tournamentsPlayed: 4,
-        averageRanking: 5.2,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Good luck in the finals!",
         timestamp: "2025-09-05 20:00",
       },
       {
-        id: "m2",
-        sender: "me",
+        senderUid: "u0",
         text: "Thanks Noah! Root for me!",
         timestamp: "2025-09-05 20:12",
       },
@@ -251,38 +192,22 @@ export const friends = [
   },
   {
     uid: "u5",
-    username: "Emma",
     avatarUrl: "/assets/yellow-ghost.png",
-    lastMessage: "Congrats on your win!",
-    timestamp: "2025-09-04 16:30",
+    username: "Emma",
     online: true,
-    profile: {
-      id: "u5",
-      username: "Emma",
-      avatarUrl: "/assets/yellow-ghost.png",
-      createdAt: "2025-04-20",
-      stats: {
-        medals: { gold: 3, silver: 1, bronze: 0 },
-        tournamentsPlayed: 9,
-        averageRanking: 1.7,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "me",
+        senderUid: "u0",
         text: "Emma, congrats on your win!",
         timestamp: "2025-09-04 16:00",
       },
       {
-        id: "m2",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Thank you! You played well too.",
         timestamp: "2025-09-04 16:10",
       },
       {
-        id: "m3",
-        sender: "me",
+        senderUid: "u0",
         text: "Let’s celebrate soon.",
         timestamp: "2025-09-04 16:30",
       },
@@ -290,32 +215,17 @@ export const friends = [
   },
   {
     uid: "u6",
-    username: "Mason",
     avatarUrl: "/assets/red-ghost.png",
-    lastMessage: "Let's team up next time.",
-    timestamp: "2025-09-03 11:05",
+    username: "Mason",
     online: true,
-    profile: {
-      id: "u6",
-      username: "Mason",
-      avatarUrl: "/assets/red-ghost.png",
-      createdAt: "2025-05-12",
-      stats: {
-        medals: { gold: 2, silver: 2, bronze: 2 },
-        tournamentsPlayed: 7,
-        averageRanking: 2.9,
-      },
-    },
     messages: [
       {
-        id: "m1",
-        sender: "recipient",
+        senderUid: "recipient",
         text: "Let’s team up next time!",
         timestamp: "2025-09-03 11:00",
       },
       {
-        id: "m2",
-        sender: "me",
+        senderUid: "u0",
         text: "Definitely! We’ll be unstoppable.",
         timestamp: "2025-09-03 11:05",
       },
@@ -323,328 +233,303 @@ export const friends = [
   },
 ];
 
-export const requests = [
+// Profile
+export const mockProfiles: Profile[] = [
+  {
+    uid: "u0",
+    username: "ghostyyyyyyyyyyyy",
+    avatarUrl: "/assets/red-ghost.png",
+    joinDate: "2025-01-01",
+    stats: {
+      medals: { gold: 3, silver: 2, bronze: 1 },
+      tournamentsPlayed: 10,
+      averageRanking: 2.5,
+    },
+  },
+  {
+    uid: "u1",
+    username: "Sophia",
+    avatarUrl: "/assets/bronze.png",
+    joinDate: "2024-11-21",
+    stats: {
+      medals: { gold: 2, silver: 1, bronze: 0 },
+      tournamentsPlayed: 8,
+      averageRanking: 2.3,
+    },
+  },
+  {
+    uid: "u2",
+    username: "Liam",
+    avatarUrl: "/assets/gold.png",
+    joinDate: "2025-01-15",
+    stats: {
+      medals: { gold: 1, silver: 2, bronze: 1 },
+      tournamentsPlayed: 5,
+      averageRanking: 3.1,
+    },
+  },
+  {
+    uid: "u3",
+    username: "Olivia",
+    avatarUrl: "/assets/silver.png",
+    joinDate: "2025-02-10",
+    stats: {
+      medals: { gold: 0, silver: 3, bronze: 2 },
+      tournamentsPlayed: 6,
+      averageRanking: 4.0,
+    },
+  },
+  {
+    uid: "u4",
+    username: "Noah",
+    avatarUrl: "/assets/green-tick.png",
+    joinDate: "2025-03-05",
+    stats: {
+      medals: { gold: 1, silver: 0, bronze: 3 },
+      tournamentsPlayed: 4,
+      averageRanking: 5.2,
+    },
+  },
+  {
+    uid: "u5",
+    username: "Emma",
+    avatarUrl: "/assets/yellow-ghost.png",
+    joinDate: "2025-04-20",
+    stats: {
+      medals: { gold: 3, silver: 1, bronze: 0 },
+      tournamentsPlayed: 9,
+      averageRanking: 1.7,
+    },
+  },
+  {
+    uid: "u6",
+    username: "Mason",
+    avatarUrl: "/assets/red-ghost.png",
+    joinDate: "2025-05-12",
+    stats: {
+      medals: { gold: 2, silver: 2, bronze: 2 },
+      tournamentsPlayed: 7,
+      averageRanking: 2.9,
+    },
+  },
   {
     uid: "u7",
     username: "Ava",
     avatarUrl: "/assets/bronze.png",
-    profile: {
-      id: "u7",
-      username: "Ava",
-      avatarUrl: "/assets/bronze.png",
-      createdAt: "2025-06-01",
-      stats: {
-        medals: { gold: 0, silver: 1, bronze: 0 },
-        tournamentsPlayed: 2,
-        averageRanking: 5.0,
-      },
+    joinDate: "2025-06-01",
+    stats: {
+      medals: { gold: 0, silver: 1, bronze: 0 },
+      tournamentsPlayed: 2,
+      averageRanking: 5.0,
     },
   },
   {
     uid: "u8",
     username: "Elijah",
     avatarUrl: "/assets/gold.png",
-    profile: {
-      id: "u8",
-      username: "Elijah",
-      avatarUrl: "/assets/gold.png",
-      createdAt: "2025-06-10",
-      stats: {
-        medals: { gold: 1, silver: 0, bronze: 1 },
-        tournamentsPlayed: 3,
-        averageRanking: 3.7,
-      },
+    joinDate: "2025-06-10",
+    stats: {
+      medals: { gold: 1, silver: 0, bronze: 1 },
+      tournamentsPlayed: 3,
+      averageRanking: 3.7,
     },
   },
   {
     uid: "u9",
     username: "Isabella",
     avatarUrl: "/assets/silver.png",
-    profile: {
-      id: "u9",
-      username: "Isabella",
-      avatarUrl: "/assets/silver.png",
-      createdAt: "2025-07-01",
-      stats: {
-        medals: { gold: 0, silver: 2, bronze: 0 },
-        tournamentsPlayed: 1,
-        averageRanking: 6.0,
-      },
+    joinDate: "2025-07-01",
+    stats: {
+      medals: { gold: 0, silver: 2, bronze: 0 },
+      tournamentsPlayed: 1,
+      averageRanking: 6.0,
     },
   },
   {
     uid: "u10",
     username: "James",
     avatarUrl: "/assets/green-tick.png",
-    profile: {
-      id: "u10",
-      username: "James",
-      avatarUrl: "/assets/green-tick.png",
-      createdAt: "2025-07-15",
-      stats: {
-        medals: { gold: 0, silver: 0, bronze: 2 },
-        tournamentsPlayed: 2,
-        averageRanking: 4.2,
-      },
+    joinDate: "2025-07-15",
+    stats: {
+      medals: { gold: 0, silver: 0, bronze: 2 },
+      tournamentsPlayed: 2,
+      averageRanking: 4.2,
     },
   },
   {
     uid: "u11",
     username: "Mia",
     avatarUrl: "/assets/yellow-ghost.png",
-    profile: {
-      id: "u11",
-      username: "Mia",
-      avatarUrl: "/assets/yellow-ghost.png",
-      createdAt: "2025-08-01",
-      stats: {
-        medals: { gold: 1, silver: 1, bronze: 0 },
-        tournamentsPlayed: 2,
-        averageRanking: 3.5,
-      },
+    joinDate: "2025-08-01",
+    stats: {
+      medals: { gold: 1, silver: 1, bronze: 0 },
+      tournamentsPlayed: 2,
+      averageRanking: 3.5,
     },
   },
   {
     uid: "u12",
     username: "Benjamin",
     avatarUrl: "/assets/red-ghost.png",
-    profile: {
-      id: "u12",
-      username: "Benjamin",
-      avatarUrl: "/assets/red-ghost.png",
-      createdAt: "2025-08-10",
-      stats: {
-        medals: { gold: 0, silver: 0, bronze: 1 },
-        tournamentsPlayed: 1,
-        averageRanking: 7.0,
-      },
+    joinDate: "2025-08-10",
+    stats: {
+      medals: { gold: 0, silver: 0, bronze: 1 },
+      tournamentsPlayed: 1,
+      averageRanking: 7.0,
     },
   },
   {
     uid: "u13",
     username: "Charlotte",
     avatarUrl: "/assets/bronze.png",
-    profile: {
-      id: "u13",
-      username: "Charlotte",
-      avatarUrl: "/assets/bronze.png",
-      createdAt: "2025-08-15",
-      stats: {
-        medals: { gold: 2, silver: 0, bronze: 0 },
-        tournamentsPlayed: 3,
-        averageRanking: 2.8,
-      },
+    joinDate: "2025-08-15",
+    stats: {
+      medals: { gold: 2, silver: 0, bronze: 0 },
+      tournamentsPlayed: 3,
+      averageRanking: 2.8,
     },
   },
   {
     uid: "u14",
     username: "Henry",
     avatarUrl: "/assets/gold.png",
-    profile: {
-      id: "u14",
-      username: "Henry",
-      avatarUrl: "/assets/gold.png",
-      createdAt: "2025-08-20",
-      stats: {
-        medals: { gold: 1, silver: 1, bronze: 1 },
-        tournamentsPlayed: 4,
-        averageRanking: 4.5,
-      },
+    joinDate: "2025-08-20",
+    stats: {
+      medals: { gold: 1, silver: 1, bronze: 1 },
+      tournamentsPlayed: 4,
+      averageRanking: 4.5,
     },
   },
-];
-
-export const blocked = [
   {
     uid: "u15",
     username: "Amelia",
     avatarUrl: "/assets/bronze.png",
-    profile: {
-      id: "u15",
-      username: "Amelia",
-      avatarUrl: "/assets/bronze.png",
-      createdAt: "2025-03-01",
-      stats: {
-        medals: { gold: 0, silver: 1, bronze: 2 },
-        tournamentsPlayed: 2,
-        averageRanking: 6.2,
-      },
+    joinDate: "2025-03-01",
+    stats: {
+      medals: { gold: 0, silver: 1, bronze: 2 },
+      tournamentsPlayed: 2,
+      averageRanking: 6.2,
     },
   },
   {
     uid: "u16",
     username: "Lucas",
     avatarUrl: "/assets/gold.png",
-    profile: {
-      id: "u16",
-      username: "Lucas",
-      avatarUrl: "/assets/gold.png",
-      createdAt: "2025-03-10",
-      stats: {
-        medals: { gold: 1, silver: 0, bronze: 0 },
-        tournamentsPlayed: 1,
-        averageRanking: 7.0,
-      },
+    joinDate: "2025-03-10",
+    stats: {
+      medals: { gold: 1, silver: 0, bronze: 0 },
+      tournamentsPlayed: 1,
+      averageRanking: 7.0,
     },
   },
   {
     uid: "u17",
     username: "Harper",
     avatarUrl: "/assets/silver.png",
-    profile: {
-      id: "u17",
-      username: "Harper",
-      avatarUrl: "/assets/silver.png",
-      createdAt: "2025-03-15",
-      stats: {
-        medals: { gold: 0, silver: 2, bronze: 1 },
-        tournamentsPlayed: 3,
-        averageRanking: 5.5,
-      },
+    joinDate: "2025-03-15",
+    stats: {
+      medals: { gold: 0, silver: 2, bronze: 1 },
+      tournamentsPlayed: 3,
+      averageRanking: 5.5,
     },
   },
   {
     uid: "u18",
     username: "Jack",
     avatarUrl: "/assets/green-tick.png",
-    profile: {
-      id: "u18",
-      username: "Jack",
-      avatarUrl: "/assets/green-tick.png",
-      createdAt: "2025-03-20",
-      stats: {
-        medals: { gold: 1, silver: 1, bronze: 0 },
-        tournamentsPlayed: 2,
-        averageRanking: 4.8,
-      },
+    joinDate: "2025-03-20",
+    stats: {
+      medals: { gold: 1, silver: 1, bronze: 0 },
+      tournamentsPlayed: 2,
+      averageRanking: 4.8,
     },
   },
   {
     uid: "u19",
     username: "Ella",
     avatarUrl: "/assets/yellow-ghost.png",
-    profile: {
-      id: "u19",
-      username: "Ella",
-      avatarUrl: "/assets/yellow-ghost.png",
-      createdAt: "2025-03-25",
-      stats: {
-        medals: { gold: 0, silver: 0, bronze: 2 },
-        tournamentsPlayed: 1,
-        averageRanking: 7.5,
-      },
+    joinDate: "2025-03-25",
+    stats: {
+      medals: { gold: 0, silver: 0, bronze: 2 },
+      tournamentsPlayed: 1,
+      averageRanking: 7.5,
     },
   },
   {
     uid: "u20",
     username: "William",
     avatarUrl: "/assets/red-ghost.png",
-    profile: {
-      id: "u20",
-      username: "William",
-      avatarUrl: "/assets/red-ghost.png",
-      createdAt: "2025-04-01",
-      stats: {
-        medals: { gold: 2, silver: 1, bronze: 0 },
-        tournamentsPlayed: 4,
-        averageRanking: 3.2,
-      },
+    joinDate: "2025-04-01",
+    stats: {
+      medals: { gold: 2, silver: 1, bronze: 0 },
+      tournamentsPlayed: 4,
+      averageRanking: 3.2,
     },
   },
   {
     uid: "u21",
     username: "Evelyn",
     avatarUrl: "/assets/bronze.png",
-    profile: {
-      id: "u21",
-      username: "Evelyn",
-      avatarUrl: "/assets/bronze.png",
-      createdAt: "2025-04-05",
-      stats: {
-        medals: { gold: 1, silver: 0, bronze: 1 },
-        tournamentsPlayed: 2,
-        averageRanking: 5.9,
-      },
+    joinDate: "2025-04-05",
+    stats: {
+      medals: { gold: 1, silver: 0, bronze: 1 },
+      tournamentsPlayed: 2,
+      averageRanking: 5.9,
     },
   },
   {
     uid: "u22",
     username: "Alexander",
     avatarUrl: "/assets/gold.png",
-    profile: {
-      id: "u22",
-      username: "Alexander",
-      avatarUrl: "/assets/gold.png",
-      createdAt: "2025-04-10",
-      stats: {
-        medals: { gold: 0, silver: 2, bronze: 0 },
-        tournamentsPlayed: 3,
-        averageRanking: 4.7,
-      },
+    joinDate: "2025-04-10",
+    stats: {
+      medals: { gold: 0, silver: 2, bronze: 0 },
+      tournamentsPlayed: 3,
+      averageRanking: 4.7,
     },
   },
   {
     uid: "u23",
     username: "Scarlett",
     avatarUrl: "/assets/silver.png",
-    profile: {
-      id: "u23",
-      username: "Scarlett",
-      avatarUrl: "/assets/silver.png",
-      createdAt: "2025-04-15",
-      stats: {
-        medals: { gold: 2, silver: 1, bronze: 1 },
-        tournamentsPlayed: 5,
-        averageRanking: 3.8,
-      },
+    joinDate: "2025-04-15",
+    stats: {
+      medals: { gold: 2, silver: 1, bronze: 1 },
+      tournamentsPlayed: 5,
+      averageRanking: 3.8,
     },
   },
   {
     uid: "u24",
     username: "Henry",
     avatarUrl: "/assets/green-tick.png",
-    profile: {
-      id: "u24",
-      username: "Henry",
-      avatarUrl: "/assets/green-tick.png",
-      createdAt: "2025-04-20",
-      stats: {
-        medals: { gold: 1, silver: 1, bronze: 2 },
-        tournamentsPlayed: 4,
-        averageRanking: 4.1,
-      },
+    joinDate: "2025-04-20",
+    stats: {
+      medals: { gold: 1, silver: 1, bronze: 2 },
+      tournamentsPlayed: 4,
+      averageRanking: 4.1,
     },
   },
   {
     uid: "u25",
     username: "Grace",
     avatarUrl: "/assets/yellow-ghost.png",
-    profile: {
-      id: "u25",
-      username: "Grace",
-      avatarUrl: "/assets/yellow-ghost.png",
-      createdAt: "2025-04-25",
-      stats: {
-        medals: { gold: 0, silver: 0, bronze: 1 },
-        tournamentsPlayed: 1,
-        averageRanking: 6.8,
-      },
+    joinDate: "2025-04-25",
+    stats: {
+      medals: { gold: 0, silver: 0, bronze: 1 },
+      tournamentsPlayed: 1,
+      averageRanking: 6.8,
     },
   },
   {
     uid: "u26",
     username: "Daniel",
     avatarUrl: "/assets/red-ghost.png",
-    profile: {
-      id: "u26",
-      username: "Daniel",
-      avatarUrl: "/assets/red-ghost.png",
-      createdAt: "2025-05-01",
-      stats: {
-        medals: { gold: 1, silver: 2, bronze: 0 },
-        tournamentsPlayed: 3,
-        averageRanking: 5.3,
-      },
+    joinDate: "2025-05-01",
+    stats: {
+      medals: { gold: 1, silver: 2, bronze: 0 },
+      tournamentsPlayed: 3,
+      averageRanking: 5.3,
     },
   },
 ];
