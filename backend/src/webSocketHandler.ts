@@ -9,9 +9,9 @@ const game = new Game(); //create game object
  * @brief Interface for WebSocketHandler class method
 */
 interface IWebSocketHandler {
-	assignRole(room: any, clientId: string, socket: any, roomId: string): string;
-	handleMsgOrEvent(socket: any, room: any, role:string, raw:string): void;
-	handleDisconnect(socket: any, room: any, clientId: string, role:string, roomId: string): void;
+	assignRole(room: any, clientId: string, socket: any, roomId: string): { id: string, role: string};
+	handleMsgOrEvent(socket: any, room: any, role: { id:string, role: string}, raw:string): void;
+	handleDisconnect(socket: any, room: any, clientId: string, roomId: string): void;
 }
 
 export class WebSocketHandler implements IWebSocketHandler {
@@ -23,36 +23,39 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param roomId The ID of the room
 	 * @return The assigned role as a string
 	*/
-	assignRole(room: any, clientId: string, socket: any, roomId: string, preferredSide?: "left" | "right"): string {
+	assignRole(room: any, clientId: string, socket: any, roomId: string, preferredSide?: "left" | "right"): { id: string, role: string} {
 		// Add socket to room if present
 		if (socket) {
 			room.sockets.set(socket, clientId);
 			room.clients.add(socket);
 		}
 
-		//check if client has the role
-		let role = room.clientRoles.get(clientId);
+		//check if the client already has a playerinfo
+		let player = room.clientRoles.get(clientId);
 
-		//assign the role if not exist
-		if (!role) {
+		//assign the info if not exist
+		if (!player) {
+            let roleStr: string;
+
 			// if player request a side
 			if (preferredSide === "left" && room.gameState.teams.left.length < room.teamSize) {
-				role = `left_player${room.gameState.teams.left.length + 1}`;
-				room.gameState.teams.left.push(role);
+				roleStr = `left_player${room.gameState.teams.left.length + 1}`;
+				room.gameState.teams.left.push(roleStr);
 			}
 			else if (preferredSide === "right" && room.gameState.teams.right.length < room.teamSize) {
-				role = `right_player${room.gameState.teams.right.length + 1}`;
-				room.gameState.teams.right.push(role);
+				roleStr = `right_player${room.gameState.teams.right.length + 1}`;
+				room.gameState.teams.right.push(roleStr);
 			}
 			else {
-				role = "spectator";
+				roleStr = "spectator";
 			}
 
 			// assign the role to the client
-			room.clientRoles.set(clientId, role);
+            player = { clientId, role: roleStr };
+			room.clientRoles.set(clientId, player);
 
 			//initialize thier position and score (prevent garbage value)
-			if (role !== "spectator") {
+			if (roleStr !== "spectator") {
 				game.setPaddlePositionWithTeam(room);
 				room.gameState.score.left = 0;
 				room.gameState.score.right = 0;
@@ -68,13 +71,13 @@ export class WebSocketHandler implements IWebSocketHandler {
 						countdown: room.gameState.countdown,
 						gameStarted: room.gameState.gameStarted
 					},
-					isSpectator: role === "spectator",
+					isSpectator: roleStr === "spectator",
 					leaderId: room.leaderId,
 					canStart: room.canStart || false
 				}));
 
-				console.log(`Player (${role}) [ ${clientId} ] joined room ${room.name} (${roomId})`);
-				broadcast(room, createChatMessage("system", `${role} joined the game.`));
+				console.log(`Player (${roleStr}) [ ${clientId} ] joined room ${room.name} (${roomId})`);
+				broadcast(room, createChatMessage("system", `${roleStr} joined the game.`));
 			}
 
 			// check if room is full and start game
@@ -92,13 +95,10 @@ export class WebSocketHandler implements IWebSocketHandler {
 					room.disconnectPlayers.delete(clientId); // mark as reconnected
 
 					//if all player reconnected, unpause game
-					if (room.disconnectPlayers.size === 0) {
-						room.gamePaused = false;
-					}
+					if (room.disconnectPlayers.size === 0) room.gamePaused = false;
 
-					const role = room.clientRoles.get(clientId);
-					console.log(`Player (${role}) [ ${clientId} ] reconnected as ${role} in room ${room.name} (${roomId})`);
-					broadcast(room, createChatMessage("system", `${role} reconnect the game.`));
+					console.log(`Player (${player.role}) [ ${clientId} ] reconnected as ${player.role} in room ${room.name} (${roomId})`);
+					broadcast(room, createChatMessage("system", `${player.role} reconnect the game.`));
 
 					//send full state immediately tp reconnect player
 					socket.send(JSON.stringify({
@@ -109,14 +109,14 @@ export class WebSocketHandler implements IWebSocketHandler {
 							countdown: room.gameState,
 							gameStarted: room.gameState.gameStarted
 						},
-						isSpectator: role === "spectator",
+						isSpectator: player.role === "spectator",
 						leaderId: room.leaderId,
 						canStart: room.canStart
 					}));
 				}
 			}
 		}
-		return role;
+		return { id: player.id, role: player.role };
 	}
 
 	/**
@@ -128,21 +128,22 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @note Handles "move", "setWidth", "setHeight", and "chat" message types
 	 * @note Updates paddle positions, room dimensions, and broadcasts chat messages
 	*/
-	handleMsgOrEvent(socket: any, room: any, role:string, raw:string) {
+	handleMsgOrEvent(socket: any, room: any, role: { id: string, role: string }, raw:string) {
 		const msg = JSON.parse(raw);
 		const clientId = room.sockets.get(socket);
-		const currentRole = room.clientRoles.get(clientId);
+		const player = room.clientRoles.get(clientId);
+
+        //if no player then exit
+        if (!player) return;
 
 		switch (msg.type) {
 			case "move":
-				role = room.clientRoles.get(clientId) || role; // always trust the server mapping
-				const paddleHeight = 80; //? make public
-				if (role && (role.startsWith("left_player") || role!.startsWith("right_player"))) {
-					room.gameState.paddles[role!] = game.updatePaddlePosition(
-						room.gameState.paddles[role!] ?? 0,
+				if (role.role !== "spectator") {
+					room.gameState.paddles[role.role!] = game.updatePaddlePosition(
+						room.gameState.paddles[role.role!] ?? 0,
 						msg.dy,
 						room.height,
-						paddleHeight
+						room.paddleHeight
 					);
 				}
 				break;
@@ -156,68 +157,69 @@ export class WebSocketHandler implements IWebSocketHandler {
 				break;
 
 			case "chat":
-				broadcast(room, createChatMessage(role ?? "spectator", String(msg.text)));
+				broadcast(room, createChatMessage(role.role ?? "spectator", String(msg.text)));
 				break;
 
 			case "switchSide":
-				//ignore if spectator or no role
-				if (!currentRole || currentRole === "spectator") return;
+                if (role.role === "spectator") return;
 
 				if (room.gameState.countdown > 0) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side during countdown" }));
-					console.log(`Player (${role}) [${clientId}] fail to switch side during countdown in room (${room.name}) [${room.id}]`);
+					console.log(`Player (${role}) fail to switch side during countdown in room (${room.name}) [${room.id}]`);
 					return;
 				}
 
-				if (room.readyStatus.get(currentRole)) {
+				if (room.readyStatus.get(role.role)) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
-					console.log(`Player (${role}) [${clientId}] fail to switch side when ready in room (${room.name}) [${room.id}]`);
+					console.log(`Player (${role}) fail to switch side when ready in room (${room.name}) [${room.id}]`);
 					return;
 				}
 
 				const newRole = handleSwitchSide(room, socket, msg.side as "left" | "right");
-				if (newRole) role = newRole;
+				if (newRole) role.role = newRole;
 				broadcastState(room);
 				break;
 
 			case "ready":
 				// Ignore if spectator, no role, or leader
-				if (!currentRole || currentRole === "spectator" || clientId === room.leaderId) return;
+                if (role.role === "spectator" || clientId === room.leaderId) return;
 
-				room.readyStatus.set(currentRole, msg.ready);
-				broadcast(room, createChatMessage("system", `${currentRole} is ${msg.ready ? "ready" : "unready"}.`));
-				console.log(`Player (${currentRole}) [${clientId}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
+				room.readyStatus.set(role.role, msg.ready);
+				broadcast(room, createChatMessage("system", `${role} is ${msg.ready ? "ready" : "unready"}.`));
+				console.log(`Player (${role}) is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				broadcastState(room);
 				break;
 
 			case "start":
-				//only leader can start the game
+				//if not leader can't start
 				if (clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Only the leader can start the game" }));
-					console.log(`Player (${currentRole}) [${clientId}] tried to start the game but is not the leader in room (${room.name}) [${room.id}]`);
+					console.log(`Player (${role}) tried to start the game but is not the leader in room (${room.name}) [${room.id}]`);
 					return;
 				}
 
+                //if not enough player, cannot start
 				if (room.teamSize < 1) {
 					socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
-					console.log(`Player (${currentRole}) [${clientId}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
+					console.log(`Player (${role}) tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
 					broadcast(room, createChatMessage("system", `Cannot start: insufficient players`));
 					return;
 				}
 
+                //if not all player ready, cannot start
 				if(!room.canStart) {
 					socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
-					console.log(`Player (${currentRole}) [${clientId}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
+					console.log(`Player (${role}) tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
 					broadcast(room, createChatMessage("system", `Cannot start: player not ready`));
 					return;
-				}
+                }
 
 				room.gameState.countdown = 5 * 60; //? 5 seconds countdown
 				room.startRequestedBy = clientId;
 				room.gameState.gameStarted = false;
 				room.gamePaused = false;
 
-				console.log(`Player (${currentRole}) [ ${clientId} ] started the game in room (${room.name}) [${room.id}]`);
+				console.log(`Player (${role}) started the game in room (${room.name}) [${room.id}]`);
 				broadcast(room, createChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
 				broadcastState(room);
 				break;
@@ -235,19 +237,22 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param role The role of the client (player, spectator, etc.)
 	 * @param roomId The ID of the room
 	*/
-	handleDisconnect(socket: any, room: any, clientId: string, _role:string, roomId: string) {
+	handleDisconnect(socket: any, room: any, clientId: string, roomId: string) {
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;
 
         // always trust the latest role from the server mapping
-        const role = room.clientRoles.get(clientId);
+        const player = room.clientRoles.get(clientId);
+        if (!player) return;
+
+        const role = player.role;
 
 		// Remove socket and client from room
 		room.sockets.delete(socket);
 		room.clients.delete(socket);
 
 		// --- handle leader leaving ---
-		let leaderChanged = false;
+		let leaderChanged = false; //check if leader changed
 		if (clientId === room.leaderId) {
 			//check for remaining players except spectators and the leaving leader
 			const remainingPlayers = room.clientRoles
@@ -256,6 +261,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 					  .map(([id]) => id)
 				: [];
 
+            //if have remaining player when leader left pass leader to the player
 			if (remainingPlayers.length > 0) {
 				room.leaderId = remainingPlayers[0];
 				leaderChanged = true;
@@ -343,6 +349,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		if (room.clients.size === 0) {
 			console.log(`Room ${room.name} (${roomId}) is empty. countdown 10s to delete`);
 
+            //check if room still empty after 10s then delete it
 			scheduleTimeout(room, clientId, 10000, () => {
 				if (room.clients.size === 0) {
 					console.log(`Room ${room.name} (${roomId}) deleted due to empty.`);

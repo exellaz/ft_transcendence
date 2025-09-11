@@ -3,6 +3,11 @@ import { Game } from "./game.ts"; // import game loop
 import { ChatMessage } from "./chat.ts"; // import chat message type
 import { saveMatchResult } from "./database.ts";
 
+export interface playerInfo {
+    clientId: string; // client id
+    role: string; // "left" or "right"
+}
+
 /**
  * @brief Room interface ( is like a room information structure)
 */
@@ -23,7 +28,7 @@ export interface Room {
         gameStarted: boolean;
 	};
 	clients: Set<WebSocket>;
-	clientRoles: Map<string, string>; //key: client id, value: role ("left" or "right")
+	clientRoles: Map<string, playerInfo>; //key: client id, value: playerInfo
 	sockets: Map<WebSocket, string>; //key: socket, value: client id
 	chatHistory: ChatMessage[]; // Array to store chat messages
 	startTime?: Date; //start game time

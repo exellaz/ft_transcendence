@@ -50,19 +50,19 @@ await fastify.register(async function (fastify) {
 	}
 
     // Assign role to client (player, spectator, etc.)
-	const role = wsHandler.assignRole(room, clientId, socket, room.id, side || undefined);
+	const player = wsHandler.assignRole(room, clientId, socket, room.id, side || undefined);
 
 	// Send role and roomId to client
-	socket.send(JSON.stringify({ type: "role", role, roomId: room.name }));
+	socket.send(JSON.stringify({ type: "role", player, roomId: room.name }));
 
 	// ----- INCOMING MESSAGES/EVENT -----
 	socket.on("message", (raw) => {
-		wsHandler.handleMsgOrEvent(socket, room, role, raw.toString());
+		wsHandler.handleMsgOrEvent(socket, room, player, raw.toString());
 	});
 
 	// ----- CLIENT DISCONNECT -----
 	socket.on("close", () => {
-		wsHandler.handleDisconnect(socket, room, clientId, role, room.id);
+		wsHandler.handleDisconnect(socket, room, clientId, room.id);
 	});
   });
 });

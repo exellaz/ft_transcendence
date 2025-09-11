@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS match_players (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	match_id INTEGER NOT NULL,
 	player_id TEXT NOT NULL,
+    role TEXT NOT NULL,
 	team TEXT NOT NULL,
 	FOREIGN KEY(match_id) REFERENCES matches(id)
 );
@@ -54,8 +55,8 @@ export function saveMatchResult(room: any, duration?: string) {
 
 		// Insert players for both teams
 		const playerStmt = db.prepare(`
-			INSERT INTO match_players (match_id, player_id, team)
-			VALUES (?, ?, ?)
+			INSERT INTO match_players (match_id, player_id, team, role)
+			VALUES (?, ?, ?, ?);
 		`);
 
 		// Extract players from room state
@@ -68,8 +69,8 @@ export function saveMatchResult(room: any, duration?: string) {
 			// If p is a role string like 'left_player1' or 'right_player1', map it to clientId via room.clientRoles
 			if (typeof p === 'string') {
 				if (p.startsWith("left_") || p.startsWith("right_")) {
-					for (const [cid, r] of room.clientRoles.entries()) {
-						if (r === p) return cid;
+					for (const [cid, playerInfo] of room.clientRoles.entries()) {
+						if (playerInfo.role === p) return cid;
 					}
 					return "unknown";
 				}
@@ -85,12 +86,14 @@ export function saveMatchResult(room: any, duration?: string) {
 		// Save players for left and right teams
 		for (const p of leftPlayers) {
 			const pid = resolvePlayerId(p, room);
-			playerStmt.run(matchId, pid, "left");
+            const role = p;
+			playerStmt.run(matchId, pid, role, "left");
 		}
 
 		for (const p of rightPlayers) {
 			const pid = resolvePlayerId(p, room);
-			playerStmt.run(matchId, pid, "right");
+            const role = p;
+			playerStmt.run(matchId, pid, role, "right");
 		}
 
 		console.log(`[DB] Match result saved for room: ${room.id}`);
@@ -110,7 +113,7 @@ export function getAllMatches(limit = 10) {
 
 	for (const match of matches) {
 		const players = db
-			.prepare("SELECT player_id, team FROM match_players WHERE match_id = ?")
+			.prepare("SELECT player_id, role, team FROM match_players WHERE match_id = ?")
 			.all(match.id);
 		match.players = players;
 	}

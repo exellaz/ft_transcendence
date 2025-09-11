@@ -163,13 +163,14 @@ export class Game implements IGame {
 		}
 
         // helper: check if all roles in a team are connected
-        const teamConnected = (team: string[]): boolean => {
-            return team.every(role => {
-                const playerId = Array.from(room.clientRoles.entries())
-                    .find(([_, r]) => r === role)?.[0];
-                return playerId && !room.disconnectPlayers.has(playerId);
-            });
-        };
+
+		const teamConnected = (team: string[]): boolean => {
+			return team.every(role => {
+				const entry = [...room.clientRoles.entries()].find(([_, p]) => p.role === role);
+				const playerId = entry?.[0];
+				return playerId && !room.disconnectPlayers.has(playerId);
+			});
+		};
 
 		// get players
 		const leftReady = teamConnected(room.gameState.teams.left);
@@ -240,7 +241,8 @@ export class Game implements IGame {
 		for (const client of room.clients) {
 			if (client.readyState === 1) { //if the connection is open
 				const playerId = room.sockets.get(client); //get player id from socket
-				const role = room.clientRoles.get(playerId!); //get player role from player id
+				const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
+                const role = player?.role; //get player role from player id
 				const isSpectator = role === "spectator"; //check if the player is a spectator
 				const gameStateWithResult = {
                     ...room.gameState,
