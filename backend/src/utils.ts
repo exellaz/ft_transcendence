@@ -134,49 +134,112 @@ export function broadcast(room: any, msg: any) {
  * @return The new role assigned after switching sides, or undefined if switch failed
 */
 export function handleSwitchSide(room: any, socket: any, newSide: "left" | "right"): string | undefined {
-	const clientId = room.sockets.get(socket);
-	if (!clientId) return;
+    const clientId = room.sockets.get(socket);
+    if (!clientId) return;
 
-	//check if the new side is full
-	const currentRole = room.clientRoles.get(clientId);
-	if (!currentRole || currentRole === "spectator") return;
+    const currentRole = room.clientRoles.get(clientId);
+    if (!currentRole || currentRole === "spectator") return;
 
-	// Remove old paddle position when change side
-	delete room.gameState.paddles[currentRole];
+    // Prevent switching during countdown or when ready (you already had these checks in caller)
+    // Remove old paddle for this client (optional since we'll rebuild paddles)
+    delete room.gameState.paddles[currentRole];
 
-	//remove current role from team if the player is switching side
-	room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== currentRole);
-	room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== currentRole);
+    // Remove this player's role string from both teams arrays (clean)
+    room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== currentRole);
+    room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== currentRole);
 
-	//assign new role
-	const newRole = `${newSide}_player${room.gameState.teams[newSide].length + 1}`;
-	room.gameState.teams[newSide].push(newRole);
-	room.clientRoles.set(clientId, newRole);
+    // Build arrays of clientIds for each side from clientRoles (single source of truth)
+    const leftClientIds: string[] = [];
+    const rightClientIds: string[] = [];
 
-	// Transfer ready status to new role
-	room.readyStatus.set(newRole, room.readyStatus.get(currentRole) || false);
-	room.readyStatus.delete(currentRole);
+    for (const [cid, role] of room.clientRoles.entries()) {
+        if (cid === clientId) continue; // skip moving client for now
+        if (typeof role === "string") {
+            if (role.startsWith("left_player")) leftClientIds.push(cid);
+            else if (role.startsWith("right_player")) rightClientIds.push(cid);
+        }
+    }
 
-	//reset paddle position for all players
-	game.setPaddlePositionWithTeam(room);
+    // Put the moving client into target side's client list
+    if (newSide === "left") leftClientIds.push(clientId);
+    else rightClientIds.push(clientId);
 
-	//broadcast to all client
-	broadcast(room, createChatMessage("system", `${currentRole} switched to ${newRole}`));
-	broadcast(room, {
-		type: "state",
-		gameState: {
-			...room.gameState,
-			paused: room.gamePaused,
-			countdown: room.gameState.countdown
-		},
-		leaderId: room.leaderId,
-		canStart: room.canStart
-	});
-	console.log(`Player (${currentRole}) [ ${clientId} ] switched to ${newRole} in room ${room.name} (${room.id})`);
+    // Rebuild roles for left side and update mappings + readyStatus
+    const newLeftRoles: string[] = [];
+    for (let i = 0; i < leftClientIds.length; i++) {
+        const cid = leftClientIds[i];
+        const newRole = `left_player${i + 1}`;
+        const oldRole = room.clientRoles.get(cid);
 
-	// Notify the client of their new role
-	if (socket) {
-		socket.send(JSON.stringify({ type: "roleUpdate", newRole }));
-	}
-	return newRole;
+        // update clientRoles -> canonical newRole
+        room.clientRoles.set(cid, newRole);
+
+        // move readyStatus from old role key to new role key
+        const oldReady = typeof oldRole === "string" ? room.readyStatus.get(oldRole) : false;
+        room.readyStatus.set(newRole, !!oldReady);
+        if (typeof oldRole === "string" && oldRole !== newRole) room.readyStatus.delete(oldRole);
+
+        newLeftRoles.push(newRole);
+    }
+
+    // Rebuild roles for right side and update mappings + readyStatus
+    const newRightRoles: string[] = [];
+    for (let i = 0; i < rightClientIds.length; i++) {
+        const cid = rightClientIds[i];
+        const newRole = `right_player${i + 1}`;
+        const oldRole = room.clientRoles.get(cid);
+
+        room.clientRoles.set(cid, newRole);
+
+        const oldReady = typeof oldRole === "string" ? room.readyStatus.get(oldRole) : false;
+        room.readyStatus.set(newRole, !!oldReady);
+        if (typeof oldRole === "string" && oldRole !== newRole) room.readyStatus.delete(oldRole);
+
+        newRightRoles.push(newRole);
+    }
+
+    // Replace teams arrays with the newly computed role names
+    room.gameState.teams.left = newLeftRoles;
+    room.gameState.teams.right = newRightRoles;
+
+    // Clear and rebuild paddles from scratch to avoid ghost paddles
+    room.gameState.paddles = {};
+    game.setPaddlePositionWithTeam(room);
+
+    // Broadcast and logging
+    const newRole = room.clientRoles.get(clientId);
+    broadcast(room, createChatMessage("system", `${currentRole} switched to ${newRole}`));
+    broadcastState(room);
+    console.log(`Player (${currentRole}) [ ${clientId} ] switched to ${newRole} in room ${room.name} (${room.id})`);
+
+    // Notify the switching client
+    if (socket) {
+        socket.send(JSON.stringify({ type: "roleUpdate", role: newRole }));
+    }
+
+    return newRole;
 }
+
+
+function reindexTeam(room: any, side: "left" | "right") {
+    const team = room.gameState.teams[side];
+    const newTeam: string[] = [];
+
+    team.forEach((oldRole: string, i: number) => {
+        const newRole = `${side}_player${i + 1}`;
+        // update clientRoles mapping
+        const clientForRole = [...room.clientRoles.entries()].find(([cid, role]) => role === oldRole);
+        if (clientForRole) {
+			const [clientId] = clientForRole;
+            room.clientRoles.set(clientId, newRole);
+        }
+        // transfer ready status
+        const ready = room.readyStatus.get(oldRole) || false;
+        room.readyStatus.set(newRole, ready);
+        if (oldRole !== newRole) room.readyStatus.delete(oldRole);
+
+        newTeam.push(newRole);
+    });
+    room.gameState.teams[side] = newTeam;
+}
+
