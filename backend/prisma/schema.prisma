@@ -11,7 +11,77 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ENUMS
+enum FriendshipStatus {
+  pending
+  accepted
+  blocked
+}
+
+enum CameraTracking {
+  static
+  dynamic
+}
+
+enum Language {
+  english
+  chinese
+  malay
+}
+
+enum TextSize {
+  small
+  medium
+  large
+}
+
+// MODELS
 model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique
+  id         Int            @id @default(autoincrement())
+  username   String         @unique
+  password   String
+  email      String         @unique
+  avatarUrl  String?        @map("avatar_url")
+  usercode   String         @unique      // 6-digit code (Prisma can enforce unique, but not "must be 6 digits")
+  isActive   Boolean        @default(true) @map("is_active")
+  joinedAt   DateTime       @default(now()) @map("joined_at")
+  updatedAt  DateTime       @default(now()) @map("updated_at")
+
+  // Relations
+  settings   UserSettings?
+  friendshipsUser   Friendship[] @relation("UserFriends")
+  friendshipsFriend Friendship[] @relation("FriendUsers")
+
+  @@map("users")
+}
+
+model UserSettings {
+  id        Int                       @id @default(autoincrement())
+  userId    Int                       @unique @map("user_id")   // 1-to-1, PK is also FK
+  language  Language                  @default(english)
+  textSize  TextSize                  @default(medium) @map("text_size")
+  inGameCameraTracking CameraTracking @default(static) @map("in_game_camera_tracking")
+
+  // Relation
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@map("user_settings")
+}
+
+model Friendship {
+  id        Int               @id @default(autoincrement())
+  userId    Int               @map("user_id")
+  friendId  Int               @map("friend_id")
+  status    FriendshipStatus  @default(pending)
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @default(now()) @map("updated_at")
+
+  // Relations
+  user      User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User @relation("FriendUsers", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId], name: "uq_friendship")
+  @@map("friendships")
+  @@index([userId], name: "idx_friendships_user")
+  @@index([friendId], name: "idx_friendships_friend")
 }

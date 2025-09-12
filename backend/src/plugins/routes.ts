@@ -1,12 +1,35 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 
+// helper to generate unique user code
+async function generateUniqueUserCode(fastify: FastifyInstance, username: string) {
+	let code: string;
+	let exists = true;
+
+	console.log("Generating user code for:", username);
+	while (exists) {
+	  code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+	  const user = await fastify.db.user.findUnique({
+		where: { usercode: code }, // compound unique
+	  });
+	  exists = !!user;
+	}
+
+	return code!;
+  }
+
 async function routes(fastify: FastifyInstance, options: FastifyPluginOptions) {
   // CREATE
   fastify.post("/users", async (request, reply) => {
-    const { username } = request.body as { username: string };
+    const { username, email, password } = request.body as {
+	  username: string;
+	  email: string;
+	  password: string;
+	};
     try {
-      const user = await fastify.db.user.create({
-        data: { username },
+	  	const usercode = await generateUniqueUserCode(fastify, username);
+      console.log(usercode);
+			const user = await fastify.db.user.create({
+        data: { username, email, password, usercode },
       });
       return user;
     } catch (err: any) {
@@ -17,7 +40,7 @@ async function routes(fastify: FastifyInstance, options: FastifyPluginOptions) {
       }
       console.error("DB Insert Error:", err);
       reply.code(500);
-      return { error: "Database error" };
+      return { error: "Databaase error" };
     }
   });
 
