@@ -1,4 +1,4 @@
-import { detemineSide, roomSetting } from "./utils.ts";
+import { determineSide, roomSetting } from "./utils.ts";
 import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
@@ -123,7 +123,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	}
 
 	// --- WebSocket ---
-	const chooseSide = await detemineSide(roomId);
+	const chooseSide = await determineSide(roomId);
 	socket = new WebSocket(
 	  `ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`
 	);
@@ -172,6 +172,8 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 			? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
 			: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
 
+			const canStart = data.canStart ?? false;
+			btnStart.disabled = !canStart;
 
 		}
 

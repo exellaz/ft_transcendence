@@ -101,7 +101,7 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 			// Role assign
 			if (data.type === "roleUpdate") {
 				role = data.newPlayer.role;
-				roleText.textContent = `Room: ${roomName} [${roomId}] | Role: ${role}`;
+				roleText.textContent = `Room: ${roomName} [${roomId}] | Player [${role.startsWith("left") ? "Player Left" : role.startsWith("right") ? "PLayer Right" : "Spectator"}]`;
 
 				//enable back button if is spectator
 				if (role === "spectator")

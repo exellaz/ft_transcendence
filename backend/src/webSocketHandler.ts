@@ -175,7 +175,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 					return;
 				}
 
-				if (room.readyStatus.get(role.role)) {
+				if (room.readyStatus.get(role.id)) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
 					console.log(`Player (${role.role}) [${role.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`);
 					return;
@@ -189,7 +189,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				// Ignore if spectator, no role, or leader
                 if (role.role === "spectator" || clientId === room.leaderId) return;
 
-				room.readyStatus.set(role.role, msg.ready);
+				room.readyStatus.set(role.id, msg.ready);
 				broadcast(room, createChatMessage("system", `(${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				broadcastState(room);
@@ -346,7 +346,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 			if (role && role !== "spectator") {
 				room.gameState.teams.left = room.gameState.teams.left.filter((p: any) => p.role !== role);
 				room.gameState.teams.right = room.gameState.teams.right.filter((p: any) => p.role !== role);
-				room.readyStatus.delete(role);
+				room.readyStatus.delete(clientId);
 				room.clientRoles.delete(clientId);
                 delete room.gameState.paddles[role];
 			}

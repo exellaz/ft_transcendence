@@ -50,7 +50,7 @@ export function updateCanStart(room: any): boolean {
     const nonLeaderPlayers = leaderPlayer
         ? allPlayers.filter((p: any) => p.clientId !== leaderId)
         : allPlayers;
-    const allReady = nonLeaderPlayers.every((p: any) => room.readyStatus.get(p.role));
+    const allReady = nonLeaderPlayers.every((p: any) => room.readyStatus.get(p.clientId));
 
     // check if teams are balanced
     const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
@@ -151,10 +151,6 @@ export function handleSwitchSide(room: any, socket: any, newSide: "left" | "righ
             const prevRole = p.role;
             // update mapping (preserve other fields)
             room.clientRoles.set(p.clientId, { ...p, role: newRole });
-            // transfer ready status from old role
-            const wasReady = room.readyStatus.get(prevRole) || false;
-            room.readyStatus.set(newRole, wasReady);
-            if (prevRole !== newRole) room.readyStatus.delete(prevRole);
             return { ...p, role: newRole };
         });
     }
@@ -185,12 +181,15 @@ export function handleSwitchSide(room: any, socket: any, newSide: "left" | "righ
     }
 
     // notify all clients about the switch
+	const canStart = updateCanStart(room);
     broadcast(room, {
         type: "roleUpdate",
         newPlayer: { id: clientId, role: newPlayer.role },
         gameState: { ...room.gameState },
         leaderId: room.leaderId,
         disconnectPlayers: room.disconnectPlayers,
+		readyStatus: Object.fromEntries(room.readyStatus.entries()),
+		canStart: canStart,
     });
 
     return newPlayer.role;
