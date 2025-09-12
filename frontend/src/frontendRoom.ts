@@ -3,7 +3,7 @@ import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
-const BALLSPEED = 50;
+const BALLSPEED = 1;
 const PADDLEHEIGHT = 10;
 
 export let socket: WebSocket;
@@ -41,6 +41,48 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	statusText.id = "lobbyStatus";
 	statusText.textContent = "Connecting to room...";
 	lobbyDiv.appendChild(statusText);
+
+    const playerText = document.createElement("h2");
+	playerText.id = "playerStatus";
+	playerText.textContent = "Waiting for players...";
+	lobbyDiv.appendChild(playerText);
+
+    const leaderText = document.createElement("h2");
+    leaderText.id = "leaderStatus";
+    leaderText.textContent = `waiting for leader...`;
+    lobbyDiv.appendChild(leaderText);
+
+    const teamsContainer = document.createElement("div");
+    teamsContainer.id = "teamsContainer";
+    lobbyDiv.appendChild(teamsContainer);
+
+    const leftTeam = document.createElement("div");
+    leftTeam.id = "leftTeam";
+    leftTeam.textContent = "waiting left team...";
+    teamsContainer.appendChild(leftTeam);
+
+    const rightTeam = document.createElement("div");
+    rightTeam.id = "rightTeam";
+    rightTeam.textContent = "waiting right team...";
+    teamsContainer.appendChild(rightTeam);
+
+    const style = document.createElement("style");
+    style.textContent = `
+      #teamsContainer {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+      }
+      #leftTeam, #rightTeam {
+        width: 45%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background: #f9f9f9;
+      }
+    `;
+    document.head.appendChild(style);
+
 
 	const btnSwitch = document.createElement("button");
 	btnSwitch.textContent = "Switch Side";
@@ -92,20 +134,32 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 		const data = JSON.parse(event.data);
 
 		if (data.type === "roleUpdate") {
-			console.log("Role update:", data);
+            console.log("Role update:", data);
 
-			//update leader
+            statusText.textContent = `Room: ${roomName} [${roomId}]`;
+            playerText.textContent = `You are: [${clientId}]`;
+            leftTeam.innerHTML = `
+                <strong>Left Team</strong>
+                <ul>${data.gameState.teams.left.map((player: any) => `<li>${player.clientId} (${player.role})</li>`).join("")}</ul>`;
+            rightTeam.innerHTML = `
+                <strong>Right Team</strong>
+                <ul>${data.gameState.teams.right.map((player: any) => `<li>${player.clientId} (${player.role})</li>`).join("")}</ul>`;
+
+            //update leader
 			if (data.leaderId) {
-				leaderId = data.leaderId;
+                leaderId = data.leaderId;
 				isLeader = clientId === leaderId;
 				btnStart.style.display = isLeader ? "inline-block" : "none";
+                btnReady.style.display = isLeader ? "none" : "inline-block";
+				leaderText.textContent = isLeader ? "leader: yes" : "leader: no";
 			}
 
 			//update player role if included
 			if (data.newPlayer.id === clientId) {
-				role = data.newPlayer.role;
+                role = data.newPlayer.role;
 				console.log("Your role is now:", role);
-			}
+            }
+
 
 			//spectator
 			if(role === "spectator") {
@@ -119,17 +173,11 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 			: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
 
 
-			const leftside = data.gameState.teams.left.join(", ") || "";
-			const rightside = data.gameState.teams.right.join(", ") || "";
-			statusText.textContent =
-			`Room: ${roomName} [${roomId}] | ${data.newPlayer.id} (${data.newPlayer.role}) | left: [${leftside}] | right: [${rightside}] ` +
-			(isLeader ? " | You are the leader" : "") +
-			(ready ? " | You are ready" : "") +
-			(gameStarted ? " | Game in progress..." : "");
 		}
 
 		if (data.type === "state") {
 			console.log("state received:", data);
+
 
 			//enable the start button
 			const canStart = data.canStart ?? false;
@@ -150,7 +198,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	function cleanUp() {
 		window.removeEventListener("contextmenu", disableContextMenu);
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
-		window.removeEventListener("keydown", keyhandler);
+		//window.removeEventListener("keydown", keyhandler);
 	}
 
 	// --- Button handlers ---

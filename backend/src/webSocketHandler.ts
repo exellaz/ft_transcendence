@@ -40,11 +40,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 			// if player request a side
 			if (preferredSide === "left" && room.gameState.teams.left.length < room.teamSize) {
 				roleStr = `left_player${room.gameState.teams.left.length + 1}`;
-				room.gameState.teams.left.push(roleStr);
+				room.gameState.teams.left.push({ clientId, role: roleStr });
 			}
 			else if (preferredSide === "right" && room.gameState.teams.right.length < room.teamSize) {
 				roleStr = `right_player${room.gameState.teams.right.length + 1}`;
-				room.gameState.teams.right.push(roleStr);
+				room.gameState.teams.right.push({ clientId, role: roleStr });
 			}
 			else {
 				roleStr = "spectator";
@@ -76,15 +76,13 @@ export class WebSocketHandler implements IWebSocketHandler {
 				// notify to all in the room about role
 				console.log(`Player (${roleStr}) [ ${clientId} ] joined room ${room.name} (${roomId})`);
 				broadcast(room, createChatMessage("system", `${roleStr} joined the game.`));
-				// broadcast(room, {
-				// 	type: "role",
-				// 	gameState: {
-				// 		...room.gameState,
-				// 	},
-				// 	newPlayer: { id: clientId, role: roleStr },
-				// 	isSpectator: roleStr === "spectator",
-				// 	leaderId: room.leaderId,
-				// });
+                broadcast(room, {
+					type: "roleUpdate",
+					newPlayer: { id: clientId, role: roleStr },
+					gameState: { ...room.gameState },
+					leaderId: room.leaderId,
+					disconnectPlayers: room.disconnectPlayers,
+				});
 			}
 
 			// check if room is full and start game
@@ -346,8 +344,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 			//remove player from team
 			if (role && role !== "spectator") {
-				room.gameState.teams.left = room.gameState.teams.left.filter((r: string) => r !== role);
-				room.gameState.teams.right = room.gameState.teams.right.filter((r: string) => r !== role);
+				room.gameState.teams.left = room.gameState.teams.left.filter((p: any) => p.role !== role);
+				room.gameState.teams.right = room.gameState.teams.right.filter((p: any) => p.role !== role);
 				room.readyStatus.delete(role);
 				room.clientRoles.delete(clientId);
                 delete room.gameState.paddles[role];
@@ -355,11 +353,12 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 			//notify all client about the game is finish and player leave
 			broadcast(room, {
-				type: "state",
-				gameState: { ...room.gameState },
-				leaderId: room.leaderId,
-				canStart: room.canStart
-			});
+                type: "roleUpdate",
+                newPlayer: { id: clientId, role: room.clientRoles.get(clientId)?.role },
+                gameState: { ...room.gameState },
+                leaderId: room.leaderId,
+                disconnectPlayers: room.disconnectPlayers,
+            });
 			return;
 		}
 

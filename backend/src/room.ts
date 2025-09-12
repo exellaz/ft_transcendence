@@ -22,7 +22,7 @@ export interface Room {
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number };
 		paddles: { [key: string]: number }; //key: client id, value: paddle y position
-		teams: { left: string[]; right: string[] }; //key: team side, value: array of client ids
+		teams: { left: playerInfo[]; right: playerInfo[] }; //key: team side, value: array of playerInfo
 		score: { left: number; right: number }; //key: team side, value: score
 		countdown: number;
         gameStarted: boolean;

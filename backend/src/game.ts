@@ -1,6 +1,7 @@
 import { count } from "console";
 import type { Room } from "./room.ts";
 import { rooms, roomEndGame } from "./room.ts";
+import type { playerInfo } from "./room.ts";
 
 /**
  * @brief Interface for Game class method
@@ -46,7 +47,7 @@ export class Game implements IGame {
 		const gap = 20; //gap from wall
 
 		//space paddles within each side
-		function distributePaddle(team: string[]) {
+		function distributePaddle(team: playerInfo[]) {
 			const positions: number[] = [];
 			const availableHeight = h - paddleHeight - gap * 2;
 
@@ -66,14 +67,14 @@ export class Game implements IGame {
 		const leftRole = room.gameState.teams.left;
 		const leftPositions = distributePaddle(leftRole);
 		for (let i = 0; i < leftRole.length; i++) {
-			room.gameState.paddles[leftRole[i]] = leftPositions[i];
+			room.gameState.paddles[leftRole[i].role] = leftPositions[i];
 		}
 
 		//right team
 		const rightRole = room.gameState.teams.right;
 		const rightPositions = distributePaddle(rightRole);
 		for (let i = 0; i < rightRole.length; i++) {
-			room.gameState.paddles[rightRole[i]] = rightPositions[i];
+			room.gameState.paddles[rightRole[i].role] = rightPositions[i];
 		}
 	}
 
@@ -164,9 +165,9 @@ export class Game implements IGame {
 
         // helper: check if all roles in a team are connected
 
-		const teamConnected = (team: string[]): boolean => {
-			return team.every(role => {
-				const entry = [...room.clientRoles.entries()].find(([_, p]) => p.role === role);
+		const teamConnected = (team: playerInfo[]): boolean => {
+			return team.every(player => {
+				const entry = [...room.clientRoles.entries()].find(([_, p]) => p.role === player.role);
 				const playerId = entry?.[0];
 				return playerId && !room.disconnectPlayers.has(playerId);
 			});
