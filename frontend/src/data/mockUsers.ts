@@ -90,9 +90,6 @@ export const mockBlocked: BlockedUser[] = [
 export const mockMessages: FriendMessaging[] = [
   {
     uid: "u1",
-    avatarUrl: "/assets/bronze.png",
-    username: "Sophia",
-    online: true,
     messages: [
       {
         senderUid: "u0",
@@ -118,9 +115,6 @@ export const mockMessages: FriendMessaging[] = [
   },
   {
     uid: "u2",
-    avatarUrl: "/assets/gold.png",
-    username: "Liam",
-    online: false,
     messages: [
       {
         senderUid: "recipient",
@@ -146,9 +140,6 @@ export const mockMessages: FriendMessaging[] = [
   },
   {
     uid: "u3",
-    avatarUrl: "/assets/silver.png",
-    username: "Olivia",
-    online: true,
     messages: [
       {
         senderUid: "u0",
@@ -174,9 +165,6 @@ export const mockMessages: FriendMessaging[] = [
   },
   {
     uid: "u4",
-    avatarUrl: "/assets/green-tick.png",
-    username: "Noah",
-    online: false,
     messages: [
       {
         senderUid: "recipient",
@@ -192,9 +180,6 @@ export const mockMessages: FriendMessaging[] = [
   },
   {
     uid: "u5",
-    avatarUrl: "/assets/yellow-ghost.png",
-    username: "Emma",
-    online: true,
     messages: [
       {
         senderUid: "u0",
@@ -215,9 +200,6 @@ export const mockMessages: FriendMessaging[] = [
   },
   {
     uid: "u6",
-    avatarUrl: "/assets/red-ghost.png",
-    username: "Mason",
-    online: true,
     messages: [
       {
         senderUid: "recipient",

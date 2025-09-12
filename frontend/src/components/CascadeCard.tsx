@@ -121,7 +121,8 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   else if (activeTab === "Friends" && !showProfile) {
     content = (
       <Messaging
-        friendUid = {selectedUser.uid}
+        friendBasic={selectedUser as FriendBasic}
+        friendUid={selectedUser.uid}
         onProfileClick={() => setShowProfile(true)}
       />
     );

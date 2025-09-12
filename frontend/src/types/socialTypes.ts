@@ -21,9 +21,6 @@ export interface BlockedUser {
 
 export interface FriendMessaging {
   uid: string;
-  avatarUrl: string;
-  username: string;
-  online: boolean;
   messages: Message[];
 }
 

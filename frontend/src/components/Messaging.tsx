@@ -1,24 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
-import type { FriendMessaging } from "../types/socialTypes";
+import type { FriendBasic, FriendMessaging } from "../types/socialTypes";
 // TODO: Remove mock data import when integrating real API
 import { mockMessages } from "../data/mockUsers";
 
 import Avatar from "./Avatar";
 
 interface MessagingProps {
+  friendBasic: FriendBasic;
   friendUid: string;
   onProfileClick?: () => void;
 }
 
-const Messaging: React.FC<MessagingProps> = ({ friendUid, onProfileClick }) => {
+const Messaging: React.FC<MessagingProps> = ({ friendBasic, friendUid, onProfileClick }) => {
   const [friend, setFriend] = useState<FriendMessaging | null>(null);
   const [input, setInput] = useState("");
 
   // TODO: Fetch real data based on userUid
   const userUid = useUser().user?.id;
   // useEffect(() => {
-  //   // Fetch friend info and messages between user and friend
+  //   // Fetch messages between user and friend
   //   fetch(`/api/messages?userUid=${userUid}&friendUid=${friendUid}`)
   //     .then((res) => res.json())
   //     .then(setFriend);
@@ -44,15 +45,15 @@ const Messaging: React.FC<MessagingProps> = ({ friendUid, onProfileClick }) => {
         className="flex items-center gap-4 px-4 py-3 border-b border-gray-300 cursor-pointer"
         onClick={onProfileClick}
       >
-        <Avatar src={friend.avatarUrl} size={40} />
-        <span className="font-bold text-xl text-white">{friend.username}</span>
+        <Avatar src={friendBasic.avatarUrl} size={40} />
+        <span className="font-bold text-xl text-white">{friendBasic.username}</span>
         {/* Status */}
         <span
           className={`ml-auto text-sm font-semibold px-3 py-1 rounded-full ${
-            friend.online ? "bg-green-500 text-white" : "bg-red-500 text-white"
+            friendBasic.online ? "bg-green-500 text-white" : "bg-red-500 text-white"
           }`}
         >
-          {friend.online ? "Online" : "Offline"}
+          {friendBasic.online ? "Online" : "Offline"}
         </span>
       </div>
       {/* Messages */}
