@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS match_players (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	match_id INTEGER NOT NULL,
 	player_id TEXT NOT NULL,
-    role TEXT NOT NULL,
+	role TEXT NOT NULL,
 	team TEXT NOT NULL,
 	FOREIGN KEY(match_id) REFERENCES matches(id)
 );
@@ -63,38 +63,26 @@ export function saveMatchResult(room: any, duration?: string) {
 		const leftPlayers = room.gameState?.teams?.left ?? [];
 		const rightPlayers = room.gameState?.teams?.right ?? [];
 
-		//get player id
-		function resolvePlayerId(p: any, room: any) {
-			if (p == null) return "unknown";
-			// If p is a role string like 'left_player1' or 'right_player1', map it to clientId via room.clientRoles
-			if (typeof p === 'string') {
-				if (p.startsWith("left_") || p.startsWith("right_")) {
-					for (const [cid, playerInfo] of room.clientRoles.entries()) {
-						if (playerInfo.role === p) return cid;
-					}
-					return "unknown";
-				}
-				// Already a clientId string
-				return p;
-			}
-			// If player is an object, prefer its clientId; if missing, return "unknown"
-			if (typeof p === 'object') return String(p.clientId ?? "unknown");
-			if (typeof p === 'number') return String(p);
-			return "unknown";
-		}
-
-		// Save players for left and right teams
+		// Save left team players
 		for (const p of leftPlayers) {
-			const pid = resolvePlayerId(p, room);
-            const role = p;
-			playerStmt.run(matchId, pid, role, "left");
+			playerStmt.run(
+				matchId,
+				p.clientId ?? "unknown",
+				"left",                // team
+				p.role ?? "left"       // role (slot: left_player1, etc.)
+			);
 		}
 
+		// Save right team players
 		for (const p of rightPlayers) {
-			const pid = resolvePlayerId(p, room);
-            const role = p;
-			playerStmt.run(matchId, pid, role, "right");
+			playerStmt.run(
+				matchId,
+				p.clientId ?? "unknown",
+				"right",               // team
+				p.role ?? "right"      // role (slot: right_player1, etc.)
+			);
 		}
+
 
 		console.log(`[DB] Match result saved for room: ${room.id}`);
 	} catch (e) {
