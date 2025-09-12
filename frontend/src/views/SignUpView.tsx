@@ -1,28 +1,31 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
 import Input from "../components/Input";
+import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
 
 const SignUpView: React.FC = () => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`SignUpView.${key}`);
   const navigate = useNavigate();
 
   return (
-    <Background>
+    <PreLoginLayout>
       <Card>
         <Logo />
         <Input
-          placeholder="Username"
+          placeholder={translate("username")}
           className="mb-5"
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
         />
-        <Status text="Username is available" color="green" />
+        <Status text={translate("username_available")} color="green" />
         <Input
-          placeholder="Email"
+          placeholder={translate("email")}
           type="email"
           className="mb-5"
           icon={
@@ -30,20 +33,20 @@ const SignUpView: React.FC = () => {
           }
         />
         <Input
-          placeholder="Password"
+          placeholder={translate("password")}
           type="password"
           className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
         <Input
-          placeholder="Confirm password"
+          placeholder={translate("confirm_password")}
           type="password"
           className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        <Button onClick={() => navigate("/signup-success")}>SIGN UP</Button>
+        <Button onClick={() => navigate("/signup-success")}>{translate("signup")}</Button>
       </Card>
-    </Background>
+    </PreLoginLayout>
   );
 };
 

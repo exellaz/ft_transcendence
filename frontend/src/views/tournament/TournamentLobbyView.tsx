@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
-import Background from "../components/Background";
-import Card from "../components/Card";
-import LiveChat from "../components/LiveChat";
-import ReadyPlayers from "../components/ReadyPlayers";
+import Background from "../../components/Background";
+import Card from "../../components/Card";
+import LiveChat from "../../components/LiveChat";
+import ReadyPlayers from "../../components/ReadyPlayers";
 
 // Example player data
 const players = [

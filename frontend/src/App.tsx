@@ -6,7 +6,7 @@ import MainMenuView from "./views/MainMenuView";
 import NormalModeView from "./views/NormalModeView";
 import SignUpView from "./views/SignUpView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
-import TournamentLobbyView from "./views/TournamentLobbyView";
+import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
 import Popup from "./popups/SettingsPopup";
 

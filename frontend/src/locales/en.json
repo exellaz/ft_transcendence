@@ -1,0 +1,31 @@
+{
+  "LoginView": {
+    "username": "Username",
+    "password": "Password",
+    "login": "LOGIN",
+    "continue_with_google": "CONTINUE WITH GOOGLE",
+    "signup_prompt": "Don’t have an account? Sign up"
+  },
+  "MainMenuView": {
+    "tournament_mode": "TOURNAMENT MODE",
+    "normal_mode": "NORMAL MODE",
+    "settings": "SETTINGS"
+  },
+  "NormalModeView": {
+    "singles": "SINGLES",
+    "doubles": "DOUBLES",
+    "back": "BACK"
+  },
+  "SignUpSuccessView": {
+    "success_message": "Your account has been successfully created!",
+    "login": "LOGIN"
+  },
+  "SignUpView": {
+    "username": "Username",
+    "username_available": "Username is available",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "signup": "SIGN UP"
+  }
+}

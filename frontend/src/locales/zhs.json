@@ -1,0 +1,31 @@
+{
+  "LoginView": {
+    "username": "用户名",
+    "password": "密码",
+    "login": "登录",
+    "continue_with_google": "使用谷歌继续",
+    "signup_prompt": "还没有账号？注册"
+  },
+  "MainMenuView": {
+    "tournament_mode": "锦标赛模式",
+    "normal_mode": "普通模式",
+    "settings": "设置"
+  },
+  "NormalModeView": {
+    "singles": "单打",
+    "doubles": "双打",
+    "back": "返回"
+  },
+  "SignUpSuccessView": {
+    "success_message": "您的账户已成功创建！",
+    "login": "登录"
+  },
+  "SignUpView": {
+    "username": "用户名",
+    "username_available": "用户名可用",
+    "email": "电子邮件",
+    "password": "密码",
+    "confirm_password": "确认密码",
+    "signup": "注册"
+  }
+}

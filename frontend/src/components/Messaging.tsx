@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/UserProvider";
 import type { FriendBasic, FriendMessaging } from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
 import { mockMessages } from "../data/mockUsers";

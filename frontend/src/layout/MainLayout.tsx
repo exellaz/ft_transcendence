@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
