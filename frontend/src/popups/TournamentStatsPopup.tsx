@@ -1,5 +1,7 @@
-import React from "react";
-import { useUser } from "../context/UserContext";
+import React, { useEffect, useState } from "react";
+import type { TournamentStats } from "../types/apiInterfaces";
+// TODO: Remove mock data import when integrating real API
+import { mockTournamentStats } from "../data/mockUsers";
 
 import Header from "../components/Header";
 import Medals from "../components/Medals";
@@ -10,11 +12,33 @@ import Subheader from "../components/Subheader";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  userUid: string;
 }
 
-const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
-  const { user } = useUser();
+const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
+  const [user, setUser] = useState<TournamentStats | null>(null);
   const [expandedIdx, setExpandedIdx] = React.useState<number | null>(null);
+
+    // TODO: Fetch real data based on userUid
+    // useEffect(() => {
+    //   // Fetch user's tournament stats
+    //   fetch(`/api/tournament-stats?userUid=${userUid}`)
+    //     .then((res) => res.json())
+    //     .then(setUser);
+    // }, [userUid]);
+  
+    // TODO: Delete when API is integrated
+    function getTournamentStatsByUid(
+      userUid: string,
+      data: TournamentStats[]
+    ): TournamentStats | undefined {
+      return data.find((user) => user.uid === userUid);
+    }
+    useEffect(() => {
+      setUser(getTournamentStatsByUid(userUid, mockTournamentStats) || null);
+    }, [userUid]);
+
+    if (!user) return <div>Loading...</div>;
 
   function handleClose() {
     onClose();
@@ -28,20 +52,20 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
         <div className="w-full flex flex-col items-center gap-6">
           <Subheader>Summary</Subheader>
           <Medals
-            gold={user?.stats?.medals.gold}
-            silver={user?.stats?.medals.silver}
-            bronze={user?.stats?.medals.bronze}
+            gold={user.medals.gold}
+            silver={user.medals.silver}
+            bronze={user.medals.bronze}
           />
           <div className="flex gap-6">
             <StatsBadge
               className="flex-1"
               label="Tournaments Played"
-              value={user?.stats?.tournamentsPlayed}
+              value={user.tournamentsPlayed}
             />
             <StatsBadge
               className="flex-1"
               label="Average Ranking"
-              value={user?.stats?.averageRanking}
+              value={user.averageRanking}
             />
           </div>
           <Subheader>Tournament History</Subheader>
@@ -54,7 +78,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {user?.detailedStats?.tournaments.map((t, idx) => (
+              {user.tournaments.map((t, idx) => (
                 <React.Fragment key={t.tournamentId}>
                   <tr
                     className={`text-white ${

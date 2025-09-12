@@ -4,7 +4,7 @@ import type {
   FriendBasic,
   FriendRequest,
   BlockedUser,
-} from "../types/socialTypes";
+} from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
 import { mockFriends, mockRequests, mockBlocked } from "../data/mockUsers";
 
@@ -37,9 +37,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
   const [showAddFriendView, setShowAddFriendView] = useState(false);
   const [friendUID, setFriendUID] = useState("");
   const [addFriendStatus, setAddFriendStatus] = useState<
-  null | "success" | "error"
+    null | "success" | "error"
   >(null);
-  
+
   // TODO: Fetch real data based on userUid
   // const userUID = useUser().user?.id;
   // React.useEffect(() => {

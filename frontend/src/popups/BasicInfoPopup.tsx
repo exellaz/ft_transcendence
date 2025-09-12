@@ -11,9 +11,10 @@ import Status from "../components/Status";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  userUid: string;
 }
 
-const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
   const { user } = useUser();
   const [showAvatarUpload, setShowAvatarUpload] = React.useState(false);
   const [avatarUploadStatus, setAvatarUploadStatus] = useState<

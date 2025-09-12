@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useUser } from "../context/UserContext";
 
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -18,6 +19,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
 
+  const { user } = useUser();
+  const userUid = user?.id ?? "";
+
   return (
     <Background>
       <ProfileDropdown
@@ -30,14 +34,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
+        userUid={userUid}
       />
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
+        userUid={userUid}
       />
       <TournamentStatsPopup
         open={showTournamentStats}
         onClose={() => setShowTournamentStats(false)}
+        userUid={userUid}
       />
       <FriendsPopup open={showFriends} onClose={() => setShowFriends(false)} />
     </Background>

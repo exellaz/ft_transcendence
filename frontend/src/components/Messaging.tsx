@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
-import type { FriendBasic, FriendMessaging } from "../types/socialTypes";
+import type { FriendBasic, FriendMessaging } from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
 import { mockMessages } from "../data/mockUsers";
 
@@ -12,7 +12,11 @@ interface MessagingProps {
   onProfileClick?: () => void;
 }
 
-const Messaging: React.FC<MessagingProps> = ({ friendBasic, friendUid, onProfileClick }) => {
+const Messaging: React.FC<MessagingProps> = ({
+  friendBasic,
+  friendUid,
+  onProfileClick,
+}) => {
   const [friend, setFriend] = useState<FriendMessaging | null>(null);
   const [input, setInput] = useState("");
 
@@ -46,11 +50,15 @@ const Messaging: React.FC<MessagingProps> = ({ friendBasic, friendUid, onProfile
         onClick={onProfileClick}
       >
         <Avatar src={friendBasic.avatarUrl} size={40} />
-        <span className="font-bold text-xl text-white">{friendBasic.username}</span>
+        <span className="font-bold text-xl text-white">
+          {friendBasic.username}
+        </span>
         {/* Status */}
         <span
           className={`ml-auto text-sm font-semibold px-3 py-1 rounded-full ${
-            friendBasic.online ? "bg-green-500 text-white" : "bg-red-500 text-white"
+            friendBasic.online
+              ? "bg-green-500 text-white"
+              : "bg-red-500 text-white"
           }`}
         >
           {friendBasic.online ? "Online" : "Offline"}

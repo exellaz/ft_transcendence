@@ -3,7 +3,7 @@ import type {
   FriendBasic,
   FriendRequest,
   BlockedUser,
-} from "../types/socialTypes";
+} from "../types/apiInterfaces";
 
 import Button from "./Button";
 import ProfileContents from "./ProfileContents";
