@@ -7,6 +7,15 @@ type User = {
   username: string;
 };
 
+function randomString(length: number): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [username, setUsername] = useState("");
@@ -22,10 +31,16 @@ function App() {
     if (!username.trim()) return;
     if (editingId !== null) {
       // * UPDATE
+      const randomEmail = `${randomString(10)}@gmail.com`; // ! TMP
+      
       const res = await fetch(`http://localhost:3000/users/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({
+          username,
+          email: randomEmail, // ! HARDCODED
+          password: "test", // ! HARDCODED
+        }),
       });
 
       const updatedUser = await res.json();
@@ -46,10 +61,16 @@ function App() {
     } else {
 
       // * CREATE
+      const randomEmail = `${randomString(10)}@gmail.com`; // ! TMP
+
       const res = await fetch("http://localhost:3000/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({
+          username,
+          email: randomEmail, // ! HARDCODED
+          password: "test", // ! HARDCODED
+        }),
       });
       const newUser = await res.json();
       console.log(newUser);
@@ -149,54 +170,5 @@ function App() {
 }
 
 export default App;
-
-
-// import React from "react";
-// import { useNavigate } from "react-router-dom";
-
-// import Background from "../components/Background";
-// import Button from "../components/Button";
-// import Card from "../components/Card";
-// import Divider from "../components/Divider";
-// import Logo from "../components/Logo";
-// import Input from "../components/Input";
-// import TextButton from "../components/TextButton";
-
-// const LoginView: React.FC = () => {
-//   const navigate = useNavigate();
-
-//   return (
-//     <Background>
-//       <Card>
-//         <Logo />
-//         <Input
-//           placeholder="Username"
-//           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
-//         />
-//         <Input
-//           placeholder="Password"
-//           type="password"
-//           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
-//         />
-//         <Button onClick={() => navigate("/main-menu")}>LOGIN</Button>
-//         <Divider />
-//         <Button
-//           variant="defaultWhite"
-//           className="flex justify-center items-center gap-2"
-//         >
-//           <div>
-//             <img src="/assets/google.png" alt="google.png" className="w-5" />
-//           </div>
-//           CONTINUE WITH GOOGLE
-//         </Button>
-//         <TextButton onClick={() => navigate("/signup")}>
-//           Don’t have an account? Sign up
-//         </TextButton>
-//       </Card>
-//     </Background>
-//   );
-// };
-
-// export default LoginView;
 
 
