@@ -18,14 +18,21 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
       <Header>Settings</Header>
       <Subheader>Language</Subheader>
       <RadioButtonGroup
-        options={["English", "中文", "Bahasa Melayu"]}
-        value={language}
+        options={[
+          { value: "en", label: "English" },
+          { value: "zhs", label: "简体中文" },
+          { value: "zht", label: "繁體中文" },
+        ]}
+        selectedValue={language}
         onChange={setLanguage}
       />
       <Subheader>In-Game Camera Tracking</Subheader>
       <RadioButtonGroup
-        options={["Static", "Dynamic"]}
-        value={camera}
+        options={[
+          { value: "Static", label: "Static" },
+          { value: "Dynamic", label: "Dynamic" },
+        ]}
+        selectedValue={camera}
         onChange={setCamera}
       />
     </PopupCard>

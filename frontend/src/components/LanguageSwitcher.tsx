@@ -1,8 +1,6 @@
 import React from "react";
 import { useLanguage } from "../context/LanguageProvider";
 
-import RadioButtonGroup from "./RadioButtonGroup";
-
 const languageOptions = [
   { value: "en", label: "English" },
   { value: "zhs", label: "简体中文" },
@@ -13,11 +11,20 @@ const LanguageSwitcher: React.FC = () => {
   const { language, setLanguage } = useLanguage();
 
   return (
-    <RadioButtonGroup
-      options={languageOptions}
-      selectedValue={language}
-      onChange={setLanguage} // This will be called with the selected value
-    />
+    <div className="flex gap-6 justify-center items-center">
+      {languageOptions.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => setLanguage(option.value)}
+          className={`cursor-pointer text-card-blue text-lg px-4 py-2
+            ${language === option.value ? "font-bold border-y-4 border-yellow-400 bg-grass-light-green" : ""}
+          `}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 };
 
