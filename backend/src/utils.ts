@@ -1,9 +1,8 @@
 import { globalChatClients } from "./server.ts";
 import { Game } from "./game.ts";
 import { createChatMessage } from "./chat.ts";
-import { read } from "fs";
 
-const game = new Game(); //create game object
+//const game = new Game(); //create game object
 
 /**
  * @brief Schedule a timeout for a client action (e.g., disconnect).
@@ -165,6 +164,7 @@ export function handleSwitchSide(room: any, socket: any, newSide: "left" | "righ
 
     // 3. reset paddles and reassign positions
     room.gameState.paddles = {};
+    const game = new Game(); //create game object
     game.setPaddlePositionWithTeam(room);
 
     // 4. broadcast to all players about the switch

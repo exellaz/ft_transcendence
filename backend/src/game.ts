@@ -189,7 +189,7 @@ export class Game implements IGame {
 			if (room.gameState.countdown > 0) {
 				room.gameState.countdown--;
 				const secondsLeft = Math.ceil(room.gameState.countdown / 60);
-				// console.log(`Game countdown: ${secondsLeft}`);
+				 console.log(`Game countdown: ${secondsLeft}`); ////debug
 
                 //broadcast countdown to all clients
                 for (const client of room.clients) {

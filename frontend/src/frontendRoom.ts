@@ -184,7 +184,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 			btnStart.disabled = !canStart;
 
 			//if game started then go to game screen
-			if (!gameStarted && (data.gameState.coundown > 0 || data.gameState.gameStarted)) {
+			if (!gameStarted && (data.gameState.countdown > 0 || data.gameState.gameStarted)) {
 				gameStarted = true;
 				lobbyDiv.remove();
 				cleanUp();
@@ -198,7 +198,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	function cleanUp() {
 		window.removeEventListener("contextmenu", disableContextMenu);
 		window.removeEventListener("beforeunload", beforeUnloadHandler);
-		//window.removeEventListener("keydown", keyhandler);
+		window.removeEventListener("keydown", keyhandler);
 	}
 
 	// --- Button handlers ---

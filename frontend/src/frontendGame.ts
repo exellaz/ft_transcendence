@@ -99,8 +99,8 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 			const data = JSON.parse(event.data);
 
 			// Role assign
-			if (data.type === "role") {
-				role = data.role;
+			if (data.type === "roleUpdate") {
+				role = data.newPlayer.role;
 				roleText.textContent = `Room: ${roomName} [${roomId}] | Role: ${role}`;
 
 				//enable back button if is spectator
@@ -112,9 +112,7 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 
 			// Game state update
 			if (data.type === "state") {
-                console.log("role: ", role, ", isSpectator: ", data.isSpectator);
-				console.log("clientId: ", clientId);
-				console.log("roomName: ", roomName);
+                console.log("Game state update:", data); ////debug
 
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner && !gameOver) {
