@@ -1,4 +1,20 @@
+// Profile dropdown API interface
+// - ProfileDropdown.tsx
+export interface ProfileDropdownInfo {
+  uid: string;
+  avatarUrl: string;
+  username: string;
+}
 
+// Basic info API interface
+// - BasicInfoPopup.tsx
+export interface BasicInfo {
+  uid: string;
+  joinDate: string;
+  avatarUrl: string;
+  username: string;
+  email: string;
+}
 
 // Tournament stats API interface
 // - TournamentStatsPopup.tsx

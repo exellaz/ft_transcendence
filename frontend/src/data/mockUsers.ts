@@ -1,4 +1,6 @@
 import type {
+  ProfileDropdownInfo,
+  BasicInfo,
   TournamentStats,
   FriendBasic,
   FriendRequest,
@@ -7,9 +9,29 @@ import type {
   Profile,
 } from "../types/apiInterfaces";
 
+// Profile Dropdown
+export const mockProfileDropdownInfo: ProfileDropdownInfo[] = [
+  {
+    uid: "u0",
+    avatarUrl: "/assets/red-ghost.png",
+    username: "ghostyyyyyyyyyyyy",
+  },
+];
+
+// Basic Info
+export const mockBasicInfo: BasicInfo[] = [
+  {
+    uid: "u0",
+    joinDate: "2025-01-01",
+    avatarUrl: "/assets/red-ghost.png",
+    username: "ghostyyyyyyyyyyyy",
+    email: "ghosty@transcendence.com",
+  },
+];
+
 // Tournament Stats
 export const mockTournamentStats: TournamentStats[] = [
-{
+  {
     uid: "u0",
     medals: { gold: 3, silver: 2, bronze: 1 },
     tournamentsPlayed: 10,

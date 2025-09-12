@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import type { ProfileDropdownInfo } from "../types/apiInterfaces";
+// TODO: Remove mock data import when integrating real API
+import { mockProfileDropdownInfo } from "../data/mockUsers";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
@@ -10,6 +12,7 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
+  userUid: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -17,10 +20,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
+  userUid,
 }) => {
+  const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { user } = useUser();
   const menuItems = [
     {
       label: "MY PROFILE",
@@ -58,6 +62,27 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     },
   ];
 
+  // TODO: Fetch real data based on userUid
+  // useEffect(() => {
+  //   // Fetch user's basic info
+  //   fetch(`/api/profile-dropdown?userUid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setUser);
+  // }, [userUid]);
+
+  // TODO: Delete when API is integrated
+  function getProfileDropdownByUid(
+    userUid: string,
+    data: ProfileDropdownInfo[]
+  ): ProfileDropdownInfo | undefined {
+    return data.find((user) => user.uid === userUid);
+  }
+  useEffect(() => {
+    setUser(getProfileDropdownByUid(userUid, mockProfileDropdownInfo) || null);
+  }, [userUid]);
+
+  if (!user) return <div>Loading...</div>;
+
   return (
     <div className="fixed top-10 right-10">
       <Button
@@ -66,9 +91,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="flex items-center px-4 shadow"
       >
         <div>
-          <Avatar src={user?.avatarUrl} size={80} className="mr-4" />
+          <Avatar src={user.avatarUrl} size={80} className="mr-4" />
         </div>
-        {user?.username
+        {user.username
           ? user.username.length > 8
             ? user.username.slice(0, 8) + "..."
             : user.username

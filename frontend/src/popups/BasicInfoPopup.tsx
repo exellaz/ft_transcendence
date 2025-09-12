@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
+import React, { useEffect, useState } from "react";
+import type { BasicInfo } from "../types/apiInterfaces";
+// TODO: Remove mock data import when integrating real API
+import { mockBasicInfo } from "../data/mockUsers";
 
 import Avatar from "../components/Avatar";
 import Button from "../components/Button";
@@ -15,12 +17,33 @@ interface PopupProps {
 }
 
 const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
-  const { user } = useUser();
+  const [user, setUser] = useState<BasicInfo | null>(null);
   const [showAvatarUpload, setShowAvatarUpload] = React.useState(false);
   const [avatarUploadStatus, setAvatarUploadStatus] = useState<
     null | "success" | "error"
   >(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // TODO: Fetch real data based on userUid
+  // useEffect(() => {
+  //   // Fetch user's basic info
+  //   fetch(`/api/basic-info?userUid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setUser);
+  // }, [userUid]);
+
+  // TODO: Delete when API is integrated
+  function getBasicInfoByUid(
+    userUid: string,
+    data: BasicInfo[]
+  ): BasicInfo | undefined {
+    return data.find((user) => user.uid === userUid);
+  }
+  useEffect(() => {
+    setUser(getBasicInfoByUid(userUid, mockBasicInfo) || null);
+  }, [userUid]);
+
+  if (!user) return <div>Loading...</div>;
 
   function handleClose() {
     onClose();
@@ -36,8 +59,8 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
           <Header>Basic Info</Header>
           <div className="flex flex-col items-center gap-6">
             <div className="text-center">
-              <p className="text-white">ID: {user?.id}</p>
-              <p className="text-white">Joined: {user?.createdAt}</p>
+              <p className="text-white">ID: {user.uid}</p>
+              <p className="text-white">Joined: {user.joinDate}</p>
             </div>
             <div className="flex items-center gap-6">
               <Avatar src={user?.avatarUrl} size={100} />

@@ -29,6 +29,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         setShowBasicInfo={setShowBasicInfo}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
+        userUid={userUid}
       />
       {children}
       <ProfilePopup
