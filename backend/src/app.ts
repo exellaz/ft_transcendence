@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import dbConnector from "./plugins/db"
-import routes from "./plugins/routes"
+import userRoutes from "./modules/users/users.routes"
 
 const app = Fastify({
   logger: true
@@ -13,6 +13,6 @@ app.register(fastifyCors, {
   });
 
 app.register(dbConnector);
-app.register(routes);
+app.register(userRoutes);
 
 export default app;
