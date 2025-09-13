@@ -38,7 +38,7 @@ const wsHandler = new WebSocketHandler();
 await fastify.register(async function (fastify) {
 	fastify.get("/ws", { websocket: true }, (socket, req) => {
 	const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-	const clientId = url.searchParams.get("id") || "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padStart(6, "0"); //search client id
+	const clientId = url.searchParams.get("id") || "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padEnd(6, "0"); //search client id
 	const roomId = url.searchParams.get("room"); //search room id
     const side = url.searchParams.get("side") as "left" | "right" | null; //search player side
 

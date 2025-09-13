@@ -109,9 +109,9 @@ export class Game implements IGame {
 		const paddleHeight = room.setting.paddleHeight;
 		const paddleWidth = room.setting.paddleWidth;
 		const ballSize = room.setting.ballSize;
-		console.log("ball size:", ballSize); ////debug
-		console.log("paddle height:", paddleHeight); ////debug
-		console.log("paddle width:", paddleWidth); ////debug
+		// console.log("ball size:", ballSize); ////debug
+		// console.log("paddle height:", paddleHeight); ////debug
+		// console.log("paddle width:", paddleWidth); ////debug
 
 		// Bounce off top and bottom walls
 		if (ball.y - ballSize <= 0) {

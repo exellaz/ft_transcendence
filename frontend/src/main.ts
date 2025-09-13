@@ -1,10 +1,10 @@
 import { showLobby } from "./frontendLobby";
 import { startRoom } from "./frontendRoom";
 
-const baseWeight = 800;
+const baseWidth = 800;
 const baseHeight = 400;
-const scale = Math.min(window.innerWidth / baseWeight, window.innerHeight / baseHeight, 1);
-export const scaledWidth = baseWeight * scale;
+const scale = Math.min(window.innerWidth / baseWidth, window.innerHeight / baseHeight, 1);
+export const scaledWidth = baseWidth * scale;
 export const scaledHeight = baseHeight * scale;
 
 window.addEventListener("DOMContentLoaded", () => {
