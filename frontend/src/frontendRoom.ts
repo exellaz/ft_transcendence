@@ -11,6 +11,7 @@ export let socket: WebSocket;
 export async function startRoom(roomId: string, roomName: string, leaderId: string) {
 	document.body.innerHTML = ""; // clear lobby
 
+    // chat
 	initChatConnection();
 	initChatUI();
 
@@ -136,8 +137,20 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 		if (data.type === "roleUpdate") {
             console.log("Role update:", data);
 
+            // --- update room ---
             statusText.textContent = `Room: ${roomName} [${roomId}]`;
-            playerText.textContent = `You are: [${clientId}]`;
+
+            // --- update client position ---
+            if (clientId === data.gameState.teams.left.find((p: any) => p.clientId === clientId)?.clientId) {
+                role = data.gameState.teams.left.find((p: any) => p.clientId === clientId)?.role;
+            } else if (clientId === data.gameState.teams.right.find((p: any) => p.clientId === clientId)?.clientId) {
+                role = data.gameState.teams.right.find((p: any) => p.clientId === clientId)?.role;
+            } else {
+                role = "spectator";
+            }
+            playerText.textContent = `You are: [${clientId}] (${role})`;
+
+            // --- update team lists ---
             leftTeam.innerHTML = `
                 <strong>Left Team</strong>
                 <ul>${data.gameState.teams.left.map((player: any) => `<li>${player.clientId} (${player.role})</li>`).join("")}</ul>`;
@@ -145,7 +158,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
                 <strong>Right Team</strong>
                 <ul>${data.gameState.teams.right.map((player: any) => `<li>${player.clientId} (${player.role})</li>`).join("")}</ul>`;
 
-            //update leader
+            // --- update leader ---
 			if (data.leaderId) {
                 leaderId = data.leaderId;
 				isLeader = clientId === leaderId;
@@ -154,20 +167,13 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 				leaderText.textContent = isLeader ? "leader: yes" : "leader: no";
 			}
 
-			//update player role if included
-			if (data.newPlayer.id === clientId) {
-                role = data.newPlayer.role;
-				console.log("Your role is now:", role);
-            }
-
-
-			//spectator
+			//--- unable button for spectator ---
 			if(role === "spectator") {
 				btnReady.style.display = "none";
 				btnSwitch.style.display = "none";
 			}
 
-			//update switch button
+			// --- update switch button ---
 			btnSwitch.textContent = ready
 			? `Side: ${role.startsWith("left") ? "Left" : "Right"} (locked)`
 			: `Switch Side (current: ${role.startsWith("left") ? "Left" : "Right"})`;
@@ -181,7 +187,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 			console.log("state received:", data);
 
 
-			//enable the start button
+			//enable the start button (when all players are ready)
 			const canStart = data.canStart ?? false;
 			btnStart.disabled = !canStart;
 

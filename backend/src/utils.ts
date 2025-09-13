@@ -159,7 +159,6 @@ export function handleSwitchSide(room: any, socket: any, newSide: "left" | "righ
     room.gameState.teams.right = rebuildSide(rightPlayers, "right");
 
     // 3. reset paddles and reassign positions
-    room.gameState.paddles = {};
     const game = new Game(); //create game object
     game.setPaddlePositionWithTeam(room);
 

@@ -145,8 +145,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 		switch (msg.type) {
 			case "move":
 				if (role.role !== "spectator") {
-					room.gameState.paddles[role.role!] = game.updatePaddlePosition(
-						room.gameState.paddles[role.role!] ?? 0,
+					room.gameState.paddles[role.id!] = game.updatePaddlePosition(
+						room.gameState.paddles[role.id!] ?? 0,
 						msg.dy,
 						room.height,
 						room.paddleHeight
@@ -283,6 +283,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 				//notify all in the room about new leader
 				broadcast(room, {
 					type: "roleUpdate",
+                    newPlayer: { id: clientId, role: room.clientRoles.get(clientId)?.role },
+                    gameState: { ...room.gameState },
 					leaderId: room.leaderId,
 					roles: rolesPayload
 				});
@@ -362,22 +364,22 @@ export class WebSocketHandler implements IWebSocketHandler {
 			return;
 		}
 
-		//handle empty room
-		if (room.clients.size === 0) {
-			console.log(`Room ${room.name} (${roomId}) is empty. countdown 10s to delete`);
+		////handle empty room
+		//if (room.clients.size === 0) {
+		//	console.log(`Room ${room.name} (${roomId}) is empty. countdown 10s to delete`);
 
-            //check if room still empty after 10s then delete it
-			scheduleTimeout(room, clientId, 10000, () => {
-				if (room.clients.size === 0) {
-					console.log(`Room ${room.name} (${roomId}) deleted due to empty.`);
+        //    //check if room still empty after 10s then delete it
+		//	scheduleTimeout(room, clientId, 10000, () => {
+		//		if (room.clients.size === 0) {
+		//			console.log(`Room ${room.name} (${roomId}) deleted due to empty.`);
 
-					// Clean up any pending disconnect timeouts
-					for (const tid of room.pendingDisconnects.values())
-						clearTimeout(tid);
-					rooms.delete(roomId);
-				}
-			});
-			return;
-		}
+		//			// Clean up any pending disconnect timeouts
+		//			for (const tid of room.pendingDisconnects.values())
+		//				clearTimeout(tid);
+		//			rooms.delete(roomId);
+		//		}
+		//	});
+		//	return;
+		//}
 	}
 }

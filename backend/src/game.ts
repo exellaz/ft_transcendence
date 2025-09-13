@@ -2,6 +2,7 @@ import { count } from "console";
 import type { Room } from "./room.ts";
 import { rooms, roomEndGame } from "./room.ts";
 import type { playerInfo } from "./room.ts";
+import { broadcast } from "./utils.ts";
 
 /**
  * @brief Interface for Game class method
@@ -67,14 +68,14 @@ export class Game implements IGame {
 		const leftRole = room.gameState.teams.left;
 		const leftPositions = distributePaddle(leftRole);
 		for (let i = 0; i < leftRole.length; i++) {
-			room.gameState.paddles[leftRole[i].role] = leftPositions[i];
+			room.gameState.paddles[leftRole[i].clientId] = leftPositions[i];
 		}
 
 		//right team
 		const rightRole = room.gameState.teams.right;
 		const rightPositions = distributePaddle(rightRole);
 		for (let i = 0; i < rightRole.length; i++) {
-			room.gameState.paddles[rightRole[i].role] = rightPositions[i];
+			room.gameState.paddles[rightRole[i].clientId] = rightPositions[i];
 		}
 	}
 
@@ -120,17 +121,17 @@ export class Game implements IGame {
 		}
 
 		// Bounce off paddles
-		for (const key in room.gameState.paddles) {
-			const paddleY = room.gameState.paddles[key];
-			if (key.startsWith("left_player") && ball.x <= paddleWidth) {
+		for (const clientId in room.gameState.paddles) { //look for player id in paddles
+			const paddleY = room.gameState.paddles[clientId];
+            //check left is belong this player or not
+			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientId) && ball.x <= paddleWidth) {
 				if (ball.y >= paddleY && ball.y <= paddleY + paddleHeight) {
 					ball.dx *= -1;
 					ball.x = paddleWidth;
 				}
 			}
-			const nextBallX = ball.x + ball.dx;
-			if (key.startsWith("right_player") &&
-			    (ball.x <= room.width - paddleWidth && nextBallX + ballRadius >= room.width - paddleWidth)) {
+			if (room.gameState.teams.right.some((p: playerInfo) => p.clientId === clientId) &&
+			    ball.x + ballRadius >= room.width - paddleWidth) {
 			    if (ball.y + ballRadius >= paddleY && ball.y - ballRadius <= paddleY + paddleHeight) {
 			        ball.dx *= -1;
 			        ball.x = room.width - paddleWidth - ballRadius;
@@ -235,10 +236,31 @@ export class Game implements IGame {
 
 		// Check for game end condition (first to 5 points)
 		if (room.gameState.score.left >= 5 || room.gameState.score.right >= 5) {
-			roomEndGame(room);
+			roomEndGame(room, false);
+
+            //broadcast game ended with the result
+            for (const client of room.clients) {
+				if (client.readyState === 1) { //if the connection is open
+					const playerId = room.sockets.get(client); //get player id from socket
+					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
+        	        const role = player?.role; //get player role from player id
+					const isSpectator = role === "spectator"; //check if the player is a spectator
+					const gameStateWithResult = {
+        	            ...room.gameState,
+        	            paused: room.gamePaused,
+        	            result: room.result || null
+        	        }; //include result if game ended (winner and scores)
+					client.send(JSON.stringify({
+						type: "state",
+						gameState: gameStateWithResult,
+						isSpectator
+					}));
+				}
+			}
+            return;
 		}
 
-		//broadcast the game state to all clients
+		//broadcast the game state to all clients when game start
 		if (room.gameState.gameStarted) {
 			for (const client of room.clients) {
 				if (client.readyState === 1) { //if the connection is open

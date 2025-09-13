@@ -100,19 +100,26 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 
 			// Role assign
 			if (data.type === "roleUpdate") {
-				role = data.newPlayer.role;
-				roleText.textContent = `Room: ${roomName} [${roomId}] | Player [${role.startsWith("left") ? "Player Left" : role.startsWith("right") ? "PLayer Right" : "Spectator"}]`;
+				console.log("Role update from game:", data);
+				// --- update player position ---
+				if (clientId === data.gameState.teams.left.find((p: any) => p.clientId === clientId)?.clientId) {
+					role = data.gameState.teams.left.find((p: any) => p.clientId === clientId)?.role;
+				} else if (clientId === data.gameState.teams.right.find((p: any) => p.clientId === clientId)?.clientId) {
+					role = data.gameState.teams.right.find((p: any) => p.clientId === clientId)?.role;
+				} else {
+					role = "spectator";
+				}
+				roleText.textContent = `Room: ${roomName} [${roomId}] | Player [${role.startsWith("left") ? "Player Left" : role.startsWith("right") ? "Player Right" : "Spectator"}]`;
 
 				//enable back button if is spectator
 				if (role === "spectator")
 					backBtn.disabled = false;
-				else
-					backBtn.disabled = true;
 			}
 
 			// Game state update
 			if (data.type === "state") {
-                console.log("Game state update:", data); ////debug
+				console.log("Game state update:", data); ////debug
+				console.log("backBtn disabled:", backBtn.disabled, "role:", role, "winner:", data.gameState.result?.winner);
 
 				// Set winner/game over if exists
 				if (data.gameState.result?.winner && !gameOver) {
@@ -126,10 +133,12 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 				}
 
 				//prevent player click back button during game
-				if (role !== "spectator" )
-					backBtn.disabled = !gameOver;
-				else
-					backBtn.disabled = false;
+				if (!gameOver) {
+					if (role !== "spectator")
+						backBtn.disabled = true;
+					else
+						backBtn.disabled = false;
+				}
 
 				draw_container(data.gameState, data.isSpectator, winner);
 				roleText.textContent = `Room: ${roomName} | Role: ${role}`;
@@ -235,6 +244,9 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		return;
 	}
 
+	const scaleX = canvas.width / 800;
+	const scaleY = canvas.height / 400;
+
 	// Spectator view
 	if (isSpectator) {
 		ctx.beginPath();
@@ -242,24 +254,22 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 		ctx.fillStyle = "black";
 		ctx.fill();
 
-		for (const key in state.paddles) {
-			const y = state.paddles[key];
+		for (const clientId in state.paddles) {
+			const y = state.paddles[clientId];
 			let x: number;
-			if (key.startsWith("left_player")) {
-				x = 1;
-			} else if (key.startsWith("right_player")) {
-				x = canvas.width - paddleWidth - 1;
+			if (state.teams.left.some((p: any) => p.clientId === clientId)) {
+				x = 1 * scaleX; // left side
+			} else if (state.teams.right.some((p: any) => p.clientId === clientId)) {
+				x = canvas.width - paddleWidth * scaleX - 1; // right side
 			} else {
-				continue;
+				continue; // not a player
 			}
 			ctx.fillStyle = "black";
-			ctx.fillRect(x, y, paddleWidth, paddleHeight);
+			ctx.fillRect(x, y, paddleWidth * scaleX, paddleHeight * scaleY);
 		}
 		return;
 	}
 
-	const scaleX = canvas.width / 800;
-	const scaleY = canvas.height / 400;
 
 	// Draw ball
 	ctx.beginPath();
@@ -268,15 +278,16 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 	ctx.fill();
 
 	// Draw paddles
-	for (const key in state.paddles) {
-		const y = state.paddles[key];
+	for (const clientId in state.paddles) { //look for player id in paddles
+		const y = state.paddles[clientId];
 		let x: number;
-		if (key.startsWith("left_player")) {
-			x = 1 * scaleX;
-		} else if (key.startsWith("right_player")) {
-			x = canvas.width - paddleWidth * scaleX - 1;
+		//check left is belong this player or not
+		if (state.teams.left.some((p: any) => p.clientId === clientId)) {
+			x = 1 * scaleX; // left side
+		} else if (state.teams.right.some((p: any) => p.clientId === clientId)) {
+			x = canvas.width - paddleWidth * scaleX - 1; // right side
 		} else {
-			continue;
+			continue; // not a player
 		}
 		ctx.fillStyle = "black";
 		ctx.fillRect(x, y, paddleWidth * scaleX, paddleHeight * scaleY);

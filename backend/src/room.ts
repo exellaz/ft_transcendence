@@ -2,6 +2,7 @@ import { WebSocket } from "@fastify/websocket";
 import { Game } from "./game.ts"; // import game loop
 import { ChatMessage } from "./chat.ts"; // import chat message type
 import { saveMatchResult } from "./database.ts";
+import { broadcast, broadcastState } from "./utils.ts";
 
 export interface playerInfo {
     clientId: string; // client id
@@ -12,41 +13,41 @@ export interface playerInfo {
  * @brief Room interface ( is like a room information structure)
 */
 export interface Room {
-	id: string;
-	name: string;
-	teamSize: number;
-	width: number;
-	height: number;
-	ballSpeed: number;
-	paddleHeight: number;
+	id: string; // room id
+	name: string; // room name
+	teamSize: number; // team size (1vs1 or 2vs2)
+	width: number; // game width
+	height: number; // game height
+	ballSpeed: number; // ball speed
+	paddleHeight: number; // paddle height
 	gameState: {
-        ball: { x: number; y: number; dx: number; dy: number };
-		paddles: { [key: string]: number }; //key: client id, value: paddle y position
-		teams: { left: playerInfo[]; right: playerInfo[] }; //key: team side, value: array of playerInfo
-		score: { left: number; right: number }; //key: team side, value: score
-		countdown: number;
-        gameStarted: boolean;
+        ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
+		paddles: { [key: string]: number }; //[key] => client id, [value] => paddle position
+		teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
+		score: { left: number; right: number }; //[key] => team side, [value] => score
+		countdown: number; // countdown number
+        gameStarted: boolean; // flag for start game
 	};
-	clients: Set<WebSocket>;
-	clientRoles: Map<string, playerInfo>; //key: client id, value: playerInfo
-	sockets: Map<WebSocket, string>; //key: socket, value: client id
+	clients: Set<WebSocket>; // Set of WebSocket connections
+	clientRoles: Map<string, playerInfo>; //[key] => client id, [value] => playerInfo
+	sockets: Map<WebSocket, string>; //[key] => socket, [value] => client id
 	chatHistory: ChatMessage[]; // Array to store chat messages
 	startTime?: Date; //start game time
 	endTime?: Date; //end game time
-	result?: {
+	result?: { // game result
 		winner: "left" | "right" | "draw";
 		scoreLeft: number;
 		scoreRight: number;
 	};
-    disconnectPlayers: Set<string>; // Set of client ids who disconnected
-	pendingDisconnects: Map<string, NodeJS.Timeout>; // key: client id, value: timeout handle
-	game: Game; // Game instance for the room
+    disconnectPlayers: Set<string>; // client id who disconnected during the game
+	pendingDisconnects: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle
+	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
-	gamePaused?: boolean; // Flag to indicate if the game is paused
-	duration?: number; // Game duration in seconds
-    readyStatus: Map<string, boolean>; // key: client id, value: ready status
-    canStart: boolean; // Flag to indicate if the game can start
-    startRequestedBy?: string; // clientId of who requested the game start
+	gamePaused?: boolean; // Flag for game pause
+	duration?: number; // game duration
+    readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
+    canStart: boolean; // Flag to indicate if player all ready
+    startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
 }
 
@@ -202,6 +203,18 @@ export function roomEndGame(room: any, forced = false) {
 	const end = room.endTime ?? new Date(); //if the end time is undefined, use current time
 	const ms = end.getTime() - start.getTime(); // milliseconds
 	room.duration = ms;                    // store raw ms (number)
+
+    //braodcast everyone the game is ended
+    broadcast(room, JSON.stringify({
+        type: "state",
+        gameState: {
+            ...room.gameState,
+            paused: room.gamePaused,
+            result: room.result || null
+        },
+        isSpectator: false, //everyone get the result
+    }));
+    console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
 
 	// Save match result to database
 	saveMatchResult(room, room.duration);
