@@ -20,6 +20,8 @@ export interface Room {
 	height: number; // game height
 	ballSpeed: number; // ball speed
 	paddleHeight: number; // paddle height
+	paddleWidth: number; // paddle width
+	ballSize: number; // ball size
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
 		paddles: { [key: string]: number }; //[key] => client id, [value] => paddle position
@@ -87,6 +89,8 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		height,
 		ballSpeed: 1,
 		paddleHeight: 80,
+		paddleWidth: 10,
+		ballSize: 10,
 		gameState: {
             ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
 			paddles: {},

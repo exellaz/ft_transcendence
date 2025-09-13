@@ -4,7 +4,9 @@ import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
 const BALLSPEED = 1;
-const PADDLEHEIGHT = 10;
+export const PADDLEHEIGHT = 80;
+export const PADDLEWIDTH = 10;
+export const BALLSIZE = 10;
 
 export let socket: WebSocket;
 
@@ -110,7 +112,7 @@ export async function startRoom(roomId: string, roomName: string, leaderId: stri
 	}
 	sessionStorage.setItem("pongClientId", clientId);
 
-	await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT);
+	await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE); //send room setting to server
 
 	let role = clientId === leaderId ? "left_player1" : "spectator";
 	let isLeader = clientId === leaderId;

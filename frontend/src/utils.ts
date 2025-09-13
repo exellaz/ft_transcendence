@@ -43,12 +43,12 @@ export async function determineSide(roomId: string): Promise<"left" | "right"> {
 	return room.leftPlayers <= room.rightPlayers ? "left" : "right";
 }
 
-export async function roomSetting(roomId:string, ballSpeed: number, paddleSpeed: number) {
+export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number) {
 	try {
 		const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ ballSpeed, paddleSpeed }),
+			body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize }),
 		});
 
 		if (!res.ok) throw new Error("Failed to update room settings");

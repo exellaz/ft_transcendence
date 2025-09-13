@@ -176,9 +176,11 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
 		return reply.code(404).send({ error: "Room not found" });
 	}
 
-	const { ballSpeed, paddleHeight } = req.body as { ballSpeed?: number; paddleHeight?: number };
+	const { ballSpeed, paddleHeight, paddleWidth, ballSize } = req.body as { ballSpeed?: number; paddleHeight?: number ; paddleWidth?: number; ballSize?: number };
 	room.ballSpeed = ballSpeed ?? room.ballSpeed;
 	room.paddleHeight = paddleHeight ?? room.paddleHeight;
+	room.paddleWidth = paddleWidth ?? room.paddleWidth;
+	room.ballSize = ballSize ?? room.ballSize;
 	return { success: true };
 });
 

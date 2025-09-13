@@ -1,4 +1,5 @@
 import { showLobby } from "./frontendLobby.ts";
+import { PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE } from "./frontendRoom.ts";
 import { scaledWidth, scaledHeight } from "./main.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
@@ -187,8 +188,9 @@ export function startGame(roomId: string, roomName: string, socket: WebSocket, c
 function draw_container(state: any, isSpectator?: boolean, winner: string | null = null) {
 	const canvas = document.getElementById("game") as HTMLCanvasElement;
 	const ctx = canvas.getContext("2d")!;
-	const paddleWidth = 10;
-	const paddleHeight = 80;
+	const paddleWidth = PADDLEWIDTH;
+	const paddleHeight = PADDLEHEIGHT;
+	const ballSize = BALLSIZE;
 
 	// Clear canvas each frame
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -250,7 +252,7 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 	// Spectator view
 	if (isSpectator) {
 		ctx.beginPath();
-		ctx.arc(state.ball.x, state.ball.y, 10, 0, Math.PI * 2);
+		ctx.arc(state.ball.x, state.ball.y, ballSize, 0, Math.PI * 2);
 		ctx.fillStyle = "black";
 		ctx.fill();
 
@@ -273,7 +275,7 @@ function draw_container(state: any, isSpectator?: boolean, winner: string | null
 
 	// Draw ball
 	ctx.beginPath();
-	ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, 10 * scaleX, 0, Math.PI * 2);
+	ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
 	ctx.fillStyle = "black";
 	ctx.fill();
 

@@ -107,16 +107,19 @@ export class Game implements IGame {
 		ball.y += ball.dy;
 
 		const paddleHeight = room.paddleHeight;
-		const paddleWidth = 20;
-		const ballRadius = 10;
+		const paddleWidth = room.paddleWidth;
+		const ballSize = room.ballSize;
+		console.log("ball size:", ballSize); ////debug
+		console.log("paddle height:", paddleHeight); ////debug
+		console.log("paddle width:", paddleWidth); ////debug
 
 		// Bounce off top and bottom walls
-		if (ball.y <= 0) {
-			ball.y = 0;
+		if (ball.y - ballSize <= 0) {
+			ball.y = ballSize;
 			ball.dy *= -1;
 		}
-		else if (ball.y >= room.height) {
-			ball.y = room.height;
+		else if (ball.y + ballSize >= room.height) {
+			ball.y = room.height - ballSize;
 			ball.dy *= -1;
 		}
 
@@ -124,28 +127,28 @@ export class Game implements IGame {
 		for (const clientId in room.gameState.paddles) { //look for player id in paddles
 			const paddleY = room.gameState.paddles[clientId];
             //check left is belong this player or not
-			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientId) && ball.x <= paddleWidth) {
-				if (ball.y >= paddleY && ball.y <= paddleY + paddleHeight) {
+			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientId) && ball.x - ballSize <= paddleWidth) {
+				if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
 					ball.dx *= -1;
-					ball.x = paddleWidth;
+					ball.x = paddleWidth + ballSize;
 				}
 			}
 			if (room.gameState.teams.right.some((p: playerInfo) => p.clientId === clientId) &&
-			    ball.x + ballRadius >= room.width - paddleWidth) {
-			    if (ball.y + ballRadius >= paddleY && ball.y - ballRadius <= paddleY + paddleHeight) {
+			    ball.x + ballSize >= room.width - paddleWidth) {
+			    if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
 			        ball.dx *= -1;
-			        ball.x = room.width - paddleWidth - ballRadius;
+			        ball.x = room.width - paddleWidth - ballSize;
 			    }
 			}
 		}
 
 		//if out of bound in left or right score and rest the ball
-		if (ball.x + ballRadius < 0) {
+		if (ball.x + ballSize < 0) {
 			room.gameState.score.right++;
 			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`);
 			this.resetBall(room, "right");
 		}
-		else if (ball.x - ballRadius > room.width) {
+		else if (ball.x - ballSize > room.width) {
 			room.gameState.score.left++;
 			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`);
 			this.resetBall(room, "left");
