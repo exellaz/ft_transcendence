@@ -1,4 +1,5 @@
 import { globalChatClients } from "./server.ts";
+import type { Room } from "./room.ts";
 import { Game } from "./game.ts";
 import { createChatMessage } from "./chat.ts";
 
@@ -12,7 +13,7 @@ import { createChatMessage } from "./chat.ts";
  * @param callback Function to call when the timeout triggers
  * @note Clears any existing timeout for the client before scheduling a new one
 */
-export function scheduleTimeout(room: any, clientId: string, timeout: number, callback: () => void) {
+export function scheduleTimeout(room: Room, clientId: string, timeout: number, callback: () => void) {
 	// clear existing timeout for this client if exists
 	if (room.pendingDisconnects.has(clientId)) {
 		clearTimeout(room.pendingDisconnects.get(clientId));
@@ -32,7 +33,7 @@ export function scheduleTimeout(room: any, clientId: string, timeout: number, ca
  * @param room The game room object
  * @note Updates the "canStart" property of the room and broadcasts state if it changes
 */
-export function updateCanStart(room: any): boolean {
+export function updateCanStart(room: Room): boolean {
     const prevCanStart = room.canStart;
 
     // get leader's role
@@ -72,7 +73,7 @@ export function updateCanStart(room: any): boolean {
  * @param room The game room object
  * @note Updates the "canStart" status before broadcasting
 */
-export function broadcastState(room: any) {
+export function broadcastState(room: Room) {
 	const canStart = updateCanStart(room);
 	broadcast(room, {
 		type: "state",
@@ -92,7 +93,7 @@ export function broadcastState(room: any) {
  * @param msg The message object to broadcast
  * @note Adds message to room chat history and sends to all connected clients
 */
-export function broadcast(room: any, msg: any) {
+export function broadcast(room: Room, msg: any) {
 	// console.log("Broadcasting message:", msg); ////debug
 	room.chatHistory.push(msg);
 	for(const client of room.clients) {
@@ -118,7 +119,7 @@ export function broadcast(room: any, msg: any) {
  * @param newSide The side to switch to ("left" or "right")
  * @return The new role assigned after switching sides, or undefined if switch failed
 */
-export function handleSwitchSide(room: any, socket: any, newSide: "left" | "right"): string | undefined {
+export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "right"): string | undefined {
     const clientId = room.sockets.get(socket);
     if (!clientId) return;
 
@@ -164,6 +165,7 @@ export function handleSwitchSide(room: any, socket: any, newSide: "left" | "righ
 
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
+	if (!newPlayer) return;
     broadcast(room, createChatMessage("system", `${oldRole} switched to ${newPlayer.role}`));
     console.log(`Player (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role} in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug

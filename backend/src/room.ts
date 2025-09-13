@@ -18,10 +18,12 @@ export interface Room {
 	teamSize: number; // team size (1vs1 or 2vs2)
 	width: number; // game width
 	height: number; // game height
-	ballSpeed: number; // ball speed
-	paddleHeight: number; // paddle height
-	paddleWidth: number; // paddle width
-	ballSize: number; // ball size
+	setting: {
+		ballSpeed: number; // ball speed
+		paddleHeight: number; // paddle height
+		paddleWidth: number; // paddle width
+		ballSize: number; // ball size
+	};
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
 		paddles: { [key: string]: number }; //[key] => client id, [value] => paddle position
@@ -87,10 +89,12 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		teamSize,
 		width,
 		height,
-		ballSpeed: 1,
-		paddleHeight: 80,
-		paddleWidth: 10,
-		ballSize: 10,
+		setting: {
+			ballSpeed: 1,
+			paddleHeight: 80,
+			paddleWidth: 10,
+			ballSize: 10,
+		},
 		gameState: {
             ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
 			paddles: {},
@@ -158,7 +162,7 @@ export function roomStartGame(room: Room) {
  * @param room Room object
  * @param forced Whether to force end the game
 */
-export function roomEndGame(room: any, forced = false) {
+export function roomEndGame(room: Room, forced = false) {
 	// If game already ended, do nothing
 	if (room.result)
 		return;

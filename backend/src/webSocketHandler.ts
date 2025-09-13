@@ -1,4 +1,5 @@
 import { Game } from "./game.ts";
+import type { Room } from "./room.ts";
 import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "./room.ts";
 import { createChatMessage } from "./chat.ts";
 import { broadcast, broadcastState, handleSwitchSide, scheduleTimeout } from "./utils.ts";
@@ -9,9 +10,9 @@ const game = new Game(); //create game object
  * @brief Interface for WebSocketHandler class method
 */
 interface IWebSocketHandler {
-	assignRole(room: any, clientId: string, socket: any, roomId: string): { id: string, role: string};
-	handleMsgOrEvent(socket: any, room: any, role: { id:string, role: string}, raw:string): void;
-	handleDisconnect(socket: any, room: any, clientId: string, roomId: string): void;
+	assignRole(room: Room, clientId: string, socket: any, roomId: string): { id: string, role: string};
+	handleMsgOrEvent(socket: any, room: Room, role: { id:string, role: string}, raw:string): void;
+	handleDisconnect(socket: any, room: Room, clientId: string, roomId: string): void;
 }
 
 export class WebSocketHandler implements IWebSocketHandler {
@@ -23,7 +24,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param roomId The ID of the room
 	 * @return The assigned role as a string
 	*/
-	assignRole(room: any, clientId: string, socket: any, roomId: string, preferredSide?: "left" | "right"): { id: string, role: string} {
+	assignRole(room: Room, clientId: string, socket: any, roomId: string, preferredSide?: "left" | "right"): { id: string, role: string} {
 		// Add socket to room if present
 		if (socket) {
 			room.sockets.set(socket, clientId);
@@ -87,7 +88,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 			// check if room is full and start game
 			const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-			if (totalPlayers === room.teamSize * 2 && !room.gameStarted) {
+			if (totalPlayers === room.teamSize * 2 && !room.gameState.gameStarted) {
 				roomStartGame(room);
 				startRoomLoop(room);
 			}
@@ -134,9 +135,10 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @note Handles "move", "setWidth", "setHeight", and "chat" message types
 	 * @note Updates paddle positions, room dimensions, and broadcasts chat messages
 	*/
-	handleMsgOrEvent(socket: any, room: any, role: { id: string, role: string }, raw:string) {
+	handleMsgOrEvent(socket: any, room: Room, role: { id: string, role: string }, raw:string) {
 		const msg = JSON.parse(raw);
 		const clientId = room.sockets.get(socket);
+		if (!clientId) return; //if no client id exit
 		const player = room.clientRoles.get(clientId);
 
         //if no player then exit
@@ -149,7 +151,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 						room.gameState.paddles[role.id!] ?? 0,
 						msg.dy,
 						room.height,
-						room.paddleHeight
+						room.setting.paddleHeight
 					);
 				}
 				break;
@@ -244,7 +246,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param role The role of the client (player, spectator, etc.)
 	 * @param roomId The ID of the room
 	*/
-	handleDisconnect(socket: any, room: any, clientId: string, roomId: string) {
+	handleDisconnect(socket: any, room: Room, clientId: string, roomId: string) {
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;
 

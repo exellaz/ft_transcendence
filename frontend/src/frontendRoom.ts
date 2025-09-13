@@ -3,10 +3,10 @@ import { startGame } from "./frontendGame.ts";
 import { showLobby } from "./frontendLobby.ts";
 import { initChatConnection, initChatUI } from "./globalChat.ts";
 
-const BALLSPEED = 1;
-export const PADDLEHEIGHT = 80;
-export const PADDLEWIDTH = 10;
-export const BALLSIZE = 10;
+const BALLSPEED = 10;
+export const PADDLEHEIGHT = 100;
+export const PADDLEWIDTH = 50;
+export const BALLSIZE = 80;
 
 export let socket: WebSocket;
 

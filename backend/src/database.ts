@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import type { Room } from "./room.ts";
 
 const db = new Database("room.db");
 
@@ -30,7 +31,8 @@ CREATE TABLE IF NOT EXISTS match_players (
  * @param room The game room object containing match details.
  * @param duration Optional duration of the match in seconds.
 */
-export function saveMatchResult(room: any, duration?: string) {
+export function saveMatchResult(room: Room, duration?: number) {
+	if (!duration) return;
 	duration = duration ?? room.duration; // Fallback to room's duration if not provided
 	try {
 		// Insert match record

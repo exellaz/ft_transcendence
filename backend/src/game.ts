@@ -34,8 +34,8 @@ export class Game implements IGame {
 
 		// Normalize to constant speed
 		const length = Math.sqrt(dx * dx + dy * dy);
-		ball.dx = (dx / length) * room.ballSpeed;
-		ball.dy = (dy / length) * room.ballSpeed;
+		ball.dx = (dx / length) * room.setting.ballSpeed;
+		ball.dy = (dy / length) * room.setting.ballSpeed;
 	}
 
 	/**
@@ -43,7 +43,7 @@ export class Game implements IGame {
 	 * @param room The game room
 	*/
 	setPaddlePositionWithTeam(room: Room) {
-		const paddleHeight = room.paddleHeight; //paddle size
+		const paddleHeight = room.setting.paddleHeight; //paddle size
 		const h = room.height; //room height
 		const gap = 20; //gap from wall
 
@@ -106,9 +106,9 @@ export class Game implements IGame {
 		ball.x += ball.dx;
 		ball.y += ball.dy;
 
-		const paddleHeight = room.paddleHeight;
-		const paddleWidth = room.paddleWidth;
-		const ballSize = room.ballSize;
+		const paddleHeight = room.setting.paddleHeight;
+		const paddleWidth = room.setting.paddleWidth;
+		const ballSize = room.setting.ballSize;
 		console.log("ball size:", ballSize); ////debug
 		console.log("paddle height:", paddleHeight); ////debug
 		console.log("paddle width:", paddleWidth); ////debug

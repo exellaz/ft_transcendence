@@ -177,10 +177,10 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
 	}
 
 	const { ballSpeed, paddleHeight, paddleWidth, ballSize } = req.body as { ballSpeed?: number; paddleHeight?: number ; paddleWidth?: number; ballSize?: number };
-	room.ballSpeed = ballSpeed ?? room.ballSpeed;
-	room.paddleHeight = paddleHeight ?? room.paddleHeight;
-	room.paddleWidth = paddleWidth ?? room.paddleWidth;
-	room.ballSize = ballSize ?? room.ballSize;
+	room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;
+	room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
+	room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
+	room.setting.ballSize = ballSize ?? room.setting.ballSize;
 	return { success: true };
 });
 
