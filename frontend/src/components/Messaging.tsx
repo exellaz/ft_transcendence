@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
 import type { FriendBasic, FriendMessaging } from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
@@ -17,6 +18,8 @@ const Messaging: React.FC<MessagingProps> = ({
   friendUid,
   onProfileClick,
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`Messaging.${key}`);
   const [friend, setFriend] = useState<FriendMessaging | null>(null);
   const [input, setInput] = useState("");
 
@@ -40,7 +43,7 @@ const Messaging: React.FC<MessagingProps> = ({
     setFriend(getFriendMessagingByUid(friendUid, mockMessages) || null);
   }, [friendUid]);
 
-  if (!friend) return <div>Loading...</div>;
+  if (!friend) return <div>{translate("loading")}</div>;
 
   return (
     <div className="rounded-3xl flex flex-col h-full w-full">
@@ -61,7 +64,7 @@ const Messaging: React.FC<MessagingProps> = ({
               : "bg-red-500 text-white"
           }`}
         >
-          {friendBasic.online ? "Online" : "Offline"}
+          {friendBasic.online ? translate("online") : translate("offline")}
         </span>
       </div>
       {/* Messages */}
@@ -96,12 +99,12 @@ const Messaging: React.FC<MessagingProps> = ({
         <input
           type="text"
           className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none"
-          placeholder="Type a message"
+          placeholder={translate("type_message")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
         <button className="px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-500 hover:text-white rounded font-bold">
-          Send
+          {translate("send")}
         </button>
       </div>
     </div>

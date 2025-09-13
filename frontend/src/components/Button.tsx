@@ -27,7 +27,7 @@ const variantClasses: Record<string, string> = {
   default: `w-full rounded-full py-2 ${yellow}`,
   defaultWhite:
     "w-full rounded-full py-2 bg-white text-black hover:bg-gray-300",
-  big: `w-full rounded-3xl h-20 text-2xl my-3 ${yellow}`,
+  big: `w-full h-30 rounded-3xl text-2xl my-3 ${yellow}`,
   green: `w-32 rounded-full py-2 ${green}`,
   red: `w-32 rounded-full py-2 ${red}`,
   greenSmall: `rounded-full px-4 py-1 ${green}`,

@@ -11,7 +11,7 @@ const Status: React.FC<StatusProps> = ({
   color = "green",
   className = "",
 }) => (
-  <div className={`flex items-center self-start ml-2 -mt-3 mb-2 ${className}`}>
+  <div className={`flex items-center self-start ml-6 ${className}`}>
     <span
       className={`w-2 h-2 rounded-full mr-2 ${
         color === "green" ? "bg-green-400" : "bg-red-500"

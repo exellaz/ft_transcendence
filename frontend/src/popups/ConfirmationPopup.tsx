@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 import Button from "../components/Button";
 import PopupCard from "../components/PopupCard";
@@ -17,22 +18,24 @@ const ConfirmationPopup: React.FC<PopupProps> = ({
   onClose,
   onClick,
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`ConfirmationPopup.${key}`);
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
-      <Text className="text-yellow-400">
-        {text}
-      </Text>
+      <Text className="text-yellow-400">{text}</Text>
       <div className="flex gap-3 justify-center mb-4">
-        <Button variant="green" 
-        onClick={() => {
-          onClose();
-          onClick();
-        }}>
-          YES
+        <Button
+          variant="green"
+          onClick={() => {
+            onClose();
+            onClick();
+          }}
+        >
+          {translate("yes")}
         </Button>
         <Button variant="red" onClick={onClose}>
-          NO
+          {translate("no")}
         </Button>
       </div>
     </PopupCard>

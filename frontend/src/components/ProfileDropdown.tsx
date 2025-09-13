@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ProfileDropdownInfo } from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
@@ -22,40 +23,42 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowTournamentStats,
   userUid,
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`ProfileDropdown.${key}`);
   const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const menuItems = [
     {
-      label: "MY PROFILE",
+      label: translate("my_profile"),
       onClick: () => {
         setOpen(false);
         setShowProfile(true);
       },
     },
     {
-      label: "BASIC INFO",
+      label: translate("basic_info"),
       onClick: () => {
         setOpen(false);
         setShowBasicInfo(true);
       },
     },
     {
-      label: "TOURNAMENT STATS",
+      label: translate("tournament_stats"),
       onClick: () => {
         setOpen(false);
         setShowTournamentStats(true);
       },
     },
     {
-      label: "FRIENDS",
+      label: translate("friends"),
       onClick: () => {
         setOpen(false);
         setShowFriends(true);
       },
     },
     {
-      label: "LOG OUT",
+      label: translate("log_out"),
       onClick: () => {
         navigate("/login");
       },
@@ -81,7 +84,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     setUser(getProfileDropdownByUid(userUid, mockProfileDropdownInfo) || null);
   }, [userUid]);
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) return <div>{translate("loading")}</div>;
 
   return (
     <div className="fixed top-10 right-10">
@@ -93,11 +96,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         <div>
           <Avatar src={user.avatarUrl} size={80} className="mr-4" />
         </div>
-        {user.username
-          ? user.username.length > 8
-            ? user.username.slice(0, 8) + "..."
-            : user.username
-          : "Username"}
+        {user.username.length > 8
+          ? user.username.slice(0, 8) + "..."
+          : user.username}
       </Button>
 
       {open && (

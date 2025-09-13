@@ -18,16 +18,18 @@ const SignUpView: React.FC = () => {
     <PreLoginLayout>
       <Card>
         <Logo />
-        <Input
-          placeholder={translate("username")}
-          className="mb-5"
-          icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
-        />
-        <Status text={translate("username_available")} color="green" />
+        <div className="w-full flex flex-col gap-2">
+          <Input
+            placeholder={translate("username")}
+            icon={
+              <img src="/assets/user.png" alt="user.png" className="w-10" />
+            }
+          />
+          <Status text={translate("username_available")} color="green" />
+        </div>
         <Input
           placeholder={translate("email")}
           type="email"
-          className="mb-5"
           icon={
             <img src="/assets/email.png" alt="email.png" className="w-10" />
           }
@@ -35,16 +37,16 @@ const SignUpView: React.FC = () => {
         <Input
           placeholder={translate("password")}
           type="password"
-          className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
         <Input
           placeholder={translate("confirm_password")}
           type="password"
-          className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        <Button onClick={() => navigate("/signup-success")}>{translate("signup")}</Button>
+        <Button onClick={() => navigate("/signup-success")}>
+          {translate("signup")}
+        </Button>
       </Card>
     </PreLoginLayout>
   );

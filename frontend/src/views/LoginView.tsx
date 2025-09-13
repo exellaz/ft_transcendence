@@ -21,13 +21,11 @@ const LoginView: React.FC = () => {
         <Logo />
         <Input
           placeholder={translate("username")}
-          className="mb-5"
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
         />
         <Input
           placeholder={translate("password")}
           type="password"
-          className="mb-5"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
         <Button onClick={() => navigate("/main-menu")}>{translate("login")}</Button>

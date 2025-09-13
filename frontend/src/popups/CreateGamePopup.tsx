@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
@@ -18,23 +19,29 @@ const CreateGamePopup: React.FC<PopupProps> = ({
   gameType,
   redirectPath = "/normal",
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`CreateGamePopup.${key}`);
   const navigate = useNavigate();
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
       <Text className="text-yellow-400">
-        Create a {gameType} game?
+        {t("CreateGamePopup.create_game", {
+          gameType: translate(gameType),
+        })}
       </Text>
       <div className="flex gap-3 justify-center mb-4">
-        <Button variant="green" 
-        onClick={() => {
-          onClose();
-          navigate(redirectPath);
-        }}>
-          YES
+        <Button
+          variant="green"
+          onClick={() => {
+            onClose();
+            navigate(redirectPath);
+          }}
+        >
+          {translate("yes")}
         </Button>
         <Button variant="red" onClick={onClose}>
-          NO
+          {translate("no")}
         </Button>
       </div>
     </PopupCard>

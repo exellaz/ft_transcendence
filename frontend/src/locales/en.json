@@ -27,5 +27,122 @@
     "password": "Password",
     "confirm_password": "Confirm password",
     "signup": "SIGN UP"
+  },
+  "BasicInfoPopup": {
+    "loading": "Loading...",
+    "header": "Basic Info",
+    "joined": "Joined",
+    "change_avatar": "Change Avatar",
+    "username": "Username",
+    "username_available": "Username is available",
+    "email": "Email",
+    "save_changes": "Save Changes",
+    "cancel": "Cancel",
+    "upload_avatar": "Upload a new avatar",
+    "upload_avatar_button": "Upload Avatar",
+    "confirm_upload": "Confirm Upload",
+    "avatar_updated": "Avatar has been updated.",
+    "avatar_update_error": "Avatar could not be updated.",
+    "back": "Back"
+  },
+  "ConfirmationPopup": {
+    "yes": "YES",
+    "no": "NO"
+  },
+  "CreateGamePopup": {
+    "create_game": "Create a {{gameType}} game?",
+    "yes": "YES",
+    "no": "NO",
+    "singles": "singles",
+    "doubles": "doubles"
+  },
+  "JoinTournamentPopup": {
+    "join_tournament": "Join a tournament?",
+    "yes": "YES",
+    "no": "NO"
+  },
+  "ProfilePopup": {
+    "header": "My Profile"
+  },
+  "SettingsPopup": {
+    "header": "Settings",
+    "language": "Language",
+    "camera_tracking": "In-Game Camera Tracking",
+    "static": "Static",
+    "dynamic": "Dynamic",
+    "english": "English",
+    "simplified_chinese": "简体中文",
+    "traditional_chinese": "繁體中文"
+  },
+  "TournamentStatsPopup": {
+    "loading": "Loading...",
+    "header": "Tournament Statistics",
+    "summary": "Summary",
+    "medals": {
+      "gold": "Gold",
+      "silver": "Silver",
+      "bronze": "Bronze"
+    },
+    "tournaments_played": "Tournaments Played",
+    "average_ranking": "Average Ranking",
+    "history": "Tournament History",
+    "no": "No",
+    "date": "Date",
+    "ranking": "Ranking",
+    "match": "Match",
+    "opponent": "Opponent",
+    "score": "Score",
+    "result": "Result",
+    "quarterfinals": "Quarterfinals",
+    "semifinals": "Semifinals",
+    "finals": "Finals",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "CascadeCard": {
+    "confirm_block": "Are you sure you want to block {{username}}?",
+    "confirm_unblock": "Are you sure you want to unblock {{username}}?",
+    "blocked": "{{username}} has been blocked.",
+    "unblocked": "{{username}} has been unblocked.",
+    "yes": "Yes",
+    "no": "No",
+    "back_to_chat": "Back to Chat",
+    "block": "Block",
+    "unblock": "Unblock"
+  },
+  "Messaging": {
+    "loading": "Loading...",
+    "online": "Online",
+    "offline": "Offline",
+    "type_message": "Type a message",
+    "send": "Send"
+  },
+  "ProfileContents": {
+    "loading": "Loading...",
+    "joined": "Joined",
+    "tournaments_played": "Tournaments Played",
+    "average_ranking": "Average Ranking"
+  },
+  "ProfileDropdown": {
+    "loading": "Loading...",
+    "my_profile": "MY PROFILE",
+    "basic_info": "BASIC INFO",
+    "tournament_stats": "TOURNAMENT STATS",
+    "friends": "FRIENDS",
+    "log_out": "LOG OUT"
+  },
+  "SocialHub": {
+    "tabs": {
+      "friends": "Friends",
+      "requests": "Requests",
+      "blocked": "Blocked"
+    },
+    "add_friend": "Add Friend",
+    "search_friend": "Search friend",
+    "enter_friend_uid": "Enter friend UID",
+    "enter_uid": "Enter UID",
+    "friend_added": "Friend has been added.",
+    "uid_not_exist": "UID does not exist.",
+    "back": "Back"
   }
 }

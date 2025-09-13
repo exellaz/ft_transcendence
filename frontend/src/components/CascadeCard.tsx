@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   FriendBasic,
   FriendRequest,
@@ -18,6 +19,8 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   selectedUser,
   activeTab,
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`CascadeCard.${key}`);
   const [showProfile, setShowProfile] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [actionType, setActionType] = useState("");
@@ -50,15 +53,15 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         <div className="flex flex-col items-center justify-center w-full p-8">
           <div className="text-center text-lg font-bold mb-6 text-white">
             {actionType === "block"
-              ? `Are you sure you want to block ${selectedUser.username}?`
-              : `Are you sure you want to unblock ${selectedUser.username}?`}
+              ? t("CascadeCard.confirm_block", { username: selectedUser.username })
+              : t("CascadeCard.confirm_unblock", { username: selectedUser.username })}
           </div>
           <div className="flex gap-6">
             <Button variant="green" onClick={() => handleConfirm(true)}>
-              Yes
+              {translate("yes")}
             </Button>
             <Button variant="red" onClick={() => handleConfirm(false)}>
-              No
+              {translate("no")}
             </Button>
           </div>
         </div>
@@ -68,8 +71,8 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         <div className="flex flex-col items-center justify-center w-full p-8">
           <div className="text-center text-lg font-bold mb-6 text-white">
             {actionType === "block"
-              ? `${selectedUser.username} has been blocked.`
-              : `${selectedUser.username} has been unblocked.`}
+              ? t("CascadeCard.blocked", { username: selectedUser.username })
+              : t("CascadeCard.unblocked", { username: selectedUser.username })}
           </div>
         </div>
       );
@@ -77,48 +80,48 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
   // Profile view (Friends tab if showProfile, Requests, Blocked)
   else if (
-    (activeTab === "Friends" && showProfile) ||
-    activeTab === "Requests" ||
-    activeTab === "Blocked"
+    (activeTab === "friends" && showProfile) ||
+    activeTab === "requests" ||
+    activeTab === "blocked"
   ) {
     content = (
       <div className="flex flex-col items-center w-full">
         <div className="mb-2">
           <ProfileContents userUid={selectedUser.uid} />
         </div>
-        {activeTab === "Friends" && (
+        {activeTab === "friends" && (
           <div className="flex gap-6">
             <Button
               variant="yellow"
               className="flex-1"
               onClick={() => setShowProfile(false)}
             >
-              Back to Chat
+              {translate("back_to_chat")}
             </Button>
             <Button
               variant="red"
               className="flex-1"
               onClick={() => handleActionClick("block")}
             >
-              Block
+              {translate("block")}
             </Button>
           </div>
         )}
-        {activeTab === "Requests" && (
+        {activeTab === "requests" && (
           <Button variant="red" onClick={() => handleActionClick("block")}>
-            Block
+            {translate("block")}
           </Button>
         )}
-        {activeTab === "Blocked" && (
+        {activeTab === "blocked" && (
           <Button variant="red" onClick={() => handleActionClick("unblock")}>
-            Unblock
+            {translate("unblock")}
           </Button>
         )}
       </div>
     );
   }
   // Messaging view (Friends tab, default)
-  else if (activeTab === "Friends" && !showProfile) {
+  else if (activeTab === "friends" && !showProfile) {
     content = (
       <Messaging
         friendBasic={selectedUser as FriendBasic}

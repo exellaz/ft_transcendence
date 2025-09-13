@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
@@ -14,23 +15,27 @@ interface PopupProps {
 const JoinTournamentPopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  redirectPath ="/tournament",
+  redirectPath = "/tournament",
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`JoinTournamentPopup.${key}`);
   const navigate = useNavigate();
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
-      <Text className="text-yellow-400">Join a tournament?</Text>
+      <Text className="text-yellow-400">{translate("join_tournament")}</Text>
       <div className="flex gap-3 justify-center mb-4">
-        <Button variant="green" 
-        onClick={() => {
-          onClose();
-          navigate(redirectPath);
-        }}>
-          YES
+        <Button
+          variant="green"
+          onClick={() => {
+            onClose();
+            navigate(redirectPath);
+          }}
+        >
+          {translate("yes")}
         </Button>
         <Button variant="red" onClick={onClose}>
-          NO
+          {translate("no")}
         </Button>
       </div>
     </PopupCard>

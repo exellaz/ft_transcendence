@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 // import { useUser } from "../context/UserContext";
 import type {
   FriendBasic,
@@ -15,8 +16,6 @@ import FriendTile from "./FriendTile";
 import FriendRequestTile from "./FriendRequestTile";
 import Input from "./Input";
 
-const tabs = ["Friends", "Requests", "Blocked"];
-
 interface SocialHubProps {
   selectedUser: FriendBasic | FriendRequest | BlockedUser | null;
   setSelectedUser: (
@@ -28,7 +27,10 @@ const SocialHub: React.FC<SocialHubProps> = ({
   selectedUser,
   setSelectedUser,
 }) => {
-  const [activeTab, setActiveTab] = useState("Friends");
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`SocialHub.${key}`);
+  const tabs = ["friends", "requests", "blocked"];
+  const [activeTab, setActiveTab] = useState("friends");
   const [friends, setFriends] = useState<FriendBasic[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [blocked, setBlocked] = useState<BlockedUser[]>([]);
@@ -93,36 +95,36 @@ const SocialHub: React.FC<SocialHubProps> = ({
                 setAddFriendStatus(null);
               }}
             >
-              {tab}
+              {translate(`tabs.${tab}`)}
             </button>
           ))}
         </div>
         {/* Scrollable Content */}
         <div className="w-full overflow-y-auto scrollbar-hide">
           {(() => {
-            if (activeTab === "Friends") {
+            if (activeTab === "friends") {
               if (showAddFriendView) {
                 return (
                   // Add Friend View
                   <div className="flex flex-col gap-10 items-center justify-center">
                     <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
                       <h2 className="text-white text-xl font-bold">
-                        Enter friend UID
+                        {translate("enter_friend_uid")}
                       </h2>
                       <Input
-                        placeholder="Enter UID"
+                        placeholder={translate("enter_uid")}
                         value={friendUID}
                         onChange={(e) => setFriendUID(e.target.value)}
                         className="w-full max-w-xs"
                       />
                       {addFriendStatus === "success" && (
-                        <p className="text-green-400">Friend has been added.</p>
+                        <p className="text-green-400">{translate("friend_added")}</p>
                       )}
                       {addFriendStatus === "error" && (
-                        <p className="text-red-400">UID does not exist.</p>
+                        <p className="text-red-400">{translate("uid_not_exist")}</p>
                       )}
                       <Button variant="yellow" onClick={handleAddFriend}>
-                        Add Friend
+                        {translate("add_friend")}
                       </Button>
                     </div>
                     <Button
@@ -133,7 +135,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                         setSelectedUser(null);
                       }}
                     >
-                      Back
+                      {translate("back")}
                     </Button>
                   </div>
                 );
@@ -152,7 +154,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                               className="w-10"
                             />
                           }
-                          placeholder="Search friend"
+                          placeholder={translate("search_friend")}
                         />
                       </div>
                       <Button
@@ -163,7 +165,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                           setAddFriendStatus(null);
                         }}
                       >
-                        Add Friend
+                        {translate("add_friend")}
                       </Button>
                     </div>
                     <div className="p-1 flex flex-col gap-4">
@@ -187,7 +189,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   </div>
                 );
               }
-            } else if (activeTab === "Requests") {
+            } else if (activeTab === "requests") {
               return (
                 // Friend Requests List View
                 <div className="flex flex-col gap-4 p-1">
@@ -208,7 +210,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   ))}
                 </div>
               );
-            } else if (activeTab === "Blocked") {
+            } else if (activeTab === "blocked") {
               return (
                 // Blocked Users List View
                 <div className="grid grid-cols-3 gap-4 p-1">
