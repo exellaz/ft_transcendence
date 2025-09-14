@@ -14,6 +14,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 
     useEffect(() => { ensureClientId(); }, []);
 
+	// Refresh room list every 2 seconds
     useEffect(() => {
         async function refresh() { setRooms(await fetchRooms()); }
         refresh();
@@ -21,6 +22,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
     }, []);
 
+	// Refresh match history every 5 seconds
     useEffect(() => {
         async function refresh() { setMatches(await fetchMatches(10)); }
         refresh();
@@ -28,6 +30,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         return () => { if (matchesInterval.current) clearInterval(matchesInterval.current); };
     }, []);
 
+	// call create room API
     async function onCreateRoom() {
         setError("");
         if (!roomName.trim()) {

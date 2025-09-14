@@ -2,100 +2,113 @@ import { useEffect, useRef, useState } from "react";
 import { BASE_WIDTH, BASE_HEIGHT, PADDLEWIDTH, PADDLEHEIGHT, BALLSIZE } from "./constants";
 import Chat from "./chat";
 
+/**
+ * @brief Draw the game state on the canvas
+ * @param canvas The canvas element
+ * @param state The game state
+ * @param isSpectator Whether the current user is a spectator
+ * @param winner The winner of the game, if any
+ */
 function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, winner: string | null = null) {
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const paddleWidth = PADDLEWIDTH;
-  const paddleHeight = PADDLEHEIGHT;
-  const ballSize = BALLSIZE;
+	if (!canvas) return;
+	const ctx = canvas.getContext("2d");
+	if (!ctx) return;
+	const paddleWidth = PADDLEWIDTH;
+	const paddleHeight = PADDLEHEIGHT;
+	const ballSize = BALLSIZE;
 
-  ctx.clearRect(0,0,canvas.width, canvas.height);
+	ctx.clearRect(0,0,canvas.width, canvas.height);
 
-  if (winner) {
-    ctx.font = "48px Arial";
-    ctx.fillStyle = "green";
-    ctx.textAlign = "center";
-    ctx.fillText(`Player ${winner} wins!`, canvas.width/2, canvas.height/2);
-    return;
-  }
+	//if game over, show winner
+	if (winner) {
+		ctx.font = "48px Arial";
+		ctx.fillStyle = "green";
+		ctx.textAlign = "center";
+		ctx.fillText(`Player ${winner} wins!`, canvas.width/2, canvas.height/2);
+		return;
+	}
 
-  const leftPlayers = state.teams.left.length;
-  const rightPlayers = state.teams.right.length;
-  const allPlayersConnected = (leftPlayers === 2 && rightPlayers === 2) || (leftPlayers ===1 && rightPlayers ===1 && leftPlayers + rightPlayers === 2);
+	const leftPlayers = state.teams.left.length;
+	const rightPlayers = state.teams.right.length;
+	const allPlayersConnected = (leftPlayers === 2 && rightPlayers === 2) || (leftPlayers ===1 && rightPlayers ===1 && leftPlayers + rightPlayers === 2);
 
-  if (state.paused) {
-    ctx.font = "48px Arial";
-    ctx.fillStyle = "red";
-    ctx.textAlign = "center";
-    ctx.fillText(`Game Paused`, canvas.width/2, canvas.height/2);
-    if (!state.gameStarted && state.countdown > 0) {
-      const remaining = Math.ceil(state.countdown/60);
-      ctx.font = "32px Arial";
-      ctx.fillStyle = "gray";
-      ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width/2, canvas.height/2 + 50);
-    }
-    return;
-  }
+	// if paused, show paused message
+	if (state.paused) {
+		ctx.font = "48px Arial";
+		ctx.fillStyle = "red";
+		ctx.textAlign = "center";
+		ctx.fillText(`Game Paused`, canvas.width/2, canvas.height/2);
+		//if countdown was running, show where it stopped
+		if (!state.gameStarted && state.countdown > 0) {
+			const remaining = Math.ceil(state.countdown/60);
+			ctx.font = "32px Arial";
+			ctx.fillStyle = "gray";
+			ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width/2, canvas.height/2 + 50);
+		}
+		return;
+	}
 
-  if (!state.gameStarted && state.countdown > 0) {
-    const remaining = Math.ceil(state.countdown/60);
-    ctx.font = "48px Arial";
-    ctx.fillStyle = "gray";
-    ctx.textAlign = "center";
-    ctx.fillText(`Game starts in ${remaining}...`, canvas.width/2, canvas.height/2);
-    return;
-  }
+	// countdown before game starts
+	if (!state.gameStarted && state.countdown > 0) {
+		const remaining = Math.ceil(state.countdown/60);
+		ctx.font = "48px Arial";
+		ctx.fillStyle = "gray";
+		ctx.textAlign = "center";
+		ctx.fillText(`Game starts in ${remaining}...`, canvas.width/2, canvas.height/2);
+		return;
+	}
 
-  if (!allPlayersConnected && !state.gameStarted) {
-    ctx.font = "32px Arial";
-    ctx.fillStyle = "gray";
-    ctx.textAlign = "center";
-    ctx.fillText("Waiting for all players to connect...", canvas.width/2, canvas.height/2);
-    return;
-  }
+	// if not all players entered, show waiting message
+	if (!allPlayersConnected && !state.gameStarted) {
+		ctx.font = "32px Arial";
+		ctx.fillStyle = "gray";
+		ctx.textAlign = "center";
+		ctx.fillText("Waiting for all players to connect...", canvas.width/2, canvas.height/2);
+		return;
+	}
 
-  const scaleX = canvas.width / 800;
-  const scaleY = canvas.height / 400;
+	const scaleX = canvas.width / 800;
+	const scaleY = canvas.height / 400;
 
-  if (isSpectator) {
-    ctx.beginPath();
-    ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
-    ctx.fillStyle = "black";
-    ctx.fill();
+	//spectator view
+	if (isSpectator) {
+		ctx.beginPath();
+		ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
+		ctx.fillStyle = "black";
+		ctx.fill();
 
-    for (const clientId in state.paddles) {
-      const y = state.paddles[clientId];
-      let x: number;
-      if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
-        x = 1 * scaleX;
-      } else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-        x = canvas.width - paddleWidth * scaleX - 1;
-      } else continue;
-      ctx.fillStyle = "black";
-      ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
-    }
-    return;
-  }
+		for (const clientId in state.paddles) {
+			const y = state.paddles[clientId];
+			let x: number;
+			if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
+				x = 1 * scaleX;
+			} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
+				x = canvas.width - paddleWidth * scaleX - 1;
+			} else continue;
+			ctx.fillStyle = "black";
+			ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
+		}
+		return;
+	}
 
-  // Draw ball
-  ctx.beginPath();
-  ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
-  ctx.fillStyle = "black";
-  ctx.fill();
+	// Draw ball
+	ctx.beginPath();
+	ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
+	ctx.fillStyle = "black";
+	ctx.fill();
 
-  // Draw paddles
-  for (const clientId in state.paddles) {
-    const y = state.paddles[clientId];
-    let x: number;
-    if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
-      x = 1 * scaleX;
-    } else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-      x = canvas.width - paddleWidth * scaleX - 1;
-    } else continue;
-    ctx.fillStyle = "black";
-    ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
-  }
+	// Draw paddles
+	for (const clientId in state.paddles) {
+		const y = state.paddles[clientId];
+		let x: number;
+		if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
+			x = 1 * scaleX;
+		} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
+			x = canvas.width - paddleWidth * scaleX - 1;
+		} else continue;
+		ctx.fillStyle = "black";
+		ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
+	}
 }
 
 export default function Game({ roomId, roomName, socket, clientId, initialRole, onBack } : { roomId:string; roomName:string; socket:WebSocket; clientId:string; initialRole:string; onBack:()=>void }) {

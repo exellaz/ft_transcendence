@@ -53,9 +53,6 @@ await fastify.register(async function (fastify) {
     // Assign role to client (player, spectator, etc.)
     const player = wsHandler.assignRole(room, clientId, socket, room.id, side || undefined);
 
-    // Send role and roomId to client
-    // socket.send(JSON.stringify({type: "role", player, roomId: room.name, gameState: { ...room.gameState } }));
-
     // ----- INCOMING MESSAGES/EVENT -----
     socket.on("message", (raw) => {
         wsHandler.handleMsgOrEvent(socket, room, player, raw.toString());
@@ -68,7 +65,18 @@ await fastify.register(async function (fastify) {
   });
 });
 
-
+/**
+ * @brief WebSocket endpoint for global chat.
+ * Clients connect to this endpoint to send/receive chat messages.
+ * The server broadcasts messages format to all connected clients.
+ * Message format:
+ * {
+ *   type: "chat",
+ *   from: "client_id",
+ *   text: "message_text",
+ *   time: timestamp
+ * }
+*/
 fastify.get("/chat", { websocket: true }, (connection, req) => {
     globalChatClients.add(connection); // Add new client to the set
 
@@ -83,19 +91,18 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
             // normal chat
             const chatMsg = {
                 type: "chat",
-                from: msg.from,
-                text: msg.text,
+                from: msg.from, //client id from client
+                text: msg.text, //text from client
                 time: Date.now(),
             };
             broadcastChat(chatMsg);
         }
 
         if (msg.type === "system") {
-            // 🔥 unify format with game broadcast
             const systemMsg = {
                 type: "chat",
                 from: "system",
-                text: msg.text,
+                text: msg.text, //text from client
                 time: Date.now(),
             };
             broadcastChat(systemMsg);
@@ -103,6 +110,7 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
     });
 });
 
+// Broadcast a message to all connected chat clients
 function broadcastChat(msg: any) {
     for (const client of globalChatClients) {
         if (client.readyState === 1) { // WebSocket.OPEN
@@ -115,7 +123,7 @@ function broadcastChat(msg: any) {
 
 /**
  * @brief HTTP endpoint to list all available rooms.
- * @return Array of room objects with id, name, team size, player counts, and game status to client
+ * @return all rooms with id, name, teamSize, leftPlayers, rightPlayers, and gameStarted status to client
 */
 fastify.get("/rooms", async (req, reply) => {
     return Array.from(rooms.values()).map(room => ({
@@ -130,14 +138,12 @@ fastify.get("/rooms", async (req, reply) => {
 
 /**
  * @brief HTTP endpoint to create a new game room.
- * @param teamSize Number of players per team (from request body)
- * @param name Name of the room (from request body)
- * @param leaderId Client ID of the room creator (from request body)
- * @param width Width of the game area (from request body)
- * @param height Height of the game area (from request body)
+ * @param teamSize Number of players per team (from client)
+ * @param name Name of the room (from client)
+ * @param leaderId Client ID of the room creator (from client)
+ * @param width Width of the game area (from client)
+ * @param height Height of the game area (from client)
  * @return Object with roomId, name, teamSize, and gameStarted status to client
- * @note req body should be JSON with "teamSize" and "name" fields.
- * @note reply with 400 error if parameters are missing.
 */
 fastify.post("/create-room", async (req, reply) => {
     // console.log("Create room request body:", req.body); ////debug
@@ -167,6 +173,15 @@ fastify.post("/create-room", async (req, reply) => {
     };
 });
 
+/**
+ * @brief HTTP endpoint to update game settings for a specific room.
+ * @param roomId Room ID to update (from client)
+ * @param ballSpeed New ball speed (from client, optional)
+ * @param paddleHeight New paddle height (from client, optional)
+ * @param paddleWidth New paddle width (from client, optional)
+ * @param ballSize New ball size (from client, optional)
+ * @return Success status to client
+*/
 fastify.post("/room/:roomId/setting", async (req, reply) => {
     const { roomId } = req.params as { roomId: string };
     const room = rooms.get(roomId);

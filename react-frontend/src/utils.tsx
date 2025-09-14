@@ -1,5 +1,9 @@
 const API_URL = `http://${window.location.hostname}:4242`;
 
+/**
+ * @brief generate a random client ID and store it in session storage if not already present
+ * @return client ID to client
+*/
 export function ensureClientId() {
   let clientId = sessionStorage.getItem("pongClientId");
   if (!clientId) {
@@ -9,6 +13,10 @@ export function ensureClientId() {
   return clientId;
 }
 
+/**
+ * @brief fetch the list of available rooms from the backend
+ * @return list of rooms to client in JSON format
+*/
 export async function fetchRooms() {
   try {
     const res = await fetch(`${API_URL}/rooms`);
@@ -20,6 +28,10 @@ export async function fetchRooms() {
   }
 }
 
+/**
+ * @brief fetch the list of recent matches from the backend
+ * @return list of matches to client in JSON format
+*/
 export async function fetchMatches(limit = 10) {
   try {
     const res = await fetch(`${API_URL}/matches?limit=${limit}`);
@@ -30,6 +42,16 @@ export async function fetchMatches(limit = 10) {
   }
 }
 
+/**
+ * @brief create a room
+ * @param teamSize number of players per team
+ * @param roomName name of the room
+ * @param leaderId client ID of the room leader
+ * @param width game width
+ * @param height game height
+ * @return room details to client in JSON format
+ * @note it also send the room details to the backend
+*/
 export async function createRoomAPI(teamSize: number, roomName: string, leaderId: string, width: number, height: number) {
   try {
     const res = await fetch(`${API_URL}/create-room`, {
@@ -45,6 +67,12 @@ export async function createRoomAPI(teamSize: number, roomName: string, leaderId
   }
 }
 
+/**
+ * @brief determine which side (left or right) a player should join in a room
+ * @param roomId ID of the room
+ * @return "left" or "right" side to client in Promise format
+ * @note it fetches the room details from the backend to make the decision
+*/
 export async function determineSide(roomId: string): Promise<"left" | "right"> {
   const rooms = await fetchRooms();
   const room = rooms.find((r: any) => r.id === roomId);
@@ -52,6 +80,16 @@ export async function determineSide(roomId: string): Promise<"left" | "right"> {
   return room.leftPlayers <= room.rightPlayers ? "left" : "right";
 }
 
+/**
+ * @brief update the settings of a room
+ * @param roomId ID of the room
+ * @param ballSpeed speed of the ball
+ * @param paddleHeight height of the paddle
+ * @param paddleWidth width of the paddle
+ * @param ballSize size of the ball
+ * @return updated room settings to client in JSON format
+ * @note it also sends the updated settings to the backend
+*/
 export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number) {
   try {
     const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
