@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import type { Room } from "./room.ts";
+import type { Room } from "../modules/room/room.ts";
 
 const db = new Database("room.db");
 

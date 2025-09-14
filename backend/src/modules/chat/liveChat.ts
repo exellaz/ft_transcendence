@@ -1,7 +1,7 @@
 /**
  * @brief Represents a chat message in the game.
  */
-export interface ChatMessage {
+export interface liveChatMessage {
 	type: "chat";
 	from: string;
 	text: string;
@@ -14,7 +14,7 @@ export interface ChatMessage {
  * @param text - The content of the message
  * @returns A ChatMessage object (a message with info about sender and timestamp)
 */
-export function createChatMessage(from: string, text: string): ChatMessage {
+export function createLiveChatMessage(from: string, text: string): liveChatMessage {
 	return {
 		type: "chat",
 		from,

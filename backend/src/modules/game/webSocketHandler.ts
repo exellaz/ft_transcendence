@@ -1,8 +1,8 @@
 import { Game } from "./game.ts";
-import type { Room } from "./room.ts";
-import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "./room.ts";
-import { createChatMessage } from "./chat.ts";
-import { broadcast, broadcastState, handleSwitchSide, scheduleTimeout } from "./utils.ts";
+import type { Room } from "../room/room.ts";
+import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "../room/room.ts";
+import { createLiveChatMessage } from "../chat/liveChat.ts";
+import { broadcast, broadcastState, handleSwitchSide, scheduleTimeout } from "../../utils/utils.ts";
 
 const game = new Game(); //create game object
 
@@ -76,7 +76,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				// notify to all in the room about role
 				console.log(`Player (${roleStr}) [ ${clientId} ] joined room ${room.name} (${roomId})`);
-				broadcast(room, createChatMessage("system", `${roleStr} joined the game.`));
+				broadcast(room, createLiveChatMessage("system", `${roleStr} joined the game.`));
                 broadcast(room, {
 					type: "roleUpdate",
 					newPlayer: { id: clientId, role: roleStr },
@@ -117,7 +117,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 					// notify to all in the room about reconnected and unpause if needed
 					console.log(`Player (${player.role}) [ ${clientId} ] reconnected as ${player.role} in room ${room.name} (${roomId})`);
-					broadcast(room, createChatMessage("system", `${player.role} reconnect the game.`));
+					broadcast(room, createLiveChatMessage("system", `${player.role} reconnect the game.`));
 					broadcastState(room);
 
 				}
@@ -165,7 +165,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				break;
 
 			case "chat":
-				broadcast(room, createChatMessage(role.role ?? "spectator", String(msg.text)));
+				broadcast(room, createLiveChatMessage(role.role ?? "spectator", String(msg.text)));
 				break;
 
 			case "switchSide":
@@ -192,7 +192,7 @@ export class WebSocketHandler implements IWebSocketHandler {
                 if (role.role === "spectator" || clientId === room.leaderId) return;
 
 				room.readyStatus.set(role.id, msg.ready);
-				broadcast(room, createChatMessage("system", `(${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
+				broadcast(room, createLiveChatMessage("system", `(${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				broadcastState(room);
 				break;
@@ -202,7 +202,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Only the leader can start the game" }));
 					console.log(`Player (${role.role}) [${role.id}] tried to start the game but is not the leader in room (${room.name}) [${room.id}]`);
-					broadcast(room, createChatMessage("system", `Cannot start: you are not the leader`));
+					broadcast(room, createLiveChatMessage("system", `Cannot start: you are not the leader`));
 					return;
 				}
 
@@ -211,7 +211,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (totalPlayers < room.teamSize * 2) {
 					socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
 					console.log(`Player (${role.role}) [${role.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
-					broadcast(room, createChatMessage("system", `Cannot start: insufficient players`));
+					broadcast(room, createLiveChatMessage("system", `Cannot start: insufficient players`));
 					return;
 				}
 
@@ -219,7 +219,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if(!room.canStart) {
 					socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
 					console.log(`Player (${role.role}) [${role.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
-					broadcast(room, createChatMessage("system", `Cannot start: player not ready`));
+					broadcast(room, createLiveChatMessage("system", `Cannot start: player not ready`));
 					return;
                 }
 
@@ -229,7 +229,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				room.gamePaused = false;
 
 				console.log(`Player (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);
-				broadcast(room, createChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
+				broadcast(room, createLiveChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
 				broadcastState(room);
 				break;
 
@@ -274,7 +274,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 			if (remainingPlayers.length > 0) {
 				room.leaderId = remainingPlayers[0];
 				leaderChanged = true;
-				broadcast(room, createChatMessage("system", `leader change to [ ${room.leaderId} ].`));
+				broadcast(room, createLiveChatMessage("system", `leader change to [ ${room.leaderId} ].`));
 				console.log(`Leader [ ${clientId} ] left. New leader is [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
 
 				// only send role info instead of full object
@@ -306,7 +306,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (!room.gamePaused) {
 					room.gamePaused = true;
 					console.log(`Player (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
-					broadcast(room, createChatMessage("system", `${role} disconnect.`));
+					broadcast(room, createLiveChatMessage("system", `${role} disconnect.`));
 				}
 			}
 
@@ -325,8 +325,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 			scheduleTimeout(room, clientId, 50000, () => {
 				if (room.gameState.gameStarted && room.disconnectPlayers.has(clientId)) {
 					console.log(`Player (${role}) [ ${clientId} ] exited the room ${room.name} (${roomId}) due to timeout.`);
-					broadcast(room, createChatMessage("system", `${role} exited the game.`));
-					broadcast(room, createChatMessage("system", `Game ended due to player disconnect for long time`));
+					broadcast(room, createLiveChatMessage("system", `${role} exited the game.`));
+					broadcast(room, createLiveChatMessage("system", `Game ended due to player disconnect for long time`));
 					roomEndGame(room, true); // true: forced to end game
 					rooms.delete(roomId);
 				}
@@ -336,7 +336,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 		if (role === "spectator") {
 			console.log(`Spectator [ ${clientId} ] left the room ${room.name} (${roomId}).`);
-			broadcast(room, createChatMessage("system", `Spectator left.`));
+			broadcast(room, createLiveChatMessage("system", `Spectator left.`));
 			room.clientRoles.delete(clientId);
 			return;
 		}
@@ -344,7 +344,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// handle leave game before game start / game has ended
 		if (!room.gameState.gameStarted && room.gameState.countdown === 0) {
 			console.log(`Player (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`);
-			broadcast(room, createChatMessage("system", `${role} left.`));
+			broadcast(room, createLiveChatMessage("system", `${role} left.`));
 
 			//remove player from team
 			if (role && role !== "spectator") {

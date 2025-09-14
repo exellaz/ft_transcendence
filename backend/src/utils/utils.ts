@@ -1,7 +1,7 @@
-import { globalChatClients } from "./server.ts";
-import type { Room } from "./room.ts";
-import { Game } from "./game.ts";
-import { createChatMessage } from "./chat.ts";
+import { globalChatClients } from "../app.ts";
+import type { Room } from "../modules/room/room.ts";
+import { Game } from "../modules/game/game.ts";
+import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
 
 //const game = new Game(); //create game object
 
@@ -166,7 +166,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
 	if (!newPlayer) return;
-    broadcast(room, createChatMessage("system", `${oldRole} switched to ${newPlayer.role}`));
+    broadcast(room, createLiveChatMessage("system", `${oldRole} switched to ${newPlayer.role}`));
     console.log(`Player (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role} in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug
 
@@ -194,13 +194,5 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     });
 
     return newPlayer.role;
-}
-
-
-function logBoxed(title: string, message: string) {
-    const border = "─".repeat(message.length + 2);
-    console.log(`┌─ ${title} ${border}`);
-    console.log(`│ ${message} │`);
-    console.log(`└${"─".repeat(title.length + title.length + message.length) }┘`);
 }
 

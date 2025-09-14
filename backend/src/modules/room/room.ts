@@ -1,8 +1,8 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game } from "./game.ts"; // import game loop
-import { ChatMessage } from "./chat.ts"; // import chat message type
-import { saveMatchResult } from "./database.ts";
-import { broadcast, broadcastState } from "./utils.ts";
+import { Game } from "../game/game.ts"; // import game loop
+import { liveChatMessage } from "../chat/liveChat.ts"; // import chat message type
+import { saveMatchResult } from "../../plugins/database.ts";
+import { broadcast, broadcastState } from "../../utils/utils.ts";
 
 export interface playerInfo {
     clientId: string; // client id
@@ -35,7 +35,7 @@ export interface Room {
 	clients: Set<WebSocket>; // Set of WebSocket connections
 	clientRoles: Map<string, playerInfo>; //[key] => client id, [value] => playerInfo
 	sockets: Map<WebSocket, string>; //[key] => socket, [value] => client id
-	chatHistory: ChatMessage[]; // Array to store chat messages
+	chatHistory: liveChatMessage[]; // Array to store chat messages
 	startTime?: Date; //start game time
 	endTime?: Date; //end game time
 	result?: { // game result

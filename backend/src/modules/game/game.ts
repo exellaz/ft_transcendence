@@ -1,8 +1,6 @@
-import { count } from "console";
-import type { Room } from "./room.ts";
-import { rooms, roomEndGame } from "./room.ts";
-import type { playerInfo } from "./room.ts";
-import { broadcast } from "./utils.ts";
+import type { Room } from "../room/room.ts";
+import { rooms, roomEndGame } from "../room/room.ts";
+import type { playerInfo } from "../room/room.ts";
 
 /**
  * @brief Interface for Game class method
