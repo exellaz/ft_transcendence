@@ -1,4 +1,4 @@
-const API_URL = `http://${window.location.hostname}:4242`;
+const API_URL = `http://${window.location.hostname}`;
 
 /**
  * @brief generate a random client ID and store it in session storage if not already present
@@ -19,7 +19,7 @@ export function ensureClientId() {
 */
 export async function fetchRooms() {
   try {
-    const res = await fetch(`${API_URL}/rooms`);
+    const res = await fetch(`/api/rooms`);
     if (!res.ok) throw new Error("Failed to fetch rooms");
     return await res.json();
   } catch (error) {
@@ -34,7 +34,7 @@ export async function fetchRooms() {
 */
 export async function fetchMatches(limit = 10) {
   try {
-    const res = await fetch(`${API_URL}/matches?limit=${limit}`);
+    const res = await fetch(`/api/matches?limit=${limit}`);
     if (!res.ok) throw new Error("Failed to fetch matches");
     return await res.json();
   } catch {
@@ -54,7 +54,7 @@ export async function fetchMatches(limit = 10) {
 */
 export async function createRoomAPI(teamSize: number, roomName: string, leaderId: string, width: number, height: number) {
   try {
-    const res = await fetch(`${API_URL}/create-room`, {
+    const res = await fetch(`/api/create-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teamSize, name: roomName, leaderId, width, height }),
@@ -92,7 +92,7 @@ export async function determineSide(roomId: string): Promise<"left" | "right"> {
 */
 export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number) {
   try {
-    const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
+    const res = await fetch( `/api/room/${roomId}/setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize }),

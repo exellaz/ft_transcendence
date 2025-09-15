@@ -31,7 +31,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 			// determine which side to join
 			const chooseSide = await determineSide(roomId);
-			const ws = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+			const ws = new WebSocket(`wss://${window.location.hostname}/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`);
 			setSocket(ws);
 
 			ws.onopen = () => console.log("Connected to room lobby");

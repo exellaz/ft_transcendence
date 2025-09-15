@@ -9,7 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "dotenv": "^17.2.2",
     "typescript": "~5.8.3",
     "vite": "^7.1.4"
+  },
+  "dependencies": {
+    "@types/dotenv": "^6.1.1"
   }
 }
