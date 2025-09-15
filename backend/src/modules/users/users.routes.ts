@@ -39,6 +39,16 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     const { id } = request.params as { id: string };
     const user = await fastify.db.user.findUnique({
       where: { id: Number(id) },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        usercode: true,
+        isActive: true,
+        joinedAt: true,
+        updatedAt: true
+      }
     });
     if (!user) {
       return reply.status(404).send({ error: "User not found" });
@@ -105,25 +115,20 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     }
   });
 
-  // // GET /users?username=johndoe
-  // fastify.get("/users", async (request, reply) => {
-  //   const { username } = request.query as { username?: string };
-  //   if (!username)
-  //     return reply.status(400).send({ error: "Missing username" });
-
-  //   const user = await fastify.db.user.findUnique({
-  //     where: { username },
-  //     select: { id: true },
-  //   });
-  //   if (!user) {
-  //     return reply.status(404).send({ error: "User not found" });
-  //   }
-  //   return user; // 200 OK
-  // });
-
   // READ (all users)
   fastify.get("/users", async () => {
-    return fastify.db.user.findMany();
+    return fastify.db.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        usercode: true,
+        isActive: true,
+        joinedAt: true,
+        updatedAt: true
+      }
+    });
   });
 
   // PUT /users/:id  (replace single user)
