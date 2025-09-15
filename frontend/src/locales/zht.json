@@ -28,6 +28,9 @@
     "confirm_password": "確認密碼",
     "signup": "註冊"
   },
+  "SpritePickerView": {
+    "choose_sprite": "選擇一個角色"
+  },
   "BasicInfoPopup": {
     "loading": "載入中...",
     "header": "基本資訊",

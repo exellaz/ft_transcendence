@@ -15,6 +15,7 @@ interface ButtonProps {
     | "profile"
     | "dropdown";
   onClick?: () => void;
+  disabled?: boolean;
   className?: string;
   icon?: React.ReactNode;
 }
@@ -45,6 +46,7 @@ const Button: React.FC<ButtonProps> = ({
   children,
   variant = "default",
   onClick,
+  disabled = false,
   className = "",
   icon,
 }) => {
@@ -53,7 +55,8 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`font-bold text-center cursor-pointer transition-colors ${baseClasses} ${className}`}
+      disabled={disabled}
+      className={`font-bold text-center transition-colors ${baseClasses} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       {icon && <span className="inline-block mr-2 align-middle">{icon}</span>}
       {children}

@@ -28,6 +28,9 @@
     "confirm_password": "Confirm password",
     "signup": "SIGN UP"
   },
+  "SpritePickerView": {
+    "choose_sprite": "Choose a sprite"
+  },
   "BasicInfoPopup": {
     "loading": "Loading...",
     "header": "Basic Info",
