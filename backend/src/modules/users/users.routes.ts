@@ -3,7 +3,7 @@ import { generateUniqueUserCode } from "./users.service";
 
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
-  // CREATE
+  // POST /users (Create User)
   fastify.post("/users", async (request, reply) => {
     const { username, email, password } = request.body as {
 	  username: string;
@@ -14,7 +14,13 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 	  	const usercode = await generateUniqueUserCode(fastify, username);
       console.log(usercode);
 			const user = await fastify.db.user.create({
-        data: { username, email, password, usercode },
+        data: {
+          username,
+          email,
+          password,
+          usercode,
+          settings: { create: {} }, // use all @default values
+        },
       });
       return user;
     } catch (err: any) {
@@ -23,42 +29,63 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         reply.code(400);
         return { error: "Username already exists" };
       }
-      console.error("DB Insert Error:", err);
-      reply.code(500);
-      return { error: "Databaase error" };
+      throw err; // let Fastify handle other errors
     }
   });
 
-  // READ (all users)
-  fastify.get("/users", async () => {
-    return fastify.db.user.findMany();
-  });
 
-  // READ (single user)
+  // GET /users/:id (Get single user)
   fastify.get("/users/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
     const user = await fastify.db.user.findUnique({
       where: { id: Number(id) },
     });
-    return user || { error: "User not found" };
+    if (!user) {
+      return reply.status(404).send({ error: "User not found" });
+    }
+    return user; // 200 OK
   });
 
-  // UPDATE
-  fastify.put("/users/:id", async (request, reply) => {
+
+  // PATCH /users/:id  (update single user)
+  fastify.patch("/users/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { username } = request.body as { username: string };
+    const { avatarUrl, username, email } = request.body as {
+      avatarUrl?: string;
+      username?: string;
+      email?: string;
+    };
+
+    // Build update object dynamically
+    const data: any = {};
+    if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
+    if (username !== undefined) data.username = username;
+    if (email !== undefined) data.email = email;
+
+    if (Object.keys(data).length === 0) {
+      return reply.status(400).send({ error: "No fields to update" });
+    }
+
     try {
-      const user = await fastify.db.user.update({
-        where: { id: Number(id) },
-        data: { username },
+      const updatedUser = await fastify.db.user.update({
+        where: { id: Number(id) }, // id is a number in SQLite schema usually
+        data,
+        select: { // return only these fields from database
+          id: true,
+          email: true,
+          username: true,
+          avatarUrl: true,
+          joinedAt: true,
+        },
       });
-      return user;
+
+      return updatedUser;
     } catch (err: any) {
       if (err.code === "P2025") {
-        return { error: "User not found" };
+        // Prisma "record not found"
+        return reply.status(404).send({ error: "User not found" });
       }
-      reply.code(500);
-      return { error: "Database error" };
+      throw err; // let Fastify handle other errors
     }
   });
 
@@ -77,6 +104,112 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       return { error: "Database error" };
     }
   });
+
+  // // GET /users?username=johndoe
+  // fastify.get("/users", async (request, reply) => {
+  //   const { username } = request.query as { username?: string };
+  //   if (!username)
+  //     return reply.status(400).send({ error: "Missing username" });
+
+  //   const user = await fastify.db.user.findUnique({
+  //     where: { username },
+  //     select: { id: true },
+  //   });
+  //   if (!user) {
+  //     return reply.status(404).send({ error: "User not found" });
+  //   }
+  //   return user; // 200 OK
+  // });
+
+  // READ (all users)
+  fastify.get("/users", async () => {
+    return fastify.db.user.findMany();
+  });
+
+  // PUT /users/:id  (replace single user)
+  fastify.put("/users/:id", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { username } = request.body as { username: string };
+    try {
+      const user = await fastify.db.user.update({
+        where: { id: Number(id) },
+        data: { username },
+      });
+      return user;
+    } catch (err: any) {
+      if (err.code === "P2025") {
+        return { error: "User not found" };
+      }
+      reply.code(500);
+      return { error: "Database error" };
+    }
+  });
+
+  // GET /users/:id/settings
+  fastify.get("/users/:id/settings", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = Number(id);
+
+    const settings = await fastify.db.userSettings.findUnique({
+      where: { userId: userId },
+      select: {
+        language: true,
+        textSize: true,
+        inGameCameraTracking: true,
+      },
+    });
+
+    if (!settings) {
+      return reply.status(404).send({ error: "User settings not found" });
+    }
+
+    return settings; // only the 3 fields
+  });
+
+
+  // PATCH /users/:id/settings  (update single user settings)
+  fastify.patch("/users/:id/settings", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = Number(id);
+
+    const { language, textSize, inGameCameraTracking } = request.body as {
+      language?: string;
+      textSize?: string;
+      inGameCameraTracking?: string;
+    };
+
+    // Build update object dynamically
+    const data: any = {};
+    if (language !== undefined) data.language = language;
+    if (textSize !== undefined) data.textSize = textSize;
+    if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
+
+    if (Object.keys(data).length === 0) {
+      return reply.status(400).send({ error: "No fields to update" });
+    }
+
+    try {
+      const updatedSettings = await fastify.db.userSettings.update({
+        where: { userId: userId }, // id is a number in SQLite schema usually
+        data,
+        select: { // return only these fields from database
+          userId: true,
+          language: true,
+          textSize: true,
+          inGameCameraTracking: true,
+        },
+      });
+
+      return updatedSettings;
+    } catch (err: any) {
+      if (err.code === "P2025") {
+        // Prisma "record not found"
+        return reply.status(404).send({ error: "User not found" });
+      }
+      throw err; // let Fastify handle other errors
+    }
+  });
+
 }
 
 export default userRoutes;
