@@ -175,64 +175,38 @@ export class Game implements IGame {
 			});
 		};
 
-		// get players
-		const leftReady = teamConnected(room.gameState.teams.left);
-		const rightReady = teamConnected(room.gameState.teams.right);
 
-		//check if both team is available
-		if (leftReady && rightReady) {
-            //if game was paused, resume it
-			if (room.gamePaused) {
-				room.gamePaused = false;
-				console.log("Game resumed");
-			}
-
-            //if the game not started yet
-			if (room.gameState.countdown > 0) {
-				room.gameState.countdown--;
-				const secondsLeft = Math.ceil(room.gameState.countdown / 60);
-				 console.log(`Game countdown: ${secondsLeft}`); ////debug
-
-                //broadcast countdown to all clients
-                for (const client of room.clients) {
-                    if (client.readyState === 1) {
-                        client.send(JSON.stringify({
-                            type: "state",
-                            gameState: {
-                                ...room.gameState,
-								paused: room.gamePaused,
-                                countdown: room.gameState.countdown,
-                            },
-                            leaderId: room.leaderId,
-                            canStart: room.canStart
-                        }));
-                    }
+        //if the game not started yet
+		if (room.gameState.countdown > 0) {
+			room.gameState.countdown--;
+			const secondsLeft = Math.ceil(room.gameState.countdown / 60);
+			 console.log(`Game countdown: ${secondsLeft}`); ////debug
+            //broadcast countdown to all clients
+            for (const client of room.clients) {
+                if (client.readyState === 1) {
+                    client.send(JSON.stringify({
+                        type: "state",
+                        gameState: {
+                            ...room.gameState,
+                            countdown: room.gameState.countdown,
+                        },
+                        leaderId: room.leaderId,
+                        canStart: room.canStart
+                    }));
                 }
-
-                // Start game when countdown reaches 0
-				if (room.gameState.countdown === 0) {
-					room.gameState.gameStarted = true;
-					room.startTime = new Date();
-					console.log(`Game started in room ${room.id}`);
-				}
-				return; // Skip updating ball until game starts
-			}
-
-			if (room.gameState.gameStarted) { // If the game is already started keep updating the ball
-				this.updateBall(room);
-			}
-		}
-		else { // Not enough players, get "waiting for players" state
-			if (room.gameState.gameStarted && !room.gamePaused) {
-				room.gamePaused = true;
-				room.gameState.gameStarted = false;
-				console.log (`Game paused`);
-			}
-			if (room.gameState.countdown !== 0) {
-                room.gameState.countdown = 0;
-                room.gameState.gameStarted = false;
-                console.log(`Game paused`);
             }
+            // Start game when countdown reaches 0
+			if (room.gameState.countdown === 0) {
+				room.gameState.gameStarted = true;
+				room.startTime = new Date();
+				console.log(`Game started in room ${room.id}`);
+			}
+			return; // Skip updating ball until game starts
+		}
+
+        // If the game is already started keep updating the ball
+		if (room.gameState.gameStarted) {
+			this.updateBall(room);
 		}
 
 		// Check for game end condition (first to 5 points)
@@ -248,7 +222,7 @@ export class Game implements IGame {
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const gameStateWithResult = {
         	            ...room.gameState,
-        	            paused: room.gamePaused,
+        	            //paused: room.gamePaused,
         	            result: room.result || null
         	        }; //include result if game ended (winner and scores)
 					client.send(JSON.stringify({
@@ -271,7 +245,6 @@ export class Game implements IGame {
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const gameStateWithResult = {
         	            ...room.gameState,
-        	            paused: room.gamePaused,
         	            result: room.result || null
         	        }; //include result if game ended (winner and scores)
 					client.send(JSON.stringify({

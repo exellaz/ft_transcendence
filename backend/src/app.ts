@@ -133,6 +133,7 @@ fastify.get("/rooms", async (req, reply) => {
         leftPlayers: room.gameState.teams.left.length,
         rightPlayers: room.gameState.teams.right.length,
         gameStarted: room.gameState.gameStarted,
+        gameEnded: !!room.gameState.gameEnded,
     }));
 });
 

@@ -31,6 +31,7 @@ export interface Room {
 		score: { left: number; right: number }; //[key] => team side, [value] => score
 		countdown: number; // countdown number
         gameStarted: boolean; // flag for start game
+        gameEnded?: boolean; // flag for end game
 	};
 	clients: Set<WebSocket>; // Set of WebSocket connections
 	clientRoles: Map<string, playerInfo>; //[key] => client id, [value] => playerInfo
@@ -47,7 +48,6 @@ export interface Room {
 	pendingDisconnects: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle
 	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
-	gamePaused?: boolean; // Flag for game pause
 	duration?: number; // game duration
     readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
@@ -102,13 +102,13 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 			score: { left: 0, right: 0 },
 			countdown: 0,
             gameStarted: false,
+            gameEnded: false,
 		},
 		clients: new Set(),
 		clientRoles: new Map(),
 		sockets: new Map(),
 		chatHistory: [] as any [],
         disconnectPlayers: new Set(),
-        gamePaused: false,
 		pendingDisconnects: new Map(),
 		game: new Game(),
         readyStatus: new Map(),
@@ -140,9 +140,6 @@ export function startRoomLoop(room: Room) {
 		}
 		room.game.gameLoop(room);
 
-        //if game is paused, skip sending state update
-        if (room.gamePaused)
-            return;
 	}, 1000 / 60);
 }
 
@@ -169,6 +166,7 @@ export function roomEndGame(room: Room, forced = false) {
 
 	// close the game when is end
 	room.gameState.gameStarted = false;
+    room.gameState.gameEnded = true;
 	room.endTime = new Date();
 
 	//stop loop
@@ -217,7 +215,6 @@ export function roomEndGame(room: Room, forced = false) {
         type: "state",
         gameState: {
             ...room.gameState,
-            paused: room.gamePaused,
             result: room.result || null
         },
         isSpectator: false, //everyone get the result

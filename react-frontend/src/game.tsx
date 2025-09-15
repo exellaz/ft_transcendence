@@ -32,22 +32,6 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 	const rightPlayers = state.teams.right.length;
 	const allPlayersConnected = (leftPlayers === 2 && rightPlayers === 2) || (leftPlayers ===1 && rightPlayers ===1 && leftPlayers + rightPlayers === 2);
 
-	// if paused, show paused message
-	if (state.paused) {
-		ctx.font = "48px Arial";
-		ctx.fillStyle = "red";
-		ctx.textAlign = "center";
-		ctx.fillText(`Game Paused`, canvas.width/2, canvas.height/2);
-		//if countdown was running, show where it stopped
-		if (!state.gameStarted && state.countdown > 0) {
-			const remaining = Math.ceil(state.countdown/60);
-			ctx.font = "32px Arial";
-			ctx.fillStyle = "gray";
-			ctx.fillText(`Countdown stopped at ${remaining}`, canvas.width/2, canvas.height/2 + 50);
-		}
-		return;
-	}
-
 	// countdown before game starts
 	if (!state.gameStarted && state.countdown > 0) {
 		const remaining = Math.ceil(state.countdown/60);
@@ -112,154 +96,163 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 }
 
 export default function Game({ roomId, roomName, socket, clientId, initialRole, onBack } : { roomId:string; roomName:string; socket:WebSocket; clientId:string; initialRole:string; onBack:()=>void }) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [role, setRole] = useState(initialRole);
-  const [scoreText, setScoreText] = useState("Score: 0 - 0");
-  const [statusText, setStatusText] = useState(`Room: ${roomName}`);
-  const [gameOver, setGameOver] = useState(false);
-  const [winner, setWinner] = useState<string | null>(null);
-  const keysRef = useRef({ up:false, down:false });
-  const [isSpectator, setIsSpectator] = useState(false);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [role, setRole] = useState(initialRole);
+    const [scoreText, setScoreText] = useState("Score: 0 - 0");
+    const [statusText, setStatusText] = useState(`Room: ${roomName}`);
+    const [gameOver, setGameOver] = useState(false);
+    const [winner, setWinner] = useState<string | null>(null);
+    const keysRef = useRef({ up:false, down:false });
+    const [isSpectator, setIsSpectator] = useState(false);
 
-  useEffect(()=>{
-    // init UI
-    const canvas = canvasRef.current!;
-    function createUI() {
-      canvas.width = Math.min(window.innerWidth / (BASE_WIDTH/BASE_WIDTH), 1) * BASE_WIDTH;
-      canvas.height = Math.min(window.innerHeight / (BASE_HEIGHT/BASE_HEIGHT), 1) * BASE_HEIGHT;
-      canvas.style.border = "5px solid black";
+    useEffect(()=>{
+        //create game board
+        const canvas = canvasRef.current!;
+        function createUI() {
+            canvas.width = Math.min(window.innerWidth / (BASE_WIDTH/BASE_WIDTH), 1) * BASE_WIDTH;
+            canvas.height = Math.min(window.innerHeight / (BASE_HEIGHT/BASE_HEIGHT), 1) * BASE_HEIGHT;
+            canvas.style.border = "5px solid black";
+        }
+        createUI();
+    }, []);
+
+    useEffect(() => {
+        // send game size to server on open websocket
+        const onOpen = () => {
+            const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
+            const scaledWidth = BASE_WIDTH * scale;
+            const scaledHeight = BASE_HEIGHT * scale;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ type: "setWidth", width: scaledWidth }));
+                socket.send(JSON.stringify({ type: "setHeight", height: scaledHeight }));
+                console.log(`game size from game socket: ${scaledWidth}x${scaledHeight}`); ////debug
+            }
+        };
+
+        //when socket opens, send initial width and height
+        socket.addEventListener("open", onOpen);
+        return () => socket.removeEventListener("open", onOpen);
+    }, [socket]);
+
+    useEffect(() => {
+        // handle refresh, keypresses, beforeunload
+        const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+            if (!gameOver && isSpectator === true) {
+                e.preventDefault();
+                e.returnValue = "Game in progress. Are you sure you want to leave?";
+                return e.returnValue;
+            }
+        };
+        const keyhandler = (e: KeyboardEvent) => {
+            if (!gameOver) {
+                if (e.key === "F5" || ((e.ctrlKey||e.metaKey)&& e.key.toLowerCase()==="r")) { e.preventDefault(); return; }
+                if (role !== "spectator") {
+                    if (e.type === "keydown") {
+                        if (e.key === "ArrowUp") keysRef.current.up = true;
+                        if (e.key === "ArrowDown") keysRef.current.down = true;
+                    }
+                    if (e.type === "keyup") {
+                        if (e.key === "ArrowUp") keysRef.current.up = false;
+                        if (e.key === "ArrowDown") keysRef.current.down = false;
+                    }
+                }
+            }
+        };
+        const disableContextMenu = (e:Event)=>e.preventDefault();
+        window.addEventListener("contextmenu", disableContextMenu);
+        window.addEventListener("beforeunload", beforeUnloadHandler);
+        window.addEventListener("keydown", keyhandler);
+        window.addEventListener("keyup", keyhandler);
+
+        return () => {
+            window.removeEventListener("contextmenu", disableContextMenu);
+            window.removeEventListener("beforeunload", beforeUnloadHandler);
+            window.removeEventListener("keydown", keyhandler);
+            window.removeEventListener("keyup", keyhandler);
+        };
+    }, [gameOver, role]);
+
+    useEffect(() => {
+        //receive messages / data from server
+        const handleMsgOrEvent = (event: MessageEvent) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === "roleUpdate") {
+                	 console.log("Role update from game:", data); ////debug
+
+                	// determine role from assign role / switch team
+                	const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId); //check who in left team
+                	const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId); //check who in right team
+                	const newRole = leftPlayer?.role || rightPlayer?.role || "spectator"; //assign new role if switched
+
+                    console.log("roleUpdate handler:", { ////debug
+                		clientId,
+                		left: data.gameState.teams.left,
+                		right: data.gameState.teams.right,
+                		detectedRole: newRole
+                	});
+
+                    setRole(newRole);
+                	setIsSpectator(newRole === "spectator");
+                }
+
+                if (data.type === "state") {
+                       console.log("Game state update:", data); ////debug
+
+                    //check for winner
+                	const gameWinner = data.gameState.result?.winner || null;
+                    if (gameWinner && !gameOver) {
+                        console.log("Game Over. Winner:", gameWinner); ////debug
+                        setGameOver(true);
+                        setWinner(gameWinner);
+                    }
+
+                    setStatusText(`Room: ${roomName} | Role: ${role}`);
+                    setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
+                	setIsSpectator(role === "spectator");
+
+                    // draw the game and keep update the game state
+                    draw_container(canvasRef.current!, data.gameState, data.isSpectator, gameWinner);
+                }
+            } catch (err) {
+              console.error("Invalid JSON from server:", event.data);
+            }
+        };
+
+        // listen for messages / data from server
+        socket.addEventListener("message", handleMsgOrEvent);
+        // cleanup when finished
+        return () => socket.removeEventListener("message", handleMsgOrEvent);
+    }, [socket, clientId, role, gameOver, winner]);
+
+    useEffect(()=>{
+        // if is player and game is on going, send the up and down update to server
+        const updateKeyPress = window.setInterval(()=>{
+            if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
+                if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
+                if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+            }
+        }, 1000/60); //every 1/60 second
+        // cleanup when finished
+        return () => clearInterval(updateKeyPress);
+    }, [role, gameOver, socket]);
+
+    // when user clicks back to lobby button
+    function handleBack() {
+    	if (role !== "spectator" && !gameOver) {
+    		const confirmLeave = window.confirm(
+    			"The game is still in progress. Are you sure you want to leave?"
+    		);
+    		if (!confirmLeave) return;
+    	}
+
+        // close socket and remove all info in session storage
+        try { socket.close(); } catch {}
+        sessionStorage.removeItem("pongRoomName");
+        sessionStorage.removeItem("pongRoomId");
+        //go back to lobby
+        onBack();
     }
-    createUI();
-  }, []);
-
-  useEffect(() => {
-    // send room size once open
-    const onOpen = () => {
-      const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
-      const scaledWidth = BASE_WIDTH * scale;
-      const scaledHeight = BASE_HEIGHT * scale;
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: "setWidth", width: scaledWidth }));
-        socket.send(JSON.stringify({ type: "setHeight", height: scaledHeight }));
-        console.log(`send room size: ${scaledWidth}x${scaledHeight}`);
-      }
-    };
-    socket.addEventListener("open", onOpen);
-    return () => socket.removeEventListener("open", onOpen);
-  }, [socket]);
-
-  useEffect(() => {
-    const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-      if (!gameOver && isSpectator === true) {
-        e.preventDefault();
-        e.returnValue = "Game in progress. Are you sure you want to leave?";
-        return e.returnValue;
-      }
-    };
-    const keyhandler = (e: KeyboardEvent) => {
-      if (!gameOver) {
-        if (e.key === "F5" || ((e.ctrlKey||e.metaKey)&& e.key.toLowerCase()==="r")) { e.preventDefault(); return; }
-        if (role !== "spectator") {
-          if (e.type === "keydown") {
-            if (e.key === "ArrowUp") keysRef.current.up = true;
-            if (e.key === "ArrowDown") keysRef.current.down = true;
-          }
-          if (e.type === "keyup") {
-            if (e.key === "ArrowUp") keysRef.current.up = false;
-            if (e.key === "ArrowDown") keysRef.current.down = false;
-          }
-        }
-      }
-    };
-    const disableContextMenu = (e:Event)=>e.preventDefault();
-
-    window.addEventListener("contextmenu", disableContextMenu);
-    window.addEventListener("beforeunload", beforeUnloadHandler);
-    window.addEventListener("keydown", keyhandler);
-    window.addEventListener("keyup", keyhandler);
-
-    return () => {
-      window.removeEventListener("contextmenu", disableContextMenu);
-      window.removeEventListener("beforeunload", beforeUnloadHandler);
-      window.removeEventListener("keydown", keyhandler);
-      window.removeEventListener("keyup", keyhandler);
-    };
-  }, [gameOver, role]);
-
-  useEffect(() => {
-    // handle messages
-    const handler = (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "roleUpdate") {
-        	// console.log("Role update from game:", data);
-
-			// determine role from state
-			const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
-			const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
-			const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
-			console.log("roleUpdate handler:", {
-				clientId,
-				left: data.gameState.teams.left,
-				right: data.gameState.teams.right,
-				detectedRole: newRole
-			});
-        	setRole(newRole);
-        	setIsSpectator(newRole === "spectator");
-        }
-
-        if (data.type === "state") {
-        //   console.log("Game state update:", data);
-
-		  const gameWinner = data.gameState.result?.winner || null;
-          if (gameWinner && !gameOver) {
-            console.log("Game Over. Winner:", gameWinner);
-            setGameOver(true);
-            setWinner(gameWinner);
-          }
-
-          setStatusText(`Room: ${roomName} | Role: ${role}`);
-          setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
-		  setIsSpectator(role === "spectator");
-
-          // draw
-          draw_container(canvasRef.current!, data.gameState, data.isSpectator, gameWinner);
-        }
-      } catch (err) {
-        console.error("Invalid JSON from server:", event.data);
-      }
-    };
-
-    socket.addEventListener("message", handler);
-    return () => socket.removeEventListener("message", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, clientId, role, gameOver, winner]);
-
-  // send key presses 60FPS
-  useEffect(()=>{
-    const id = window.setInterval(()=>{
-      if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
-        if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
-        if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
-      }
-    }, 1000/60);
-    return () => clearInterval(id);
-  }, [role, gameOver, socket]);
-
-  function handleBack() {
-	if (role !== "spectator" && !gameOver) {
-		const confirmLeave = window.confirm(
-			"The game is still in progress. Are you sure you want to leave?"
-		);
-		if (!confirmLeave) return;
-	}
-
-    // Called when user wants to go back to lobby
-    try { socket.close(); } catch {}
-    sessionStorage.removeItem("pongRoomName");
-    sessionStorage.removeItem("pongRoomId");
-    onBack();
-  }
 
   return (
     <div className="p-4 text-center">

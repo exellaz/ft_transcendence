@@ -6,7 +6,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
     const [rooms, setRooms] = useState<any[]>([]);
     const [matches, setMatches] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [teamSize, setTeamSize] = useState(0);
+    const [teamSize, setTeamSize] = useState(1);
     const [roomName, setRoomName] = useState("");
     const [error, setError] = useState("");
     const roomsInterval = useRef<number | null>(null);
@@ -16,7 +16,11 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 
 	// Refresh room list every 2 seconds
     useEffect(() => {
-        async function refresh() { setRooms(await fetchRooms()); }
+        async function refresh() {
+            const fetchedRooms = await fetchRooms(); ////debug
+            console.log("Fetched rooms:", fetchedRooms.map((r: any) => r.id));
+            setRooms(await fetchRooms());
+        }
         refresh();
         roomsInterval.current = window.setInterval(refresh, 2000);
         return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
@@ -53,7 +57,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
             onEnterRoom(room.roomId, room.name, room.leaderId);
             setShowModal(false);
             setRoomName("");
-            setTeamSize(0);
+            setTeamSize(1);
         } else {
             setError("Failed to create room");
         }
@@ -82,15 +86,16 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
                 />
               </div>
               <div className="mb-3">
-                <label className="block mb-1">Team Size (1-2):</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={2}
+                <label htmlFor="teamSize">Team Size:</label>
+                <select
+                  id="teamSize"
                   value={teamSize}
-                  onChange={(e) => setTeamSize(parseInt(e.target.value))}
-                  className="w-full border px-2 py-1 rounded"
-                />
+                  onChange={e => setTeamSize(Number(e.target.value))}
+                  className="px-2 py-1 border rounded"
+                >
+                  <option value={1}>1 vs 1</option>
+                  <option value={2}>2 vs 2</option>
+                </select>
               </div>
               <div className="flex justify-end gap-2 mt-4">
                 <button
@@ -114,7 +119,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         <div id="roomList" className="mb-6">
           <h2 className="text-xl mb-2">Rooms</h2>
           <div className="space-y-2">
-            {rooms.filter(r => (r.leftPlayers + r.rightPlayers) > 0).map((r:any)=> (
+            {rooms.filter(r => !r.gameEnded).filter(r => (r.leftPlayers + r.rightPlayers) > 0).map((r:any)=> (
               <div key={r.id} className="flex items-center justify-between border p-4 rounded shadow-sm bg-white">
                 {/* Room Info */}
                 <div>

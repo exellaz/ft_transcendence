@@ -79,7 +79,6 @@ export function broadcastState(room: Room) {
 		type: "state",
 		gameState: {
 			...room.gameState,
-			paused: room.gamePaused,
 			countdown: room.gameState.countdown,
 		},
 		leaderId: room.leaderId,
