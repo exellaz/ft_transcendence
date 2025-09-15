@@ -28,7 +28,7 @@
     "confirm_password": "Confirm password",
     "signup": "SIGN UP"
   },
-  "SpritePickerView": {
+  "ChooseSpriteView": {
     "choose_sprite": "Choose a sprite"
   },
   "BasicInfoPopup": {
@@ -65,7 +65,10 @@
     "no": "NO"
   },
   "ProfilePopup": {
-    "header": "My Profile"
+    "header": "My Profile",
+    "header_other": "Profile",
+    "add_friend": "Add Friend",
+    "block": "Block"
   },
   "SettingsPopup": {
     "header": "Settings",

@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 import Avatar from "../components/Avatar";
 import Button from "../components/Button";
+import ProfilePopup from "../popups/ProfilePopup";
 
 const usernameColors = [
   "text-red-400",
@@ -14,32 +15,50 @@ const usernameColors = [
   "text-teal-400",
 ];
 
-const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => (
-  <div className="flex flex-col items-center justify-center w-1/2">
-    <h2 className="text-white text-xl font-bold mb-2">Players in Lobby</h2>
-    <div className="bg-input-gray grid grid-cols-4 w-full">
-      {players.map((player, idx) => (
-        <div key={player.id} className="w-full flex flex-col items-center m-4 gap-2 justify-end">
-          {player.ready && (
-            <span className="bg-green-400 text-white rounded-full px-3 py-1 mt-1 text-sm font-bold">
-              Ready
-            </span>
-          )}
-          <Avatar src={player.skinUrl} size={60} />
-          <span
-            className={`font-bold ${
-              usernameColors[idx % usernameColors.length]
-            }`}
+const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
+  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+
+  return (
+    <>
+      <h2 className="text-white text-2xl font-bold">Players in Lobby</h2>
+      <div className="w-full bg-input-gray rounded-3xl grid grid-cols-4 p-4 gap-4">
+        {players.map((player, idx) => (
+          <div
+            key={player.uid}
+            className="flex flex-col items-center gap-4 font-bold"
           >
-            {player.username}
-          </span>
-        </div>
-      ))}
-    </div>
-    <Button variant="green" className="mt-4 w-32">
-      Ready
-    </Button>
-  </div>
-);
+            <span
+              className={`rounded-full text-white text-center px-2 ${
+                player.ready ? "bg-green-400" : "bg-red-400"
+              }`}
+            >
+              {player.ready ? "Ready" : "Pending"}
+            </span>
+            <div
+              className="cursor-pointer"
+              onClick={() => setSelectedUid(player.uid)}
+            >
+              <Avatar src={player.spriteUrl} size={60} />
+              <span
+                className={`${usernameColors[idx % usernameColors.length]}`}
+              >
+                {player.username}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Button variant="green">Ready</Button>
+      {selectedUid && (
+        <ProfilePopup
+          open={true}
+          onClose={() => setSelectedUid(null)}
+          userUid={selectedUid}
+          variant="other"
+        />
+      )}
+    </>
+  );
+};
 
 export default ReadyPlayers;

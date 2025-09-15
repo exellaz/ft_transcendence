@@ -18,9 +18,9 @@ const ghostSprites = [
   { name: "42", src: "/assets/42-ghost.png" },
 ];
 
-const SpritePickerView: React.FC = () => {
+const ChooseSpriteView: React.FC = () => {
   const { t } = useTranslation();
-  const translate = (key: string) => t(`SpritePickerView.${key}`);
+  const translate = (key: string) => t(`ChooseSpriteView.${key}`);
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string>("");
 
@@ -49,7 +49,7 @@ const SpritePickerView: React.FC = () => {
           onClick={() => {
             // TODO: handle confirm logic here
             alert(`Sprite selected: ${selected}`);
-            navigate("/tournament")
+            navigate("/tournament");
           }}
         >
           Confirm
@@ -59,4 +59,4 @@ const SpritePickerView: React.FC = () => {
   );
 };
 
-export default SpritePickerView;
+export default ChooseSpriteView;

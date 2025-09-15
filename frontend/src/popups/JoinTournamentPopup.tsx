@@ -15,7 +15,7 @@ interface PopupProps {
 const JoinTournamentPopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  redirectPath = "/tournament",
+  redirectPath = "/choose-sprite",
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`JoinTournamentPopup.${key}`);

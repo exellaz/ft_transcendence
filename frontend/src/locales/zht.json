@@ -28,7 +28,7 @@
     "confirm_password": "確認密碼",
     "signup": "註冊"
   },
-  "SpritePickerView": {
+  "ChooseSpriteView": {
     "choose_sprite": "選擇一個角色"
   },
   "BasicInfoPopup": {
@@ -65,7 +65,10 @@
     "no": "否"
   },
   "ProfilePopup": {
-    "header": "我的資料"
+    "header": "我的資料",
+    "header_other": "資料",
+    "add_friend": "新增好友",
+    "block": "封鎖"
   },
   "SettingsPopup": {
     "header": "設定",

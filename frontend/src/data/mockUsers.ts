@@ -7,6 +7,8 @@ import type {
   BlockedUser,
   FriendMessaging,
   Profile,
+  TournamentLobbyPlayer,
+  TournamentLobbyChatMessage,
 } from "../types/apiInterfaces";
 
 // Profile Dropdown
@@ -699,3 +701,69 @@ export const mockProfiles: Profile[] = [
     },
   },
 ];
+
+export const mockTournamentLobbyPlayers: Record<
+  string,
+  TournamentLobbyPlayer[]
+> = {
+  t1: [
+    {
+      uid: "u1",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u2",
+      username: "Player2",
+      spriteUrl: "/assets/green-ghost.png",
+      ready: false,
+    },
+    {
+      uid: "u3",
+      username: "Player3",
+      spriteUrl: "/assets/blue-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u4",
+      username: "Player4",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u5",
+      username: "Player5",
+      spriteUrl: "/assets/purple-ghost.png",
+      ready: false,
+    },
+    {
+      uid: "u6",
+      username: "Player6",
+      spriteUrl: "/assets/starry-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u7",
+      username: "Player7",
+      spriteUrl: "/assets/white-ghost.png",
+      ready: false,
+    },
+    {
+      uid: "u8",
+      username: "Player8",
+      spriteUrl: "/assets/42-ghost.png",
+      ready: true,
+    },
+  ],
+};
+
+export const mockTournamentLobbyChat: Record<
+  string,
+  TournamentLobbyChatMessage[]
+> = {
+  t1: [
+    { uid: "u1", text: "Hello!", timestamp: "2025-09-07 13:45" },
+    { uid: "u2", text: "Ready to play!", timestamp: "2025-09-07 13:46" },
+  ],
+};

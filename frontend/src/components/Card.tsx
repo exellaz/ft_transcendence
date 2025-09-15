@@ -2,7 +2,7 @@ import React from "react";
 
 interface CardProps {
   children: React.ReactNode;
-  size?: "default" | "wide";
+  size?: "default" | "wide" | "large";
   className?: string;
 }
 
@@ -14,6 +14,8 @@ const Card: React.FC<CardProps> = ({
   const sizeClasses =
     size === "wide"
       ? "w-[550px] h-[450px] min-w-[550px] min-h-[450px]"
+      : size === "large"
+      ? "w-[900px] h-[600px] min-w-[900px] min-h-[600px]"
       : "w-[450px] h-[600px] min-w-[450px] min-h-[600px]";
   return (
     <div

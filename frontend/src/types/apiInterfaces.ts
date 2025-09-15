@@ -86,4 +86,19 @@ export interface Profile {
   };
 }
 
+// Tournament lobby API interfaces
+// - TournamentLobbyView.tsx
+// Player in tournament lobby
+export interface TournamentLobbyPlayer {
+  uid: string;
+  username: string;
+  spriteUrl: string;
+  ready: boolean;
+}
 
+// Chat message in tournament lobby
+export interface TournamentLobbyChatMessage {
+  uid: string;
+  text: string;
+  timestamp: string; // ISO string or formatted
+}

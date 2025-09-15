@@ -6,7 +6,7 @@ import MainMenuView from "./views/MainMenuView";
 import NormalModeView from "./views/NormalModeView";
 import SignUpView from "./views/SignUpView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
-import SpritePickerView from "./views/SpritePickerView";
+import ChooseSpriteView from "./views/ChooseSpriteView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
 import Popup from "./popups/SettingsPopup";
@@ -25,7 +25,7 @@ const App: React.FC = () => {
           <Route path="/main-menu" element={<MainMenuView />} />
           <Route path="/normal" element={<NormalModeView />} />
           <Route path="/tournament" element={<TournamentLobbyView />} />
-          <Route path="/choose-sprite" element={<SpritePickerView />} />
+          <Route path="/choose-sprite" element={<ChooseSpriteView />} />
         </Routes>
       </BrowserRouter>
       <Popup open={showPopup} onClose={() => setShowPopup(false)} />
