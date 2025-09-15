@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Background from "../components/Background";
 import Button from "../components/Button";
 import Card from "../components/Card";
-import Subheader from "../components/Subheader";
+import TournamentHeader from "../components/TournamentHeader";
 
 const ghostSprites = [
   { name: "yellow", src: "/assets/yellow-ghost.png" },
@@ -27,7 +27,9 @@ const ChooseSpriteView: React.FC = () => {
   return (
     <Background>
       <Card size="wide">
-        <Subheader>{translate("choose_sprite")}</Subheader>
+        <TournamentHeader>
+          {translate("choose_sprite")}
+        </TournamentHeader>
         <div className="grid grid-cols-4 gap-6">
           {ghostSprites.map((sprite) => (
             <button
