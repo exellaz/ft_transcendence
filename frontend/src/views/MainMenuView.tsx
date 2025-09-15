@@ -8,7 +8,7 @@ import Logo from "../components/Logo";
 import MainLayout from "../layout/MainLayout";
 
 import SettingsPopup from "../popups/SettingsPopup";
-import JoinTournamentPopup from "../popups/JoinTournamentPopup";
+import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 const MainMenuView: React.FC = () => {
   const { t } = useTranslation();
@@ -35,9 +35,11 @@ const MainMenuView: React.FC = () => {
         open={showSettings}
         onClose={() => setShowSettings(false)}
       />
-      <JoinTournamentPopup
+      <ConfirmationPopup
+        text={translate("join_tournament")}
         open={showJoinTournament}
         onClose={() => setShowJoinTournament(false)}
+        redirectPath="/choose-sprite"
       />
     </MainLayout>
   );

@@ -7,7 +7,7 @@ import Card from "../components/Card";
 import Logo from "../components/Logo";
 import MainLayout from "../layout/MainLayout";
 
-import CreateGamePopup from "../popups/CreateGamePopup";
+import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 const MainMenuView: React.FC = () => {
   const { t } = useTranslation();
@@ -30,15 +30,17 @@ const MainMenuView: React.FC = () => {
           {translate("back")}
         </Button>
       </Card>
-      <CreateGamePopup
-        gameType="singles"
+      <ConfirmationPopup
+        text={translate("create_singles_game")}
         open={showCreateSinglesGame}
         onClose={() => setShowCreateSinglesGame(false)}
+        redirectPath="/normal"
       />
-      <CreateGamePopup
-        gameType="doubles"
+      <ConfirmationPopup
+        text={translate("create_doubles_game")}
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
+        redirectPath="/normal"
       />
     </MainLayout>
   );

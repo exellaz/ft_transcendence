@@ -9,12 +9,15 @@
   "MainMenuView": {
     "tournament_mode": "锦标赛模式",
     "normal_mode": "普通模式",
-    "settings": "设置"
+    "settings": "设置",
+    "join_tournament": "参加锦标赛？"
   },
   "NormalModeView": {
     "singles": "单打",
     "doubles": "双打",
-    "back": "返回"
+    "back": "返回",
+    "create_singles_game": "创建单打游戏？",
+    "create_doubles_game": "创建双打游戏？"
   },
   "SignUpSuccessView": {
     "success_message": "您的账户已成功创建！",
@@ -49,18 +52,6 @@
     "back": "返回"
   },
   "ConfirmationPopup": {
-    "yes": "是",
-    "no": "否"
-  },
-  "CreateGamePopup": {
-    "create_game": "创建{{gameType}}游戏？",
-    "yes": "是",
-    "no": "否",
-    "singles": "单打",
-    "doubles": "双打"
-  },
-  "JoinTournamentPopup": {
-    "join_tournament": "参加锦标赛？",
     "yes": "是",
     "no": "否"
   },

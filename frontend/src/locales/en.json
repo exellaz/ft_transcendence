@@ -9,12 +9,15 @@
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",
     "normal_mode": "NORMAL MODE",
-    "settings": "SETTINGS"
+    "settings": "SETTINGS",
+    "join_tournament": "Join a tournament?"
   },
   "NormalModeView": {
     "singles": "SINGLES",
     "doubles": "DOUBLES",
-    "back": "BACK"
+    "back": "BACK",
+    "create_singles_game": "Create a singles game?",
+    "create_doubles_game": "Create a doubles game?"
   },
   "SignUpSuccessView": {
     "success_message": "Your account has been successfully created!",
@@ -49,18 +52,6 @@
     "back": "Back"
   },
   "ConfirmationPopup": {
-    "yes": "YES",
-    "no": "NO"
-  },
-  "CreateGamePopup": {
-    "create_game": "Create a {{gameType}} game?",
-    "yes": "YES",
-    "no": "NO",
-    "singles": "singles",
-    "doubles": "doubles"
-  },
-  "JoinTournamentPopup": {
-    "join_tournament": "Join a tournament?",
     "yes": "YES",
     "no": "NO"
   },

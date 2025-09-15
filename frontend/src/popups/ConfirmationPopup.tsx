@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
 import PopupCard from "../components/PopupCard";
@@ -9,17 +10,18 @@ interface PopupProps {
   text: string;
   open: boolean;
   onClose: () => void;
-  onClick: () => void;
+  redirectPath?: string;
 }
 
 const ConfirmationPopup: React.FC<PopupProps> = ({
   text,
   open,
   onClose,
-  onClick,
+  redirectPath = "/"
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ConfirmationPopup.${key}`);
+  const navigate = useNavigate();
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
@@ -29,7 +31,7 @@ const ConfirmationPopup: React.FC<PopupProps> = ({
           variant="green"
           onClick={() => {
             onClose();
-            onClick();
+            navigate(redirectPath);
           }}
         >
           {translate("yes")}
