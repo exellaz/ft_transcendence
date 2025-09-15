@@ -1,60 +1,175 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { BasicInfo } from "../types/apiInterfaces";
+// TODO: Remove mock data import when integrating real API
+import { mockBasicInfo } from "../data/mockUsers";
 
 import Avatar from "../components/Avatar";
 import Button from "../components/Button";
 import Header from "../components/Header";
 import Input from "../components/Input";
-import Status from "../components/Status";
 import PopupCard from "../components/PopupCard";
-import { useUser } from "../context/UserContext";
+import Status from "../components/Status";
 
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  userUid: string;
 }
 
-const BlockListPopup: React.FC<PopupProps> = ({ open, onClose }) => {
-  const { user } = useUser();
+const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`BasicInfoPopup.${key}`);
+  const [user, setUser] = useState<BasicInfo | null>(null);
+  const [showAvatarUpload, setShowAvatarUpload] = React.useState(false);
+  const [avatarUploadStatus, setAvatarUploadStatus] = useState<
+    null | "success" | "error"
+  >(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // TODO: Fetch real data based on userUid
+  // useEffect(() => {
+  //   // Fetch user's basic info
+  //   fetch(`/api/basic-info?userUid=${userUid}`)
+  //     .then((res) => res.json())
+  //     .then(setUser);
+  // }, [userUid]);
+
+  // TODO: Delete when API is integrated
+  function getBasicInfoByUid(
+    userUid: string,
+    data: BasicInfo[]
+  ): BasicInfo | undefined {
+    return data.find((user) => user.uid === userUid);
+  }
+  useEffect(() => {
+    setUser(getBasicInfoByUid(userUid, mockBasicInfo) || null);
+  }, [userUid]);
+
+  if (!user) return <div>{translate("loading")}</div>;
+
+  function handleClose() {
+    onClose();
+    setShowAvatarUpload(false);
+    setAvatarUploadStatus(null);
+    setSelectedFile(null);
+  }
 
   return (
-    <PopupCard open={open} onClose={onClose}>
-      <Header>Basic Info</Header>
-      <div className="flex flex-col items-center gap-6">
-        <div className="text-center">
-          <p className="text-white">ID: {user?.id}</p>
-          <p className="text-white">Joined: {user?.createdAt}</p>
-        </div>
-        <div className="flex items-center gap-6">
-          <Avatar src={user?.avatarUrl} size={100} />
-          <div>
-            <Button variant="yellow">Update Avatar</Button>
+    <PopupCard open={open} onClose={handleClose}>
+      {!showAvatarUpload ? (
+        <>
+          <Header>{translate("header")}</Header>
+          <div className="h-full flex flex-col items-center justify-between">
+            <div className="text-center">
+              <p className="text-white">ID: {user.uid}</p>
+              <p className="text-white">
+                {translate("joined")}: {user.joinDate}
+              </p>
+            </div>
+            <div className="flex items-center gap-6">
+              <Avatar src={user?.avatarUrl} size={100} />
+              <div>
+                <Button
+                  variant="yellow"
+                  onClick={() => setShowAvatarUpload(true)}
+                >
+                  {translate("change_avatar")}
+                </Button>
+              </div>
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              <Input
+                value={user?.username}
+                placeholder={translate("username")}
+                icon={
+                  <img src="/assets/user.png" alt="user.png" className="w-10" />
+                }
+              />
+              <Status text={translate("username_available")} color="green" />
+            </div>
+            <Input
+              value={user?.email}
+              placeholder={translate("email")}
+              type="email"
+              icon={
+                <img src="/assets/email.png" alt="email.png" className="w-10" />
+              }
+            />
+            <div className="flex gap-6">
+              <Button variant="yellow">{translate("save_changes")}</Button>
+              <Button variant="brown">{translate("cancel")}</Button>
+            </div>
           </div>
+        </>
+      ) : (
+        // Avatar Upload
+        <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+          <Avatar src={user?.avatarUrl} size={100} />
+          <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl p-10 flex flex-col items-center justify-center gap-6">
+            <h2 className="text-white text-xl font-bold">
+              {translate("upload_avatar")}
+            </h2>
+            {!selectedFile && (
+              // identical to yellow Button styling
+              <label
+                className="w-32 rounded-full bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white py-2 
+                font-bold text-center cursor-pointer transition-colors"
+              >
+                {translate("upload_avatar_button")}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setSelectedFile(e.target.files[0]);
+                      setAvatarUploadStatus(null); // Reset status
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+            )}
+
+            {selectedFile && (
+              <div className="flex flex-col items-center gap-6">
+                <img
+                  src={URL.createObjectURL(selectedFile)}
+                  alt="Avatar Preview"
+                  className="w-20 h-20 rounded-full bg-white"
+                />
+                <Button
+                  variant="yellow"
+                  onClick={() => {
+                    // Handle upload logic here (e.g., send to server)
+                    setAvatarUploadStatus("success"); // or "error" if upload fails
+                  }}
+                >
+                  {translate("confirm_upload")}
+                </Button>
+              </div>
+            )}
+            {avatarUploadStatus === "success" && (
+              <p className="text-green-400">{translate("avatar_updated")}</p>
+            )}
+            {avatarUploadStatus === "error" && (
+              <p className="text-red-400">{translate("avatar_update_error")}</p>
+            )}
+          </div>
+          <Button
+            variant="yellow"
+            onClick={() => {
+              setShowAvatarUpload(false);
+              setAvatarUploadStatus(null);
+              setSelectedFile(null);
+            }}
+          >
+            {translate("back")}
+          </Button>
         </div>
-        <div className="flex flex-col items-center w-full">
-          <Input
-            value={user?.username}
-            placeholder="Username"
-            icon={
-              <img src="/assets/user.png" alt="user.png" className="w-10" />
-            }
-          />
-          <Status text="Username is available" color="green" />
-          <Input
-            value={user?.email}
-            placeholder="Email"
-            type="email"
-            icon={
-              <img src="/assets/email.png" alt="email.png" className="w-10" />
-            }
-          />
-        </div>
-        <div className="flex gap-6">
-          <Button variant="yellow">Save Changes</Button>
-          <Button variant="brown">Cancel</Button>
-        </div>
-      </div>
+      )}
     </PopupCard>
   );
 };
 
-export default BlockListPopup;
+export default BasicInfoPopup;

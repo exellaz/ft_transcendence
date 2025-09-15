@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
@@ -9,22 +10,24 @@ import MainLayout from "../layout/MainLayout";
 import CreateGamePopup from "../popups/CreateGamePopup";
 
 const MainMenuView: React.FC = () => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`NormalModeView.${key}`);
+  const navigate = useNavigate();
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <MainLayout>
       <Card>
         <Logo />
         <Button variant="big" onClick={() => setShowCreateSinglesGame(true)}>
-          SINGLES
+          {translate("singles")}
         </Button>
         <Button variant="big" onClick={() => setShowCreateDoublesGame(true)}>
-          DOUBLES
+          {translate("doubles")}
         </Button>
         <Button variant="big" onClick={() => navigate("/main-menu")}>
-          BACK
+          {translate("back")}
         </Button>
       </Card>
       <CreateGamePopup

@@ -1,0 +1,154 @@
+{
+  "LoginView": {
+    "username": "用戶名",
+    "password": "密碼",
+    "login": "登入",
+    "continue_with_google": "使用 Google 繼續",
+    "signup_prompt": "還沒有帳號？註冊"
+  },
+  "MainMenuView": {
+    "tournament_mode": "錦標賽模式",
+    "normal_mode": "普通模式",
+    "settings": "設定"
+  },
+  "NormalModeView": {
+    "singles": "單打",
+    "doubles": "雙打",
+    "back": "返回"
+  },
+  "SignUpSuccessView": {
+    "success_message": "您的帳戶已成功建立！",
+    "login": "登入"
+  },
+  "SignUpView": {
+    "username": "用戶名",
+    "username_available": "用戶名可用",
+    "email": "電子郵件",
+    "password": "密碼",
+    "confirm_password": "確認密碼",
+    "signup": "註冊"
+  },
+  "ChooseSpriteView": {
+    "choose_sprite": "選擇一個角色"
+  },
+  "BasicInfoPopup": {
+    "loading": "載入中...",
+    "header": "基本資訊",
+    "joined": "加入時間",
+    "change_avatar": "更換頭像",
+    "username": "用戶名",
+    "username_available": "用戶名可用",
+    "email": "電子郵件",
+    "save_changes": "儲存更改",
+    "cancel": "取消",
+    "upload_avatar": "上傳新頭像",
+    "upload_avatar_button": "上傳頭像",
+    "confirm_upload": "確認上傳",
+    "avatar_updated": "頭像已更新。",
+    "avatar_update_error": "頭像更新失敗。",
+    "back": "返回"
+  },
+  "ConfirmationPopup": {
+    "yes": "是",
+    "no": "否"
+  },
+  "CreateGamePopup": {
+    "create_game": "建立{{gameType}}遊戲？",
+    "yes": "是",
+    "no": "否",
+    "singles": "單打",
+    "doubles": "雙打"
+  },
+  "JoinTournamentPopup": {
+    "join_tournament": "參加錦標賽？",
+    "yes": "是",
+    "no": "否"
+  },
+  "ProfilePopup": {
+    "header": "我的資料",
+    "header_other": "資料",
+    "add_friend": "新增好友",
+    "block": "封鎖"
+  },
+  "SettingsPopup": {
+    "header": "設定",
+    "language": "語言",
+    "camera_tracking": "遊戲內攝影機追蹤",
+    "static": "靜態",
+    "dynamic": "動態",
+    "english": "英語",
+    "simplified_chinese": "簡體中文",
+    "traditional_chinese": "繁體中文"
+  },
+  "TournamentStatsPopup": {
+    "loading": "載入中...",
+    "header": "錦標賽統計",
+    "summary": "概要",
+    "medals": {
+      "gold": "金牌",
+      "silver": "銀牌",
+      "bronze": "銅牌"
+    },
+    "tournaments_played": "參賽次數",
+    "average_ranking": "平均排名",
+    "history": "錦標賽歷史",
+    "no": "編號",
+    "date": "日期",
+    "ranking": "排名",
+    "match": "比賽",
+    "opponent": "對手",
+    "score": "比分",
+    "result": "結果",
+    "quarterfinals": "四強賽",
+    "semifinals": "準決賽",
+    "finals": "決賽",
+    "won": "勝利",
+    "lost": "失敗"
+  },
+  "CascadeCard": {
+    "confirm_block": "確定要封鎖 {{username}} 嗎？",
+    "confirm_unblock": "確定要解除封鎖 {{username}} 嗎？",
+    "blocked": "{{username}} 已被封鎖。",
+    "unblocked": "{{username}} 已解除封鎖。",
+    "yes": "是",
+    "no": "否",
+    "back_to_chat": "返回聊天",
+    "block": "封鎖",
+    "unblock": "解除封鎖"
+  },
+  "Messaging": {
+    "loading": "載入中...",
+    "online": "在線",
+    "offline": "離線",
+    "type_message": "輸入訊息",
+    "send": "發送"
+  },
+  "ProfileContents": {
+    "loading": "載入中...",
+    "joined": "加入時間",
+    "tournaments_played": "參賽次數",
+    "average_ranking": "平均排名"
+  },
+  "ProfileDropdown": {
+    "loading": "載入中...",
+    "my_profile": "我的資料",
+    "basic_info": "基本資訊",
+    "tournament_stats": "錦標賽統計",
+    "friends": "好友",
+    "log_out": "登出"
+  },
+  "SocialHub": {
+    "tabs": {
+      "friends": "好友",
+      "requests": "請求",
+      "blocked": "已封鎖"
+    },
+    "add_friend": "新增好友",
+    "search_friend": "搜尋好友",
+    "enter_friend_uid": "輸入好友UID",
+    "enter_uid": "輸入UID",
+    "friend_added": "好友已新增。",
+    "uid_not_exist": "UID不存在。",
+    "back": "返回"
+  }
+}

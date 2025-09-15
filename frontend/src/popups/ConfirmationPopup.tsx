@@ -1,35 +1,35 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
 import PopupCard from "../components/PopupCard";
 import Text from "../components/Text";
 
 interface PopupProps {
+  text: string;
   open: boolean;
   onClose: () => void;
-  redirectPath?: string;
+  onClick: () => void;
 }
 
-const JoinTournamentPopup: React.FC<PopupProps> = ({
+const ConfirmationPopup: React.FC<PopupProps> = ({
+  text,
   open,
   onClose,
-  redirectPath = "/choose-sprite",
+  onClick,
 }) => {
   const { t } = useTranslation();
-  const translate = (key: string) => t(`JoinTournamentPopup.${key}`);
-  const navigate = useNavigate();
+  const translate = (key: string) => t(`ConfirmationPopup.${key}`);
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
-      <Text className="text-yellow-400">{translate("join_tournament")}</Text>
+      <Text className="text-yellow-400">{text}</Text>
       <div className="flex gap-3 justify-center mb-4">
         <Button
           variant="green"
           onClick={() => {
             onClose();
-            navigate(redirectPath);
+            onClick();
           }}
         >
           {translate("yes")}
@@ -42,4 +42,4 @@ const JoinTournamentPopup: React.FC<PopupProps> = ({
   );
 };
 
-export default JoinTournamentPopup;
+export default ConfirmationPopup;

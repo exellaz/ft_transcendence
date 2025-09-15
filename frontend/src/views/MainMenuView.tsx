@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
@@ -10,22 +11,24 @@ import SettingsPopup from "../popups/SettingsPopup";
 import JoinTournamentPopup from "../popups/JoinTournamentPopup";
 
 const MainMenuView: React.FC = () => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`MainMenuView.${key}`);
+  const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
   const [showJoinTournament, setShowJoinTournament] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <MainLayout>
       <Card>
         <Logo />
         <Button variant="big" onClick={() => setShowJoinTournament(true)}>
-          TOURNAMENT MODE
+          {translate("tournament_mode")}
         </Button>
         <Button variant="big" onClick={() => navigate("/normal")}>
-          NORMAL MODE
+          {translate("normal_mode")}
         </Button>
         <Button variant="big" onClick={() => setShowSettings(true)}>
-          SETTINGS
+          {translate("settings")}
         </Button>
       </Card>
       <SettingsPopup

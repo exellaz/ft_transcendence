@@ -2,9 +2,10 @@
 
 @theme {
   --color-card-blue: #081334;
-  --color-card-blue-accent: #0D1D4D;
   --color-input-gray: #1F2B4F;
   --color-brown: #5A4A24;
+  --color-grass-green: #8ac639;
+  --color-grass-light-green: #9fd044;
 
   --color-gold: #FDD602;
   --color-silver: #8EBAC5;
@@ -12,6 +13,10 @@
 }
 
 /* hide scrollbar */
+.scrollbar-hide {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  display: none; /* Chrome, Safari, Opera */
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -8,7 +8,6 @@ import ProfilePopup from "../popups/ProfilePopup";
 import BasicInfoPopup from "../popups/BasicInfoPopup";
 import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
-import BlockListPopup from "../popups/BlockListPopup";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -19,8 +18,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
-  const [showBlockList, setShowBlockList] = useState(false);
+
   const { user } = useUser();
+  const userUid = user?.id ?? "";
 
   return (
     <Background>
@@ -29,27 +29,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         setShowBasicInfo={setShowBasicInfo}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
-        setShowBlockList={setShowBlockList}
+        userUid={userUid}
       />
       {children}
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
-        src={user?.avatarUrl}
+        userUid={userUid}
       />
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
+        userUid={userUid}
       />
       <TournamentStatsPopup
         open={showTournamentStats}
         onClose={() => setShowTournamentStats(false)}
+        userUid={userUid}
       />
       <FriendsPopup open={showFriends} onClose={() => setShowFriends(false)} />
-      <BlockListPopup
-        open={showBlockList}
-        onClose={() => setShowBlockList(false)}
-      />
     </Background>
   );
 };
