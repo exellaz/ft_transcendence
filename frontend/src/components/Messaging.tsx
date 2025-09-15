@@ -6,6 +6,7 @@ import type { FriendBasic, FriendMessaging } from "../types/apiInterfaces";
 import { mockMessages } from "../data/mockUsers";
 
 import Avatar from "./Avatar";
+import Button from "./Button";
 
 interface MessagingProps {
   friendBasic: FriendBasic;
@@ -98,14 +99,14 @@ const Messaging: React.FC<MessagingProps> = ({
       <div className="flex items-center px-4 py-3 border-t border-gray-300 gap-2">
         <input
           type="text"
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none"
+          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white"
           placeholder={translate("type_message")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        <button className="px-4 py-2 bg-yellow-400 text-black hover:bg-yellow-500 hover:text-white rounded font-bold">
+        <Button variant="send" onClick={() => {}}>
           {translate("send")}
-        </button>
+        </Button>
       </div>
     </div>
   );

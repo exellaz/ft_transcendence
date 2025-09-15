@@ -13,7 +13,8 @@ interface ButtonProps {
     | "yellow"
     | "brown"
     | "profile"
-    | "dropdown";
+    | "dropdown"
+    | "send";
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
@@ -40,6 +41,7 @@ const variantClasses: Record<string, string> = {
     "w-60 rounded-full bg-yellow-400 text-black hover:bg-yellow-500 hover:text-white text-xl py-2",
   dropdown:
     "bg-white border border-gray-400 text-card-blue py-2 rounded shadow font-bold w-48 hover:bg-gray-100 hover:border-card-blue hover:text-black",
+  send: `px-4 py-2 ${yellow} rounded`,
 };
 
 const Button: React.FC<ButtonProps> = ({
@@ -56,7 +58,9 @@ const Button: React.FC<ButtonProps> = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`font-bold text-center transition-colors ${baseClasses} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`font-bold text-center transition-colors ${baseClasses} ${className} ${
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+      }`}
     >
       {icon && <span className="inline-block mr-2 align-middle">{icon}</span>}
       {children}

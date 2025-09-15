@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 import Avatar from "../components/Avatar";
-import Button from "../components/Button";
 import ProfilePopup from "../popups/ProfilePopup";
 
 const usernameColors = [
@@ -20,7 +19,7 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
 
   return (
     <>
-      <h2 className="text-white text-2xl font-bold">Players in Lobby</h2>
+      <h2 className="text-white text-xl font-bold">Players in Lobby</h2>
       <div className="w-full bg-input-gray rounded-3xl grid grid-cols-4 p-4 gap-4">
         {players.map((player, idx) => (
           <div
@@ -48,7 +47,6 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
           </div>
         ))}
       </div>
-      <Button variant="green">Ready</Button>
       {selectedUid && (
         <ProfilePopup
           open={true}
