@@ -37,3 +37,4 @@ bun.lock
 app.db
 
 /src/generated/prisma
+./prisma/database/

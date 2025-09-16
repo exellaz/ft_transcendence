@@ -45,7 +45,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         email: true,
         avatarUrl: true,
         usercode: true,
-        isActive: true,
+        status: true,
         joinedAt: true,
         updatedAt: true
       }
@@ -124,7 +124,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         email: true,
         avatarUrl: true,
         usercode: true,
-        isActive: true,
+        status: true,
         joinedAt: true,
         updatedAt: true
       }
