@@ -1,17 +1,19 @@
-import pkg from "fastify";
+import fastify from "fastify";
 import cors from "@fastify/cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import type { SignOptions, Secret } from "jsonwebtoken";
 import { verifyGoogleIdToken } from "./authService.ts";
 import { findOrCreateUserFromGoogle, updateLastLogin } from "./userModel.ts";
 import { authConfig } from "./config/authConfig.ts";
 import { authenticate } from "./plugins/authenticate.ts";
 
-const Fastify = pkg;
+const Fastify = fastify;
 
 dotenv.config();
 
 const server = Fastify({ logger: true });
+server.decorateRequest("user");
 
 server.register(cors, {
   origin: ["http://localhost:5173"],
@@ -45,8 +47,8 @@ server.post("/auth/google", async (request, reply) => {
     // 4) Issue JWT that references our DB user id
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      authConfig.jwtSecret,
-      { expiresIn: authConfig.jwtExpiresIn },
+      authConfig.jwtSecret as Secret,
+      { expiresIn: authConfig.jwtExpiresIn } as SignOptions,
     );
 
     return reply.send({ ok: true, user, token });
@@ -57,9 +59,8 @@ server.post("/auth/google", async (request, reply) => {
 });
 
 server.get("/me", { preHandler: authenticate }, async (request, reply) => {
-  const user = (request as any).user; // set in authenticate()
-  if (!user) return reply.code(401).send({ error: "Unauthorized" });
-  return reply.send({ ok: true, user });
+  if (!request.user) return reply.code(401).send({ error: "Unauthorized" });
+  return { ok: true, user: request.user };
 });
 
 const PORT = Number(process.env.PORT || 4000);

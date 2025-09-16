@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import { authConfig } from "../config/authConfig.ts";
 import { getUserById } from "../userModel.ts";
-
-// ✅ Use "import type" so this doesn't become a runtime import
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
@@ -29,10 +27,10 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
       return reply.code(401).send({ error: "Unauthorized" });
     }
 
-    // attach user to request
-    (request as any).user = user;
+    request.user = user;
     return;
   } catch (err) {
+    request.log.error(err);
     return reply.code(401).send({ error: "Unauthorized" });
   }
 }
