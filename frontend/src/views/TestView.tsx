@@ -24,26 +24,24 @@ function App() {
   useEffect(() => {
     fetch("http://localhost:3000/users")
       .then((res) => res.json())
-      .then(setUsers);
+      .then((result) => setUsers(result.data))
+      .catch((err) => console.error("Error fetching users:", err));
   }, []);
 
   const addOrUpdateUser = async () => {
     if (!username.trim()) return;
     if (editingId !== null) {
       // * UPDATE
-      const randomEmail = `${randomString(10)}@gmail.com`; // ! TMP
-      
+
       const res = await fetch(`http://localhost:3000/users/${editingId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
-          email: randomEmail, // ! HARDCODED
-          password: "test", // ! HARDCODED
         }),
       });
 
-      const updatedUser = await res.json();
+      const { data: updatedUser } = await res.json();
       console.log("editingId:", editingId, typeof editingId);
       console.log("updatedUser:", updatedUser, typeof updatedUser.id);
 
@@ -72,7 +70,8 @@ function App() {
           password: "test", // ! HARDCODED
         }),
       });
-      const newUser = await res.json();
+
+      const { data: newUser } = await res.json();
       console.log(newUser);
       if ("error" in newUser) {
         alert(newUser.error); // or set some error state
@@ -90,7 +89,7 @@ function App() {
     const res = await fetch(`http://localhost:3000/users/${id}`, {
       method: "DELETE",
     });
-    const deletedUser = await res.json();
+    const { data: deletedUser } = await res.json();
     console.log("deletedUser:", deletedUser);
     if ("error" in deletedUser) {
       alert(deletedUser.error); // or set some error state
