@@ -17,18 +17,13 @@ const usernameColors = [
 const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
 
-  const getGridCols = (count: number) => {
-    if (count > 4) return "grid-cols-4";
-    return "grid-cols-2";
-  };
-
   return (
     <>
       <h2 className="text-white text-xl font-bold">Players in Lobby</h2>
       <div
-        className={`w-full bg-input-gray rounded-3xl grid ${getGridCols(
-          players.length
-        )} p-4 gap-4`}
+        className={`w-full bg-input-gray rounded-3xl grid ${
+          players.length > 4 ? "grid-cols-4" : "grid-cols-2"
+        } p-4 gap-4`}
       >
         {players.map((player, idx) => (
           <div
