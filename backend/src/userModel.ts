@@ -5,6 +5,7 @@ export interface User {
   google_id: string;
   email: string;
   name: string;
+  passwordHash: string| null;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +32,7 @@ export function createUser(
     google_id: googleId,
     email,
     name,
+    passwordHash: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -53,9 +55,22 @@ export function getUserById(id: number): User | undefined {
   return stmt.get(id) as User | undefined;
 }
 
+export function getUserByEmail(email: string): User | undefined {
+  return db.prepare("SELECT * FROM users WHERE email = ?").get(email) as User | undefined;
+}
+
 export function updateLastLogin(id: number): void {
   const stmt = db.prepare(
     "UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
   );
   stmt.run(id);
+}
+
+export function createUserWithPassword(email: string, name: string, passwordHash: string) {
+  const stmt = db.prepare(`
+    INSERT INTO users (email, name, passwordHash, createdAt)
+    VALUES (?, ?, ?, datetime('now'))
+    `);
+  const result = stmt.run(email, name, passwordHash);
+  return getUserById(result.lastInsertRowid as number);
 }

@@ -7,6 +7,9 @@ import { verifyGoogleIdToken } from "./authService.ts";
 import { findOrCreateUserFromGoogle, updateLastLogin } from "./userModel.ts";
 import { authConfig } from "./config/authConfig.ts";
 import { authenticate } from "./plugins/authenticate.ts";
+import { hashPassword, verifyPassword } from "./authService.ts";
+import { createUserWithPassword, getUserByEmail } from "./userModel.ts";
+
 
 const Fastify = fastify;
 
@@ -21,6 +24,61 @@ server.register(cors, {
 });
 
 server.get("/health", async () => ({ status: "ok" }));
+
+server.post("/auth/register", async (request, reply) => {
+  const { email, password, name } = request.body as {
+    email?: string;
+    password?: string;
+    name?: string;
+  };
+
+  if (!email || !password || !name) {
+    return reply.code(400).send({ error: "Missing fields" });
+  }
+
+  const exists = getUserByEmail(email);
+  if (exists) {
+    return reply.code(400).send({ error: "Email already registered" });
+  }
+
+  const passwordHash = await hashPassword(password);
+  const user = createUserWithPassword(email, name, passwordHash);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return reply.send({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+server.post("/auth/login", async (request, reply) => {
+  const { email, password } = request.body as {
+    email?: string;
+    password?: string;
+  };
+
+  if (!email || !password) {
+    return reply.code(400).send({ error: "Missing email or password" });
+  }
+
+  const user = getUserByEmail(email);
+  if (!user || !user.passwordHash) {
+    return reply.code(401).send({ error: "Invalid credentials" });
+  }
+
+  const valid = await verifyPassword(password, user.passwordHash);
+  if (!valid) {
+    return reply.code(401).send({ error: "Invalid credentials" });
+  }
+
+  // issue JWT
+  const token = jwt.sign(
+    { userId: user.id, email: user.email },
+    authConfig.jwtSecret as Secret,
+    { expiresIn: authConfig.jwtExpiresIn } as SignOptions,
+  );
+
+  return reply.send({ ok: true, token });
+});
 
 server.post("/auth/google", async (request, reply) => {
   const body = request.body as { idToken?: string };
