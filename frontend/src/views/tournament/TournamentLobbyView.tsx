@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   mockTournamentLobbyPlayers,
   mockTournamentLobbyChat,
@@ -20,6 +21,8 @@ import TournamentHeader from "../../components/TournamentHeader";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
 const TournamentLobbyView: React.FC = () => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const [players, setPlayers] = useState<TournamentLobbyPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<
     TournamentLobbyChatMessage[]

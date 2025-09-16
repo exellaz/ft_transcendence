@@ -104,7 +104,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       {open && (
         <div className="flex flex-col mt-2 ml-6">
           {menuItems.map((item) => (
-            <Button variant="dropdown" onClick={item.onClick}>
+            <Button key={item.label} variant="dropdown" onClick={item.onClick}>
               {item.label}
             </Button>
           ))}

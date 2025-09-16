@@ -39,7 +39,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
 
   return (
     <div className="h-full flex flex-col items-center justify-around">
-      <div className="py-2 w-full flex items-center justify-center gap-6">
+      <div className="py-2 w-full flex-row-center gap-6">
         <div>
           <Avatar src={user.avatarUrl} size={100} />
         </div>
@@ -50,7 +50,9 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
               : user.username}
           </p>
           <p className="text-white">ID: {user.uid}</p>
-          <p className="text-white">{translate("joined")}: {user.joinDate}</p>
+          <p className="text-white">
+            {translate("joined")}: {user.joinDate}
+          </p>
         </div>
       </div>
       <div className="py-2 w-full flex gap-6 justify-center">

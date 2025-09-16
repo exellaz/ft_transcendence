@@ -102,3 +102,10 @@ export interface TournamentLobbyChatMessage {
   text: string;
   timestamp: string; // ISO string or formatted
 }
+
+export interface MatchPlayer {
+  uid: string;
+  username: string;
+  spriteUrl: string;
+  ready: boolean;
+}

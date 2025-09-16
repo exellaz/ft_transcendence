@@ -9,6 +9,7 @@ import type {
   Profile,
   TournamentLobbyPlayer,
   TournamentLobbyChatMessage,
+  MatchPlayer,
 } from "../types/apiInterfaces";
 
 // Profile Dropdown
@@ -782,5 +783,22 @@ export const mockTournamentLobbyChat: Record<
     },
     { uid: "u3", text: "Thanks! Yours too!", timestamp: "2025-09-07 13:54" },
     { uid: "u2", text: "Let's start soon!", timestamp: "2025-09-07 13:55" },
+  ],
+};
+
+export const mockMatchPlayers: Record<string, MatchPlayer[]> = {
+  t1: [
+    {
+      uid: "u0",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u1",
+      username: "Player2",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: false,
+    },
   ],
 };

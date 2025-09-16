@@ -104,9 +104,9 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
         </>
       ) : (
         // Avatar Upload
-        <div className="w-full h-full flex flex-col items-center justify-center gap-6">
+        <div className="w-full h-full flex-col-center gap-6">
           <Avatar src={user?.avatarUrl} size={100} />
-          <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl p-10 flex flex-col items-center justify-center gap-6">
+          <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl p-10 flex-col-center gap-6">
             <h2 className="text-white text-xl font-bold">
               {translate("upload_avatar")}
             </h2>

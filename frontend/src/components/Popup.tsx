@@ -1,5 +1,5 @@
-// This component is meant to work with popups and will mute the background 
-// to bring the popup into focus. 
+// This component is meant to work with popups and will mute the background
+// to bring the popup into focus.
 import React from "react";
 
 interface PopupProps {
@@ -15,16 +15,11 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, children }) => {
   // z-50: ensures the popup covers the elements behind it
   // absolute: positions it relative to the parent
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex-row-center">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       {/* Popup content */}
-      <div className="z-10 w-screen h-screen flex items-center justify-center">
-        {children}
-      </div>
+      <div className="z-10 w-screen h-screen flex-row-center">{children}</div>
     </div>
   );
 };
