@@ -174,6 +174,29 @@ fastify.post("/create-room", async (req, reply) => {
     };
 });
 
+fastify.post("/create-public-room", async (req, reply) => {
+    const body: any = req.body;
+    const teamSize = body.teamSize;
+    const width = body.width;
+    const height = body.height;
+
+    if (typeof teamSize !== "number" || typeof width !== "number" || typeof height !== "number") {
+      return reply.code(400).send({ error: "Invalid room parameters" });
+    }
+
+    const room = createRoom(generateRoomId(), "Public Room", teamSize, "", width, height);
+    rooms.set(room.id, room);
+
+    console.log(`Public Room (${room.id}) created with team size ${teamSize}`);
+
+    return {
+        roomId: room.id,
+        name: room.name,
+        teamSize,
+        gameStarted: room.gameState.gameStarted,
+    };
+});
+
 /**
  * @brief HTTP endpoint to update game settings for a specific room.
  * @param roomId Room ID to update (from client)

@@ -60,12 +60,29 @@ export async function createRoomAPI(teamSize: number, roomName: string, leaderId
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ teamSize, name: roomName, leaderId, width, height }),
     });
+    console.log("Create room response:", res); ////debug
     if (!res.ok) throw new Error("Failed to create room");
     return await res.json();
   } catch (error) {
     console.error("Failed to create room:", error);
     return null;
   }
+}
+
+export async function createPublicRoomAPI(teamSize: number, roomName: string, width: number, height: number) {
+    try {
+        const res = await fetch(`${API_URL}/create-public-room`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ teamSize, name: roomName, width, height }),
+        });
+        console.log("Create public room response:", res); ////debug
+        if (!res.ok) throw new Error("Failed to create public room");
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to create public room:", error);
+        return null;
+    }
 }
 
 /**

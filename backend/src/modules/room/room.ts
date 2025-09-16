@@ -81,7 +81,7 @@ export function generateRoomId(length = 6): string {
  * @param height room height (default: 400)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string, width: number, height: number): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number): Room {
 	const room: Room = {
 		id,
 		name,
