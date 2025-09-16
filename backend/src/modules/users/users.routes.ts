@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { generateUniqueUserCode } from "./users.service";
-
+import { ok, fail, ApiError } from "../../utils/response"
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
   // POST /users (Create User)
@@ -22,13 +22,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
           settings: { create: {} }, // use all @default values
         },
       });
-      return user;
+      return ok(user);
     } catch (err: any) {
-      if (err.code === "P2002") {
-        // Prisma unique constraint violation
-        reply.code(400);
-        return { error: "Username already exists" };
-      }
+      if (err.code === "P2002") // Prisma unique constraint violation
+        throw new ApiError("Username or Email already exists", 400);
+
       throw err; // let Fastify handle other errors
     }
   });
@@ -50,10 +48,10 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         updatedAt: true
       }
     });
-    if (!user) {
-      return reply.status(404).send({ error: "User not found" });
-    }
-    return user; // 200 OK
+    if (!user)
+      throw new ApiError("User not found", 404);
+
+    return ok(user); // 200 OK
   });
 
 
@@ -72,9 +70,8 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     if (username !== undefined) data.username = username;
     if (email !== undefined) data.email = email;
 
-    if (Object.keys(data).length === 0) {
-      return reply.status(400).send({ error: "No fields to update" });
-    }
+    if (Object.keys(data).length === 0)
+      throw new ApiError("No fields to update", 400);
 
     try {
       const updatedUser = await fastify.db.user.update({
@@ -89,12 +86,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         },
       });
 
-      return updatedUser;
+      return ok(updatedUser);
     } catch (err: any) {
-      if (err.code === "P2025") {
-        // Prisma "record not found"
-        return reply.status(404).send({ error: "User not found" });
-      }
+      if (err.code === "P2025") // Prisma "record not found"
+        throw new ApiError("User not found", 404);
+
       throw err; // let Fastify handle other errors
     }
   });
@@ -105,19 +101,25 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     try {
       const user = await fastify.db.user.delete({
         where: { id: Number(id) },
+        select: { // return only these fields from database
+          id: true,
+          email: true,
+          username: true,
+        },
       });
-      return { id: user.id };
+
+      return ok(user);
     } catch (err: any) {
-      if (err.code === "P2025") {
-        return { error: "User not found" };
-      }
-      return { error: "Database error" };
+      if (err.code === "P2025")
+        throw new ApiError("User not found", 404);
+      console.log("ERRORRRR", err);
+      throw err;
     }
   });
 
   // READ (all users)
   fastify.get("/users", async () => {
-    return fastify.db.user.findMany({
+    const users = await fastify.db.user.findMany({
       select: {
         id: true,
         username: true,
@@ -129,25 +131,8 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         updatedAt: true
       }
     });
-  });
 
-  // PUT /users/:id  (replace single user)
-  fastify.put("/users/:id", async (request, reply) => {
-    const { id } = request.params as { id: string };
-    const { username } = request.body as { username: string };
-    try {
-      const user = await fastify.db.user.update({
-        where: { id: Number(id) },
-        data: { username },
-      });
-      return user;
-    } catch (err: any) {
-      if (err.code === "P2025") {
-        return { error: "User not found" };
-      }
-      reply.code(500);
-      return { error: "Database error" };
-    }
+    return ok(users); // even if empty array, success response
   });
 
   // GET /users/:id/settings
@@ -164,13 +149,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       },
     });
 
-    if (!settings) {
-      return reply.status(404).send({ error: "User settings not found" });
-    }
+    if (!settings)
+      throw new ApiError("User settings not found", 404);
 
-    return settings; // only the 3 fields
+    return ok(settings); // only the 3 fields
   });
-
 
   // PATCH /users/:id/settings  (update single user settings)
   fastify.patch("/users/:id/settings", async (request, reply) => {
@@ -189,9 +172,8 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     if (textSize !== undefined) data.textSize = textSize;
     if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
 
-    if (Object.keys(data).length === 0) {
-      return reply.status(400).send({ error: "No fields to update" });
-    }
+    if (Object.keys(data).length === 0)
+      throw new ApiError("No fields to update", 400);
 
     try {
       const updatedSettings = await fastify.db.userSettings.update({
@@ -205,12 +187,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         },
       });
 
-      return updatedSettings;
+      return ok(updatedSettings);
     } catch (err: any) {
-      if (err.code === "P2025") {
-        // Prisma "record not found"
-        return reply.status(404).send({ error: "User not found" });
-      }
+      if (err.code === "P2025") // Prisma "record not found"
+        throw new ApiError("User not found", 404);
+
       throw err; // let Fastify handle other errors
     }
   });

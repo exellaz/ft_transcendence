@@ -12,7 +12,7 @@ async function authRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 			password: string;
 		};
 
-		const user = fastify.db.user.findUnique({
+		const user = await fastify.db.user.findUnique({
 			where: { username },
 		});
 		if (!user) {
