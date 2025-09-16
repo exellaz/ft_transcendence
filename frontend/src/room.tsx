@@ -16,7 +16,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 	const [gameStarted, setGameStarted] = useState(false);
 	const [canStart, setCanStart] = useState(false);
 	const [socket, setSocket] = useState<WebSocket | null>(null);
-	const reconnectTimer = useRef<NodeJS.Timeout | null>(null);
+	const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const beforeUnload = useRef<(e:BeforeUnloadEvent)=>any>(()=>{});
 
 	useEffect(()=>{ ensureClientId(); }, []);
@@ -62,8 +62,19 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 					setRole(newRole);
 					setPlayerText(`You are: [${clientId}] (${newRole})`);
 
-					setLeftTeamHtml(data.gameState.teams.left.map((p:any)=>`${p.clientId} (${p.role})`).join("\n"));
-					setRightTeamHtml(data.gameState.teams.right.map((p:any)=>`${p.clientId} (${p.role})`).join("\n"));
+					setLeftTeamHtml(
+						data.gameState.teams.left.map((p:any)=> {
+							const mark = p.clientId === data.leaderId ? "✦" : "";
+							return `${mark}${p.clientId} (${p.role})`;
+						})
+						.join("\n")
+					);
+					setRightTeamHtml(
+						data.gameState.teams.right.map((p:any)=> {
+							const mark = p.clientId === data.leaderId ? "✦" : "";
+							return `${mark}${p.clientId} (${p.role})`;
+						}).join("\n")
+					);
 
 					// leader update
 					if (data.leaderId) {

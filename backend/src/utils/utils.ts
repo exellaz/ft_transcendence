@@ -36,12 +36,14 @@ export function updateCanStart(room: Room): boolean {
     //if all ready, more than 1 player, and teams are balanced, can start
     room.canStart = allReady && allPlayers.length > 1 && teamsBalanced;
 
-    console.log("updateCanStart:", { ////debug
-        allPlayers,
-        nonLeaderPlayers,
-        allReady,
-        canStart: room.canStart
-    });
+    // console.log("updateCanStart:", { ////debug
+    //     allPlayers,
+    //     nonLeaderPlayers,
+	// 	teamsBalanced,
+    //     allReady,
+    //     canStart: room.canStart
+    // });
+
     return room.canStart;
 }
 

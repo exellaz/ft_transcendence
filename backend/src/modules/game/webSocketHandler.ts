@@ -197,6 +197,33 @@ export class WebSocketHandler implements IWebSocketHandler {
                     leaderId: room.leaderId,
                     canStart: canStart,
                 });
+
+				// auto -start check for equal teams
+				if (!canStart && room.gameState.teams.left.length !== room.gameState.teams.right.length) {
+        			broadcast(room, createLiveChatMessage("system", "Cannot start: teams are not equal."));
+        			console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: teams are not equal`);
+        			return;
+				}
+
+				//auto-start (public room)
+				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
+					if (room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
+						broadcast(room, createLiveChatMessage("system", "All players ready. Teams are full."));
+					}
+					room.gameState.countdown = 3 * 60; //? 3 seconds countdown
+					room.startRequestedBy = "auto";
+					room.gameState.gameStarted = false;
+
+					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}]`);
+					broadcast(room, createLiveChatMessage("system", `All players ready. Game starting in ${room.gameState.countdown / 60} seconds...`));
+
+					setTimeout(() => {
+						if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+							roomStartGame(room);
+							startRoomLoop(room);
+						}
+					}, 3000); //3 seconds delay
+				}
 				break;
 
 			case "start":

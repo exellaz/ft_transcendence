@@ -176,6 +176,7 @@ fastify.post("/create-room", async (req, reply) => {
 
 fastify.post("/create-public-room", async (req, reply) => {
     const body: any = req.body;
+	const name = body.name;
     const teamSize = body.teamSize;
     const width = body.width;
     const height = body.height;
@@ -184,14 +185,15 @@ fastify.post("/create-public-room", async (req, reply) => {
       return reply.code(400).send({ error: "Invalid room parameters" });
     }
 
-    const room = createRoom(generateRoomId(), "Public Room", teamSize, "", width, height);
-    rooms.set(room.id, room);
+	const roomId = generateRoomId();
+    const room = createRoom(roomId, name, teamSize, "", width, height);
+    rooms.set(roomId, room);
 
     console.log(`Public Room (${room.id}) created with team size ${teamSize}`);
 
     return {
-        roomId: room.id,
-        name: room.name,
+        roomId,
+        name,
         teamSize,
         gameStarted: room.gameState.gameStarted,
     };

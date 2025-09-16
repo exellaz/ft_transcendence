@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchRooms, fetchMatches, createRoomAPI, ensureClientId} from "./utils"
+import { fetchRooms, fetchMatches, createRoomAPI, ensureClientId, createPublicRoomAPI} from "./utils"
 import { BASE_WIDTH, BASE_HEIGHT } from "./constants";
 
 export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:string, leaderId:string)=>void }) {
@@ -9,8 +9,47 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
     const [teamSize, setTeamSize] = useState(1);
     const [roomName, setRoomName] = useState("");
     const [error, setError] = useState("");
+	const [showJoinPopup, setShowJoinPopup] = useState(false);
+	const [showPrivateJoin, setShowPrivateJoin] = useState(false);
+	const [invalidRoom, setInvalidRoom] = useState(false);
+	const [joinRoomId, setJoinRoomId] = useState("");
+	const [joinError, setJoinError] = useState("");
+	const [showQuickJoin, setShowQuickJoin] = useState(false);
     const roomsInterval = useRef<number | null>(null);
     const matchesInterval = useRef<number | null>(null);
+
+	async function quickJoinRoom(teamSize: number) {
+		// step 1: Fetch rooms that match the team size and are not started
+		const roomsList = await fetchRooms();
+		let room = roomsList.find(
+			(r: any) =>
+				r.teamSize === teamSize &&
+				!r.gameStarted &&
+				(r.leftPlayers + r.rightPlayers) < r.teamSize * 2
+		);
+
+	  //step 2: If no room existm create new room
+	  if (!room) {
+	    const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
+	    const width = BASE_WIDTH * scale;
+	    const height = BASE_HEIGHT * scale;
+		room = await createPublicRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height);
+
+		if (!room) {
+			alert ("Failed to create public room");
+			setShowQuickJoin(false);
+			return;
+		}
+	  }
+
+	  // step 3: join the room
+	  const roomId = room.roomId || room.id; // backend returns either roomId or id
+	  sessionStorage.setItem("pongRoomId", roomId);
+	  sessionStorage.setItem("pongRoomName", room.name);
+	  onEnterRoom(roomId, room.name, room.leaderId || "");
+	  setShowQuickJoin(false);
+	}
+
 
     useEffect(() => { ensureClientId(); }, []);
 
@@ -66,8 +105,10 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
     return (
       <div className="p-6">
         <h1 className="text-3xl mb-4">Pong Lobby</h1>
+
+		{/* Create Button */}
         <div className="mb-4">
-          <button className="px-3 py-1 border" onClick={()=>setShowModal(true)}>Create Room</button>
+          <button className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-black" onClick={()=>setShowModal(true)}>Create</button>
         </div>
 
         {/* Modal */}
@@ -115,27 +156,166 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
           </div>
         )}
 
+		{/* Join Button */}
+		<button
+		  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-black"
+		  onClick={() => setShowJoinPopup(true)}
+		>
+		  Join
+		</button>
+
+		{/* Show popout join */}
+		{showJoinPopup && (
+		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		      <h2 className="text-xl mb-4">Join Options</h2>
+		      <div className="flex flex-col gap-2">
+		        <button
+		          className="px-3 py-1 bg-blue-500 text-white rounded"
+		          onClick={() => {
+		            setShowJoinPopup(false);
+					setShowQuickJoin(true);
+		          }}
+		        >
+		          Quick Join
+		        </button>
+
+		        <button
+		          className="px-3 py-1 bg-green-500 text-white rounded"
+		          onClick={() => {
+		            setShowPrivateJoin(true);
+		          }}
+		        >
+		          Join Private Room
+		        </button>
+		      </div>
+
+		      <button
+		        className="mt-4 px-3 py-1 border rounded"
+		        onClick={() => setShowJoinPopup(false)}
+		      >
+		        Cancel
+		      </button>
+		    </div>
+		  </div>
+		)}
+
+		{/* Join Private Room Modal */}
+		{showPrivateJoin && !invalidRoom && (
+		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		      <h2 className="text-xl mb-4">Enter Room ID</h2>
+		      <input
+		        type="text"
+		        placeholder="Room ID"
+		        value={joinRoomId}
+		        onChange={(e) => setJoinRoomId(e.target.value)}
+		        className="w-full px-2 py-1 border rounded mb-2"
+		      />
+		      {joinError && <div className="text-red-600 mb-2">{joinError}</div>}
+		      <div className="flex justify-end gap-2">
+		        <button
+		          className="px-3 py-1 border rounded"
+		          onClick={() => {
+		            setShowPrivateJoin(false);
+		            setShowJoinPopup(true);
+		          }}
+		        >
+		          Cancel
+		        </button>
+		        <button
+		          className="px-3 py-1 bg-green-500 text-white rounded"
+		          onClick={async () => {
+		            setJoinError("");
+		            const rooms = await fetchRooms();
+		            const room = rooms.find((r: any) => r.id === joinRoomId.trim());
+		            if (!room) {
+		              setInvalidRoom(true);
+		              return;
+		            }
+		            sessionStorage.setItem("pongRoomId", room.id);
+		            sessionStorage.setItem("pongRoomName", room.name);
+		            onEnterRoom(room.id, room.name, room.leaderId);
+		            setShowPrivateJoin(false);
+		          }}
+		        >
+		          Join Room
+		        </button>
+		      </div>
+		    </div>
+		  </div>
+		)}
+
+		{/* Invalid Room notice for private join */}
+		{showPrivateJoin && invalidRoom && (
+		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		    <div className="bg-white p-6 rounded shadow-lg w-80 text-center">
+		      <h2 className="text-xl mb-4 text-red-600">Room not available</h2>
+		      <button
+		        className="px-3 py-1 bg-gray-500 text-white rounded mr-2"
+		        onClick={() => {
+		          setInvalidRoom(false);
+		          setShowPrivateJoin(false);
+		          setShowJoinPopup(true);
+		        }}
+		      >
+		        Back
+		      </button>
+		    </div>
+		  </div>
+		)}
+
+		{/* Quick Join Modal */}
+		{showQuickJoin && (
+		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		      <h2 className="text-xl mb-4">Quick Join</h2>
+		      <div className="flex flex-col gap-2">
+		        <button
+		          className="px-3 py-1 bg-blue-500 text-white rounded"
+		          onClick={() => {
+		            // Call your join 1v1 logic here
+		            quickJoinRoom(1);
+		          }}
+		        >
+		          1 vs 1
+		        </button>
+		        <button
+		          className="px-3 py-1 bg-blue-500 text-white rounded"
+		          onClick={() => {
+		            // Call your join 2v2 logic here
+		            quickJoinRoom(2);
+		          }}
+		        >
+		          2 vs 2
+		        </button>
+		        <button
+		          className="px-3 py-1 border rounded"
+		          onClick={() => {
+		            setShowQuickJoin(false);
+		          }}
+		        >
+		          Cancel
+		        </button>
+		      </div>
+		    </div>
+		  </div>
+		)}
+
+
+
         {/* Room List */}
         <div id="roomList" className="mb-6">
-          <h2 className="text-xl mb-2">Rooms</h2>
+          <h2 className="text-xl mb-2">Rooms (visualize purpose)</h2>
           <div className="space-y-2">
             {rooms.filter(r => !r.gameEnded).filter(r => (r.leftPlayers + r.rightPlayers) > 0).map((r:any)=> (
               <div key={r.id} className="flex items-center justify-between border p-4 rounded shadow-sm bg-white">
                 {/* Room Info */}
                 <div>
-                  <div className="font-semibold">{r.name}</div>
+                  <div className="font-semibold">{r.name} (id: {r.id})</div>
                   <div className="text-sm text-gray-600">
                     {r.leftPlayers + r.rightPlayers}/{r.teamSize * 2} players {r.gameStarted ? "(playing)" : "(waiting)"}
                   </div>
-                </div>
-                {/* Join Button */}
-                <div>
-                  <button
-                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-black"
-                    onClick={()=>onEnterRoom(r.id, r.name, r.leaderId)}
-                  >
-                    Join
-                  </button>
                 </div>
               </div>
             ))}
