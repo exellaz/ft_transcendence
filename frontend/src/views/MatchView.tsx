@@ -69,7 +69,7 @@ const MatchView: React.FC = () => {
         <TournamentHeader>
           {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
         </TournamentHeader>
-        <div className="w-full flex items-center justify-between text-2xl">
+        <div className="w-full flex items-center justify-between text-2xl px-2">
           <MatchPlayerCard player={userDetails} onClick={setSelectedUid} />
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>

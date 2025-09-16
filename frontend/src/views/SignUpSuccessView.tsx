@@ -22,7 +22,7 @@ const SignUpSuccessView: React.FC = () => {
           className="w-2/5"
         />
         <p className="text-center text-white text-3xl">{translate("success_message")}</p>
-        <Button onClick={() => navigate("/login")}>{translate("login")}</Button>
+        <Button variant="yellow" onClick={() => navigate("/login")}>{translate("login")}</Button>
       </Card>
     </PreLoginLayout>
   );

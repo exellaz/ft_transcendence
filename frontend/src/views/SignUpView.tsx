@@ -44,7 +44,7 @@ const SignUpView: React.FC = () => {
           type="password"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        <Button onClick={() => navigate("/signup-success")}>
+        <Button variant="yellow" onClick={() => navigate("/signup-success")}>
           {translate("signup")}
         </Button>
       </Card>
