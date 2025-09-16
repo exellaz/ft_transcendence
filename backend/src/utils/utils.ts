@@ -6,29 +6,6 @@ import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
 //const game = new Game(); //create game object
 
 /**
- * @brief Schedule a timeout for a client action (e.g., disconnect).
- * @param room The game room object
- * @param clientId Unique identifier for the client
- * @param timeout Duration in milliseconds before the timeout triggers
- * @param callback Function to call when the timeout triggers
- * @note Clears any existing timeout for the client before scheduling a new one
-*/
-export function scheduleTimeout(room: Room, clientId: string, timeout: number, callback: () => void) {
-	// clear existing timeout for this client if exists
-	if (room.pendingDisconnects.has(clientId)) {
-		clearTimeout(room.pendingDisconnects.get(clientId));
-		room.pendingDisconnects.delete(clientId);
-	}
-
-	const timeoutId = setTimeout(() => {
-		callback();
-		room.pendingDisconnects.delete(clientId);
-	}, timeout);
-
-	room.pendingDisconnects.set(clientId, timeoutId);
-}
-
-/**
  * @brief check whether the game can start based on player readiness and team balance.
  * @param room The game room object
  * @note Updates the "canStart" property of the room and broadcasts state if it changes
@@ -66,24 +43,6 @@ export function updateCanStart(room: Room): boolean {
         canStart: room.canStart
     });
     return room.canStart;
-}
-
-/**
- * @brief Broadcast the current game state to all clients in the room.
- * @param room The game room object
- * @note Updates the "canStart" status before broadcasting
-*/
-export function broadcastState(room: Room) {
-	const canStart = updateCanStart(room);
-	broadcast(room, {
-		type: "state",
-		gameState: {
-			...room.gameState,
-			countdown: room.gameState.countdown,
-		},
-		leaderId: room.leaderId,
-		canStart: canStart
-	});
 }
 
 /**
@@ -174,7 +133,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
         socket.send(JSON.stringify({
             type: "roleUpdate",
             newPlayer: { id: clientId, role: newPlayer.role },
-            gameState: { ...room.gameState },
+            gameState: room.gameState,
             leaderId: room.leaderId,
             disconnectPlayers: room.disconnectPlayers,
         }));
@@ -185,7 +144,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     broadcast(room, {
         type: "roleUpdate",
         newPlayer: { id: clientId, role: newPlayer.role },
-        gameState: { ...room.gameState },
+        gameState: room.gameState,
         leaderId: room.leaderId,
         disconnectPlayers: room.disconnectPlayers,
 		readyStatus: Object.fromEntries(room.readyStatus.entries()),
@@ -194,4 +153,3 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
 
     return newPlayer.role;
 }
-

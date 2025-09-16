@@ -2,7 +2,7 @@ import { WebSocket } from "@fastify/websocket";
 import { Game } from "../game/game.ts"; // import game loop
 import { liveChatMessage } from "../chat/liveChat.ts"; // import chat message type
 import { saveMatchResult } from "../../plugins/database.ts";
-import { broadcast, broadcastState } from "../../utils/utils.ts";
+import { broadcast } from "../../utils/utils.ts";
 
 export interface playerInfo {
     clientId: string; // client id
@@ -45,7 +45,6 @@ export interface Room {
 		scoreRight: number;
 	};
     disconnectPlayers: Set<string>; // client id who disconnected during the game
-	pendingDisconnects: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle
 	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
@@ -109,7 +108,6 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		sockets: new Map(),
 		chatHistory: [] as any [],
         disconnectPlayers: new Set(),
-		pendingDisconnects: new Map(),
 		game: new Game(),
         readyStatus: new Map(),
         canStart: false,
@@ -213,10 +211,7 @@ export function roomEndGame(room: Room, forced = false) {
     //braodcast everyone the game is ended
     broadcast(room, JSON.stringify({
         type: "state",
-        gameState: {
-            ...room.gameState,
-            result: room.result || null
-        },
+        gameState: room.gameState,
         isSpectator: false, //everyone get the result
     }));
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);

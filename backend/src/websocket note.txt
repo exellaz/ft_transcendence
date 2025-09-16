@@ -1,0 +1,98 @@
+//////// game ////////
+
+// all client
+type: "state",
+gameState: room.gameState,
+leaderId: room.leaderId,
+canStart: room.canStart
+
+// one client
+type: "state",
+gameState: room.gameState,
+result: room.result || null,
+isSpectator
+
+// one client
+type: "state",
+gameState: room.gameState,
+result: room.result || null,
+isSpectator
+
+///////// room ////////
+
+// everyone
+type: "state",
+gameState: room.gameState,
+isSpectator: false
+
+///////// websocket ////////
+
+//one client
+type: "roleUpdate",
+gameState: room.gameState,
+newPlayer: { id: clientId, role: roleStr },
+isSpectator: roleStr === "spectator",
+leaderId: room.leaderId,
+
+//all client
+type: "roleUpdate",
+newPlayer: { id: clientId, role: roleStr },
+gameState: room.gameState,
+leaderId: room.leaderId,
+disconnectPlayers: room.disconnectPlayers,
+
+//one client
+type: "roleUpdate",
+gameState: room.gameState,
+newPlayer: { id: clientId, role: player.role },
+isSpectator: player.role === "spectator",
+leaderId: room.leaderId,
+
+//all client
+type: "roleUpdate",
+gameState: room.gameState,
+leaderId: room.leaderId,
+canStart: canStart,
+
+//all client
+type: "roleUpdate",
+gameState: room.gameState,
+leaderId: room.leaderId,
+canStart: canStartleader,
+
+//all client
+type: "roleUpdate",
+newPlayer: { id: clientId, role: room.clientRoles.get(clientId)?.role },
+gameState: room.gameState,
+leaderId: room.leaderId,
+
+//all client
+type: "roleUpdate",
+gameState: room.gameState,
+leaderId: room.leaderId,
+disconnected: Array.from(room.disconnectPlayers),
+
+//all client
+type: "roleUpdate",
+newPlayer: { id: clientId, role: room.clientRoles.get(clientId)?.role },
+gameState: room.gameState,
+leaderId: room.leaderId,
+disconnectPlayers: room.disconnectPlayers,
+
+///////// utils ////////
+
+//one client
+type: "roleUpdate",
+newPlayer: { id: clientId, role: newPlayer.role },
+gameState: room.gameState,
+leaderId: room.leaderId,
+disconnectPlayers: room.disconnectPlayers,
+
+//all client
+type: "roleUpdate",
+newPlayer: { id: clientId, role: newPlayer.role },
+gameState: room.gameState,
+leaderId: room.leaderId,
+disconnectPlayers: room.disconnectPlayers,
+readyStatus: Object.fromEntries(room.readyStatus.entries()),
+canStart: canStart,

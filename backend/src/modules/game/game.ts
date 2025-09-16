@@ -186,10 +186,7 @@ export class Game implements IGame {
                 if (client.readyState === 1) {
                     client.send(JSON.stringify({
                         type: "state",
-                        gameState: {
-                            ...room.gameState,
-                            countdown: room.gameState.countdown,
-                        },
+                        gameState: room.gameState,
                         leaderId: room.leaderId,
                         canStart: room.canStart
                     }));
@@ -210,7 +207,7 @@ export class Game implements IGame {
 		}
 
 		// Check for game end condition (first to 5 points)
-		if (room.gameState.score.left >= 5 || room.gameState.score.right >= 5) {
+		if (room.gameState.score.left >= 1 || room.gameState.score.right >= 1) {
 			roomEndGame(room, false);
 
             //broadcast game ended with the result
@@ -220,14 +217,15 @@ export class Game implements IGame {
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
         	        const role = player?.role; //get player role from player id
 					const isSpectator = role === "spectator"; //check if the player is a spectator
-					const gameStateWithResult = {
-        	            ...room.gameState,
+					//const gameStateWithResult = {
+        	            //...room.gameState,
         	            //paused: room.gamePaused,
-        	            result: room.result || null
-        	        }; //include result if game ended (winner and scores)
+        	            //result: room.result || null
+        	        //}; //include result if game ended (winner and scores)
 					client.send(JSON.stringify({
 						type: "state",
-						gameState: gameStateWithResult,
+						gameState: room.gameState,
+                        result: room.result || null,
 						isSpectator
 					}));
 				}
@@ -243,13 +241,14 @@ export class Game implements IGame {
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
         	        const role = player?.role; //get player role from player id
 					const isSpectator = role === "spectator"; //check if the player is a spectator
-					const gameStateWithResult = {
-        	            ...room.gameState,
-        	            result: room.result || null
-        	        }; //include result if game ended (winner and scores)
+					//const gameStateWithResult = {
+        	            //...room.gameState,
+        	            //result: room.result || null
+        	        //}; //include result if game ended (winner and scores)
 					client.send(JSON.stringify({
 						type: "state",
-						gameState: gameStateWithResult,
+						gameState: room.gameState,
+                        result: room.result || null,
 						isSpectator
 					}));
 				}

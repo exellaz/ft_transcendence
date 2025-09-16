@@ -200,7 +200,7 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
                        console.log("Game state update:", data); ////debug
 
                     //check for winner
-                	const gameWinner = data.gameState.result?.winner || null;
+                	const gameWinner = data.result?.winner || null;
                     if (gameWinner && !gameOver) {
                         console.log("Game Over. Winner:", gameWinner); ////debug
                         setGameOver(true);

@@ -7,7 +7,7 @@ export default function Chat() {
 
   useEffect(() => {
     if (socketRef.current) return; // already connected
-    const s = new WebSocket(`wss://${window.location.hostname}/chat`);
+    const s = new WebSocket(`ws://${window.location.hostname}:4242/chat`);
     socketRef.current = s;
 
     s.onopen = () => console.log("Chat connected");
