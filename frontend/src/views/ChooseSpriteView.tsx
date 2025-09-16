@@ -46,7 +46,7 @@ const ChooseSpriteView: React.FC = () => {
           ))}
         </div>
         <Button
-          variant="yellow"
+          variant="green"
           disabled={!selected}
           onClick={() => {
             // TODO: handle confirm logic here

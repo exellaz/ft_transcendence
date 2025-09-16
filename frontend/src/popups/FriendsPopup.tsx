@@ -28,7 +28,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
     <PopupCard
       open={open}
       onClose={handleClose}
-      size={selectedUser ? "social" : undefined}
+      size={selectedUser ? "large" : "default"}
     >
       <SocialHub
         selectedUser={selectedUser}

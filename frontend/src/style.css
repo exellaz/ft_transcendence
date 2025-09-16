@@ -36,3 +36,11 @@
   align-items: center;
   justify-content: center;
 }
+
+/* flex flex-col items-center justify-between */
+.flex-col-between {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}

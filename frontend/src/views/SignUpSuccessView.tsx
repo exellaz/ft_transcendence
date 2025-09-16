@@ -6,7 +6,6 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import Logo from "../components/Logo";
 import PreLoginLayout from "../layout/PreLoginLayout";
-import Text from "../components/Text";
 
 const SignUpSuccessView: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +21,7 @@ const SignUpSuccessView: React.FC = () => {
           alt="green-tick.png"
           className="w-2/5"
         />
-        <Text>{translate("success_message")}</Text>
+        <p className="text-center text-white text-3xl">{translate("success_message")}</p>
         <Button onClick={() => navigate("/login")}>{translate("login")}</Button>
       </Card>
     </PreLoginLayout>

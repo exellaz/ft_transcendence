@@ -60,7 +60,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
       {!showAvatarUpload ? (
         <>
           <Header>{translate("header")}</Header>
-          <div className="h-full flex flex-col items-center justify-between">
+          <div className="h-full flex-col-between">
             <div className="text-center">
               <p className="text-white">ID: {user.uid}</p>
               <p className="text-white">

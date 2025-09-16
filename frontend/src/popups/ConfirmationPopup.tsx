@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
 import PopupCard from "../components/PopupCard";
-import Text from "../components/Text";
 
 interface PopupProps {
   text: string;
@@ -17,7 +16,7 @@ const ConfirmationPopup: React.FC<PopupProps> = ({
   text,
   open,
   onClose,
-  redirectPath = "/"
+  redirectPath = "/",
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ConfirmationPopup.${key}`);
@@ -25,8 +24,10 @@ const ConfirmationPopup: React.FC<PopupProps> = ({
 
   return (
     <PopupCard size="small" open={open} onClose={onClose}>
-      <Text className="text-yellow-400">{text}</Text>
-      <div className="flex gap-3 justify-center mb-4">
+      <div className="h-full flex-col-center">
+        <p className="text-center text-white text-2xl">{text}</p>
+      </div>
+      <div className="flex gap-3 justify-center">
         <Button
           variant="green"
           onClick={() => {

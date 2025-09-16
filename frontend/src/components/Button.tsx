@@ -52,13 +52,13 @@ const Button: React.FC<ButtonProps> = ({
   className = "",
   icon,
 }) => {
-  const baseClasses = variantClasses[variant] || variantClasses.default;
-
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`font-bold text-center transition-colors ${baseClasses} ${className} ${
+      className={`font-bold text-center transition-colors ${
+        variantClasses[variant]
+      } ${className} ${
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
       }`}
     >
