@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { ok, ApiError } from "../../utils/response";
 
 
 async function authRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
@@ -16,9 +17,10 @@ async function authRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 			where: { username },
 		});
 		if (!user) {
-      return reply.status(404).send({ error: "User not found" });
+      // return reply.status(404).send({ error: "User not found" });
+			throw new ApiError("User not found", 404);
     }
-    return user; // 200 OK
+    return ok(user); // 200 OK
 
 	});
 
