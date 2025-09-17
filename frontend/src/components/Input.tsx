@@ -24,7 +24,7 @@ const Input: React.FC<InputProps> = ({
       placeholder={placeholder}
       value={value}
       onChange={onChange}
-      className="bg-transparent text-white w-full outline-none"
+      className="w-full bg-transparent text-white outline-none"
     />
   </div>
 );

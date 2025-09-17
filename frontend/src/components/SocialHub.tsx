@@ -76,11 +76,11 @@ const SocialHub: React.FC<SocialHubProps> = ({
   }
 
   return (
-    <div className="flex flex-row w-full h-full gap-6">
+    <div className="w-full h-full flex flex-row gap-6">
       {/* Main View: Tabs and List */}
-      <div className="flex flex-col w-[450px] items-center py-2">
+      <div className="flex-1 flex-col-center gap-6">
         {/* Tabs Header (fixed) */}
-        <div className="flex gap-6 border-b border-yellow-400 mb-6">
+        <div className="w-full flex-row-center gap-6 border-b border-yellow-400">
           {tabs.map((tab) => (
             <button
               className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${

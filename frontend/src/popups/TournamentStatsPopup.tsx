@@ -80,7 +80,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
           />
         </div>
 
-        {/* Tournament History */}
+        {/* History */}
         <Subheader>{translate("history")}</Subheader>
         <table className="w-full text-center text-xl">
           <thead>

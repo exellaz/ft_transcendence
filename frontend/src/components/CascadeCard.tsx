@@ -127,7 +127,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="w-[450px] border-gray-300 border-3 rounded-3xl">
+    <div className="flex-1 border-gray-300 border-3 rounded-3xl">
       {content}
     </div>
   );
