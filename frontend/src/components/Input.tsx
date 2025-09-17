@@ -17,7 +17,7 @@ const Input: React.FC<InputProps> = ({
   className = "",
   icon,
 }) => (
-  <div className={`flex items-center bg-input-gray w-full px-5 py-2 rounded-full ${className}`}>
+  <div className={`w-full bg-input-gray rounded-full flex-row-center px-5 py-2 ${className}`}>
     {icon && <span className="mr-3">{icon}</span>}
     <input
       type={type}

@@ -34,7 +34,7 @@ const ChooseSpriteView: React.FC = () => {
           {ghostSprites.map((sprite) => (
             <button
               key={sprite.name}
-              className={`rounded-2xl border-4 p-2 transition-all cursor-pointer ${
+              className={`rounded-2xl border-4 p-2 cursor-pointer ${
                 selected === sprite.name
                   ? "border-yellow-400 bg-yellow-100"
                   : "border-transparent bg-input-gray"

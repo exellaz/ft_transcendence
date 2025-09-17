@@ -32,7 +32,6 @@ const ProfilePopup: React.FC<PopupProps> = ({
         <div className="flex-row-center gap-6">
           <Button
             variant="yellow"
-            className="flex-1"
             onClick={() =>
               alert("Add Friend functionality not implemented yet")
             }
@@ -41,7 +40,6 @@ const ProfilePopup: React.FC<PopupProps> = ({
           </Button>
           <Button
             variant="red"
-            className="flex-1"
             onClick={() => alert("Block functionality not implemented yet")}
           >
             {translate("block")}

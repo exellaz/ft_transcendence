@@ -21,7 +21,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
   active,
 }) => (
   <div
-    className={`bg-input-gray rounded-xl p-4 flex items-center cursor-pointer transition-all gap-4 min-h-[80px] 
+    className={`w-full h-[80px] bg-input-gray rounded-xl flex-row-center gap-4 p-4 cursor-pointer
       ${
         active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
       }`}
@@ -32,12 +32,12 @@ const FriendTile: React.FC<FriendTileProps> = ({
       size={50}
       className={
         online
-          ? "ring-4 ring-green-500 rounded-full"
-          : "ring-2 ring-red-500 rounded-full"
+          ? "ring-4 ring-green-500"
+          : "ring-4 ring-red-500"
       }
     />
-    <div className="flex flex-col flex-1">
-      <div className="flex flex-row justify-between items-center mb-1">
+    <div className="flex flex-col flex-1 gap-1">
+      <div className="flex-row-between">
         <span
           className={`font-bold ${online ? "text-green-400" : "text-red-400"}`}
           title={username}

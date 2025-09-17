@@ -45,13 +45,14 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   };
 
   let content;
+  const textStyle = "text-center text-lg font-bold text-white";
 
   // Confirmation dialog (all tabs)
   if (showConfirm) {
     if (!actionDone) {
       content = (
-        <div className="flex-col-center w-full p-8">
-          <div className="text-center text-lg font-bold mb-6 text-white">
+        <div className="w-full h-full flex-col-center p-10 gap-6">
+          <div className={textStyle}>
             {actionType === "block"
               ? t("CascadeCard.confirm_block", {
                   username: selectedUser.username,
@@ -60,7 +61,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
                   username: selectedUser.username,
                 })}
           </div>
-          <div className="flex gap-6">
+          <div className="flex-row-center gap-6">
             <Button variant="green" onClick={() => handleConfirm(true)}>
               {translate("yes")}
             </Button>
@@ -72,8 +73,8 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
       );
     } else {
       content = (
-        <div className="flex-col-center w-full p-8">
-          <div className="text-center text-lg font-bold mb-6 text-white">
+        <div className="w-full h-full flex-col-center p-10 gap-6">
+          <div className={textStyle}>
             {actionType === "block"
               ? t("CascadeCard.blocked", { username: selectedUser.username })
               : t("CascadeCard.unblocked", { username: selectedUser.username })}
@@ -89,24 +90,14 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
     activeTab === "blocked"
   ) {
     content = (
-      <div className="flex flex-col items-center w-full">
-        <div className="mb-2">
-          <ProfileContents userUid={selectedUser.uid} />
-        </div>
+      <div className="w-full h-full flex-col-between p-10">
+        <ProfileContents userUid={selectedUser.uid} />
         {activeTab === "friends" && (
-          <div className="flex gap-6">
-            <Button
-              variant="yellow"
-              className="flex-1"
-              onClick={() => setShowProfile(false)}
-            >
+          <div className="flex-row-center gap-6">
+            <Button variant="yellow" onClick={() => setShowProfile(false)}>
               {translate("back_to_chat")}
             </Button>
-            <Button
-              variant="red"
-              className="flex-1"
-              onClick={() => handleActionClick("block")}
-            >
+            <Button variant="red" onClick={() => handleActionClick("block")}>
               {translate("block")}
             </Button>
           </div>
@@ -136,7 +127,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="w-[450px] border-gray-300 border-3 rounded-3xl flex-col-center shadow-lg animate-slide-in">
+    <div className="w-[450px] border-gray-300 border-3 rounded-3xl">
       {content}
     </div>
   );

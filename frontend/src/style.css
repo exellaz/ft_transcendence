@@ -29,6 +29,14 @@
   justify-content: center;
 }
 
+/* flex items-center justify-center */
+.flex-row-between {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* flex flex-col items-center justify-center */
 .flex-col-center {
   display: flex;

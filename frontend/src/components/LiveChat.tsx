@@ -37,7 +37,7 @@ const LiveChat: React.FC<{
 
   return (
     <div className="w-1/2 h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
-      <h2 className="text-white text-xl font-bold">Live Chat</h2>
+      <p className="text-white text-xl font-bold">Live Chat</p>
       <div ref={messagesEndRef} className="h-[400px] overflow-y-auto scrollbar-hide">
         {chatMessages.map((msg, idx) => {
           const player = players.find((p) => p.uid === msg.uid);
@@ -74,7 +74,7 @@ const LiveChat: React.FC<{
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white"
+          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white outline-none"
         />
         <Button variant="send" onClick={onSendMessage}>
           Send

@@ -28,11 +28,11 @@ const LoginView: React.FC = () => {
           type="password"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        <Button onClick={() => navigate("/main-menu")}>{translate("login")}</Button>
+        <Button variant="longYellow" onClick={() => navigate("/main-menu")}>{translate("login")}</Button>
         <Divider />
         <Button
-          variant="defaultWhite"
-          className="flex justify-center items-center gap-2"
+          variant="longWhite"
+          className="flex-row-center gap-2"
         >
           <div>
             <img src="/assets/google.png" alt="google.png" className="w-5" />

@@ -108,9 +108,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   // Add Friend View
                   <div className="flex flex-col gap-10 items-center justify-center">
                     <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
-                      <h2 className="text-white text-xl font-bold">
+                      <p className="text-white text-xl font-bold">
                         {translate("enter_friend_uid")}
-                      </h2>
+                      </p>
                       <Input
                         placeholder={translate("enter_uid")}
                         value={friendUID}

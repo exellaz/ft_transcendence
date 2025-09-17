@@ -11,14 +11,14 @@ const LanguageSwitcher: React.FC = () => {
   const { language, setLanguage } = useLanguage();
 
   return (
-    <div className="flex gap-6 justify-center items-center">
+    <div className="flex-row-center gap-6">
       {languageOptions.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => setLanguage(option.value)}
-          className={`cursor-pointer text-card-blue text-lg px-4 py-2
-            ${language === option.value ? "font-bold border-y-4 border-yellow-400 bg-grass-light-green" : ""}
+          className={`text-card-blue text-lg px-4 py-2 cursor-pointer 
+            ${language === option.value ? "font-bold bg-grass-light-green border-y-4 border-yellow-400" : ""}
           `}
         >
           {option.label}

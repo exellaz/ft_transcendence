@@ -20,13 +20,13 @@ const MainMenuView: React.FC = () => {
     <MainLayout>
       <Card>
         <Logo />
-        <Button variant="big" onClick={() => setShowCreateSinglesGame(true)}>
+        <Button variant="bigYellow" onClick={() => setShowCreateSinglesGame(true)}>
           {translate("singles")}
         </Button>
-        <Button variant="big" onClick={() => setShowCreateDoublesGame(true)}>
+        <Button variant="bigYellow" onClick={() => setShowCreateDoublesGame(true)}>
           {translate("doubles")}
         </Button>
-        <Button variant="big" onClick={() => navigate("/main-menu")}>
+        <Button variant="bigYellow" onClick={() => navigate("/main-menu")}>
           {translate("back")}
         </Button>
       </Card>

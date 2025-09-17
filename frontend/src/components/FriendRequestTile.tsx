@@ -21,7 +21,7 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
   active,
 }) => (
   <div
-    className={`bg-input-gray cursor-pointer transition-all rounded-xl p-4 flex items-center gap-4 w-full min-h-[80px] 
+    className={`w-full h-[80px] bg-input-gray rounded-xl flex-row-center gap-4 p-4 cursor-pointer
       ${
         active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
       }`}
@@ -32,13 +32,13 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
       {username.length > 10 ? username.slice(0, 10) + "…" : username}
     </span>
     <Button
-      variant="greenSmall"
+      variant="smallGreen"
       onClick={onAccept}
     >
       ✓
     </Button>
     <Button
-      variant="redSmall"
+      variant="smallRed"
       onClick={onReject}
     >
       ✗

@@ -21,7 +21,7 @@ const SignUpSuccessView: React.FC = () => {
           alt="green-tick.png"
           className="w-2/5"
         />
-        <p className="text-center text-white text-3xl">{translate("success_message")}</p>
+        <p className="text-white text-3xl text-center">{translate("success_message")}</p>
         <Button variant="yellow" onClick={() => navigate("/login")}>{translate("login")}</Button>
       </Card>
     </PreLoginLayout>

@@ -27,7 +27,7 @@ const ConfirmationPopup: React.FC<PopupProps> = ({
       <div className="h-full flex-col-center">
         <p className="text-center text-white text-2xl">{text}</p>
       </div>
-      <div className="flex gap-3 justify-center">
+      <div className="flex-row-center gap-6">
         <Button
           variant="green"
           onClick={() => {
