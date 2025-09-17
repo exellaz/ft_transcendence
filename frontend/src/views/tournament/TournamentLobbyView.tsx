@@ -63,7 +63,7 @@ const TournamentLobbyView: React.FC = () => {
     <Background>
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
-          <div className="w-1/2 h-full flex-col-between">
+          <div className="w-[50%] h-full flex-col-between">
             <TournamentHeader>
               <span>Pre-{stage.charAt(0).toUpperCase() + stage.slice(1)}</span>
               <span>Tournament Lobby</span>

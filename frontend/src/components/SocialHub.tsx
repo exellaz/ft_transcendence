@@ -80,7 +80,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
       {/* Main View: Tabs and List */}
       <div className="flex-1 flex-col-center gap-6">
         {/* Tabs Header (fixed) */}
-        <div className="w-full flex-row-center gap-6 border-b border-yellow-400">
+        <div className="flex-1 flex-row-center gap-6 border-b border-yellow-400">
           {tabs.map((tab) => (
             <button
               className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${
@@ -100,14 +100,14 @@ const SocialHub: React.FC<SocialHubProps> = ({
           ))}
         </div>
         {/* Scrollable Content */}
-        <div className="w-full overflow-y-auto scrollbar-hide">
+        <div className="w-full h-full overflow-y-auto scrollbar-hide">
           {(() => {
             if (activeTab === "friends") {
               if (showAddFriendView) {
                 return (
                   // Add Friend View
-                  <div className="flex flex-col gap-10 items-center justify-center">
-                    <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
+                  <div className="h-full flex-col-around">
+                    <div className="w-full h-[300px] flex-col-around rounded-3xl border-gray-300 border-3 p-10">
                       <p className="text-white text-xl font-bold">
                         {translate("enter_friend_uid")}
                       </p>
@@ -115,13 +115,16 @@ const SocialHub: React.FC<SocialHubProps> = ({
                         placeholder={translate("enter_uid")}
                         value={friendUID}
                         onChange={(e) => setFriendUID(e.target.value)}
-                        className="w-full max-w-xs"
                       />
                       {addFriendStatus === "success" && (
-                        <p className="text-green-400">{translate("friend_added")}</p>
+                        <p className="text-green-400">
+                          {translate("friend_added")}
+                        </p>
                       )}
                       {addFriendStatus === "error" && (
-                        <p className="text-red-400">{translate("uid_not_exist")}</p>
+                        <p className="text-red-400">
+                          {translate("uid_not_exist")}
+                        </p>
                       )}
                       <Button variant="yellow" onClick={handleAddFriend}>
                         {translate("add_friend")}
@@ -142,21 +145,20 @@ const SocialHub: React.FC<SocialHubProps> = ({
               } else {
                 return (
                   // Friends List View
-                  <div className="flex flex-col">
+                  <>
                     {/* Search Bar & Add Friend Button */}
-                    <div className="sticky top-0 flex items-center gap-2 bg-card-blue pb-3">
-                      <div className="flex-2">
-                        <Input
-                          icon={
-                            <img
-                              src="/assets/search.png"
-                              alt="search.png"
-                              className="w-10"
-                            />
-                          }
-                          placeholder={translate("search_friend")}
-                        />
-                      </div>
+                    <div className="sticky top-0 flex-row-center gap-4 bg-card-blue pb-3">
+                      <Input
+                        className="flex-2"
+                        icon={
+                          <img
+                            src="/assets/search.png"
+                            alt="search.png"
+                            className="w-10"
+                          />
+                        }
+                        placeholder={translate("search_friend")}
+                      />
                       <Button
                         variant="yellow"
                         className="flex-1"
@@ -168,7 +170,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                         {translate("add_friend")}
                       </Button>
                     </div>
-                    <div className="p-1 flex flex-col gap-4">
+                    <div className="flex-col-center gap-4 p-1">
                       {friends.map((user) => (
                         <FriendTile
                           key={user.uid}
@@ -186,13 +188,13 @@ const SocialHub: React.FC<SocialHubProps> = ({
                         />
                       ))}
                     </div>
-                  </div>
+                  </>
                 );
               }
             } else if (activeTab === "requests") {
               return (
                 // Friend Requests List View
-                <div className="flex flex-col gap-4 p-1">
+                <div className="flex-col-center gap-4 p-1">
                   {requests.map((user) => (
                     <FriendRequestTile
                       key={user.uid}

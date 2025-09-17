@@ -19,10 +19,14 @@ const SignUpSuccessView: React.FC = () => {
         <img
           src="/assets/green-tick.png"
           alt="green-tick.png"
-          className="w-2/5"
+          className="w-[40%]"
         />
-        <p className="text-white text-3xl text-center">{translate("success_message")}</p>
-        <Button variant="yellow" onClick={() => navigate("/login")}>{translate("login")}</Button>
+        <p className="text-white text-3xl text-center">
+          {translate("success_message")}
+        </p>
+        <Button variant="yellow" onClick={() => navigate("/login")}>
+          {translate("login")}
+        </Button>
       </Card>
     </PreLoginLayout>
   );

@@ -18,13 +18,13 @@ const RadioButtonGroup: React.FC<RadioButtonGroupProps> = ({
   onChange,
   className = "",
 }) => (
-  <div className={`w-4/5 flex gap-6 mb-4 ${className}`}>
+  <div className={`w-[80%] flex-row-center gap-6 ${className}`}>
     {options.map((option) => (
       <button
         key={option.value}
         type="button"
         onClick={() => onChange(option.value)}
-        className={`flex-1 py-4 my-6 rounded font-mono font-bold text-2xl
+        className={`flex-1 rounded font-mono text-2xl font-bold py-4 
           ${
             selectedValue === option.value
               ? "bg-yellow-400 text-black"

@@ -36,7 +36,7 @@ const LiveChat: React.FC<{
   }, [chatMessages]); // Runs every time messages change
 
   return (
-    <div className="w-1/2 h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
+    <div className="w-[50%] h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
       <p className="text-white text-xl font-bold">Live Chat</p>
       <div ref={messagesEndRef} className="h-[400px] overflow-y-auto scrollbar-hide">
         {chatMessages.map((msg, idx) => {
@@ -54,7 +54,7 @@ const LiveChat: React.FC<{
               >
                 {player ? player.username : "Unknown"}:
               </span>{" "}
-              <span className="text-xs text-gray-400">
+              <span className="text-gray-400 text-xs">
                 {msg.timestamp}
               </span>
               </div>
@@ -63,7 +63,7 @@ const LiveChat: React.FC<{
           );
         })}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex-row-center gap-2">
         <input
           type="text"
           value={message}
@@ -74,7 +74,7 @@ const LiveChat: React.FC<{
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white outline-none"
+          className="flex-1 bg-input-gray rounded-lg text-white px-3 py-2 outline-none"
         />
         <Button variant="send" onClick={onSendMessage}>
           Send

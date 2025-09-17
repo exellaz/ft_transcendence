@@ -91,10 +91,10 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       <Button
         variant="profile"
         onClick={() => setOpen(!open)}
-        className="flex items-center px-4 shadow"
+        className="flex-row-center gap-4 shadow"
       >
         <div>
-          <Avatar src={user.avatarUrl} size={80} className="mr-4" />
+          <Avatar src={user.avatarUrl} size={80}/>
         </div>
         {user.username.length > 8
           ? user.username.slice(0, 8) + "..."
@@ -102,7 +102,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       </Button>
 
       {open && (
-        <div className="flex flex-col mt-2 ml-6">
+        <div className="flex-col-center mt-2">
           {menuItems.map((item) => (
             <Button key={item.label} variant="dropdown" onClick={item.onClick}>
               {item.label}

@@ -29,8 +29,9 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
           {players.map((player, idx) => (
             <div
               key={player.uid}
-              className="flex flex-col items-center gap-4 font-bold"
+              className="flex-col-center gap-4 font-bold"
             >
+              {/* Status */}
               <span
                 className={`rounded-full text-white text-center px-2 ${
                   player.ready ? "bg-green-400" : "bg-red-400"
@@ -38,8 +39,9 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
               >
                 {player.ready ? "Ready" : "Pending"}
               </span>
+              {/* Avatar & Username */}
               <div
-                className="cursor-pointer"
+                className="flex-col-center gap-2 cursor-pointer"
                 onClick={() => setSelectedUid(player.uid)}
               >
                 <Avatar src={player.spriteUrl} size={60} />
