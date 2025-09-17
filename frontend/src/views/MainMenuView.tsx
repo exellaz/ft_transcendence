@@ -21,13 +21,13 @@ const MainMenuView: React.FC = () => {
     <MainLayout>
       <Card>
         <Logo />
-        <Button variant="big" onClick={() => setShowJoinTournament(true)}>
+        <Button variant="bigYellow" onClick={() => setShowJoinTournament(true)}>
           {translate("tournament_mode")}
         </Button>
-        <Button variant="big" onClick={() => navigate("/normal")}>
+        <Button variant="bigYellow" onClick={() => navigate("/normal")}>
           {translate("normal_mode")}
         </Button>
-        <Button variant="big" onClick={() => setShowSettings(true)}>
+        <Button variant="bigYellow" onClick={() => setShowSettings(true)}>
           {translate("settings")}
         </Button>
       </Card>

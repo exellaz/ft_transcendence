@@ -47,8 +47,9 @@ const MatchView: React.FC = () => {
   }> = ({ player, onClick }) => (
     <div
       key={player.uid}
-      className="flex-col-center gap-4 font-bold text-white text-center"
+      className="flex-col-center gap-4"
     >
+      {/* player status */}
       <span
         className={`rounded-full px-3 py-2 ${
           player.ready ? "bg-green-400" : "bg-red-400"
@@ -56,6 +57,7 @@ const MatchView: React.FC = () => {
       >
         {player.ready ? "Ready" : "Pending"}
       </span>
+      {/* player avatar and username */}
       <div className="flex-col-center gap-2 cursor-pointer" onClick={() => onClick(player.uid)}>
         <Avatar src={player.spriteUrl} size={120} />
         <span>{player.username}</span>
@@ -69,12 +71,14 @@ const MatchView: React.FC = () => {
         <TournamentHeader>
           {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
         </TournamentHeader>
-        <div className="w-full flex items-center justify-between text-2xl px-2">
+
+        <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
           <MatchPlayerCard player={userDetails} onClick={setSelectedUid} />
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
           <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
         </div>
+        
         <Button variant="green">Ready</Button>
       </Card>
       {selectedUid && (

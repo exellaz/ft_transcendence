@@ -102,8 +102,10 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
         </>
       ) : (
         // Avatar Upload
-        <div className="w-full h-full flex-col-center gap-6">
-          <Avatar src={user?.avatarUrl} size={100} />
+        <>
+          <div>
+            <Avatar src={user?.avatarUrl} size={100} />
+          </div>
           <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl flex-col-center gap-6">
             <p className="text-white text-xl font-bold">
               {translate("upload_avatar")}
@@ -130,11 +132,11 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
             )}
 
             {selectedFile && (
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col-center gap-6">
                 <img
                   src={URL.createObjectURL(selectedFile)}
                   alt="Avatar Preview"
-                  className="w-20 h-20 rounded-full bg-white"
+                  className="w-20 h-20 object-cover rounded-full bg-white"
                 />
                 <Button
                   variant="yellow"
@@ -164,7 +166,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
           >
             {translate("back")}
           </Button>
-        </div>
+        </>
       )}
     </PopupCard>
   );

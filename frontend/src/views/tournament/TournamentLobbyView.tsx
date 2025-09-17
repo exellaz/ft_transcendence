@@ -62,14 +62,14 @@ const TournamentLobbyView: React.FC = () => {
   return (
     <Background>
       <Card size="large">
-        <div className="w-full h-full flex flex-row gap-8">
+        <div className="w-full h-full flex-row-center gap-6">
           <div className="w-1/2 h-full flex-col-between">
             <TournamentHeader>
               <span>Pre-{stage.charAt(0).toUpperCase() + stage.slice(1)}</span>
               <span>Tournament Lobby</span>
             </TournamentHeader>
             <ReadyPlayers players={players} />
-            <div className="flex gap-4">
+            <div className="flex-row-center gap-6">
               <Button variant="green">Ready</Button>
               {stage === "quarterfinals" && (
                 <Button

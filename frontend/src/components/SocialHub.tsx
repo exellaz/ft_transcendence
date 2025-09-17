@@ -76,11 +76,11 @@ const SocialHub: React.FC<SocialHubProps> = ({
   }
 
   return (
-    <div className="flex flex-row w-full h-full gap-6">
+    <div className="w-full h-full flex flex-row gap-6">
       {/* Main View: Tabs and List */}
-      <div className="flex flex-col w-[450px] items-center py-2">
+      <div className="flex-1 flex-col-center gap-6">
         {/* Tabs Header (fixed) */}
-        <div className="flex gap-6 border-b border-yellow-400 mb-6">
+        <div className="w-full flex-row-center gap-6 border-b border-yellow-400">
           {tabs.map((tab) => (
             <button
               className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${
@@ -108,9 +108,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   // Add Friend View
                   <div className="flex flex-col gap-10 items-center justify-center">
                     <div className="w-full border-gray-300 border-3 rounded-3xl p-10 flex flex-col gap-10 items-center justify-center">
-                      <h2 className="text-white text-xl font-bold">
+                      <p className="text-white text-xl font-bold">
                         {translate("enter_friend_uid")}
-                      </h2>
+                      </p>
                       <Input
                         placeholder={translate("enter_uid")}
                         value={friendUID}

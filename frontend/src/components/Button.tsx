@@ -3,15 +3,15 @@ import React from "react";
 interface ButtonProps {
   children: React.ReactNode;
   variant?:
-    | "default"
-    | "defaultWhite"
-    | "big"
+    | "yellow"
     | "green"
     | "red"
-    | "greenSmall"
-    | "redSmall"
-    | "yellow"
     | "brown"
+    | "smallGreen"
+    | "smallRed"
+    | "longYellow"
+    | "longWhite"
+    | "bigYellow"
     | "profile"
     | "dropdown"
     | "send";
@@ -21,32 +21,34 @@ interface ButtonProps {
   icon?: React.ReactNode;
 }
 
+const padding = "py-2";
+const longRound = `w-full rounded-full ${padding}`;
+const shortRound = `w-32 rounded-full ${padding}`;
+const smallRound = "rounded-full px-4 py-1";
 const yellow = "bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white";
 const green = "bg-green-500 hover:bg-green-600 text-black hover:text-white";
 const red = "bg-red-500 hover:bg-red-600 text-black hover:text-white";
+const brown = "bg-brown hover:bg-yellow-500 text-white hover:text-black";
+const white = "bg-white text-black hover:bg-gray-300";
 
 const variantClasses: Record<string, string> = {
-  default: `w-full rounded-full py-2 ${yellow}`,
-  defaultWhite:
-    "w-full rounded-full py-2 bg-white text-black hover:bg-gray-300",
-  big: `w-full h-30 rounded-3xl text-2xl my-3 ${yellow}`,
-  green: `w-32 rounded-full py-2 ${green}`,
-  red: `w-32 rounded-full py-2 ${red}`,
-  greenSmall: `rounded-full px-4 py-1 ${green}`,
-  redSmall: `rounded-full px-4 py-1 ${red}`,
-  yellow: `w-32 rounded-full ${yellow} py-2`,
-  brown:
-    "w-32 rounded-full bg-brown hover:bg-yellow-500 text-white hover:text-black py-2",
-  profile:
-    "w-60 rounded-full bg-yellow-400 text-black hover:bg-yellow-500 hover:text-white text-xl py-2",
-  dropdown:
-    "bg-white border border-gray-400 text-card-blue py-2 rounded shadow font-bold w-48 hover:bg-gray-100 hover:border-card-blue hover:text-black",
-  send: `px-4 py-2 ${yellow} rounded`,
+  yellow: `${shortRound} ${yellow}`,
+  green: `${shortRound} ${green}`,
+  red: `${shortRound} ${red}`,
+  brown: `${shortRound} ${brown}`,
+  smallGreen: `${smallRound} ${green}`,
+  smallRed: `${smallRound} ${red}`,
+  longYellow: `${longRound} ${yellow}`,
+  longWhite: `${longRound} ${white}`,
+  bigYellow: `w-full h-25 rounded-3xl text-2xl ${yellow}`,
+  profile: `w-60 rounded-full text-xl ${padding} ${yellow}`,
+  dropdown: `w-48 border border-gray-400 rounded ${padding} ${white}`,
+  send: `rounded px-4 ${padding} ${yellow}`,
 };
 
 const Button: React.FC<ButtonProps> = ({
   children,
-  variant = "default",
+  variant = "yellow",
   onClick,
   disabled = false,
   className = "",

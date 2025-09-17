@@ -19,7 +19,7 @@ const Popup: React.FC<PopupProps> = ({ open, onClose, children }) => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       {/* Popup content */}
-      <div className="z-10 w-screen h-screen flex-row-center">{children}</div>
+      <div className="w-screen h-screen flex-row-center z-10">{children}</div>
     </div>
   );
 };

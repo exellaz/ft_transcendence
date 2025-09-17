@@ -20,7 +20,7 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
   return (
     <>
       <div className="flex-col-center gap-4">
-        <h2 className="text-white text-xl font-bold">Players in Lobby</h2>
+        <p className="text-white text-xl font-bold">Players in Lobby</p>
         <div
           className={`w-full bg-input-gray rounded-3xl grid ${
             players.length > 4 ? "grid-cols-4" : "grid-cols-2"

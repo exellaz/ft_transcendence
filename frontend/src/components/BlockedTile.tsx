@@ -15,14 +15,14 @@ const BlockedTile: React.FC<BlockedTileProps> = ({
   active
 }) => (
   <div
-    className={`bg-input-gray rounded-xl p-3 flex flex-col items-center cursor-pointer transition-all 
+    className={`bg-input-gray rounded-xl flex-col-center gap-2 p-4 cursor-pointer
       ${
         active ? "ring-2 ring-yellow-400" : "hover:ring-2 hover:ring-yellow-400"
       }`}
     onClick={onClick}
   >
     <Avatar src={avatarUrl} size={50} />
-    <span className="text-white font-bold mt-2" title={username}>
+    <span className="text-white font-bold" title={username}>
       {username.length > 10 ? username.slice(0, 10) + "…" : username}
     </span>
   </div>
