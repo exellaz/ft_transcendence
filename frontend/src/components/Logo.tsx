@@ -5,7 +5,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ className = "" }) => (
-  <div className={`mb-3 ${className}`}>
+  <div className={`${className}`}>
     <img src="/assets/pong-logo.png" alt="Pong Logo" />
   </div>
 );

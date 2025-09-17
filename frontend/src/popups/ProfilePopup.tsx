@@ -29,11 +29,13 @@ const ProfilePopup: React.FC<PopupProps> = ({
       <Header>{header}</Header>
       <ProfileContents userUid={userUid} />
       {variant === "other" && (
-        <div className="flex gap-6">
+        <div className="flex-row-center gap-6">
           <Button
             variant="yellow"
             className="flex-1"
-            onClick={() => alert("Add Friend functionality not implemented yet")}
+            onClick={() =>
+              alert("Add Friend functionality not implemented yet")
+            }
           >
             {translate("add_friend")}
           </Button>

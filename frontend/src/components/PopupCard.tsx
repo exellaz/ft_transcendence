@@ -5,7 +5,7 @@ interface PopupCardProps {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: "small" | "large" | "social";
+  size?: "default" | "small" | "large";
   className?: string;
 }
 
@@ -13,7 +13,7 @@ const PopupCard: React.FC<PopupCardProps> = ({
   open,
   onClose,
   children,
-  size,
+  size = "default",
   className = "",
 }) => {
   // escape key will close the popup
@@ -26,17 +26,16 @@ const PopupCard: React.FC<PopupCardProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
 
-  let sizeClass = "";
-  if (size === "large") sizeClass = "w-3/5";
-  else if (size === "small") sizeClass = "w-1/4";
-  else if (size === "social")
-    sizeClass = "w-[900px] h-[600px]";
-  else sizeClass = "w-[450px] h-[600px]";
+  const sizeClasses: Record<string, string> = {
+    default: "w-[450px] h-[600px] min-w-[450px] min-h-[600px]",
+    small: "w-[450px] h-[300px] min-w-[450px] min-h-[300px]",
+    large: "w-[900px] h-[600px] min-w-[900px] min-h-[600px]",
+  };
 
   return (
     <Popup open={open} onClose={onClose}>
       <div
-        className={`relative bg-card-blue border-yellow-600 shadow-2xl border-10 p-10 rounded-3xl min-w-[450px] flex flex-col items-center justify-between ${sizeClass} ${className}`}
+        className={`relative bg-card-blue border-yellow-600 shadow-2xl border-10 p-10 rounded-3xl flex-col-between ${sizeClasses[size]} ${className}`}
       >
         <button
           onClick={onClose}

@@ -12,18 +12,18 @@ const Medals: React.FC<MedalsProps> = ({ gold, silver, bronze }) => {
   const displayBronze = bronze ?? "-";
 
   return (
-    <div className="grid grid-cols-3 gap-4 items-center">
-      <div className="flex flex-col items-center">
-        <img src="/assets/gold.png" alt="Gold" title="Gold" className="w-15" />
-        <span className="text-gold text-3xl font-bold">{displayGold}</span>
+    <div className="w-full flex justify-around text-center text-5xl font-bold">
+      <div className="w-1/6">
+        <img src="/assets/gold.png" alt="Gold" title="Gold"/>
+        <span className="text-gold">{displayGold}</span>
       </div>
-      <div className="flex flex-col items-center">
-        <img src="/assets/silver.png" alt="Silver" title="Silver" className="w-15" />
-        <span className="text-silver text-3xl font-bold">{displaySilver}</span>
+      <div className="w-1/6">
+        <img src="/assets/silver.png" alt="Silver" title="Silver"/>
+        <span className="text-silver">{displaySilver}</span>
       </div>
-      <div className="flex flex-col items-center">
-        <img src="/assets/bronze.png" alt="Bronze" title="Bronze" className="w-15" />
-        <span className="text-bronze text-3xl font-bold">{displayBronze}</span>
+      <div className="w-1/6">
+        <img src="/assets/bronze.png" alt="Bronze" title="Bronze"/>
+        <span className="text-bronze">{displayBronze}</span>
       </div>
     </div>
   );

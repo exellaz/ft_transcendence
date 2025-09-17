@@ -9,6 +9,7 @@ import type {
   Profile,
   TournamentLobbyPlayer,
   TournamentLobbyChatMessage,
+  MatchPlayer,
 } from "../types/apiInterfaces";
 
 // Profile Dropdown
@@ -765,5 +766,39 @@ export const mockTournamentLobbyChat: Record<
   t1: [
     { uid: "u1", text: "Hello!", timestamp: "2025-09-07 13:45" },
     { uid: "u2", text: "Ready to play!", timestamp: "2025-09-07 13:46" },
+    { uid: "u3", text: "Good luck everyone!", timestamp: "2025-09-07 13:47" },
+    { uid: "u4", text: "Let's do this!", timestamp: "2025-09-07 13:48" },
+    { uid: "u5", text: "Who's playing first?", timestamp: "2025-09-07 13:49" },
+    { uid: "u6", text: "I'm excited!", timestamp: "2025-09-07 13:50" },
+    {
+      uid: "u7",
+      text: "May the best ghost win!",
+      timestamp: "2025-09-07 13:51",
+    },
+    { uid: "u8", text: "Ready and waiting!", timestamp: "2025-09-07 13:52" },
+    {
+      uid: "u1",
+      text: "Nice sprites, everyone!",
+      timestamp: "2025-09-07 13:53",
+    },
+    { uid: "u3", text: "Thanks! Yours too!", timestamp: "2025-09-07 13:54" },
+    { uid: "u2", text: "Let's start soon!", timestamp: "2025-09-07 13:55" },
+  ],
+};
+
+export const mockMatchPlayers: Record<string, MatchPlayer[]> = {
+  t1: [
+    {
+      uid: "u0",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u1",
+      username: "Player2",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: false,
+    },
   ],
 };

@@ -15,7 +15,7 @@ const StatsBadge: React.FC<StatsBadgeProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-xl px-6 py-3 flex flex-col items-center justify-center text-center shadow ${className}`}
+      className={`bg-white rounded-xl px-6 py-3 flex-col-center text-center shadow ${className}`}
     >
       <span className="text-xs text-gray-500">{label}</span>
       <span className="text-3xl font-bold text-card-blue">{displayValue}</span>

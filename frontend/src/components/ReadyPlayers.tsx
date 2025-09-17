@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 import Avatar from "../components/Avatar";
-import Button from "../components/Button";
 import ProfilePopup from "../popups/ProfilePopup";
 
 const usernameColors = [
@@ -20,35 +19,40 @@ const ReadyPlayers: React.FC<{ players: any[] }> = ({ players }) => {
 
   return (
     <>
-      <h2 className="text-white text-2xl font-bold">Players in Lobby</h2>
-      <div className="w-full bg-input-gray rounded-3xl grid grid-cols-4 p-4 gap-4">
-        {players.map((player, idx) => (
-          <div
-            key={player.uid}
-            className="flex flex-col items-center gap-4 font-bold"
-          >
-            <span
-              className={`rounded-full text-white text-center px-2 ${
-                player.ready ? "bg-green-400" : "bg-red-400"
-              }`}
-            >
-              {player.ready ? "Ready" : "Pending"}
-            </span>
+      <div className="flex-col-center gap-4">
+        <h2 className="text-white text-xl font-bold">Players in Lobby</h2>
+        <div
+          className={`w-full bg-input-gray rounded-3xl grid ${
+            players.length > 4 ? "grid-cols-4" : "grid-cols-2"
+          } p-4 gap-4`}
+        >
+          {players.map((player, idx) => (
             <div
-              className="cursor-pointer"
-              onClick={() => setSelectedUid(player.uid)}
+              key={player.uid}
+              className="flex flex-col items-center gap-4 font-bold"
             >
-              <Avatar src={player.spriteUrl} size={60} />
               <span
-                className={`${usernameColors[idx % usernameColors.length]}`}
+                className={`rounded-full text-white text-center px-2 ${
+                  player.ready ? "bg-green-400" : "bg-red-400"
+                }`}
               >
-                {player.username}
+                {player.ready ? "Ready" : "Pending"}
               </span>
+              <div
+                className="cursor-pointer"
+                onClick={() => setSelectedUid(player.uid)}
+              >
+                <Avatar src={player.spriteUrl} size={60} />
+                <span
+                  className={`${usernameColors[idx % usernameColors.length]}`}
+                >
+                  {player.username}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <Button variant="green">Ready</Button>
       {selectedUid && (
         <ProfilePopup
           open={true}

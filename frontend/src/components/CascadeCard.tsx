@@ -50,11 +50,15 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   if (showConfirm) {
     if (!actionDone) {
       content = (
-        <div className="flex flex-col items-center justify-center w-full p-8">
+        <div className="flex-col-center w-full p-8">
           <div className="text-center text-lg font-bold mb-6 text-white">
             {actionType === "block"
-              ? t("CascadeCard.confirm_block", { username: selectedUser.username })
-              : t("CascadeCard.confirm_unblock", { username: selectedUser.username })}
+              ? t("CascadeCard.confirm_block", {
+                  username: selectedUser.username,
+                })
+              : t("CascadeCard.confirm_unblock", {
+                  username: selectedUser.username,
+                })}
           </div>
           <div className="flex gap-6">
             <Button variant="green" onClick={() => handleConfirm(true)}>
@@ -68,7 +72,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
       );
     } else {
       content = (
-        <div className="flex flex-col items-center justify-center w-full p-8">
+        <div className="flex-col-center w-full p-8">
           <div className="text-center text-lg font-bold mb-6 text-white">
             {actionType === "block"
               ? t("CascadeCard.blocked", { username: selectedUser.username })
@@ -132,7 +136,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="w-[450px] border-gray-300 border-3 rounded-3xl flex flex-col items-center justify-center shadow-lg animate-slide-in">
+    <div className="w-[450px] border-gray-300 border-3 rounded-3xl flex-col-center shadow-lg animate-slide-in">
       {content}
     </div>
   );
