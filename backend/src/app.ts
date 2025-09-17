@@ -26,7 +26,7 @@ fastify.addContentTypeParser("application/json", { parseAs: "string" }, (req, bo
 
 // ----------------------- WEBSOCKET -----------------------
 const wsHandler = new WebSocketHandler();
-export const globalChatClients = new Set<any>(); // Store all connected chat clients
+export const chatRooms = new Map(); // Store all connected chat clients
 
 /**
  * @brief WebSocket endpoint for real-time communication.
@@ -78,24 +78,38 @@ await fastify.register(async function (fastify) {
  * }
 */
 fastify.get("/chat", { websocket: true }, (connection, req) => {
-    globalChatClients.add(connection); // Add new client to the set
+    // Step 1: get client query param
+    const { room } = req.query as { room?: string };
 
-    connection.on("close", () => {
-        globalChatClients.delete(connection); // Remove client on disconnect
-    });
+    //if no room then close connection
+    if (!room) {
+        connection.close();
+        return;
+    }
 
+    // Step 1: asign key (room id) and value (set of clients) to map if not room exist yet
+    if (!chatRooms.has(room)) {
+        chatRooms.set(room, new Set());
+    }
+    const clients = chatRooms.get(room);
+    clients.add(connection);
+
+    // Step 2: handle incoming messages from clients
     connection.on("message", (raw) => {
         const msg = JSON.parse(raw.toString());
 
         if (msg.type === "chat") {
-            // normal chat
             const chatMsg = {
                 type: "chat",
                 from: msg.from, //client id from client
                 text: msg.text, //text from client
                 time: Date.now(),
             };
-            broadcastChat(chatMsg);
+            //broadcast to all clients in the room
+            for (const client of clients) {
+                if (client.readyState === WebSocket.OPEN)
+                    client.send(JSON.stringify(chatMsg));
+            }
         }
 
         if (msg.type === "system") {
@@ -105,19 +119,21 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
                 text: msg.text, //text from client
                 time: Date.now(),
             };
-            broadcastChat(systemMsg);
+            for (const client of clients) {
+                if (client.readyState === WebSocket.OPEN)
+                    client.send(JSON.stringify(systemMsg));
+            }
         }
     });
-});
 
-// Broadcast a message to all connected chat clients
-function broadcastChat(msg: any) {
-    for (const client of globalChatClients) {
-        if (client.readyState === 1) { // WebSocket.OPEN
-            client.send(JSON.stringify(msg));
+    // Step 3: handle client disconnect
+    connection.on("close", () => {
+        clients.delete(connection);
+        if (clients.size === 0) {
+            chatRooms.delete(room); //delete the room chat
         }
-    }
-}
+    })
+});
 
 // ----------------------- HTTP ENDPOINTS -----------------------
 
@@ -134,6 +150,7 @@ fastify.get("/rooms", async (req, reply) => {
         rightPlayers: room.gameState.teams.right.length,
         gameStarted: room.gameState.gameStarted,
         gameEnded: !!room.gameState.gameEnded,
+        private: room.private
     }));
 });
 
@@ -160,7 +177,8 @@ fastify.post("/create-room", async (req, reply) => {
     }
 
     const roomId = generateRoomId();
-    const room = createRoom(roomId, name, teamSize, leaderId, width, height);
+    const room = createRoom(roomId, name, teamSize, leaderId, width, height, true);
+    console.log("backend creating room:", room); ////debug
     rooms.set(roomId, room);
 
     console.log(`Room ${name} (${roomId}) created with team size ${teamSize} and name ${name} by leader ${leaderId}`);
@@ -170,7 +188,8 @@ fastify.post("/create-room", async (req, reply) => {
         name,
         teamSize,
         gameStarted: room.gameState.gameStarted,
-        leaderId
+        leaderId,
+        private: room.private
     };
 });
 
@@ -186,7 +205,8 @@ fastify.post("/create-public-room", async (req, reply) => {
     }
 
 	const roomId = generateRoomId();
-    const room = createRoom(roomId, name, teamSize, "", width, height);
+    const room = createRoom(roomId, name, teamSize, "", width, height, false);
+    console.log("backend creating public room:", room); ////debug
     rooms.set(roomId, room);
 
     console.log(`Public Room (${room.id}) created with team size ${teamSize}`);
@@ -196,6 +216,7 @@ fastify.post("/create-public-room", async (req, reply) => {
         name,
         teamSize,
         gameStarted: room.gameState.gameStarted,
+        private: room.private
     };
 });
 

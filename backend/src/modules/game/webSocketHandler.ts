@@ -186,6 +186,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				// Ignore if spectator, no role, or leader
 				if (role.role === "spectator" || clientId === room.leaderId) return;
 
+                // Step 1: check player is ready
 				room.readyStatus.set(role.id, msg.ready);
 				broadcast(room, createLiveChatMessage("system", `(${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
@@ -198,15 +199,15 @@ export class WebSocketHandler implements IWebSocketHandler {
                     canStart: canStart,
                 });
 
-				// auto -start check for equal teams
+				// auto -start check for equal teams (alert message only)
 				if (!canStart && room.gameState.teams.left.length !== room.gameState.teams.right.length) {
         			broadcast(room, createLiveChatMessage("system", "Cannot start: teams are not equal."));
         			console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: teams are not equal`);
         			return;
 				}
 
-				//auto-start (public room)
-				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
+				// Step 2: auto-start (public room)
+				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length) && room.leaderId === "") {
 					if (room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
 						broadcast(room, createLiveChatMessage("system", "All players ready. Teams are full."));
 					}
@@ -214,7 +215,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 					room.startRequestedBy = "auto";
 					room.gameState.gameStarted = false;
 
-					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}]`);
+					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId})`);
 					broadcast(room, createLiveChatMessage("system", `All players ready. Game starting in ${room.gameState.countdown / 60} seconds...`));
 
 					setTimeout(() => {

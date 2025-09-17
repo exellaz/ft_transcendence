@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function Chat() {
+export default function Chat({ roomId }: { roomId: string }) {
   const [messages, setMessages] = useState<{ time:string; from:string; text:string }[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (socketRef.current) return; // already connected
-    const s = new WebSocket(`ws://${window.location.hostname}:4242/chat`);
+    const s = new WebSocket(`ws://${window.location.hostname}:4242/chat?room=${roomId}`);
     socketRef.current = s;
 
     s.onopen = () => console.log("Chat connected");
@@ -28,7 +28,7 @@ export default function Chat() {
       try { s.close(); } catch {};
       socketRef.current = null;
     };
-  }, []);
+  }, [roomId]);
 
   useEffect(() => {
     if (boxRef.current) boxRef.current.scrollTop = boxRef.current.scrollHeight;
@@ -37,7 +37,12 @@ export default function Chat() {
   function send(text:string) {
     const s = socketRef.current;
     if (!s || s.readyState !== WebSocket.OPEN) return;
-    s.send(JSON.stringify({ type: "chat", from: sessionStorage.getItem("pongClientId") || "Guest", text }));
+    s.send(JSON.stringify({
+        type: "chat",
+        room: roomId,
+        from: sessionStorage.getItem("pongClientId") || "Guest",
+        text
+    }));
   }
 
   return (

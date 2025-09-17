@@ -183,7 +183,7 @@ export class Game implements IGame {
 			 console.log(`Game countdown: ${secondsLeft}`); ////debug
             //broadcast countdown to all clients
             for (const client of room.clients) {
-                if (client.readyState === 1) {
+                if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({
                         type: "state",
                         gameState: room.gameState,
@@ -212,7 +212,7 @@ export class Game implements IGame {
 
             //broadcast game ended with the result
             for (const client of room.clients) {
-				if (client.readyState === 1) { //if the connection is open
+				if (client.readyState === WebSocket.OPEN) { //if the connection is open
 					const playerId = room.sockets.get(client); //get player id from socket
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
         	        const role = player?.role; //get player role from player id
@@ -236,7 +236,7 @@ export class Game implements IGame {
 		//broadcast the game state to all clients when game start
 		if (room.gameState.gameStarted) {
 			for (const client of room.clients) {
-				if (client.readyState === 1) { //if the connection is open
+				if (client.readyState === WebSocket.OPEN) { //if the connection is open
 					const playerId = room.sockets.get(client); //get player id from socket
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
         	        const role = player?.role; //get player role from player id

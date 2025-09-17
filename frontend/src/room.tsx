@@ -7,7 +7,6 @@ import Chat from "./chat";
 export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:string; roomName:string; leaderId:string; onBack:()=>void }) {
 	const [statusText, setStatusText] = useState("Connecting to room...");
 	const [playerText, setPlayerText] = useState("Waiting for players...");
-	const [leaderText, setLeaderText] = useState("waiting for leader...");
 	const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team...");
 	const [rightTeamHtml, setRightTeamHtml] = useState("waiting right team...");
 	const [isLeader, setIsLeader] = useState(false);
@@ -41,7 +40,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 			ws.onopen = () => {
 				console.log("Connected to room lobby");
-				setStatusText(`Connected: Room ${roomName} [${roomId}]`);
+				setStatusText(`Room ${roomName} [${roomId}]`);
 				if (reconnectTimer.current) {
 					clearTimeout(reconnectTimer.current);
 					reconnectTimer.current = null;
@@ -80,7 +79,6 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 					if (data.leaderId) {
 						leaderId = data.leaderId; // mutate local arg
 						setIsLeader(clientId === data.leaderId);
-						setLeaderText(clientId === data.leaderId ? "leader: yes" : "leader: no");
 					}
 
 					setCanStart(data.canStart ?? false);
@@ -185,7 +183,6 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 		<div className="p-6">
 			<h2 id="lobbyStatus" className="text-2xl">{statusText}</h2>
 			<h3 id="playerStatus">{playerText}</h3>
-			<h4 id="leaderStatus">{leaderText}</h4>
 
 			<div id="teamsContainer" className="flex justify-between my-4">
 				<div id="leftTeam" className="w-1/2 p-2 border rounded"><strong>Left Team</strong><pre>{leftTeamHtml}</pre></div>
@@ -232,7 +229,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 				</button>
 			</div>
 
-			<Chat />
+			<Chat roomId={roomId} />
 		</div>
 	);
 }

@@ -52,6 +52,7 @@ export interface Room {
     canStart: boolean; // Flag to indicate if player all ready
     startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
+    private: boolean; // Flag to indicate if the room is private
 }
 
 /**
@@ -81,7 +82,7 @@ export function generateRoomId(length = 6): string {
  * @param height room height (default: 400)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number, isPrivate: boolean): Room {
 	const room: Room = {
 		id,
 		name,
@@ -95,25 +96,26 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 			ballSize: 10,
 		},
 		gameState: {
-            ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
+			ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
 			paddles: {},
 			teams: { left: [], right: [] },
 			score: { left: 0, right: 0 },
 			countdown: 0,
-            gameStarted: false,
-            gameEnded: false,
+			gameStarted: false,
+			gameEnded: false,
 		},
 		clients: new Set(),
 		clientRoles: new Map(),
 		sockets: new Map(),
 		chatHistory: [] as any [],
-        disconnectPlayers: new Set(),
+		disconnectPlayers: new Set(),
 		game: new Game(),
-        readyStatus: new Map(),
-        canStart: false,
+		readyStatus: new Map(),
+		canStart: false,
 		leaderId: leaderId,
+		private: isPrivate,
 	};
-	console.log(`widht: ${width}, height: ${height}`);
+	console.log(`width: ${width}, height: ${height}`);
 	return room;
 }
 

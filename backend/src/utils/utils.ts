@@ -1,4 +1,4 @@
-import { globalChatClients } from "../app.ts";
+import { chatRooms } from "../app.ts";
 import type { Room } from "../modules/room/room.ts";
 import { Game } from "../modules/game/game.ts";
 import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
@@ -57,18 +57,21 @@ export function broadcast(room: Room, msg: any) {
 	// console.log("Broadcasting message:", msg); ////debug
 	room.chatHistory.push(msg);
 	for(const client of room.clients) {
-		if (client.readyState === 1) {
+		if (client.readyState === WebSocket.OPEN) {
 			client.send(JSON.stringify(msg));
 		}
 	}
 
 	//send this broadcast to global chat as well
 	if (msg.type === "chat") {
-		for (const client of globalChatClients) {
-			if (client.readyState === 1) {
-				client.send(JSON.stringify(msg));
-			}
-		}
+        const clients = chatRooms.get(room.id);
+        if (clients) {
+            for (const client of clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify(msg));
+                }
+            }
+        }
 	}
 }
 

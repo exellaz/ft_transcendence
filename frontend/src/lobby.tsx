@@ -25,8 +25,10 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 			(r: any) =>
 				r.teamSize === teamSize &&
 				!r.gameStarted &&
-				(r.leftPlayers + r.rightPlayers) < r.teamSize * 2
+				(r.leftPlayers + r.rightPlayers) < r.teamSize * 2 &&
+                r.private === false
 		);
+        console.log("Quick join found room:", roomsList);
 
 	  //step 2: If no room existm create new room
 	  if (!room) {

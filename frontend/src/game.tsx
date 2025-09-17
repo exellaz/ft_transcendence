@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { BASE_WIDTH, BASE_HEIGHT, PADDLEWIDTH, PADDLEHEIGHT, BALLSIZE } from "./constants";
-import Chat from "./chat";
 
 /**
  * @brief Draw the game state on the canvas
@@ -264,7 +263,6 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
 			<button id="backLobbyBtn" onClick={handleBack} className="px-3 py-1 border">Back to Lobby</button>
 		)}
       </div>
-      <Chat />
     </div>
   );
 }
