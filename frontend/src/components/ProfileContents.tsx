@@ -38,43 +38,41 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
   if (!user) return <div>{translate("loading")}</div>;
 
   return (
-    <div className="h-full flex flex-col items-center justify-around">
-      <div className="py-2 w-full flex-row-center gap-6">
+    <>
+      <div className="w-full flex-row-center gap-6">
         <div>
           <Avatar src={user.avatarUrl} size={100} />
         </div>
-        <div className="text-left">
-          <p className="text-white text-xl font-bold" title={user.username}>
+        <div className="flex flex-col text-white text-xl">
+          <p className="font-bold" title={user.username}>
             {user.username.length > 10
               ? user.username.slice(0, 10) + "…"
               : user.username}
           </p>
-          <p className="text-white">ID: {user.uid}</p>
-          <p className="text-white">
+          <p>ID: {user.uid}</p>
+          <p>
             {translate("joined")}: {user.joinDate}
           </p>
         </div>
       </div>
-      <div className="py-2 w-full flex gap-6 justify-center">
-        <Medals
-          gold={user.stats.medals.gold}
-          silver={user.stats.medals.silver}
-          bronze={user.stats.medals.bronze}
-        />
-      </div>
-      <div className="py-2 w-full flex gap-6">
+      <Medals
+        gold={user.stats.medals.gold}
+        silver={user.stats.medals.silver}
+        bronze={user.stats.medals.bronze}
+      />
+      <div className="w-full flex justify-around">
         <StatsBadge
-          className="flex-1"
+          className="w-2/5"
           label={translate("tournaments_played")}
           value={user.stats.tournamentsPlayed}
         />
         <StatsBadge
-          className="flex-1"
+          className="w-2/5"
           label={translate("average_ranking")}
           value={user.stats.averageRanking}
         />
       </div>
-    </div>
+    </>
   );
 };
 

@@ -60,34 +60,32 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
       {!showAvatarUpload ? (
         <>
           <Header>{translate("header")}</Header>
-          <div className="h-full flex-col-between">
-            <div className="text-center">
-              <p className="text-white">ID: {user.uid}</p>
-              <p className="text-white">
-                {translate("joined")}: {user.joinDate}
-              </p>
+          <div className="w-full text-center text-white">
+            <p>ID: {user.uid}</p>
+            <p>
+              {translate("joined")}: {user.joinDate}
+            </p>
+          </div>
+          <div className="w-full flex-row-center gap-6">
+            <Avatar src={user?.avatarUrl} size={100} />
+            <div>
+              <Button
+                variant="yellow"
+                onClick={() => setShowAvatarUpload(true)}
+              >
+                {translate("change_avatar")}
+              </Button>
             </div>
-            <div className="flex items-center gap-6">
-              <Avatar src={user?.avatarUrl} size={100} />
-              <div>
-                <Button
-                  variant="yellow"
-                  onClick={() => setShowAvatarUpload(true)}
-                >
-                  {translate("change_avatar")}
-                </Button>
-              </div>
-            </div>
-            <div className="w-full flex flex-col gap-2">
-              <Input
-                value={user?.username}
-                placeholder={translate("username")}
-                icon={
-                  <img src="/assets/user.png" alt="user.png" className="w-10" />
-                }
-              />
-              <Status text={translate("username_available")} color="green" />
-            </div>
+          </div>
+          <div className="w-full flex-col-center gap-2">
+            <Input
+              value={user?.username}
+              placeholder={translate("username")}
+              icon={
+                <img src="/assets/user.png" alt="user.png" className="w-10" />
+              }
+            />
+            <Status text={translate("username_available")} color="green" />
             <Input
               value={user?.email}
               placeholder={translate("email")}
@@ -96,20 +94,20 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
                 <img src="/assets/email.png" alt="email.png" className="w-10" />
               }
             />
-            <div className="flex gap-6">
-              <Button variant="yellow">{translate("save_changes")}</Button>
-              <Button variant="brown">{translate("cancel")}</Button>
-            </div>
+          </div>
+          <div className="w-full flex-row-center gap-6">
+            <Button variant="yellow">{translate("save_changes")}</Button>
+            <Button variant="brown">{translate("cancel")}</Button>
           </div>
         </>
       ) : (
         // Avatar Upload
         <div className="w-full h-full flex-col-center gap-6">
           <Avatar src={user?.avatarUrl} size={100} />
-          <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl p-10 flex-col-center gap-6">
-            <h2 className="text-white text-xl font-bold">
+          <div className="w-full h-[300px] border-gray-300 border-3 rounded-3xl flex-col-center gap-6">
+            <p className="text-white text-xl font-bold">
               {translate("upload_avatar")}
-            </h2>
+            </p>
             {!selectedFile && (
               // identical to yellow Button styling
               <label
