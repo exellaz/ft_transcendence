@@ -94,7 +94,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         <ProfileContents userUid={selectedUser.uid} />
         {activeTab === "friends" && (
           <div className="flex-row-center gap-6">
-            <Button variant="yellow" onClick={() => setShowProfile(false)}>
+            <Button onClick={() => setShowProfile(false)}>
               {translate("back_to_chat")}
             </Button>
             <Button variant="red" onClick={() => handleActionClick("block")}>
@@ -127,9 +127,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="flex-1 border-gray-300 border-3 rounded-3xl">
-      {content}
-    </div>
+    <div className="flex-1 border-gray-300 border-3 rounded-3xl">{content}</div>
   );
 };
 

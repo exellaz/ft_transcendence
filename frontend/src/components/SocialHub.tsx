@@ -126,7 +126,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                           {translate("uid_not_exist")}
                         </p>
                       )}
-                      <Button variant="yellow" onClick={handleAddFriend}>
+                      <Button onClick={handleAddFriend}>
                         {translate("add_friend")}
                       </Button>
                     </div>

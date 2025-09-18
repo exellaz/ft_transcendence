@@ -13,11 +13,21 @@
     "join_tournament": "参加锦标赛？"
   },
   "NormalModeView": {
-    "singles": "单打",
-    "doubles": "双打",
+    "choose_action": "选择操作",
+    "create_room": "创建房间",
+    "join_room": "加入房间",
     "back": "返回",
-    "create_singles_game": "创建单打游戏？",
-    "create_doubles_game": "创建双打游戏？"
+    "choose_type": "选择游戏类型",
+    "singles": "单人游戏",
+    "doubles": "双人游戏",
+    "choose_join": "选择加入方式",
+    "quick_join": "快速加入",
+    "join_private": "加入私人房间",
+    "enter_room_id": "输入房间ID",
+    "create_singles_game": "创建单人游戏？",
+    "create_doubles_game": "创建双人游戏？",
+    "join_singles_game": "加入单人游戏？",
+    "join_doubles_game": "加入双人游戏？"
   },
   "SignUpSuccessView": {
     "success_message": "您的账户已成功创建！",

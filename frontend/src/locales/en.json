@@ -13,11 +13,21 @@
     "join_tournament": "Join a tournament?"
   },
   "NormalModeView": {
+    "choose_action": "CHOOSE AN ACTION",
+    "create_room": "CREATE ROOM",
+    "join_room": "JOIN ROOM",
+    "back": "BACK",
+    "choose_type": "CHOOSE MATCH TYPE",
     "singles": "SINGLES",
     "doubles": "DOUBLES",
-    "back": "BACK",
+    "choose_join": "CHOOSE HOW TO JOIN",
+    "quick_join": "QUICK JOIN",
+    "join_private": "JOIN PRIVATE ROOM",
+    "enter_room_id": "Enter room ID",
     "create_singles_game": "Create a singles game?",
-    "create_doubles_game": "Create a doubles game?"
+    "create_doubles_game": "Create a doubles game?",
+    "join_singles_game": "Join a singles game?",
+    "join_doubles_game": "Join a doubles game?"
   },
   "SignUpSuccessView": {
     "success_message": "Your account has been successfully created!",
