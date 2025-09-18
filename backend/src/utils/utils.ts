@@ -11,7 +11,6 @@ import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
  * @note Updates the "canStart" property of the room and broadcasts state if it changes
 */
 export function updateCanStart(room: Room): boolean {
-    const prevCanStart = room.canStart;
 
     // get leader's role
     const leaderId = room.leaderId;
@@ -112,7 +111,6 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     function rebuildSide(players: any[], side: "left" | "right"): any[] {
         return players.map((p, i) => {
             const newRole = `${side}_player${i + 1}`;
-            const prevRole = p.role;
             // update mapping (preserve other fields)
             room.clientRoles.set(p.clientId, { ...p, role: newRole });
             return { ...p, role: newRole };

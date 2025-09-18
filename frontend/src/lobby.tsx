@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { fetchRooms, fetchMatches, createRoomAPI, ensureClientId, createPublicRoomAPI} from "./utils"
+import { fetchRooms, fetchMatches, createRoomAPI, ensureClientId} from "./utils"
 import { BASE_WIDTH, BASE_HEIGHT } from "./constants";
 
 export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:string, leaderId:string)=>void }) {
     const [rooms, setRooms] = useState<any[]>([]);
     const [matches, setMatches] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
+	const [createStep, setCreateStep] = useState<1 | 2>(1); // 1: choose type, 2: enter name
     const [teamSize, setTeamSize] = useState(1);
     const [roomName, setRoomName] = useState("");
     const [error, setError] = useState("");
 	const [showJoinPopup, setShowJoinPopup] = useState(false);
 	const [showPrivateJoin, setShowPrivateJoin] = useState(false);
-	const [invalidRoom, setInvalidRoom] = useState(false);
 	const [joinRoomId, setJoinRoomId] = useState("");
 	const [joinError, setJoinError] = useState("");
 	const [showQuickJoin, setShowQuickJoin] = useState(false);
@@ -35,7 +35,7 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 	    const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
 	    const width = BASE_WIDTH * scale;
 	    const height = BASE_HEIGHT * scale;
-		room = await createPublicRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height);
+		room = await createRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height, { isPrivate: false });
 
 		if (!room) {
 			alert ("Failed to create public room");
@@ -52,46 +52,23 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 	  setShowQuickJoin(false);
 	}
 
-
-    useEffect(() => { ensureClientId(); }, []);
-
-	// Refresh room list every 2 seconds
-    useEffect(() => {
-        async function refresh() {
-            const fetchedRooms = await fetchRooms(); ////debug
-            console.log("Fetched rooms:", fetchedRooms.map((r: any) => r.id));
-            setRooms(await fetchRooms());
-        }
-        refresh();
-        roomsInterval.current = window.setInterval(refresh, 2000);
-        return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
-    }, []);
-
-	// Refresh match history every 5 seconds
-    useEffect(() => {
-        async function refresh() { setMatches(await fetchMatches(10)); }
-        refresh();
-        matchesInterval.current = window.setInterval(refresh, 5000);
-        return () => { if (matchesInterval.current) clearInterval(matchesInterval.current); };
-    }, []);
-
 	// call create room API
-    async function onCreateRoom() {
+    async function CreatePrivateRoom() {
         setError("");
+
+		// step 1: check room name
         if (!roomName.trim()) {
             setError("Room name is required");
             return;
         }
-        if (teamSize < 1 || teamSize > 2) {
-            setError("Team size must be 1 or 2");
-            return;
-        }
+
+		// step 2: create room
         const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
         const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
         const scaledWidth = BASE_WIDTH * scale;
         const scaledHeight = BASE_HEIGHT * scale;
 
-        const room = await createRoomAPI(teamSize, roomName, clientId, scaledWidth, scaledHeight);
+        const room = await createRoomAPI(teamSize, roomName, scaledWidth, scaledHeight, { leaderId: clientId, isPrivate: true });
         if (room) {
             sessionStorage.setItem("pongRoomId", room.roomId);
             sessionStorage.setItem("pongRoomName", room.name);
@@ -104,6 +81,28 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         }
     }
 
+    useEffect(() => { ensureClientId(); }, []);
+
+	// // Refresh room list every 2 seconds
+    // useEffect(() => {
+    //     async function refresh() {
+    //         const fetchedRooms = await fetchRooms(); ////debug
+    //         console.log("Fetched rooms:", fetchedRooms.map((r: any) => r.id));
+    //         setRooms(await fetchRooms());
+    //     }
+    //     refresh();
+    //     roomsInterval.current = window.setInterval(refresh, 2000);
+    //     return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
+    // }, []);
+
+	// // Refresh match history every 5 seconds
+    // useEffect(() => {
+    //     async function refresh() { setMatches(await fetchMatches(10)); }
+    //     refresh();
+    //     matchesInterval.current = window.setInterval(refresh, 5000);
+    //     return () => { if (matchesInterval.current) clearInterval(matchesInterval.current); };
+    // }, []);
+
     return (
       <div className="p-6">
         <h1 className="text-3xl mb-4">Pong Lobby</h1>
@@ -114,49 +113,84 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         </div>
 
         {/* Modal */}
-        {showModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded shadow-lg w-80">
-              <h2 className="text-xl mb-4">Create Room</h2>
-              {error && <div className="text-red-600 mb-2">{error}</div>}
-              <div className="mb-3">
-                <label className="block mb-1">Room Name:</label>
-                <input
-                  type="text"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  className="w-full border px-2 py-1 rounded"
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="teamSize">Team Size:</label>
-                <select
-                  id="teamSize"
-                  value={teamSize}
-                  onChange={e => setTeamSize(Number(e.target.value))}
-                  className="px-2 py-1 border rounded"
-                >
-                  <option value={1}>1 vs 1</option>
-                  <option value={2}>2 vs 2</option>
-                </select>
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <button
-                  className="px-3 py-1 border rounded"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-3 py-1 bg-blue-500 text-white rounded"
-                  onClick={onCreateRoom}
-                >
-                  Create
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+		{showModal && (
+		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+		    <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+		      {/* Cancel "X" */}
+		      <button
+		        className="absolute top-2 right-2 text-gray-500 hover:text-black"
+		        onClick={() => {
+		          setShowModal(false);
+		          setCreateStep(1); // reset
+		          setRoomName("");
+		          setTeamSize(1);
+				  setError("");
+		        }}
+		      >
+		        ✕
+		      </button>
+
+		      {createStep === 1 && (
+		        <>
+		          <h2 className="text-xl mb-4">Choose Game Type</h2>
+		          <div className="flex flex-col gap-3">
+		            <button
+		              className="px-3 py-2 bg-blue-500 text-white rounded"
+		              onClick={() => {
+		                setTeamSize(1);
+		                setCreateStep(2);
+		              }}
+		            >
+		              1 vs 1
+		            </button>
+		            <button
+		              className="px-3 py-2 bg-green-500 text-white rounded"
+		              onClick={() => {
+		                setTeamSize(2);
+		                setCreateStep(2);
+		              }}
+		            >
+		              2 vs 2
+		            </button>
+		          </div>
+		        </>
+		      )}
+
+		      {createStep === 2 && (
+		        <>
+		          <h2 className="text-xl mb-4">Room Name</h2>
+		          {error && <div className="text-red-600 mb-2">{error}</div>}
+		          <input
+		            type="text"
+		            value={roomName}
+		            onChange={(e) => setRoomName(e.target.value)}
+		            className="w-full border px-2 py-1 rounded mb-3"
+		            placeholder="Enter room name"
+		          />
+
+		          <div className="flex justify-between mt-4">
+		            <button
+		              className="px-3 py-1 border rounded"
+		              onClick={() => {
+						setCreateStep(1);
+						setError("");
+					  }} // back to game type
+		            >
+		              Back
+		            </button>
+		            <button
+		              className="px-3 py-1 bg-blue-500 text-white rounded"
+		              onClick={CreatePrivateRoom}
+		            >
+		              Create
+		            </button>
+		          </div>
+		        </>
+		      )}
+		    </div>
+		  </div>
+		)}
+
 
 		{/* Join Button */}
 		<button
@@ -169,19 +203,26 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		{/* Show popout join */}
 		{showJoinPopup && (
 		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		    <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+		      {/* Cancel "X" */}
+		      <button
+		        className="absolute top-2 right-2 text-gray-500 hover:text-black"
+		        onClick={() => setShowJoinPopup(false)}
+		      >
+		        ✕
+		      </button>
+
 		      <h2 className="text-xl mb-4">Join Options</h2>
 		      <div className="flex flex-col gap-2">
 		        <button
 		          className="px-3 py-1 bg-blue-500 text-white rounded"
 		          onClick={() => {
 		            setShowJoinPopup(false);
-					setShowQuickJoin(true);
+		            setShowQuickJoin(true);
 		          }}
 		        >
 		          Quick Join
 		        </button>
-
 		        <button
 		          className="px-3 py-1 bg-green-500 text-white rounded"
 		          onClick={() => {
@@ -191,21 +232,28 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		          Join Private Room
 		        </button>
 		      </div>
-
-		      <button
-		        className="mt-4 px-3 py-1 border rounded"
-		        onClick={() => setShowJoinPopup(false)}
-		      >
-		        Cancel
-		      </button>
 		    </div>
 		  </div>
 		)}
 
+
 		{/* Join Private Room Modal */}
-		{showPrivateJoin && !invalidRoom && (
+		{showPrivateJoin && (
 		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		    <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+		      {/* Cancel "X" */}
+		      <button
+		        className="absolute top-2 right-2 text-gray-500 hover:text-black"
+		        onClick={() => {
+		          setShowPrivateJoin(false);
+		          setShowJoinPopup(true);
+				  setJoinRoomId("");
+				  setJoinError("");
+		        }}
+		      >
+		        ✕
+		      </button>
+
 		      <h2 className="text-xl mb-4">Enter Room ID</h2>
 		      <input
 		        type="text"
@@ -221,9 +269,11 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		          onClick={() => {
 		            setShowPrivateJoin(false);
 		            setShowJoinPopup(true);
+					setJoinRoomId("");
+					setJoinError("");
 		          }}
 		        >
-		          Cancel
+		          Back
 		        </button>
 		        <button
 		          className="px-3 py-1 bg-green-500 text-white rounded"
@@ -232,16 +282,18 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		            const rooms = await fetchRooms();
 		            const room = rooms.find((r: any) => r.id === joinRoomId.trim());
 		            if (!room) {
-		                setInvalidRoom(true);
-		                return;
+						setJoinError("Room not found");
+		            	return;
 		            } else if (room.leftPlayers + room.rightPlayers >= room.teamSize * 2) {
-                        setJoinError("Room is full");
-                        return;
-                    }
+		            	setJoinError("Room is full");
+		            	return;
+		            }
 		            sessionStorage.setItem("pongRoomId", room.id);
 		            sessionStorage.setItem("pongRoomName", room.name);
 		            onEnterRoom(room.id, room.name, room.leaderId);
 		            setShowPrivateJoin(false);
+					setJoinRoomId("");
+					setJoinError("");
 		          }}
 		        >
 		          Join Room
@@ -251,46 +303,32 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		  </div>
 		)}
 
-		{/* Invalid Room notice for private join */}
-		{showPrivateJoin && invalidRoom && (
-		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-		    <div className="bg-white p-6 rounded shadow-lg w-80 text-center">
-		      <h2 className="text-xl mb-4 text-red-600">Room not available</h2>
-		      <button
-		        className="px-3 py-1 bg-gray-500 text-white rounded mr-2"
-		        onClick={() => {
-		          setInvalidRoom(false);
-		          setShowPrivateJoin(false);
-		          setShowJoinPopup(true);
-		        }}
-		      >
-		        Back
-		      </button>
-		    </div>
-		  </div>
-		)}
-
 		{/* Quick Join Modal */}
 		{showQuickJoin && (
 		  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-		    <div className="bg-white p-6 rounded shadow-lg w-80">
+		    <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+		      {/* Cancel "X" */}
+		      <button
+		        className="absolute top-2 right-2 text-gray-500 hover:text-black"
+		        onClick={() => {
+		          setShowQuickJoin(false);
+		          setShowJoinPopup(true); // go back instead of closing everything
+		        }}
+		      >
+		        ✕
+		      </button>
+
 		      <h2 className="text-xl mb-4">Quick Join</h2>
 		      <div className="flex flex-col gap-2">
 		        <button
 		          className="px-3 py-1 bg-blue-500 text-white rounded"
-		          onClick={() => {
-		            // Call your join 1v1 logic here
-		            quickJoinRoom(1);
-		          }}
+		          onClick={() => quickJoinRoom(1)}
 		        >
 		          1 vs 1
 		        </button>
 		        <button
 		          className="px-3 py-1 bg-blue-500 text-white rounded"
-		          onClick={() => {
-		            // Call your join 2v2 logic here
-		            quickJoinRoom(2);
-		          }}
+		          onClick={() => quickJoinRoom(2)}
 		        >
 		          2 vs 2
 		        </button>
@@ -298,15 +336,15 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		          className="px-3 py-1 border rounded"
 		          onClick={() => {
 		            setShowQuickJoin(false);
+		            setShowJoinPopup(true); // go back to join options
 		          }}
 		        >
-		          Cancel
+		          Back
 		        </button>
 		      </div>
 		    </div>
 		  </div>
 		)}
-
 
 
         {/* Room List */}

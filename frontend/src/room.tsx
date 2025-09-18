@@ -34,7 +34,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 			// determine side
 			const chooseSide = await determineSide(roomId);
-			const ws = new WebSocket(`ws://${window.location.hostname}:4242/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws?id=${clientId}&room=${roomId}&side=${chooseSide}`);
 			(window as any).socket = ws;
             setSocket(ws);
 

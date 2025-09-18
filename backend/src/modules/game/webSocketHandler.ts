@@ -10,7 +10,7 @@ const game = new Game(); //create game object
  * @brief Interface for WebSocketHandler class method
 */
 interface IWebSocketHandler {
-	assignRole(room: Room, clientId: string, socket: any, roomId: string): { id: string, role: string};
+	assignRole(room: Room, clientId: string, socket: any, roomId: string, preferredSide: string): { id: string, role: string};
 	handleMsgOrEvent(socket: any, room: Room, role: { id:string, role: string}, raw:string): void;
 	handleDisconnect(socket: any, room: Room, clientId: string, roomId: string): void;
 }
@@ -24,7 +24,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param roomId The ID of the room
 	 * @return The assigned role as a string
 	*/
-	assignRole(room: Room, clientId: string, socket: any, roomId: string, preferredSide?: "left" | "right"): { id: string, role: string} {
+	assignRole(room: Room, clientId: string, socket: any, roomId: string, preferredSide: string): { id: string, role: string} {
 		// Add socket to room if present
 		if (socket) {
 			room.sockets.set(socket, clientId);
@@ -140,29 +140,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 		if (!player) return;
 
 		switch (msg.type) {
-			case "move":
-				if (role.role !== "spectator") {
-					room.gameState.paddles[role.id!] = game.updatePaddlePosition(
-						room.gameState.paddles[role.id!] ?? 0,
-						msg.dy,
-						room.height,
-						room.setting.paddleHeight
-					);
-				}
-				break;
-
-			case "setWidth":
-				room.width = msg.width;
-				break;
-
-			case "setHeight":
-				room.height = msg.height;
-				break;
-
-			case "chat":
-				broadcast(room, createLiveChatMessage(role.role ?? "spectator", String(msg.text)));
-				break;
-
 			case "switchSide":
 				if (role.role === "spectator") return;
 
@@ -312,7 +289,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 		//room.pendingDisconnects.set(clientId, timeout);
 
 		// --- handle leader leaving ---
-		let leaderChanged = false; //check if leader changed
 		if (clientId === room.leaderId) {
 			//check for remaining players except spectators and the leaving leader
 			const remainingPlayers = room.clientRoles
@@ -324,14 +300,8 @@ export class WebSocketHandler implements IWebSocketHandler {
 			//if have remaining player when leader left pass leader to the player
 			if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
 				room.leaderId = remainingPlayers[0];
-				leaderChanged = true;
 				broadcast(room, createLiveChatMessage("system", `leader change to [ ${room.leaderId} ].`));
 				console.log(`Leader [ ${clientId} ] left. New leader is [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
-
-				// only send role info instead of full object
-				const rolesPayload = Object.fromEntries(
-					[...room.clientRoles.entries()].map(([id, p]) => [id, p.role])
-				);
 
 				//notify all in the room about new leader
 				broadcast(room, {

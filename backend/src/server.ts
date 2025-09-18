@@ -7,7 +7,7 @@ import { fastify } from "./app.ts";
  * @note Exits process on failure
 */
 try {
-	const addr = await fastify.listen({ port: 4242, host: "0.0.0.0" });
+	const addr = await fastify.listen({ port: 3000, host: "0.0.0.0" });
 	console.log(`Server running at ${addr}`);
 } catch (err) {
 	console.error("Failed to start server:", err);

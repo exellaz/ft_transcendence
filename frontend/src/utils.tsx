@@ -1,4 +1,4 @@
-const API_URL = `http://${window.location.hostname}:4242`;
+const API_URL = import.meta.env.VITE_API_URL as string;
 //const API_URL = `/api`;
 
 /**
@@ -50,15 +50,29 @@ export async function fetchMatches(limit = 10) {
  * @param leaderId client ID of the room leader
  * @param width game width
  * @param height game height
+ * @param options additional options like isPrivate and leaderId ( can be undefined )
  * @return room details to client in JSON format
  * @note it also send the room details to the backend
 */
-export async function createRoomAPI(teamSize: number, roomName: string, leaderId: string, width: number, height: number) {
+export async function createRoomAPI(
+  teamSize: number,
+  roomName: string,
+  width: number,
+  height: number,
+  options?: { leaderId?: string; isPrivate?: boolean }
+) {
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teamSize, name: roomName, leaderId, width, height }),
+      body: JSON.stringify({
+        teamSize,
+        name: roomName,
+        width,
+        height,
+        leaderId: options?.isPrivate ? options?.leaderId : undefined,
+        isPrivate: options?.isPrivate ?? false,
+      }),
     });
     console.log("Create room response:", res); ////debug
     if (!res.ok) throw new Error("Failed to create room");
@@ -69,21 +83,6 @@ export async function createRoomAPI(teamSize: number, roomName: string, leaderId
   }
 }
 
-export async function createPublicRoomAPI(teamSize: number, roomName: string, width: number, height: number) {
-    try {
-        const res = await fetch(`${API_URL}/create-public-room`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ teamSize, name: roomName, width, height }),
-        });
-        console.log("Create public room response:", res); ////debug
-        if (!res.ok) throw new Error("Failed to create public room");
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to create public room:", error);
-        return null;
-    }
-}
 
 /**
  * @brief determine which side (left or right) a player should join in a room

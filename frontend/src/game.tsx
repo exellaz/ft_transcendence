@@ -94,7 +94,7 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 	}
 }
 
-export default function Game({ roomId, roomName, socket, clientId, initialRole, onBack } : { roomId:string; roomName:string; socket:WebSocket; clientId:string; initialRole:string; onBack:()=>void }) {
+export default function Game({ roomId, roomName, clientId, initialRole, onBack } : { roomId:string; roomName:string; socket:WebSocket; clientId:string; initialRole:string; onBack:()=>void }) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [role, setRole] = useState(initialRole);
     const [scoreText, setScoreText] = useState("Score: 0 - 0");
@@ -103,6 +103,18 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
     const [winner, setWinner] = useState<string | null>(null);
     const keysRef = useRef({ up:false, down:false });
     const [isSpectator, setIsSpectator] = useState(false);
+
+	const [socket, setSocket] = useState<WebSocket | null>(null);
+
+	useEffect(()=>{
+		const chooseSide = role === "left_player1" || role === "left_player2" ? "left" : role === "right_player1" || role === "right_player2" ? "right" : "spectator";
+		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+		setSocket(ws);
+
+		return () => {
+			try { ws.close(); } catch {}
+		};
+	}, [clientId, roomId, initialRole]);
 
     useEffect(()=>{
         //create game board
@@ -116,6 +128,8 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
     }, []);
 
     useEffect(() => {
+		if (!socket) return;
+
         // send game size to server on open websocket
         const onOpen = () => {
             const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
@@ -172,6 +186,8 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
     }, [gameOver, role]);
 
     useEffect(() => {
+		if (!socket) return;
+
         //receive messages / data from server
         const handleMsgOrEvent = (event: MessageEvent) => {
             try {
@@ -246,7 +262,7 @@ export default function Game({ roomId, roomName, socket, clientId, initialRole, 
     	}
 
         // close socket and remove all info in session storage
-        try { socket.close(); } catch {}
+        try { socket?.close(); } catch {}
         sessionStorage.removeItem("pongRoomName");
         sessionStorage.removeItem("pongRoomId");
         //go back to lobby

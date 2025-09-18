@@ -165,18 +165,7 @@ export class Game implements IGame {
 			return;
 		}
 
-        // helper: check if all roles in a team are connected
-
-		const teamConnected = (team: playerInfo[]): boolean => {
-			return team.every(player => {
-				const entry = [...room.clientRoles.entries()].find(([_, p]) => p.role === player.role);
-				const playerId = entry?.[0];
-				return playerId && !room.disconnectPlayers.has(playerId);
-			});
-		};
-
-
-        //if the game not started yet
+        // step 1: check for countdown to start game
 		if (room.gameState.countdown > 0) {
 			room.gameState.countdown--;
 			const secondsLeft = Math.ceil(room.gameState.countdown / 60);
@@ -201,13 +190,32 @@ export class Game implements IGame {
 			return; // Skip updating ball until game starts
 		}
 
-        // If the game is already started keep updating the ball
+        // step 2: update ball position if game has started
 		if (room.gameState.gameStarted) {
 			this.updateBall(room);
 		}
 
-		// Check for game end condition (first to 5 points)
-		if (room.gameState.score.left >= 1 || room.gameState.score.right >= 1) {
+		// step 3: broadcast the game state to all clients when game start
+		if (room.gameState.gameStarted) {
+			for (const client of room.clients) {
+				if (client.readyState === WebSocket.OPEN) { //if the connection is open
+					const playerId = room.sockets.get(client); //get player id from socket
+					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
+        	        const role = player?.role; //get player role from player id
+					const isSpectator = role === "spectator"; //check if the player is a spectator
+					const msg = {
+						type: "state",
+						gameState: room.gameState,
+						isSpectator
+					};
+					console.log("game state Sending to client:", playerId, "\n", JSON.stringify(msg));
+					client.send(JSON.stringify(msg));
+				}
+			}
+		}
+
+		// step 4: check for game end condition (first to 1 point)
+		if (room.gameState.score.left >= 2 || room.gameState.score.right >= 2) {
 			roomEndGame(room, false);
 
             //broadcast game ended with the result
@@ -217,42 +225,17 @@ export class Game implements IGame {
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
         	        const role = player?.role; //get player role from player id
 					const isSpectator = role === "spectator"; //check if the player is a spectator
-					//const gameStateWithResult = {
-        	            //...room.gameState,
-        	            //paused: room.gamePaused,
-        	            //result: room.result || null
-        	        //}; //include result if game ended (winner and scores)
-					client.send(JSON.stringify({
+					const msg = {
 						type: "state",
 						gameState: room.gameState,
-                        result: room.result || null,
+						result: room.result || null,
 						isSpectator
-					}));
+					};
+					console.log("game end Sending to client:", playerId, "\n", JSON.stringify(msg));
+					client.send(JSON.stringify(msg));
 				}
 			}
             return;
-		}
-
-		//broadcast the game state to all clients when game start
-		if (room.gameState.gameStarted) {
-			for (const client of room.clients) {
-				if (client.readyState === WebSocket.OPEN) { //if the connection is open
-					const playerId = room.sockets.get(client); //get player id from socket
-					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
-        	        const role = player?.role; //get player role from player id
-					const isSpectator = role === "spectator"; //check if the player is a spectator
-					//const gameStateWithResult = {
-        	            //...room.gameState,
-        	            //result: room.result || null
-        	        //}; //include result if game ended (winner and scores)
-					client.send(JSON.stringify({
-						type: "state",
-						gameState: room.gameState,
-                        result: room.result || null,
-						isSpectator
-					}));
-				}
-			}
 		}
 	}
 }

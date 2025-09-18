@@ -7,7 +7,7 @@ export default function Chat({ roomId }: { roomId: string }) {
 
   useEffect(() => {
     if (socketRef.current) return; // already connected
-    const s = new WebSocket(`ws://${window.location.hostname}:4242/chat?room=${roomId}`);
+    const s = new WebSocket(import.meta.env.VITE_WS_URL + `/chat?room=${roomId}`);
     socketRef.current = s;
 
     s.onopen = () => console.log("Chat connected");
@@ -50,7 +50,7 @@ export default function Chat({ roomId }: { roomId: string }) {
       <div className="flex-1 overflow-auto p-2" ref={boxRef}>
         {messages.map((m, i) => (
           <div key={i} className={m.from === "System" ? "text-gray-600 font-bold" : ""}>
-            [{m.time}] {m.from}: {m.text}
+            {m.from}: {m.text}
           </div>
         ))}
       </div>
@@ -64,7 +64,7 @@ function ChatInput({ onSend }: { onSend: (t:string)=>void }) {
   return (
     <div className="p-2 flex">
       <input className="flex-1 border p-1" value={v} onChange={(e)=>setV(e.target.value)} onKeyDown={(e)=>{ if(e.key==="Enter" && v.trim()){ onSend(v.trim()); setV(""); }}} />
-      <button className="ml-2 px-2" onClick={()=>{ if(v.trim()){ onSend(v.trim()); setV(""); }}}>Send</button>
+      <button className="ml-2 px-2 border p-1" onClick={()=>{ if(v.trim()){ onSend(v.trim()); setV(""); }}}>Send</button>
     </div>
   );
 }

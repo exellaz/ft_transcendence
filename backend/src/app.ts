@@ -5,8 +5,9 @@ import { URL } from "url";
 import { WebSocketHandler } from "./modules/game/webSocketHandler.ts";
 import { rooms, createRoom, generateRoomId} from "./modules/room/room.ts";
 import { getAllMatches } from "./plugins/database.ts";
+import { Game } from "./modules/game/game.ts";
 
-export const fastify = Fastify(); // Create a high-performance HTTP server
+export const fastify = Fastify(); //craete HTTP server
 
 //----------------------- SERVER SETUP -----------------------
 await fastify.register(websocketPlugin); // Register WebSocket plugin
@@ -37,33 +38,105 @@ export const chatRooms = new Map(); // Store all connected chat clients
  * The server assigns roles, handles messages/events, and manages disconnections.
 */
 await fastify.register(async function (fastify) {
-    fastify.get("/ws", { websocket: true }, (socket, req) => {
-    const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-    const clientId = url.searchParams.get("id") || "P" + Math.floor(Math.random() * Math.pow(10, 6)).toString().padEnd(6, "0"); //search client id
-    const roomId = url.searchParams.get("room"); //search room id
-    const side = url.searchParams.get("side") as "left" | "right" | null; //search player side
-
-    //fetch the room by room id of the client
+	fastify.get("/ws", { websocket: true }, (socket, req) => {
+	const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
+	const clientId = url.searchParams.get("id");
+	if (!clientId) {
+		socket.close(1008, "Client id is required");
+		return;
+	}
+	const roomId = url.searchParams.get("room");
+	if (!roomId) {
+		socket.close(1008, "Room id is required");
+		return;
+	}
+	const side = url.searchParams.get("side");
+	if (side && side !== "left" && side !== "right") {
+		socket.close(1008, "Side is required");
+		return;
+	}
     const room = rooms.get(roomId!);
     if (!room) {
         socket.close(1008, "Room not found");
         return;
     }
 
-    // Assign role to client (player, spectator, etc.)
-    const player = wsHandler.assignRole(room, clientId, socket, room.id, side || undefined);
+    // step 1: Assign role to client (player, spectator, etc.)
+    const player = wsHandler.assignRole(room, clientId, socket, room.id, side as string);
+	console.log("Websocket assign role response: ", player); //// debug
 
-    // ----- INCOMING MESSAGES/EVENT -----
+    // step 2: handle incoming messages from clients
     socket.on("message", (raw) => {
+		console.log("WebSocket msg received:", raw.toString()); //// debug
         wsHandler.handleMsgOrEvent(socket, room, player, raw.toString());
+		console.log("WebSocket msg sent:", raw.toString()); //// debug
     });
 
-    // ----- CLIENT DISCONNECT -----
+    // Step 3: handle client disconnect
     socket.on("close", () => {
         wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
+
   });
 });
+
+fastify.get("/ws-game", { websocket: true }, (socket, req) => {
+	const url = new URL(req.url!, `http://${req.headers.host}`);
+	const clientId = url.searchParams.get("id");
+	if (!clientId) {
+		socket.close(1008, "Client id is required");
+		return;
+	}
+	const roomId = url.searchParams.get("room");
+	if (!roomId) {
+		socket.close(1008, "Room id is required");
+		return;
+	}
+	const side = url.searchParams.get("side");
+	if (side && side !== "left" && side !== "right") {
+		socket.close(1008, "Side is required");
+		return;
+	}
+	const room = rooms.get(roomId!);
+	if (!room) {
+		socket.close(1008, "Room not found");
+		return;
+	}
+
+	// Step 1: Assign role to client (player, spectator, etc.)
+	const player = wsHandler.assignRole(room, clientId, socket, room.id, side as string);
+	const game = new Game();
+
+	// Step 2: handle incoming messages from clients
+	socket.on("message", (raw) => {
+		console.log("Game WebSocket received:", raw.toString()); //// debug
+		const msg = JSON.parse(raw.toString());
+		if (msg.type === "move") {
+			if (player.role !== "spectator") {
+				room.gameState.paddles[player.id!] = game.updatePaddlePosition(
+					room.gameState.paddles[player.id!] ?? 0,
+					msg.dy,
+					room.height,
+					room.setting.paddleHeight
+				);
+			}
+		}
+		if (msg.type === "setWidth") {
+			room.width = msg.width;
+		}
+		if (msg.type === "setHeight") {
+			room.height = msg.height;
+		}
+		console.log("Game WebSocket sent:", raw.toString()); //// debug
+	});
+
+	// Step 3: handle client disconnect
+	socket.on("close", () => {
+		wsHandler.handleDisconnect(socket, room, clientId, room.id);
+	});
+});
+
+
 
 /**
  * @brief WebSocket endpoint for global chat.
@@ -96,6 +169,7 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
 
     // Step 2: handle incoming messages from clients
     connection.on("message", (raw) => {
+		console.log("Chat WebSocket received:", raw.toString()); //// debug
         const msg = JSON.parse(raw.toString());
 
         if (msg.type === "chat") {
@@ -124,6 +198,7 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
                     client.send(JSON.stringify(systemMsg));
             }
         }
+		console.log("Chat WebSocket sent:", raw.toString()); //// debug
     });
 
     // Step 3: handle client disconnect
@@ -141,9 +216,9 @@ fastify.get("/chat", { websocket: true }, (connection, req) => {
  * @brief HTTP endpoint to list all available rooms.
  * @return all rooms with id, name, teamSize, leftPlayers, rightPlayers, and gameStarted status to client
 */
-fastify.get("/rooms", async (req, reply) => {
-    return Array.from(rooms.values()).map(room => ({
-        id: room.id,
+fastify.get("/rooms", async () => {
+	const response = Array.from(rooms.values()).map(room => ({
+		id: room.id,
         name: room.name,
         teamSize: room.teamSize,
         leftPlayers: room.gameState.teams.left.length,
@@ -152,6 +227,8 @@ fastify.get("/rooms", async (req, reply) => {
         gameEnded: !!room.gameState.gameEnded,
         private: room.private
     }));
+	console.log("responding /rooms: ", response); ////debug
+	return response;
 });
 
 /**
@@ -164,61 +241,51 @@ fastify.get("/rooms", async (req, reply) => {
  * @return Object with roomId, name, teamSize, and gameStarted status to client
 */
 fastify.post("/create-room", async (req, reply) => {
-    // console.log("Create room request body:", req.body); ////debug
-    const body: any = req.body;
-    const teamSize = body.teamSize;
-    const name = body.name;
-    const leaderId = body.leaderId;
-    const width = body.width;
-    const height = body.height;
+	console.log("request /Create-room:", req.body); ////debug
+	const body: any = req.body;
+	const { name, teamSize, leaderId, width, height, isPrivate } = body;
 
-    if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
-      return reply.code(400).send({ error: "team size and name are required" });
-    }
+	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
+		return reply.code(400).send({ error: "Team size and name are required" });
+	}
+	if (typeof width !== "number" || typeof height !== "number") {
+		return reply.code(400).send({ error: "Width and height are required" });
+	}
 
-    const roomId = generateRoomId();
-    const room = createRoom(roomId, name, teamSize, leaderId, width, height, true);
-    console.log("backend creating room:", room); ////debug
-    rooms.set(roomId, room);
-
-    console.log(`Room ${name} (${roomId}) created with team size ${teamSize} and name ${name} by leader ${leaderId}`);
-
-    return {
-        roomId,
-        name,
-        teamSize,
-        gameStarted: room.gameState.gameStarted,
-        leaderId,
-        private: room.private
-    };
-});
-
-fastify.post("/create-public-room", async (req, reply) => {
-    const body: any = req.body;
-	const name = body.name;
-    const teamSize = body.teamSize;
-    const width = body.width;
-    const height = body.height;
-
-    if (typeof teamSize !== "number" || typeof width !== "number" || typeof height !== "number") {
-      return reply.code(400).send({ error: "Invalid room parameters" });
-    }
+	// private rooms require a leaderId
+	if (isPrivate && (!leaderId || typeof leaderId !== "string")) {
+	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
+	}
 
 	const roomId = generateRoomId();
-    const room = createRoom(roomId, name, teamSize, "", width, height, false);
-    console.log("backend creating public room:", room); ////debug
-    rooms.set(roomId, room);
+	const room = createRoom(
+		roomId,
+		name,
+		teamSize,
+		isPrivate ? leaderId : "",
+		width,
+		height,
+		!!isPrivate
+	);
 
-    console.log(`Public Room (${room.id}) created with team size ${teamSize}`);
+	rooms.set(roomId, room);
 
-    return {
-        roomId,
-        name,
-        teamSize,
-        gameStarted: room.gameState.gameStarted,
-        private: room.private
-    };
+	console.log(
+	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
+	);
+
+	const response = {
+		roomId,
+		name,
+		teamSize,
+		gameStarted: room.gameState.gameStarted,
+		...(isPrivate ? { leaderId } : {}), // only include leaderId if private
+		private: room.private,
+	};
+	console.log("responding /create-room:", response); ////debug
+	return response;
 });
+
 
 /**
  * @brief HTTP endpoint to update game settings for a specific room.
@@ -230,6 +297,7 @@ fastify.post("/create-public-room", async (req, reply) => {
  * @return Success status to client
 */
 fastify.post("/room/:roomId/setting", async (req, reply) => {
+	console.log("request /room/setting:", req.body); ////debug
     const { roomId } = req.params as { roomId: string };
     const room = rooms.get(roomId);
     if (!room) {
@@ -241,6 +309,7 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
     room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
     room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
     room.setting.ballSize = ballSize ?? room.setting.ballSize;
+	console.log("updated room setting:", room.setting); ////debug
     return { success: true };
 });
 
@@ -251,12 +320,14 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
  * @note reply with 500 error if database retrieval fails.
 */
 fastify.get("/matches", async (req, reply) => {
+	console.log("request /matches:", req.body); ////debug
     try {
         const { limit } = req.query as { limit?: string };
         const matches = getAllMatches(Number(limit) || 10);
+		console.log("responding /matches:", matches); ////debug
         reply.send(matches);
-    } catch (e) {
-        reply.code(500).send({ error: "Failed to get matches" });
+    } catch (error) {
+        reply.code(500).send({ error: "Failed to get matches: " + error });
     }
 });
 
