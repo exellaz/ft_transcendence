@@ -83,25 +83,25 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 
     useEffect(() => { ensureClientId(); }, []);
 
-	// // Refresh room list every 2 seconds
-    // useEffect(() => {
-    //     async function refresh() {
-    //         const fetchedRooms = await fetchRooms(); ////debug
-    //         console.log("Fetched rooms:", fetchedRooms.map((r: any) => r.id));
-    //         setRooms(await fetchRooms());
-    //     }
-    //     refresh();
-    //     roomsInterval.current = window.setInterval(refresh, 2000);
-    //     return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
-    // }, []);
+	// Refresh room list every 2 seconds
+    useEffect(() => {
+        async function refresh() {
+            const fetchedRooms = await fetchRooms(); ////debug
+            console.log("Fetched rooms:", fetchedRooms.map((r: any) => r.id));
+            setRooms(await fetchRooms());
+        }
+        refresh();
+        roomsInterval.current = window.setInterval(refresh, 2000);
+        return () => { if (roomsInterval.current) clearInterval(roomsInterval.current); };
+    }, []);
 
-	// // Refresh match history every 5 seconds
-    // useEffect(() => {
-    //     async function refresh() { setMatches(await fetchMatches(10)); }
-    //     refresh();
-    //     matchesInterval.current = window.setInterval(refresh, 5000);
-    //     return () => { if (matchesInterval.current) clearInterval(matchesInterval.current); };
-    // }, []);
+	// Refresh match history every 5 seconds
+    useEffect(() => {
+        async function refresh() { setMatches(await fetchMatches(10)); }
+        refresh();
+        matchesInterval.current = window.setInterval(refresh, 5000);
+        return () => { if (matchesInterval.current) clearInterval(matchesInterval.current); };
+    }, []);
 
     return (
       <div className="p-6">

@@ -7,7 +7,7 @@ export default function Chat({ roomId }: { roomId: string }) {
 
   useEffect(() => {
     if (socketRef.current) return; // already connected
-    const s = new WebSocket(import.meta.env.VITE_WS_URL + `/chat?room=${roomId}`);
+    const s = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-chat?room=${roomId}`);
     socketRef.current = s;
 
     s.onopen = () => console.log("Chat connected");

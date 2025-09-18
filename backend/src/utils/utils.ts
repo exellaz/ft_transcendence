@@ -1,9 +1,57 @@
-import { chatRooms } from "../app.ts";
-import type { Room } from "../modules/room/room.ts";
+import { chatRooms } from "../modules/chat/liveChat.ws.ts";
+import { rooms, type Room } from "../modules/room/room.ts";
 import { Game } from "../modules/game/game.ts";
 import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
+import { URL } from "url";
 
-//const game = new Game(); //create game object
+export interface WSContext {
+	clientId: string;
+	roomId: string;
+	room: any;
+	side?: "left" | "right";
+}
+
+/**
+ * @brief Validate WebSocket connection parameters
+ * @param socket The WebSocket connection
+ * @param req The HTTP request object
+ * @return WSContext if valid, otherwise null (and closes socket)
+ * @note Close the socket with appropriate code/message if validation fails
+*/
+export function validateConnection(socket: any, req:any): WSContext | null {
+    const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
+    const clientId = url.searchParams.get("id");
+    const roomId = url.searchParams.get("room");
+    const side = url.searchParams.get("side") as "left" | "right" | null;
+
+    if (!clientId) {
+		socket.close(1008, "Client id is required");
+        return null;
+    }
+
+	if (!roomId) {
+		socket.close(1008, "Room id is required");
+		return null;
+	}
+
+	if (side && side !== "left" && side !== "right") {
+		socket.close(1008, "Side is required");
+		return null;
+	}
+
+	const room = rooms.get(roomId);
+	if (!room) {
+		socket.close(1008, "Room not found");
+		return null;
+	}
+
+    return {
+        clientId,
+        roomId,
+        room,
+        side: side ?? undefined,
+    };
+}
 
 /**
  * @brief check whether the game can start based on player readiness and team balance.
