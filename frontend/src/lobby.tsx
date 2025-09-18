@@ -232,9 +232,12 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 		            const rooms = await fetchRooms();
 		            const room = rooms.find((r: any) => r.id === joinRoomId.trim());
 		            if (!room) {
-		              setInvalidRoom(true);
-		              return;
-		            }
+		                setInvalidRoom(true);
+		                return;
+		            } else if (room.leftPlayers + room.rightPlayers >= room.teamSize * 2) {
+                        setJoinError("Room is full");
+                        return;
+                    }
 		            sessionStorage.setItem("pongRoomId", room.id);
 		            sessionStorage.setItem("pongRoomName", room.name);
 		            onEnterRoom(room.id, room.name, room.leaderId);

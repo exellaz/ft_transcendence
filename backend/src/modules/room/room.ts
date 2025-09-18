@@ -50,7 +50,7 @@ export interface Room {
 	duration?: number; // game duration
     readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
-    startRequestedBy?: string; // clientId of who requested to start game
+    //startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
     private: boolean; // Flag to indicate if the room is private
 }

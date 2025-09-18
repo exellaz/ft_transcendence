@@ -211,19 +211,19 @@ export class WebSocketHandler implements IWebSocketHandler {
 					if (room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
 						broadcast(room, createLiveChatMessage("system", "All players ready. Teams are full."));
 					}
-					room.gameState.countdown = 3 * 60; //? 3 seconds countdown
-					room.startRequestedBy = "auto";
+					room.gameState.countdown = 5 * 60; //? 3 seconds countdown
+					//room.startRequestedBy = "auto";
 					room.gameState.gameStarted = false;
 
 					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId})`);
 					broadcast(room, createLiveChatMessage("system", `All players ready. Game starting in ${room.gameState.countdown / 60} seconds...`));
 
-					setTimeout(() => {
+					//setTimeout(() => {
 						if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
 							roomStartGame(room);
 							startRoomLoop(room);
 						}
-					}, 3000); //3 seconds delay
+					//}, room.gameState.countdown); //3 seconds delay
 				}
 				break;
 
@@ -254,7 +254,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 				}
 
 				room.gameState.countdown = 5 * 60; //? 5 seconds countdown
-				room.startRequestedBy = clientId;
+				//room.startRequestedBy = clientId;
 				room.gameState.gameStarted = false;
 
 				console.log(`Player (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);

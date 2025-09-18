@@ -40,7 +40,11 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 			ws.onopen = () => {
 				console.log("Connected to room lobby");
-				setStatusText(`Room ${roomName} [${roomId}]`);
+                if (leaderId !== "") {
+                    setStatusText(`Room ${roomName} [id: ${roomId}]`);
+                } else {
+                    setStatusText(`Room ${roomName}`);
+                }
 				if (reconnectTimer.current) {
 					clearTimeout(reconnectTimer.current);
 					reconnectTimer.current = null;
@@ -52,7 +56,6 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 				if (data.type === "roleUpdate") {
 					console.log("Role update:", data);
-					setStatusText(`Room: ${roomName} [${roomId}]`);
 
 					// check which role
 					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
