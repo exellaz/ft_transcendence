@@ -160,7 +160,7 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 
 	function onStartBtn() {
 		if (!isLeader || !socket) { alert("Only the leader can start the game!"); return; }
-		socket.send(JSON.stringify({ type: "start" }));
+		socket.send(JSON.stringify({ type: "start", start: true }));
 	}
 
 	function onLeave() {

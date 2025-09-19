@@ -107,7 +107,7 @@ export default function Game({ roomId, roomName, clientId, initialRole, onBack }
 	const [socket, setSocket] = useState<WebSocket | null>(null);
 
 	useEffect(()=>{
-		const chooseSide = role === "left_player1" || role === "left_player2" ? "left" : role === "right_player1" || role === "right_player2" ? "right" : "spectator";
+		const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
 		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}`);
 		setSocket(ws);
 

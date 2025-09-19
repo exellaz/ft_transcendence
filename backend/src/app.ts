@@ -21,7 +21,6 @@ await fastify.register(gameWsRoute);
 await fastify.register(liveChatRoutes);
 
 // ----------------------- HTTP ENDPOINTS -----------------------
-
 /**
  * @brief HTTP endpoint to list all available rooms.
  * @return all rooms with id, name, teamSize, leftPlayers, rightPlayers, and gameStarted status to client

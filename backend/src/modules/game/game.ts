@@ -143,12 +143,12 @@ export class Game implements IGame {
 		//if out of bound in left or right score and rest the ball
 		if (ball.x + ballSize < 0) {
 			room.gameState.score.right++;
-			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`);
+			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`); //// debug
 			this.resetBall(room, "right");
 		}
 		else if (ball.x - ballSize > room.width) {
 			room.gameState.score.left++;
-			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`);
+			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`); ////debug
 			this.resetBall(room, "left");
 		}
 	}
@@ -169,7 +169,7 @@ export class Game implements IGame {
 		if (room.gameState.countdown > 0) {
 			room.gameState.countdown--;
 			const secondsLeft = Math.ceil(room.gameState.countdown / 60);
-			 console.log(`Game countdown: ${secondsLeft}`); ////debug
+			//  console.log(`Game countdown: ${secondsLeft}`); ////debug
             //broadcast countdown to all clients
             for (const client of room.clients) {
                 if (client.readyState === WebSocket.OPEN) {
@@ -185,7 +185,7 @@ export class Game implements IGame {
 			if (room.gameState.countdown === 0) {
 				room.gameState.gameStarted = true;
 				room.startTime = new Date();
-				console.log(`Game started in room ${room.id}`);
+				console.log(`Game started in room ${room.id}`); ////debug
 			}
 			return; // Skip updating ball until game starts
 		}
@@ -208,7 +208,7 @@ export class Game implements IGame {
 						gameState: room.gameState,
 						isSpectator
 					};
-					console.log("game state Sending to client:", playerId, "\n", JSON.stringify(msg));
+					// console.log("game state Sending to client:", playerId, "\n", JSON.stringify(msg)); //// debug
 					client.send(JSON.stringify(msg));
 				}
 			}
@@ -231,7 +231,7 @@ export class Game implements IGame {
 						result: room.result || null,
 						isSpectator
 					};
-					console.log("game end Sending to client:", playerId, "\n", JSON.stringify(msg));
+					// console.log("game end Sending to client:", playerId, "\n", JSON.stringify(msg)); //// debug
 					client.send(JSON.stringify(msg));
 				}
 			}

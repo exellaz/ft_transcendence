@@ -131,16 +131,46 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @note Updates paddle positions, room dimensions, and broadcasts chat messages
 	*/
 	handleMsgOrEvent(socket: any, room: Room, role: { id: string, role: string }, raw:string) {
-		const msg = JSON.parse(raw);
-		const clientId = room.sockets.get(socket);
-		if (!clientId) return; //if no client id exit
-		const player = room.clientRoles.get(clientId);
+		try {
+			let msg;
+			try {
+				msg = JSON.parse(raw);
+			} catch {
+				socket.close(1003, "Invalid JSON");
+				return;
+			}
 
-		//if no player then exit
-		if (!player) return;
+			// --- validation ---
+			if (typeof msg !== "object" || msg === null) {
+				socket.close(1003, "Invalid message format");
+				return;
+			}
+			if (typeof msg.type !== "string") {
+				socket.close(1003, "Invalid message: missing type");
+				return;
+			}
 
-		switch (msg.type) {
-			case "switchSide":
+			// --- allow type ---
+			const allowedTypes = ["switchSide", "ready", "start"];
+			if (!allowedTypes.includes(msg.type)) {
+				socket.close(1003, `unsupported message type ${msg.type}`);
+				return;
+			}
+
+			// --- handle message ---
+			const clientId = room.sockets.get(socket);
+			if (!clientId) return; //if no client id exit
+			const player = room.clientRoles.get(clientId);
+
+			//if no player then exit
+			if (!player) return;
+
+			if (msg.type === "switchSide") {
+				if (typeof msg.side !== "string" || msg.side === null || msg.side === undefined || (msg.side !== "left" && msg.side !== "right")) {
+					socket.close(1003, "Invalid side: [side]");
+					return;
+				}
+
 				if (role.role === "spectator") return;
 
 				if (room.gameState.countdown > 0) {
@@ -157,30 +187,35 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				const newRole = handleSwitchSide(room, socket, msg.side as "left" | "right");
 				if (newRole) role.role = newRole;
-				break;
+				return;
+			}
+			if (msg.type === "ready") {
+				if (typeof msg.ready !== "boolean" || msg.ready === null || msg.ready === undefined) {
+					socket.close(1003, "Invalid boolean: [ready]");
+					return;
+				}
 
-			case "ready":
 				// Ignore if spectator, no role, or leader
 				if (role.role === "spectator" || clientId === room.leaderId) return;
 
-                // Step 1: check player is ready
+				// Step 1: check player is ready
 				room.readyStatus.set(role.id, msg.ready);
 				broadcast(room, createLiveChatMessage("system", `(${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				//broadcastState(room);
-                const canStart = updateCanStart(room);
-                broadcast(room, {
-                    type: "roleUpdate",
-                    gameState: room.gameState,
-                    leaderId: room.leaderId,
-                    canStart: canStart,
-                });
+				const canStart = updateCanStart(room);
+				broadcast(room, {
+					type: "roleUpdate",
+					gameState: room.gameState,
+					leaderId: room.leaderId,
+					canStart: canStart,
+				});
 
 				// auto -start check for equal teams (alert message only)
 				if (!canStart && room.gameState.teams.left.length !== room.gameState.teams.right.length) {
-        			broadcast(room, createLiveChatMessage("system", "Cannot start: teams are not equal."));
-        			console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: teams are not equal`);
-        			return;
+					broadcast(room, createLiveChatMessage("system", "Cannot start: teams are not equal."));
+					console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: teams are not equal`);
+					return;
 				}
 
 				// Step 2: auto-start (public room)
@@ -202,52 +237,50 @@ export class WebSocketHandler implements IWebSocketHandler {
 						}
 					//}, room.gameState.countdown); //3 seconds delay
 				}
-				break;
-
-			case "start":
-				//if not leader can't start
-				if (clientId !== room.leaderId) {
-					socket.send(JSON.stringify({ type: "error", text: "Only the leader can start the game" }));
-					console.log(`Player (${role.role}) [${role.id}] tried to start the game but is not the leader in room (${room.name}) [${room.id}]`);
-					broadcast(room, createLiveChatMessage("system", `Cannot start: you are not the leader`));
+				return;
+			}
+			if (msg.type === "start") {
+				if (typeof msg.start !== "boolean" || msg.start === null || msg.start === undefined) {
+					socket.close(1003, "Invalid boolean: [start]");
 					return;
 				}
 
-				//if not enough player, cannot start
-				const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-				if (totalPlayers < room.teamSize * 2) {
-					socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
-					console.log(`Player (${role.role}) [${role.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
-					broadcast(room, createLiveChatMessage("system", `Cannot start: insufficient players`));
+				if (msg.start === true) {
+					//if not enough player, cannot start
+					const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
+					if (totalPlayers < room.teamSize * 2) {
+						socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
+						console.log(`Player (${role.role}) [${role.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
+						broadcast(room, createLiveChatMessage("system", `Cannot start: insufficient players`));
+						return;
+					}
+
+					//if not all player ready, cannot start
+					if(!room.canStart) {
+						socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
+						console.log(`Player (${role.role}) [${role.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
+						broadcast(room, createLiveChatMessage("system", `Cannot start: player not ready`));
+						return;
+					}
+
+					//execute the start (leader only)
+					room.gameState.countdown = 5 * 60; //? 5 seconds countdown
+					console.log(`Player (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);
+					broadcast(room, createLiveChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
+					const canStartleader = updateCanStart(room);
+					broadcast(room, {
+						type: "roleUpdate",
+						gameState: room.gameState,
+						leaderId: room.leaderId,
+						canStart: canStartleader,
+					});
 					return;
 				}
+			}
 
-				//if not all player ready, cannot start
-				if(!room.canStart) {
-					socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
-					console.log(`Player (${role.role}) [${role.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
-					broadcast(room, createLiveChatMessage("system", `Cannot start: player not ready`));
-					return;
-				}
-
-				room.gameState.countdown = 5 * 60; //? 5 seconds countdown
-				//room.startRequestedBy = clientId;
-				room.gameState.gameStarted = false;
-
-				console.log(`Player (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);
-				broadcast(room, createLiveChatMessage("system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
-				//broadcastState(room);
-                const canStartleader = updateCanStart(room);
-                broadcast(room, {
-                    type: "roleUpdate",
-                    gameState: room.gameState,
-                    leaderId: room.leaderId,
-                    canStart: canStartleader,
-                });
-				break;
-
-			default:
-				console.log("Unknown message type:", msg);
+		} catch (err) {
+			console.error("unexpected error in room wsmessage handling:", err);
+			socket.close(1011, "server error");
 		}
 	}
 
