@@ -1,46 +1,51 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  mockWaitingTournamentPlayers,
-  mockTournamentLiveChat,
+  mockWaitingDoublesRoomPlayers,
+  mockDoublesRoomLiveChat,
 } from "../../data/mockUsers";
-import type { WaitingPlayer, LiveChatMessage } from "../../types/apiInterfaces";
+import type {
+  WaitingRoomPlayer,
+  LiveChatMessage,
+} from "../../types/apiInterfaces";
 
 import { formatTimestamp } from "../../utils/date";
 
-import Background from "../../components/Background";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import LiveChat from "../../components/LiveChat";
-import ReadyPlayers from "../../components/ReadyPlayers";
 import TournamentHeader from "../../components/TournamentHeader";
+import LiveChat from "../../components/LiveChat";
+import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
+import RoomLayout from "../../layout/RoomLayout";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
 const DoublesRoomView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`DoublesRoomView.${key}`);
-  const [players, setPlayers] = useState<WaitingPlayer[]>([]);
+  const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
-  const [stage, setStage] = useState("quarterfinals");
-  const [showQuitTournament, setShowQuitTournament] = useState(false);
+  const [showLeaveRoom, setShowLeaveRoom] = useState(false);
 
-  // TODO: Fetch real data based on tournamentId
+  // TODO: Replace with actual room ID from route or context
+  const roomId = "t1";
+
+  // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
   //   // Replace with real API calls
-  //   fetch(`/api/players?tournamentId=${tournamentId}`)
+  //   fetch(`/api/players?roomId=${roomId}`)
   //     .then((res) => res.json())
   //     .then(setPlayers);
-  //   fetch(`/api/messages?tournamentId=${tournamentId}`)
+  //   fetch(`/api/messages?roomId=${roomId}`)
   //     .then((res) => res.json())
   //     .then(setChatMessages);
-  // }, [tournamentId]);
+  // }, [roomId]);
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockWaitingTournamentPlayers["t1"]);
-    setChatMessages(mockTournamentLiveChat["t1"]);
+    setPlayers(mockWaitingDoublesRoomPlayers["t1"]);
+    setChatMessages(mockDoublesRoomLiveChat["t1"]);
   }, []);
 
   // todo: Replace 1 with current user id
@@ -55,25 +60,20 @@ const DoublesRoomView: React.FC = () => {
   }
 
   return (
-    <Background>
+    <RoomLayout>
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
           <div className="w-[50%] h-full flex-col-between">
             <TournamentHeader>
-              <span>Pre-{stage.charAt(0).toUpperCase() + stage.slice(1)}</span>
-              <span>Tournament Lobby</span>
+              <p>Doubles Room</p>
+              <p>(Room ID: {roomId})</p>
             </TournamentHeader>
-            <ReadyPlayers players={players} />
+            <ReadyRoomPlayers variant="doubles" players={players} />
             <div className="flex-row-center gap-6">
               <Button variant="green">Ready</Button>
-              {stage === "quarterfinals" && (
-                <Button
-                  variant="red"
-                  onClick={() => setShowQuitTournament(true)}
-                >
-                  Quit
-                </Button>
-              )}
+              <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
+                Leave Room
+              </Button>
             </div>
           </div>
           <LiveChat
@@ -86,12 +86,12 @@ const DoublesRoomView: React.FC = () => {
         </div>
       </Card>
       <ConfirmationPopup
-        text="Are you sure you want to quit the tournament?"
-        open={showQuitTournament}
-        onClose={() => setShowQuitTournament(false)}
+        text="Are you sure you want to leave the room?"
+        open={showLeaveRoom}
+        onClose={() => setShowLeaveRoom(false)}
         redirectPath="/main-menu"
       />
-    </Background>
+    </RoomLayout>
   );
 };
 

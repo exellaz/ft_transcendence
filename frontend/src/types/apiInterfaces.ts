@@ -89,7 +89,7 @@ export interface Profile {
 // Tournament lobby API interfaces
 // - TournamentLobbyView.tsx
 // Player in tournament lobby
-export interface WaitingPlayer {
+export interface WaitingTournamentPlayer {
   uid: string;
   username: string;
   spriteUrl: string;
@@ -108,4 +108,14 @@ export interface MatchPlayer {
   username: string;
   spriteUrl: string;
   ready: boolean;
+}
+
+// Normal Mode Room API interfaces
+export interface WaitingRoomPlayer {
+  leader: boolean;
+  uid: string;
+  username: string;
+  spriteUrl: string;
+  ready: boolean;
+  team: "left" | "right";
 }

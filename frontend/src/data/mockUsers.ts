@@ -7,7 +7,8 @@ import type {
   BlockedUser,
   FriendMessaging,
   Profile,
-  WaitingPlayer,
+  WaitingTournamentPlayer,
+  WaitingRoomPlayer,
   LiveChatMessage,
   MatchPlayer,
 } from "../types/apiInterfaces";
@@ -703,7 +704,10 @@ export const mockProfiles: Profile[] = [
   },
 ];
 
-export const mockWaitingTournamentPlayers: Record<string, WaitingPlayer[]> = {
+export const mockWaitingTournamentPlayers: Record<
+  string,
+  WaitingTournamentPlayer[]
+> = {
   t1: [
     {
       uid: "u1",
@@ -717,42 +721,42 @@ export const mockWaitingTournamentPlayers: Record<string, WaitingPlayer[]> = {
       spriteUrl: "/assets/green-ghost.png",
       ready: false,
     },
-    // {
-    //   uid: "u3",
-    //   username: "Player3",
-    //   spriteUrl: "/assets/blue-ghost.png",
-    //   ready: true,
-    // },
-    // {
-    //   uid: "u4",
-    //   username: "Player4",
-    //   spriteUrl: "/assets/red-ghost.png",
-    //   ready: true,
-    // },
-    // {
-    //   uid: "u5",
-    //   username: "Player5",
-    //   spriteUrl: "/assets/purple-ghost.png",
-    //   ready: false,
-    // },
-    // {
-    //   uid: "u6",
-    //   username: "Player6",
-    //   spriteUrl: "/assets/starry-ghost.png",
-    //   ready: true,
-    // },
-    // {
-    //   uid: "u7",
-    //   username: "Player7",
-    //   spriteUrl: "/assets/white-ghost.png",
-    //   ready: false,
-    // },
-    // {
-    //   uid: "u8",
-    //   username: "Player8",
-    //   spriteUrl: "/assets/42-ghost.png",
-    //   ready: true,
-    // },
+    {
+      uid: "u3",
+      username: "Player3",
+      spriteUrl: "/assets/blue-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u4",
+      username: "Player4",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u5",
+      username: "Player5",
+      spriteUrl: "/assets/purple-ghost.png",
+      ready: false,
+    },
+    {
+      uid: "u6",
+      username: "Player6",
+      spriteUrl: "/assets/starry-ghost.png",
+      ready: true,
+    },
+    {
+      uid: "u7",
+      username: "Player7",
+      spriteUrl: "/assets/white-ghost.png",
+      ready: false,
+    },
+    {
+      uid: "u8",
+      username: "Player8",
+      spriteUrl: "/assets/42-ghost.png",
+      ready: true,
+    },
   ],
 };
 
@@ -797,19 +801,26 @@ export const mockMatchPlayers: Record<string, MatchPlayer[]> = {
   ],
 };
 
-export const mockWaitingSinglesRoomPlayers: Record<string, WaitingPlayer[]> = {
+export const mockWaitingSinglesRoomPlayers: Record<
+  string,
+  WaitingRoomPlayer[]
+> = {
   t1: [
     {
+      leader: true,
       uid: "u1",
       username: "Player1",
       spriteUrl: "/assets/yellow-ghost.png",
       ready: true,
+      team: "left",
     },
     {
+      leader: false,
       uid: "u2",
       username: "Player2",
       spriteUrl: "/assets/green-ghost.png",
       ready: false,
+      team: "right",
     },
   ],
 };
@@ -863,5 +874,118 @@ export const mockSinglesRoomLiveChat: Record<string, LiveChatMessage[]> = {
     },
     { uid: "u2", text: "let's do this 🏓", timestamp: "2025-09-19 14:34" },
     { uid: "u1", text: "ready when you are", timestamp: "2025-09-19 14:35" },
+  ],
+};
+
+export const mockWaitingDoublesRoomPlayers: Record<
+  string,
+  WaitingRoomPlayer[]
+> = {
+  t1: [
+    {
+      leader: true,
+      uid: "u1",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u2",
+      username: "Player2",
+      spriteUrl: "/assets/green-ghost.png",
+      ready: false,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u3",
+      username: "Player3",
+      spriteUrl: "/assets/blue-ghost.png",
+      ready: true,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u4",
+      username: "Player4",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: true,
+      team: "right",
+    },
+  ],
+};
+
+export const mockDoublesRoomLiveChat: Record<string, LiveChatMessage[]> = {
+  t1: [
+    {
+      uid: "u1",
+      text: "hey team! who wants to be my partner?",
+      timestamp: "2025-09-19 15:20",
+    },
+    {
+      uid: "u2",
+      text: "i'm down! u3 and u4 can team up",
+      timestamp: "2025-09-19 15:20",
+    },
+    { uid: "u3", text: "sounds good to me", timestamp: "2025-09-19 15:21" },
+    {
+      uid: "u4",
+      text: "perfect, me and u3 vs you two",
+      timestamp: "2025-09-19 15:21",
+    },
+    {
+      uid: "u1",
+      text: "nice! what map should we play?",
+      timestamp: "2025-09-19 15:22",
+    },
+    {
+      uid: "u3",
+      text: "how about map 2? it's good for doubles",
+      timestamp: "2025-09-19 15:22",
+    },
+    {
+      uid: "u2",
+      text: "agreed, map 2 has more space",
+      timestamp: "2025-09-19 15:23",
+    },
+    {
+      uid: "u4",
+      text: "works for me. what about ball speed?",
+      timestamp: "2025-09-19 15:23",
+    },
+    {
+      uid: "u1",
+      text: "let's go with normal settings",
+      timestamp: "2025-09-19 15:24",
+    },
+    {
+      uid: "u3",
+      text: "normal is fine, keeps it fair",
+      timestamp: "2025-09-19 15:24",
+    },
+    {
+      uid: "u2",
+      text: "u1, you take the left side?",
+      timestamp: "2025-09-19 15:25",
+    },
+    { uid: "u1", text: "sure thing partner!", timestamp: "2025-09-19 15:25" },
+    {
+      uid: "u4",
+      text: "u3 and i are ready when you are",
+      timestamp: "2025-09-19 15:26",
+    },
+    {
+      uid: "u3",
+      text: "this is gonna be epic 🏓",
+      timestamp: "2025-09-19 15:26",
+    },
+    {
+      uid: "u2",
+      text: "let's show them what we got!",
+      timestamp: "2025-09-19 15:27",
+    },
+    { uid: "u1", text: "ready to start!", timestamp: "2025-09-19 15:27" },
   ],
 };

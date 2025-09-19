@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import type { WaitingPlayer, LiveChatMessage } from "../types/apiInterfaces";
+import type {
+  WaitingTournamentPlayer,
+  LiveChatMessage,
+} from "../types/apiInterfaces";
 
 import Button from "../components/Button";
 
@@ -15,7 +18,7 @@ const usernameColors = [
 ];
 
 const LiveChat: React.FC<{
-  players: WaitingPlayer[];
+  players: WaitingTournamentPlayer[];
   chatMessages: LiveChatMessage[];
   message: string;
   setMessage: (msg: string) => void;

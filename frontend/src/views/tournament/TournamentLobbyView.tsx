@@ -4,7 +4,10 @@ import {
   mockWaitingTournamentPlayers,
   mockTournamentLiveChat,
 } from "../../data/mockUsers";
-import type { WaitingPlayer, LiveChatMessage } from "../../types/apiInterfaces";
+import type {
+  WaitingTournamentPlayer,
+  LiveChatMessage,
+} from "../../types/apiInterfaces";
 
 import { formatTimestamp } from "../../utils/date";
 
@@ -20,7 +23,7 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 const TournamentLobbyView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
-  const [players, setPlayers] = useState<WaitingPlayer[]>([]);
+  const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [stage, setStage] = useState("quarterfinals");

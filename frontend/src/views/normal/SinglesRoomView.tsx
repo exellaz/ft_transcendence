@@ -4,15 +4,18 @@ import {
   mockWaitingSinglesRoomPlayers,
   mockSinglesRoomLiveChat,
 } from "../../data/mockUsers";
-import type { WaitingPlayer, LiveChatMessage } from "../../types/apiInterfaces";
+import type {
+  WaitingRoomPlayer,
+  LiveChatMessage,
+} from "../../types/apiInterfaces";
 
 import { formatTimestamp } from "../../utils/date";
 
 import Button from "../../components/Button";
 import Card from "../../components/Card";
-import Header from "../../components/Header";
+import TournamentHeader from "../../components/TournamentHeader";
 import LiveChat from "../../components/LiveChat";
-import ReadyPlayers from "../../components/ReadyPlayers";
+import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
@@ -20,10 +23,13 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 const SinglesRoomView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`SinglesRoomView.${key}`);
-  const [players, setPlayers] = useState<WaitingPlayer[]>([]);
+  const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
+
+  // TODO: Replace with actual room ID from route or context
+  const roomId = "t1";
 
   // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
@@ -58,8 +64,11 @@ const SinglesRoomView: React.FC = () => {
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
           <div className="w-[50%] h-full flex-col-between">
-            <Header>Singles Room</Header>
-            <ReadyPlayers players={players} />
+            <TournamentHeader>
+              <p>Singles Room</p>
+              <p>(Room ID: {roomId})</p>
+            </TournamentHeader>
+            <ReadyRoomPlayers variant="singles" players={players} />
             <div className="flex-row-center gap-6">
               <Button variant="green">Ready</Button>
               <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
