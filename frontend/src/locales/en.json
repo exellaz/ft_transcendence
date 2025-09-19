@@ -17,7 +17,7 @@
     "create_room": "CREATE ROOM",
     "join_room": "JOIN ROOM",
     "back": "BACK",
-    "choose_type": "CHOOSE MATCH TYPE",
+    "choose_type": "CHOOSE GAME TYPE",
     "singles": "SINGLES",
     "doubles": "DOUBLES",
     "choose_join": "CHOOSE HOW TO JOIN",
@@ -64,6 +64,15 @@
   "ConfirmationPopup": {
     "yes": "YES",
     "no": "NO"
+  },
+  "GameSettingsPopup": {
+    "header": "Game Settings",
+    "ball_speed": "Ball Speed",
+    "ball_size": "Ball Size",
+    "paddle_speed": "Paddle Speed",
+    "choose_map": "Choose A Map",
+    "reset_to_default": "Reset to Default",
+    "save": "Save"
   },
   "ProfilePopup": {
     "header": "My Profile",

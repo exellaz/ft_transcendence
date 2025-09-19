@@ -65,6 +65,15 @@
     "yes": "是",
     "no": "否"
   },
+  "GameSettingsPopup": {
+    "header": "遊戲設定",
+    "ball_speed": "球速",
+    "ball_size": "球大小",
+    "paddle_speed": "板速",
+    "choose_map": "選擇地圖",
+    "reset_to_default": "重置為預設",
+    "save": "儲存"
+  },
   "ProfilePopup": {
     "header": "我的資料",
     "header_other": "資料",

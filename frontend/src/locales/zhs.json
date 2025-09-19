@@ -65,6 +65,15 @@
     "yes": "是",
     "no": "否"
   },
+  "GameSettingsPopup": {
+    "header": "游戏设置",
+    "ball_speed": "球速",
+    "ball_size": "球大小",
+    "paddle_speed": "板速",
+    "choose_map": "选择地图",
+    "reset_to_default": "重置为默认",
+    "save": "保存"
+  },
   "ProfilePopup": {
     "header": "我的资料",
     "header_other": "资料",

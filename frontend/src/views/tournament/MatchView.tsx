@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserProvider";
-import { mockMatchPlayers } from "../data/mockUsers";
-import type { MatchPlayer } from "../types/apiInterfaces";
+import { useUser } from "../../context/UserProvider";
+import { mockMatchPlayers } from "../../data/mockUsers";
+import type { MatchPlayer } from "../../types/apiInterfaces";
 
-import Avatar from "../components/Avatar";
-import Background from "../components/Background";
-import Button from "../components/Button";
-import Card from "../components/Card";
-import TournamentHeader from "../components/TournamentHeader";
+import Avatar from "../../components/Avatar";
+import Background from "../../components/Background";
+import Button from "../../components/Button";
+import Card from "../../components/Card";
+import TournamentHeader from "../../components/TournamentHeader";
 
-import ProfilePopup from "../popups/ProfilePopup";
+import ProfilePopup from "../../popups/ProfilePopup";
 
 const MatchView: React.FC = () => {
   const { t } = useTranslation();
@@ -45,10 +45,7 @@ const MatchView: React.FC = () => {
     player: MatchPlayer;
     onClick: (uid: string) => void;
   }> = ({ player, onClick }) => (
-    <div
-      key={player.uid}
-      className="flex-col-center gap-4"
-    >
+    <div key={player.uid} className="flex-col-center gap-4">
       {/* player status */}
       <span
         className={`rounded-full px-3 py-2 ${
@@ -58,7 +55,10 @@ const MatchView: React.FC = () => {
         {player.ready ? "Ready" : "Pending"}
       </span>
       {/* player avatar and username */}
-      <div className="flex-col-center gap-2 cursor-pointer" onClick={() => onClick(player.uid)}>
+      <div
+        className="flex-col-center gap-2 cursor-pointer"
+        onClick={() => onClick(player.uid)}
+      >
         <Avatar src={player.spriteUrl} size={120} />
         <span>{player.username}</span>
       </div>
@@ -78,7 +78,7 @@ const MatchView: React.FC = () => {
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
           <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
         </div>
-        
+
         <Button variant="green">Ready</Button>
       </Card>
       {selectedUid && (
