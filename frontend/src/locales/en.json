@@ -71,8 +71,8 @@
     "ball_size": "Ball Size",
     "paddle_speed": "Paddle Speed",
     "choose_map": "Choose A Map",
-    "reset_to_default": "Reset to Default",
-    "save": "Save"
+    "restore_default": "Restore Default",
+    "save_changes": "Save Changes"
   },
   "ProfilePopup": {
     "header": "My Profile",

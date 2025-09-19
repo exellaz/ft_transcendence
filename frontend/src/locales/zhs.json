@@ -71,8 +71,8 @@
     "ball_size": "球大小",
     "paddle_speed": "板速",
     "choose_map": "选择地图",
-    "reset_to_default": "重置为默认",
-    "save": "保存"
+    "restore_default": "重置为默认",
+    "save_changes": "保存更改"
   },
   "ProfilePopup": {
     "header": "我的资料",

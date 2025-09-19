@@ -27,8 +27,9 @@ const Slider: React.FC<SliderProps> = ({
   return (
     <div className={`w-full flex-col-center gap-4 ${className}`}>
       <p className="text-yellow-400 text-2xl font-semibold">{label}</p>
-      <div className="w-full flex-row-center gap-4">
+      <div className="w-full flex-row-center">
         <div className="flex-1 relative">
+          {/* slider bar */}
           <div className="w-full h-2 bg-input-gray rounded-full">
             <div
               className="h-full bg-yellow-400 rounded-full transition-all duration-200"
@@ -46,14 +47,12 @@ const Slider: React.FC<SliderProps> = ({
           />
           {/* slider handle */}
           <div
-            className="absolute top-1/2 w-6 h-6 bg-yellow-400 rounded-full transform -translate-y-1/2 -translate-x-1/2 border-2 border-white shadow-lg transition-all duration-250 hover:scale-110 pointer-events-none"
+            className="absolute top-1/2 w-6 h-6 bg-yellow-400 rounded-full -translate-y-1/2 -translate-x-1/2 transition-all duration-200 pointer-events-none"
             style={{ left: `${percentage}%` }}
           />
         </div>
       </div>
-      <div className="text-white text-lg">
-        {options[value - 1]}{" "}
-      </div>
+      <p className="text-white text-xl">{options[value - 1]}</p>
     </div>
   );
 };

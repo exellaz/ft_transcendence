@@ -64,7 +64,7 @@ const SinglesRoomView: React.FC = () => {
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
           <div className="w-[50%] h-full flex-col-between">
-            <Header>Singles Game Room</Header>
+            <Header>Singles Room</Header>
             <ReadyPlayers players={players} />
             <div className="flex-row-center gap-6">
               <Button variant="green">Ready</Button>

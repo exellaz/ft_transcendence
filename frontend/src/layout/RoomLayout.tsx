@@ -20,9 +20,9 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
 
   return (
     <Background>
-      <div className="absolute top-5 right-5 flex-col-center gap-6">
-      <Button onClick={() => setShowGameSettings(true)}>Game Settings</Button>
-      <Button onClick={() => setShowInviteFriends(true)}>Invite Friends</Button>
+      <div className="absolute top-10 right-10 flex-col-center gap-6">
+      <Button variant="profile" onClick={() => setShowGameSettings(true)}>Game Settings</Button>
+      <Button variant="profile" onClick={() => setShowInviteFriends(true)}>Invite Friends</Button>
       
       </div>
       {children}
