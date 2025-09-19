@@ -1,18 +1,8 @@
 import React, { useState } from "react";
+import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "../components/Avatar";
 import ProfilePopup from "../popups/ProfilePopup";
-
-const usernameColors = [
-  "text-red-400",
-  "text-blue-400",
-  "text-green-400",
-  "text-yellow-400",
-  "text-purple-400",
-  "text-pink-400",
-  "text-orange-400",
-  "text-teal-400",
-];
 
 interface ReadyPlayersProps {
   players: any[];
@@ -28,7 +18,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
             players.length > 4 ? "grid-cols-4" : "grid-cols-2"
           } `}
         >
-          {players.map((player, idx) => (
+          {players.map((player) => (
             <div
               key={player.uid}
               className={`flex-col-center gap-4 font-bold ${
@@ -53,7 +43,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
                   size={players.length > 2 ? 60 : 120}
                 />
                 <span
-                  className={`${usernameColors[idx % usernameColors.length]}`}
+                  className={`${getUserColor(player.uid)}`}
                 >
                   {player.username}
                 </span>

@@ -62,8 +62,8 @@ const DoublesRoomView: React.FC = () => {
   return (
     <RoomLayout>
       <Card size="large">
-        <div className="w-full h-full flex-row-center gap-6">
-          <div className="w-[50%] h-full flex-col-between">
+        <div className="w-full h-full flex-row-center gap-10">
+          <div className="w-[50%] h-full flex-col-between gap-6">
             <TournamentHeader>
               <p>Doubles Room</p>
               <p>(Room ID: {roomId})</p>

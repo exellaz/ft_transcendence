@@ -1,20 +1,9 @@
 import React, { useState } from "react";
 import type { WaitingRoomPlayer } from "../types/apiInterfaces";
+import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "./Avatar";
-import Button from "./Button";
 import ProfilePopup from "../popups/ProfilePopup";
-
-const usernameColors = [
-  "text-red-400",
-  "text-blue-400",
-  "text-green-400",
-  "text-yellow-400",
-  "text-purple-400",
-  "text-pink-400",
-  "text-orange-400",
-  "text-teal-400",
-];
 
 interface ReadyRoomPlayersProps {
   players: WaitingRoomPlayer[];
@@ -33,48 +22,53 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const rightTeamPlayers = players.filter((player) => player.team === "right");
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
 
+  const basicCellStyling = `w-full bg-input-gray rounded-xl ${
+    variant === "doubles"
+      ? "h-[70px] flex-row-center"
+      : "h-[140px] flex-col-center"
+  }`;
+
   // Individual player component
   const PlayerCell: React.FC<{
     player: WaitingRoomPlayer;
-    colorIndex: number;
-  }> = ({ player, colorIndex }) => (
-    <div className="w-full bg-input-gray rounded-xl p-3 flex-row-center gap-3">
-      <div
-        className="cursor-pointer"
-        onClick={() => setSelectedUid(player.uid)}
-      >
-        <Avatar src={player.spriteUrl} size={50} />
+  }> = ({ player }) => (
+    <div
+      className={`${basicCellStyling} gap-4 cursor-pointer`}
+      onClick={() => setSelectedUid(player.uid)}
+    >
+      <div className="relative">
+        <img
+          src="/assets/crown.png"
+          alt="Leader"
+          title="Leader"
+          className={
+            player.leader
+              ? `absolute -top-3 -right-2 rotate-33 ${
+                  variant === "doubles" ? "w-5 h-3" : "w-6 h-4"
+                }`
+              : "hidden"
+          }
+        />
+        <Avatar
+          src={player.spriteUrl}
+          size={variant === "doubles" ? 30 : 50}
+          className={
+            player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"
+          }
+        />
       </div>
-      <div className="flex-1 flex-col-start gap-1">
-        <span
-          onClick={() => setSelectedUid(player.uid)}
-          className={`${
-            usernameColors[colorIndex % usernameColors.length]
-          } text-lg font-bold cursor-pointer`}
-        >
-          {player.username}
-          {player.leader && <span className="text-yellow-400 ml-1">👑</span>}
-        </span>
-        <span
-          className={`text-xs px-2 py-1 rounded-full text-white font-medium ${
-            player.ready ? "bg-green-400" : "bg-red-400"
-          }`}
-        >
-          {player.ready ? "Ready" : "Pending"}
-        </span>
-      </div>
+      <p className={`text-lg font-bold ${getUserColor(player.uid)}`}>
+        {player.username}
+      </p>
     </div>
   );
 
   // Empty slot component
   const EmptySlot: React.FC = () => (
-    <div className="w-full bg-input-gray rounded-xl p-3 flex-row-center gap-3 border-2 border-dashed border-gray-600 opacity-50">
-      <div className="w-12 h-12 bg-gray-600 rounded-full flex-row-center">
-        <span className="text-gray-400">+</span>
-      </div>
-      <div className="flex-1">
-        <span className="text-gray-500 text-sm">Waiting...</span>
-      </div>
+    <div
+      className={`${basicCellStyling} border-2 border-dashed border-gray-600 opacity-50`}
+    >
+      <p className="text-gray-500 text-sm">Waiting For Player</p>
     </div>
   );
 
@@ -82,17 +76,12 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const TeamColumn: React.FC<{
     title: string;
     teamPlayers: WaitingRoomPlayer[];
-    startColorIndex: number;
-  }> = ({ title, teamPlayers, startColorIndex }) => (
+  }> = ({ title, teamPlayers }) => (
     <div className="flex-1 flex-col-center gap-3">
-      <h3 className="text-yellow-400 text-xl font-bold">{title}</h3>
+      <p className="text-yellow-400 text-xl font-bold">{title}</p>
       <div className="w-full flex-col-center gap-2">
-        {teamPlayers.map((player, index) => (
-          <PlayerCell
-            key={player.uid}
-            player={player}
-            colorIndex={startColorIndex + index}
-          />
+        {teamPlayers.map((player) => (
+          <PlayerCell key={player.uid} player={player} />
         ))}
         {/* Fill empty slots */}
         {Array.from(
@@ -107,23 +96,22 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
 
   return (
     <>
-      <div className="w-full h-[300px] flex-col-between gap-6 bg-black">
-        {/* Two-column team layout */}
-        <div className="w-full flex-row-start gap-6">
-          <TeamColumn
-            title="Left Team"
-            teamPlayers={leftTeamPlayers}
-            startColorIndex={0}
-          />
-          <TeamColumn
-            title="Right Team"
-            teamPlayers={rightTeamPlayers}
-            startColorIndex={4}
+      {/* Two-column team layout */}
+      <div className="relative w-full h-full flex-row-start gap-6">
+        <TeamColumn title="Left Team" teamPlayers={leftTeamPlayers} />
+        {/* Switch Team Button */}
+        <div
+          className="absolute top-0 left-1/2 transform -translate-x-1/2 cursor-pointer"
+          onClick={onSwitchTeam}
+        >
+          <img
+            className="h-8"
+            src="/assets/switch.png"
+            alt="Switch Teams"
+            title="Switch Teams"
           />
         </div>
-
-        {/* Switch Team Button */}
-        <Button onClick={onSwitchTeam}>Switch Team</Button>
+        <TeamColumn title="Right Team" teamPlayers={rightTeamPlayers} />
       </div>
 
       {selectedUid && (

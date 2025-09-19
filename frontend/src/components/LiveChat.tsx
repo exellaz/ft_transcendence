@@ -3,19 +3,9 @@ import type {
   WaitingTournamentPlayer,
   LiveChatMessage,
 } from "../types/apiInterfaces";
+import { getUserColor } from "../utils/colorUtils";
 
 import Button from "../components/Button";
-
-const usernameColors = [
-  "text-red-400",
-  "text-blue-400",
-  "text-green-400",
-  "text-yellow-400",
-  "text-purple-400",
-  "text-pink-400",
-  "text-orange-400",
-  "text-teal-400",
-];
 
 const LiveChat: React.FC<{
   players: WaitingTournamentPlayer[];
@@ -47,14 +37,7 @@ const LiveChat: React.FC<{
           return (
             <div key={idx} className="mb-2">
               <div className="flex items-baseline justify-between flex-wrap">
-                <span
-                  className={`font-bold ${
-                    usernameColors[
-                      (player ? players.indexOf(player) : 0) %
-                        usernameColors.length
-                    ]
-                  }`}
-                >
+                <span className={`font-bold ${getUserColor(msg.uid)}`}>
                   {player ? player.username : "Unknown"}:
                 </span>{" "}
                 <span className="text-gray-400 text-xs">{msg.timestamp}</span>
