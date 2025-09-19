@@ -1,8 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import type {
-  TournamentLobbyPlayer,
-  TournamentLobbyChatMessage,
-} from "../types/apiInterfaces";
+import type { WaitingPlayer, LiveChatMessage } from "../types/apiInterfaces";
 
 import Button from "../components/Button";
 
@@ -18,8 +15,8 @@ const usernameColors = [
 ];
 
 const LiveChat: React.FC<{
-  players: TournamentLobbyPlayer[];
-  chatMessages: TournamentLobbyChatMessage[];
+  players: WaitingPlayer[];
+  chatMessages: LiveChatMessage[];
   message: string;
   setMessage: (msg: string) => void;
   onSendMessage: () => void;
@@ -38,25 +35,26 @@ const LiveChat: React.FC<{
   return (
     <div className="w-[50%] h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
       <p className="text-white text-xl font-bold">Live Chat</p>
-      <div ref={messagesEndRef} className="h-[400px] overflow-y-auto scrollbar-hide">
+      <div
+        ref={messagesEndRef}
+        className="h-[400px] overflow-y-auto scrollbar-hide"
+      >
         {chatMessages.map((msg, idx) => {
           const player = players.find((p) => p.uid === msg.uid);
           return (
             <div key={idx} className="mb-2">
               <div className="flex items-baseline justify-between flex-wrap">
-              <span
-                className={`font-bold ${
-                  usernameColors[
-                    (player ? players.indexOf(player) : 0) %
-                      usernameColors.length
-                  ]
-                }`}
-              >
-                {player ? player.username : "Unknown"}:
-              </span>{" "}
-              <span className="text-gray-400 text-xs">
-                {msg.timestamp}
-              </span>
+                <span
+                  className={`font-bold ${
+                    usernameColors[
+                      (player ? players.indexOf(player) : 0) %
+                        usernameColors.length
+                    ]
+                  }`}
+                >
+                  {player ? player.username : "Unknown"}:
+                </span>{" "}
+                <span className="text-gray-400 text-xs">{msg.timestamp}</span>
               </div>
               <div className="text-white break-words">{msg.text}</div>
             </div>

@@ -150,25 +150,25 @@ const NormalModeView: React.FC = () => {
         text={translate("create_singles_game")}
         open={showCreateSinglesGame}
         onClose={() => setShowCreateSinglesGame(false)}
-        redirectPath="/normal"
+        redirectPath="/singles-room"
       />
       <ConfirmationPopup
         text={translate("create_doubles_game")}
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
-        redirectPath="/normal"
+        redirectPath="/doubles-room"
       />
       <ConfirmationPopup
         text={translate("join_singles_game")}
         open={showJoinSinglesGame}
         onClose={() => setShowJoinSinglesGame(false)}
-        redirectPath="/normal"
+        redirectPath="/singles-room"
       />
       <ConfirmationPopup
         text={translate("join_doubles_game")}
         open={showJoinDoublesGame}
         onClose={() => setShowJoinDoublesGame(false)}
-        redirectPath="/normal"
+        redirectPath="/doubles-room"
       />
     </MainLayout>
   );

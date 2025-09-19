@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  mockTournamentLobbyPlayers,
-  mockTournamentLobbyChat,
+  mockWaitingTournamentPlayers,
+  mockTournamentLiveChat,
 } from "../../data/mockUsers";
-import type {
-  TournamentLobbyPlayer,
-  TournamentLobbyChatMessage,
-} from "../../types/apiInterfaces";
+import type { WaitingPlayer, LiveChatMessage } from "../../types/apiInterfaces";
 
 import { formatTimestamp } from "../../utils/date";
 
@@ -23,10 +20,8 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 const TournamentLobbyView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
-  const [players, setPlayers] = useState<TournamentLobbyPlayer[]>([]);
-  const [chatMessages, setChatMessages] = useState<
-    TournamentLobbyChatMessage[]
-  >([]);
+  const [players, setPlayers] = useState<WaitingPlayer[]>([]);
+  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [stage, setStage] = useState("quarterfinals");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
@@ -44,8 +39,8 @@ const TournamentLobbyView: React.FC = () => {
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockTournamentLobbyPlayers["t1"]);
-    setChatMessages(mockTournamentLobbyChat["t1"]);
+    setPlayers(mockWaitingTournamentPlayers["t1"]);
+    setChatMessages(mockTournamentLiveChat["t1"]);
   }, []);
 
   // todo: Replace 1 with current user id

@@ -89,7 +89,7 @@ export interface Profile {
 // Tournament lobby API interfaces
 // - TournamentLobbyView.tsx
 // Player in tournament lobby
-export interface TournamentLobbyPlayer {
+export interface WaitingPlayer {
   uid: string;
   username: string;
   spriteUrl: string;
@@ -97,7 +97,7 @@ export interface TournamentLobbyPlayer {
 }
 
 // Chat message in tournament lobby
-export interface TournamentLobbyChatMessage {
+export interface LiveChatMessage {
   uid: string;
   text: string;
   timestamp: string; // ISO string or formatted

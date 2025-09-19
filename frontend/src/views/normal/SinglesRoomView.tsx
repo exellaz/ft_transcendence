@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  mockTournamentLobbyPlayers,
-  mockTournamentLobbyChat,
+  mockWaitingSinglesRoomPlayers,
+  mockSinglesRoomLiveChat,
 } from "../../data/mockUsers";
-import type {
-  TournamentLobbyPlayer,
-  TournamentLobbyChatMessage,
-} from "../../types/apiInterfaces";
+import type { WaitingPlayer, LiveChatMessage } from "../../types/apiInterfaces";
 
 import { formatTimestamp } from "../../utils/date";
 
@@ -23,29 +20,26 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 const SinglesRoomView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`SinglesRoomView.${key}`);
-  const [players, setPlayers] = useState<TournamentLobbyPlayer[]>([]);
-  const [chatMessages, setChatMessages] = useState<
-    TournamentLobbyChatMessage[]
-  >([]);
+  const [players, setPlayers] = useState<WaitingPlayer[]>([]);
+  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
-  const [stage, setStage] = useState("quarterfinals");
-  const [showQuitTournament, setShowQuitTournament] = useState(false);
+  const [showLeaveRoom, setShowLeaveRoom] = useState(false);
 
-  // TODO: Fetch real data based on tournamentId
+  // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
   //   // Replace with real API calls
-  //   fetch(`/api/players?tournamentId=${tournamentId}`)
+  //   fetch(`/api/players?roomId=${roomId}`)
   //     .then((res) => res.json())
   //     .then(setPlayers);
-  //   fetch(`/api/messages?tournamentId=${tournamentId}`)
+  //   fetch(`/api/messages?roomId=${roomId}`)
   //     .then((res) => res.json())
   //     .then(setChatMessages);
-  // }, [tournamentId]);
+  // }, [roomId]);
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockTournamentLobbyPlayers["t1"]);
-    setChatMessages(mockTournamentLobbyChat["t1"]);
+    setPlayers(mockWaitingSinglesRoomPlayers["t1"]);
+    setChatMessages(mockSinglesRoomLiveChat["t1"]);
   }, []);
 
   // todo: Replace 1 with current user id
@@ -68,14 +62,9 @@ const SinglesRoomView: React.FC = () => {
             <ReadyPlayers players={players} />
             <div className="flex-row-center gap-6">
               <Button variant="green">Ready</Button>
-              {stage === "quarterfinals" && (
-                <Button
-                  variant="red"
-                  onClick={() => setShowQuitTournament(true)}
-                >
-                  Leave Room
-                </Button>
-              )}
+              <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
+                Leave Room
+              </Button>
             </div>
           </div>
           <LiveChat
@@ -88,9 +77,9 @@ const SinglesRoomView: React.FC = () => {
         </div>
       </Card>
       <ConfirmationPopup
-        text="Are you sure you want to quit the tournament?"
-        open={showQuitTournament}
-        onClose={() => setShowQuitTournament(false)}
+        text="Are you sure you want to leave the room?"
+        open={showLeaveRoom}
+        onClose={() => setShowLeaveRoom(false)}
         redirectPath="/main-menu"
       />
     </RoomLayout>
