@@ -30,6 +30,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
   useEffect(() => {
     let active = true;
     const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
+    const playerName = sessionStorage.getItem("pongPlayerName") || "Guest";
 
     async function connect() {
       await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
@@ -40,7 +41,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
       setIsLeader(clientId === leaderId);
 
       const chooseSide = await determineSide(roomId);
-      const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+      const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerName)}`);
       setSocket(ws);
 
       ws.onopen = () => {
@@ -60,18 +61,19 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
           const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
           const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
           setRole(newRole);
-          setPlayerText(`You are: [${clientId}] (${newRole})`);
+          setPlayerText(`You are: ${playerName} [${clientId}] (${newRole})`);
 
           setLeftTeamHtml(
             data.gameState.teams.left.map((p:any)=> {
               const mark = p.clientId === data.leaderId ? "✦" : "";
-              return `${mark}${p.clientId} (${p.role})`;
+              return `${mark}${p.playerName} [${p.clientId}] (${p.role})`;
             }).join("\n")
           );
+
           setRightTeamHtml(
             data.gameState.teams.right.map((p:any)=> {
               const mark = p.clientId === data.leaderId ? "✦" : "";
-              return `${mark}${p.clientId} (${p.role})`;
+              return `${mark}${p.playerName} [${p.clientId}] (${p.role})`;
             }).join("\n")
           );
 
@@ -190,6 +192,7 @@ export default function Room({
 			roomName={roomName}
 			clientId={sessionStorage.getItem("pongClientId")||ensureClientId()}
 			initialRole={role}
+            playerName={sessionStorage.getItem("pongPlayerName") || "Guest"}
 			onBack={onBack}
 		/>;
 	}

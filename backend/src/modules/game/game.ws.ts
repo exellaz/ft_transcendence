@@ -13,8 +13,8 @@ export default async function gameWsRoute(fastify: any) {
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
 		// Step 1: Assign role to client (player, spectator, etc.)
-		const { clientId, roomId, room, side } = context;
-		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string);
+		const { clientId, roomId, room, side, playerName } = context;
+		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName);
 		const game = new Game();
 
 		// Step 2: handle incoming messages from clients

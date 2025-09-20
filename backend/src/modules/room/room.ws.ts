@@ -9,9 +9,9 @@ export default async function roomWsRoutes(fastify: any) {
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
 		// step 1: Assign role to client (player, spectator, etc.)
-		const { clientId, roomId, room, side } = context;
-		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string);
-		// console.log("Websocket assign role response: ", player); //// debug
+		const { clientId, roomId, room, side, playerName } = context;
+		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName);
+		 console.log("Websocket assign role response: ", player); //// debug
 
 		// step 2: handle incoming messages from clients
 		socket.on("message", (raw: any) => {

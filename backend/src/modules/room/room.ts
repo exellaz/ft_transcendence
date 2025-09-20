@@ -6,6 +6,7 @@ import { broadcast } from "../../utils/utils.ts";
 
 export interface playerInfo {
     clientId: string; // client id
+    playerName: string; // player username
     role: string; // "left" or "right"
 }
 

@@ -69,7 +69,7 @@ export function useLiveChatWebSocket(roomId: string) {
             JSON.stringify({
                 type: "chat",
                 room: roomId,
-                from: sessionStorage.getItem("pongClientId") || "Guest",
+                from: sessionStorage.getItem("pongPlayerName") || "Guest",
                 text,
             })
         );

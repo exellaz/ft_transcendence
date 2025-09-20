@@ -17,6 +17,8 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
 	const [showQuickJoin, setShowQuickJoin] = useState(false);
     const roomsInterval = useRef<number | null>(null);
     const matchesInterval = useRef<number | null>(null);
+    const [playerName, setPlayerName] = useState("");
+    const [showNameModal, setShowNameModal] = useState(false);
 
 	async function quickJoinRoom(teamSize: number) {
 		// step 1: Fetch rooms that match the team size and are not started
@@ -81,7 +83,14 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
         }
     }
 
-    useEffect(() => { ensureClientId(); }, []);
+    useEffect(() => {
+        ensureClientId();
+        const savedName = sessionStorage.getItem("pongPlayerName");
+        if (!savedName)
+            setShowNameModal(true);
+        else
+            setPlayerName(savedName);
+    }, []);
 
 	// Refresh room list every 2 seconds
     useEffect(() => {
@@ -106,6 +115,39 @@ export default function Lobby({ onEnterRoom }: { onEnterRoom: (id:string, name:s
     return (
       <div className="p-6">
         <h1 className="text-3xl mb-4">Pong Lobby</h1>
+
+        {/* Name Modal */}
+        {showNameModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white p-6 rounded shadow-lg w-80 relative">
+              <h2 className="text-xl mb-4">Enter Your Name</h2>
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder="Player Name"
+                className="w-full px-2 py-1 border rounded mb-3"
+              />
+              <div className="flex justify-end">
+                <button
+                  className="px-3 py-1 bg-blue-500 text-white rounded"
+                  onClick={() => {
+                      if (!playerName.trim()) return; // prevent empty
+                      sessionStorage.setItem("pongPlayerName", playerName.trim());
+                      setShowNameModal(false);
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Player Name Display */}
+        <div className="mb-4">
+          <h2 className="text-xl">Welcome, {playerName || "Guest"}!</h2>
+        </div>
 
 		{/* Create Button */}
         <div className="mb-4">

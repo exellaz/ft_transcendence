@@ -7,9 +7,10 @@ interface UseGameWebSocketParams {
   roomName: string;
   clientId: string;
   initialRole: string;
+  playerName: string;
 }
 
-export function useGameWebSocket({ roomId, roomName, clientId, initialRole }: UseGameWebSocketParams) {
+export function useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName }: UseGameWebSocketParams) {
 	const [role, setRole] = useState(initialRole);
 	const [scoreText, setScoreText] = useState("Score: 0 - 0");
 	const [statusText, setStatusText] = useState(`Room: ${roomName}`);
@@ -22,7 +23,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole }: Us
 	useEffect(() => {
 		// create websocket connection with player id, room id, and side
 		const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
-		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerName)}`);
 		socketRef.current = ws;
 
 		// open connection
@@ -207,12 +208,14 @@ export default function Game({
 	roomName,
 	clientId,
 	initialRole,
+	playerName,
 	onBack
 } : {
 	roomId:string;
 	roomName:string;
 	clientId:string;
 	initialRole:string;
+	playerName:string;
 	onBack:()=>void
 }) {
 	useBlockLeave();
@@ -230,7 +233,7 @@ export default function Game({
 		winner,
 		isSpectator,
 		gameState,
-	} = useGameWebSocket({ roomId, roomName, clientId, initialRole });
+	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
 
 	//--- create game board ---
 	useEffect(()=>{
