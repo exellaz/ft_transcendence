@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+// Hook to block page leave, refresh, and right-click
 export function useBlockLeave() {
   const beforeUnload = useRef<(e: BeforeUnloadEvent) => any>(() => {});
 

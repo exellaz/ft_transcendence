@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BASE_WIDTH, BASE_HEIGHT, PADDLEWIDTH, PADDLEHEIGHT, BALLSIZE } from "./constants";
 import { useBlockLeave } from "./useBlockLeave";
 
+// game structure
 interface UseGameWebSocketParams {
   roomId: string;
   roomName: string;
@@ -10,6 +11,15 @@ interface UseGameWebSocketParams {
   playerName: string;
 }
 
+/**
+ * @brief Custom hook to manage game WebSocket connection and state
+ * @param roomId ID of the game room
+ * @param roomName Name of the game room
+ * @param clientId Unique client identifier
+ * @param initialRole Initial role of the player (left_player1, right_player1, spectator, etc.)
+ * @param playerName Name of the player
+ * @returns Object containing WebSocket, role, scoreText, statusText, gameOver, winner, playerResult, isSpectator, and gameState
+ */
 export function useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName }: UseGameWebSocketParams) {
 	const [role, setRole] = useState(initialRole);
 	const [scoreText, setScoreText] = useState("Score: 0 - 0");
@@ -40,6 +50,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 		// handle incoming message / event from server
 		ws.addEventListener("message", (event) => {
 			try {
+				// validate JSON
 				let data;
 				try {
 					data = JSON.parse(event.data);
@@ -63,11 +74,14 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					return;
 				}
 
+				// handle different message types
 				if (data.type === "roleUpdate") {
+					//validata the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) {
 						ws.close(1003, "Invalid game state");
 						return;
 					}
+					//update role based on clientId
 					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
 					const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
 					const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
@@ -75,35 +89,35 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					setIsSpectator(newRole === "spectator");
 				}
 				if (data.type === "state") {
+					//validate the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) {
 						ws.close(1003, "Invalid game state");
 						return;
 					}
+					//update game state
 					setGameState(data.gameState);
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
 					setIsSpectator(role === "spectator");
+					//check for game over
 					const gameWinner = data.result?.winner || null;
 					if (gameWinner && !gameOver) {
-					  setGameOver(true);
-					  setWinner(gameWinner);
-
-
-			          // Determine if this client won or lost
-			          if (role !== "spectator") {
-			            const inLeftTeam = data.gameState.teams.left.some((p:any)=>p.clientId === clientId);
-			            const inRightTeam = data.gameState.teams.right.some((p:any)=>p.clientId === clientId);
-			            if ((inLeftTeam && gameWinner === "left") || (inRightTeam && gameWinner === "right")) {
-			              setPlayerResult("win");
-			            } else {
-			              setPlayerResult("lose");
-			            }
-			          }
+						setGameOver(true);
+						setWinner(gameWinner);
+						// Determine if this client won or lost
+						if (role !== "spectator") {
+							const inLeftTeam = data.gameState.teams.left.some((p:any)=>p.clientId === clientId);
+							const inRightTeam = data.gameState.teams.right.some((p:any)=>p.clientId === clientId);
+							if ((inLeftTeam && gameWinner === "left") || (inRightTeam && gameWinner === "right"))
+								setPlayerResult("win");
+							else
+								setPlayerResult("lose");
+						}
 					}
 				}
 			} catch (err) {
-					console.error("unexpected error in game ws message handling:", err);
-					ws.close(1011, "server error");
+				console.error("unexpected error in game ws message handling:", err);
+				ws.close(1011, "server error");
 			}
 		});
 
@@ -111,9 +125,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 		ws.addEventListener("close", () => { console.log("Game ws disconnected"); });
 
 		// close socket when component unmount
-		return () => {
-			ws.close();
-		};
+		return () => ws.close();
 	}, [roomId, clientId, initialRole, role, roomName, gameOver]); //re-run effect if any of these change
 
 	return {
@@ -130,6 +142,13 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 }
 
 /************************************** Draw the game container *************************************/
+/**
+ * @brief Draw the game state on the canvas
+ * @param canvas HTMLCanvasElement to draw on
+ * @param state Current game state
+ * @param isSpectator Whether the viewer is a spectator
+ * @param playerResult Result for the player ("win", "lose", or null)
+ */
 function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, playerResult: "win" | "lose" | null = null) {
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
@@ -217,6 +236,15 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 }
 
 /************************************** Game Component **************************************/
+/**
+ * @brief Main Game component
+ * @param roomId ID of the game room
+ * @param roomName Name of the game room
+ * @param clientId Unique client identifier
+ * @param initialRole Initial role of the player (left_player1, right_player1, spectator, etc.)
+ * @param playerName Name of the player
+ * @param onBack Callback function to handle back to lobby
+*/
 export default function Game({
 	roomId,
 	roomName,
@@ -232,6 +260,7 @@ export default function Game({
 	playerName:string;
 	onBack:()=>void
 }) {
+	//prevent accidental refresh or leave
 	useBlockLeave();
 	//ref to the canvas
 	const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -324,6 +353,7 @@ export default function Game({
 	  <h1 id="roleText">{statusText}</h1>
 	  <h2 id="scoreText">{scoreText}</h2>
 	  <canvas id="game" ref={canvasRef} className="mx-auto block" width={BASE_WIDTH} height={BASE_HEIGHT} />
+	  {/* if game is over the have the leave button */}
 	  <div className="mt-4">
 		{(isSpectator || gameOver) && (
 			<button id="backLobbyBtn" onClick={handleBack} className="px-3 py-1 border">Back to Lobby</button>

@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
+// chat message structure
 export interface ChatMessage {
   time: string;
   from: string;
   text: string;
 }
 
+/**
+ * @brief Custom hook to manage live chat via WebSocket
+ * @param roomId The chat room ID
+ * @returns An object containing the list of messages and a send function
+ */
 export function useLiveChatWebSocket(roomId: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const socketRef = useRef<WebSocket | null>(null);
@@ -50,6 +56,7 @@ export function useLiveChatWebSocket(roomId: string) {
                 }
             } catch (err) {
                 console.error("Invalid chat message:", err);
+				ws.close(1011, "server error");
             }
         });
 
@@ -79,27 +86,33 @@ export function useLiveChatWebSocket(roomId: string) {
 }
 
 /************************************** Chat Input Box *************************************/
+/**
+ * @brief Chat input box component
+ * @param onSend Callback function to send a message
+ */
 function ChatInput({ onSend }: { onSend: (t: string) => void }) {
-    const [v, setV] = useState("");
+    const [msg, setMsg] = useState(""); // current input message
     return (
       <div className="p-2 flex">
+		{/* send with enter */}
         <input
           className="flex-1 border p-1"
-          value={v}
-          onChange={(e) => setV(e.target.value)}
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)} // update input box
           onKeyDown={(e) => {
-            if (e.key === "Enter" && v.trim()) {
-              onSend(v.trim());
-              setV("");
+            if (e.key === "Enter" && msg.trim()) { // send the msg on Enter key
+              onSend(msg.trim()); // trim whitespace
+              setMsg(""); // clear input box
             }
           }}
         />
+		{/* send with button */}
         <button
           className="ml-2 px-2 border p-1"
           onClick={() => {
-            if (v.trim()) {
-              onSend(v.trim());
-              setV("");
+            if (msg.trim()) { // send the msg on button click
+              onSend(msg.trim()); // trim whitespace
+              setMsg(""); // clear input box
             }
           }}
         >
@@ -110,8 +123,13 @@ function ChatInput({ onSend }: { onSend: (t: string) => void }) {
 }
 
 /************************************** Chat Box Container *************************************/
+/**
+ * @brief Chat box component
+ * @param roomId room for the chat
+ * @returns Chat box UI
+*/
 export default function Chat({ roomId }: { roomId: string }) {
-    const { messages, send } = useLiveChatWebSocket(roomId);
+    const { messages, send } = useLiveChatWebSocket(roomId); // use the custom hook
     const boxRef = useRef<HTMLDivElement | null>(null);
 
     // auto-scroll
@@ -121,7 +139,8 @@ export default function Chat({ roomId }: { roomId: string }) {
 
     return (
       <div className="fixed right-5 bottom-5 w-96 h-48 border bg-white flex flex-col">
-        <div className="flex-1 overflow-auto p-2" ref={boxRef}>
+        {/* chat box */}
+		<div className="flex-1 overflow-auto p-2" ref={boxRef}>
           {messages.map((m, i) => (
             <div
               key={i}
@@ -131,6 +150,7 @@ export default function Chat({ roomId }: { roomId: string }) {
             </div>
           ))}
         </div>
+		{/* input box */}
         <ChatInput onSend={send} />
       </div>
     );
