@@ -16,6 +16,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 	const [statusText, setStatusText] = useState(`Room: ${roomName}`);
 	const [gameOver, setGameOver] = useState(false);
 	const [winner, setWinner] = useState<string | null>(null);
+	const [playerResult, setPlayerResult] = useState<"win" | "lose" | null>(null);
 	const [isSpectator, setIsSpectator] = useState(false);
 	const [gameState, setGameState] = useState<any>(null);
 	const socketRef = useRef<WebSocket | null>(null);
@@ -86,6 +87,18 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					if (gameWinner && !gameOver) {
 					  setGameOver(true);
 					  setWinner(gameWinner);
+
+
+			          // Determine if this client won or lost
+			          if (role !== "spectator") {
+			            const inLeftTeam = data.gameState.teams.left.some((p:any)=>p.clientId === clientId);
+			            const inRightTeam = data.gameState.teams.right.some((p:any)=>p.clientId === clientId);
+			            if ((inLeftTeam && gameWinner === "left") || (inRightTeam && gameWinner === "right")) {
+			              setPlayerResult("win");
+			            } else {
+			              setPlayerResult("lose");
+			            }
+			          }
 					}
 				}
 			} catch (err) {
@@ -110,13 +123,14 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 		statusText,
 		gameOver,
 		winner,
+		playerResult,
 		isSpectator,
 		gameState,
 	};
 }
 
 /************************************** Draw the game container *************************************/
-function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, winner: string | null = null) {
+function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, playerResult: "win" | "lose" | null = null) {
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
@@ -127,11 +141,11 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 	ctx.clearRect(0,0,canvas.width, canvas.height);
 
 	//if game over, show winner
-	if (winner) {
+	if (playerResult) {
 		ctx.font = "48px Arial";
 		ctx.fillStyle = "green";
 		ctx.textAlign = "center";
-		ctx.fillText(`Player ${winner} wins!`, canvas.width/2, canvas.height/2);
+		ctx.fillText(playerResult === "win" ? "You Win!" : "You Lose!", canvas.width/2, canvas.height/2);
 		return;
 	}
 
@@ -230,7 +244,7 @@ export default function Game({
 		scoreText,
 		statusText,
 		gameOver,
-		winner,
+		playerResult,
 		isSpectator,
 		gameState,
 	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
@@ -249,9 +263,9 @@ export default function Game({
 	//--- redraw the game when game state changes ---
 	useEffect(() => {
 		if (gameState) {
-			draw_container(canvasRef.current!, gameState, isSpectator, winner);
+			draw_container(canvasRef.current!, gameState, isSpectator, playerResult);
 		}
-	}, [gameState, isSpectator, winner]);
+	}, [gameState, isSpectator, playerResult]);
 
 	//--- handle keypresses, beforeunload ---
 	useEffect(()=>{

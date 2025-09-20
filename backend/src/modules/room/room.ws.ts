@@ -6,6 +6,7 @@ const wsHandler = new WebSocketHandler();
 export default async function roomWsRoutes(fastify: any) {
 	fastify.get("/ws-room", { websocket: true }, (socket: any, req: any) => {
 		const context = validateConnection(socket, req);
+        console.log("Websocket connection context: ", context); //// debug
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
 		// step 1: Assign role to client (player, spectator, etc.)
