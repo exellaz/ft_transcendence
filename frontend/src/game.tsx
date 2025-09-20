@@ -1,13 +1,120 @@
 import { useEffect, useRef, useState } from "react";
 import { BASE_WIDTH, BASE_HEIGHT, PADDLEWIDTH, PADDLEHEIGHT, BALLSIZE } from "./constants";
+import { useBlockLeave } from "./useBlockLeave";
 
-/**
- * @brief Draw the game state on the canvas
- * @param canvas The canvas element
- * @param state The game state
- * @param isSpectator Whether the current user is a spectator
- * @param winner The winner of the game, if any
- */
+interface UseGameWebSocketParams {
+  roomId: string;
+  roomName: string;
+  clientId: string;
+  initialRole: string;
+}
+
+export function useGameWebSocket({ roomId, roomName, clientId, initialRole }: UseGameWebSocketParams) {
+	const [role, setRole] = useState(initialRole);
+	const [scoreText, setScoreText] = useState("Score: 0 - 0");
+	const [statusText, setStatusText] = useState(`Room: ${roomName}`);
+	const [gameOver, setGameOver] = useState(false);
+	const [winner, setWinner] = useState<string | null>(null);
+	const [isSpectator, setIsSpectator] = useState(false);
+	const [gameState, setGameState] = useState<any>(null);
+	const socketRef = useRef<WebSocket | null>(null);
+
+	useEffect(() => {
+		// create websocket connection with player id, room id, and side
+		const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
+		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+		socketRef.current = ws;
+
+		// open connection
+		ws.addEventListener("open", () => {
+			const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400, 1);
+			const scaledWidth = 800 * scale;
+			const scaledHeight = 400 * scale;
+			ws.send(JSON.stringify({ type: "setWidth", width: scaledWidth }));
+			ws.send(JSON.stringify({ type: "setHeight", height: scaledHeight }));
+			console.log("Game ws connected");
+		});
+
+		// handle incoming message / event from server
+		ws.addEventListener("message", (event) => {
+			try {
+				let data;
+				try {
+					data = JSON.parse(event.data);
+				} catch {
+					ws.close(1003, "Invalid JSON");
+					return;
+				}
+
+				// validate message structure
+				if (typeof data !== "object" || data === null) {
+					ws.close(1003, "Invalid message format");
+					return;
+				}
+				if (typeof data.type !== "string") {
+					ws.close(1003, "Invalid message: missing type");
+					return;
+				}
+				const allowedTypes = ["roleUpdate", "state"];
+				if (!allowedTypes.includes(data.type)) {
+					ws.close(1003, `unsupported message type ${data.type}`);
+					return;
+				}
+
+				if (data.type === "roleUpdate") {
+					if (typeof data.gameState !== "object" || data.gameState === null) {
+						ws.close(1003, "Invalid game state");
+						return;
+					}
+					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
+					const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
+					const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
+					setRole(newRole);
+					setIsSpectator(newRole === "spectator");
+				}
+				if (data.type === "state") {
+					if (typeof data.gameState !== "object" || data.gameState === null) {
+						ws.close(1003, "Invalid game state");
+						return;
+					}
+					setGameState(data.gameState);
+					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
+					setStatusText(`Room: ${roomName} | Role: ${role}`);
+					setIsSpectator(role === "spectator");
+					const gameWinner = data.result?.winner || null;
+					if (gameWinner && !gameOver) {
+					  setGameOver(true);
+					  setWinner(gameWinner);
+					}
+				}
+			} catch (err) {
+					console.error("unexpected error in game ws message handling:", err);
+					ws.close(1011, "server error");
+			}
+		});
+
+		// close connection
+		ws.addEventListener("close", () => { console.log("Game ws disconnected"); });
+
+		// close socket when component unmount
+		return () => {
+			ws.close();
+		};
+	}, [roomId, clientId, initialRole, role, roomName, gameOver]); //re-run effect if any of these change
+
+	return {
+		socket: socketRef.current,
+		role,
+		scoreText,
+		statusText,
+		gameOver,
+		winner,
+		isSpectator,
+		gameState,
+	};
+}
+
+/************************************** Draw the game container *************************************/
 function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, winner: string | null = null) {
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
@@ -94,191 +201,117 @@ function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectato
 	}
 }
 
-export default function Game({ roomId, roomName, clientId, initialRole, onBack } : { roomId:string; roomName:string; socket:WebSocket; clientId:string; initialRole:string; onBack:()=>void }) {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [role, setRole] = useState(initialRole);
-    const [scoreText, setScoreText] = useState("Score: 0 - 0");
-    const [statusText, setStatusText] = useState(`Room: ${roomName}`);
-    const [gameOver, setGameOver] = useState(false);
-    const [winner, setWinner] = useState<string | null>(null);
-    const keysRef = useRef({ up:false, down:false });
-    const [isSpectator, setIsSpectator] = useState(false);
+/************************************** Game Component **************************************/
+export default function Game({
+	roomId,
+	roomName,
+	clientId,
+	initialRole,
+	onBack
+} : {
+	roomId:string;
+	roomName:string;
+	clientId:string;
+	initialRole:string;
+	onBack:()=>void
+}) {
+	useBlockLeave();
+	//ref to the canvas
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+	//keep track of which keys are pressed
+	const keysRef = useRef({ up:false, down:false });
+	//use custom hook to manage websocket and game state
+	const {
+		socket,
+		role,
+		scoreText,
+		statusText,
+		gameOver,
+		winner,
+		isSpectator,
+		gameState,
+	} = useGameWebSocket({ roomId, roomName, clientId, initialRole });
 
-	const [socket, setSocket] = useState<WebSocket | null>(null);
-
+	//--- create game board ---
 	useEffect(()=>{
-		const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
-		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${chooseSide}`);
-		setSocket(ws);
+		const canvas = canvasRef.current!;
+		function createUI() {
+			canvas.width = Math.min(window.innerWidth / (BASE_WIDTH/BASE_WIDTH), 1) * BASE_WIDTH;
+			canvas.height = Math.min(window.innerHeight / (BASE_HEIGHT/BASE_HEIGHT), 1) * BASE_HEIGHT;
+			canvas.style.border = "5px solid black";
+		}
+		createUI();
+	}, []);
+
+	//--- redraw the game when game state changes ---
+	useEffect(() => {
+		if (gameState) {
+			draw_container(canvasRef.current!, gameState, isSpectator, winner);
+		}
+	}, [gameState, isSpectator, winner]);
+
+	//--- handle keypresses, beforeunload ---
+	useEffect(()=>{
+		const keyhandler = (e: KeyboardEvent) => {
+			if (!gameOver) {
+				if (role !== "spectator") {
+					if (e.type === "keydown") {
+						if (e.key === "ArrowUp") keysRef.current.up = true;
+						if (e.key === "ArrowDown") keysRef.current.down = true;
+					}
+					if (e.type === "keyup") {
+						if (e.key === "ArrowUp") keysRef.current.up = false;
+						if (e.key === "ArrowDown") keysRef.current.down = false;
+					}
+				}
+			}
+		};
+		window.addEventListener("keydown", keyhandler);
+		window.addEventListener("keyup", keyhandler);
 
 		return () => {
-			try { ws.close(); } catch {}
+			window.removeEventListener("keydown", keyhandler);
+			window.removeEventListener("keyup", keyhandler);
 		};
-	}, [clientId, roomId, initialRole]);
+	}, [gameOver, role, isSpectator]);
 
-    useEffect(()=>{
-        //create game board
-        const canvas = canvasRef.current!;
-        function createUI() {
-            canvas.width = Math.min(window.innerWidth / (BASE_WIDTH/BASE_WIDTH), 1) * BASE_WIDTH;
-            canvas.height = Math.min(window.innerHeight / (BASE_HEIGHT/BASE_HEIGHT), 1) * BASE_HEIGHT;
-            canvas.style.border = "5px solid black";
-        }
-        createUI();
-    }, []);
+	//--- send keypress updates to server ---
+	useEffect(()=>{
+		const updateKeyPress = window.setInterval(()=>{
+			if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
+				if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
+				if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+			}
+		}, 1000/60); //make 60 frames per second
+		return () => clearInterval(updateKeyPress); // cleanup when finished
+	}, [role, gameOver, socket]);
 
-    useEffect(() => {
-		if (!socket) return;
-
-        // send game size to server on open websocket
-        const onOpen = () => {
-            const scale = Math.min(window.innerWidth / BASE_WIDTH, window.innerHeight / BASE_HEIGHT, 1);
-            const scaledWidth = BASE_WIDTH * scale;
-            const scaledHeight = BASE_HEIGHT * scale;
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ type: "setWidth", width: scaledWidth }));
-                socket.send(JSON.stringify({ type: "setHeight", height: scaledHeight }));
-                console.log(`game size from game socket: ${scaledWidth}x${scaledHeight}`); ////debug
-            }
-        };
-
-        //when socket opens, send initial width and height
-        socket.addEventListener("open", onOpen);
-        return () => socket.removeEventListener("open", onOpen);
-    }, [socket]);
-
-    useEffect(() => {
-        // handle refresh, keypresses, beforeunload
-        const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
-            if (!gameOver && isSpectator === true) {
-                e.preventDefault();
-                e.returnValue = "Game in progress. Are you sure you want to leave?";
-                return e.returnValue;
-            }
-        };
-        const keyhandler = (e: KeyboardEvent) => {
-            if (!gameOver) {
-                if (e.key === "F5" || ((e.ctrlKey||e.metaKey)&& e.key.toLowerCase()==="r")) { e.preventDefault(); return; }
-                if (role !== "spectator") {
-                    if (e.type === "keydown") {
-                        if (e.key === "ArrowUp") keysRef.current.up = true;
-                        if (e.key === "ArrowDown") keysRef.current.down = true;
-                    }
-                    if (e.type === "keyup") {
-                        if (e.key === "ArrowUp") keysRef.current.up = false;
-                        if (e.key === "ArrowDown") keysRef.current.down = false;
-                    }
-                }
-            }
-        };
-        const disableContextMenu = (e:Event)=>e.preventDefault();
-        window.addEventListener("contextmenu", disableContextMenu);
-        window.addEventListener("beforeunload", beforeUnloadHandler);
-        window.addEventListener("keydown", keyhandler);
-        window.addEventListener("keyup", keyhandler);
-
-        return () => {
-            window.removeEventListener("contextmenu", disableContextMenu);
-            window.removeEventListener("beforeunload", beforeUnloadHandler);
-            window.removeEventListener("keydown", keyhandler);
-            window.removeEventListener("keyup", keyhandler);
-        };
-    }, [gameOver, role]);
-
-    useEffect(() => {
-		if (!socket) return;
-
-        //receive messages / data from server
-        const handleMsgOrEvent = (event: MessageEvent) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === "roleUpdate") {
-                	 console.log("Role update from game:", data); ////debug
-
-                	// determine role from assign role / switch team
-                	const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId); //check who in left team
-                	const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId); //check who in right team
-                	const newRole = leftPlayer?.role || rightPlayer?.role || "spectator"; //assign new role if switched
-
-                    console.log("roleUpdate handler:", { ////debug
-                		clientId,
-                		left: data.gameState.teams.left,
-                		right: data.gameState.teams.right,
-                		detectedRole: newRole
-                	});
-
-                    setRole(newRole);
-                	setIsSpectator(newRole === "spectator");
-                }
-
-                if (data.type === "state") {
-                       console.log("Game state update:", data); ////debug
-
-                    //check for winner
-                	const gameWinner = data.result?.winner || null;
-                    if (gameWinner && !gameOver) {
-                        console.log("Game Over. Winner:", gameWinner); ////debug
-                        setGameOver(true);
-                        setWinner(gameWinner);
-                    }
-
-                    setStatusText(`Room: ${roomName} | Role: ${role}`);
-                    setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
-                	setIsSpectator(role === "spectator");
-
-                    // draw the game and keep update the game state
-                    draw_container(canvasRef.current!, data.gameState, data.isSpectator, gameWinner);
-                }
-            } catch (err) {
-              console.error("Invalid JSON from server:", event.data);
-            }
-        };
-
-        // listen for messages / data from server
-        socket.addEventListener("message", handleMsgOrEvent);
-        // cleanup when finished
-        return () => socket.removeEventListener("message", handleMsgOrEvent);
-    }, [socket, clientId, role, gameOver, winner]);
-
-    useEffect(()=>{
-        // if is player and game is on going, send the up and down update to server
-        const updateKeyPress = window.setInterval(()=>{
-            if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
-                if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
-                if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
-            }
-        }, 1000/60); //every 1/60 second
-        // cleanup when finished
-        return () => clearInterval(updateKeyPress);
-    }, [role, gameOver, socket]);
-
-    // when user clicks back to lobby button
-    function handleBack() {
-    	if (role !== "spectator" && !gameOver) {
-    		const confirmLeave = window.confirm(
-    			"The game is still in progress. Are you sure you want to leave?"
-    		);
-    		if (!confirmLeave) return;
-    	}
-
-        // close socket and remove all info in session storage
-        try { socket?.close(); } catch {}
-        sessionStorage.removeItem("pongRoomName");
-        sessionStorage.removeItem("pongRoomId");
-        //go back to lobby
-        onBack();
-    }
+	//--- handle back to lobby ---
+	function handleBack() {
+		if (role !== "spectator" && !gameOver) {
+			const confirmLeave = window.confirm(
+				"The game is still in progress. Are you sure you want to leave?"
+			);
+			if (!confirmLeave) return;
+		}
+		//close socket and remove all info in session storage
+		try { socket?.close(); } catch {}
+		sessionStorage.removeItem("pongRoomName");
+		sessionStorage.removeItem("pongRoomId");
+		//back to lobby
+		onBack();
+	}
 
   return (
-    <div className="p-4 text-center">
-      <h1 id="roleText">{statusText}</h1>
-      <h2 id="scoreText">{scoreText}</h2>
-      <canvas id="game" ref={canvasRef} className="mx-auto block" width={BASE_WIDTH} height={BASE_HEIGHT} />
-      <div className="mt-4">
+	<div className="p-4 text-center">
+	  <h1 id="roleText">{statusText}</h1>
+	  <h2 id="scoreText">{scoreText}</h2>
+	  <canvas id="game" ref={canvasRef} className="mx-auto block" width={BASE_WIDTH} height={BASE_HEIGHT} />
+	  <div className="mt-4">
 		{(isSpectator || gameOver) && (
 			<button id="backLobbyBtn" onClick={handleBack} className="px-3 py-1 border">Back to Lobby</button>
 		)}
-      </div>
-    </div>
+	  </div>
+	</div>
   );
 }

@@ -3,146 +3,159 @@ import { ensureClientId, roomSetting, determineSide } from "./utils";
 import { BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE } from "./constants";
 import Game from "./game";
 import Chat from "./chat";
+import { useBlockLeave } from "./useBlockLeave.tsx";
 
-export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:string; roomName:string; leaderId:string; onBack:()=>void }) {
-	const [statusText, setStatusText] = useState("Connecting to room...");
-	const [playerText, setPlayerText] = useState("Waiting for players...");
-	const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team...");
-	const [rightTeamHtml, setRightTeamHtml] = useState("waiting right team...");
-	const [isLeader, setIsLeader] = useState(false);
-	const [role, setRole] = useState<string>("spectator");
-	const [ready, setReady] = useState(false);
-	const [gameStarted, setGameStarted] = useState(false);
-	const [canStart, setCanStart] = useState(false);
-	const [socket, setSocket] = useState<WebSocket | null>(null);
-	const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const beforeUnload = useRef<(e:BeforeUnloadEvent)=>any>(()=>{});
+export interface UseRoomWebSocketParams {
+  roomId: string;
+  roomName: string;
+  leaderId: string;
+}
 
-	useEffect(()=>{ ensureClientId(); }, []);
+export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocketParams) {
+  const [statusText, setStatusText] = useState("Connecting to room...");
+  const [playerText, setPlayerText] = useState("Waiting for players...");
+  const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team...");
+  const [rightTeamHtml, setRightTeamHtml] = useState("waiting right team...");
+  const [isLeader, setIsLeader] = useState(false);
+  const [role, setRole] = useState<string>("spectator");
+  const [ready, setReady] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [canStart, setCanStart] = useState(false);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
 
-	useEffect(() => {
-		let active = true; // to stop reconnect when unmounted
-		const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-		async function connect() {
-			await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
+  useEffect(() => { ensureClientId(); }, []);
 
-			// pick role (leader gets left_player1)
-			let roleLocal = clientId === leaderId ? "left_player1" : "spectator";
-			setRole(roleLocal);
-			setIsLeader(clientId === leaderId);
+  useEffect(() => {
+    let active = true;
+    const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
 
-			// determine side
-			const chooseSide = await determineSide(roomId);
-			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}`);
-			(window as any).socket = ws;
-            setSocket(ws);
+    async function connect() {
+      await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
 
-			ws.onopen = () => {
-				console.log("Connected to room lobby");
-                if (leaderId !== "") {
-                    setStatusText(`Room ${roomName} [id: ${roomId}]`);
-                } else {
-                    setStatusText(`Room ${roomName}`);
-                }
-				if (reconnectTimer.current) {
-					clearTimeout(reconnectTimer.current);
-					reconnectTimer.current = null;
-				}
-			};
+      // pick role (leader gets left_player1)
+      let roleLocal = clientId === leaderId ? "left_player1" : "spectator";
+      setRole(roleLocal);
+      setIsLeader(clientId === leaderId);
 
-			ws.onmessage = (ev) => {
-				const data = JSON.parse(ev.data);
+      const chooseSide = await determineSide(roomId);
+      const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}`);
+      setSocket(ws);
 
-				if (data.type === "roleUpdate") {
-					console.log("Role update:", data);
+      ws.onopen = () => {
+        console.log("Connected to room lobby");
+        setStatusText(`Room ${roomName} [id: ${roomId}]`);
+        if (reconnectTimer.current) {
+          clearTimeout(reconnectTimer.current);
+          reconnectTimer.current = null;
+        }
+      };
 
-					// check which role
-					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
-					const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
-					const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
-					setRole(newRole);
-					setPlayerText(`You are: [${clientId}] (${newRole})`);
+      ws.onmessage = (ev) => {
+        const data = JSON.parse(ev.data);
 
-					setLeftTeamHtml(
-						data.gameState.teams.left.map((p:any)=> {
-							const mark = p.clientId === data.leaderId ? "✦" : "";
-							return `${mark}${p.clientId} (${p.role})`;
-						})
-						.join("\n")
-					);
-					setRightTeamHtml(
-						data.gameState.teams.right.map((p:any)=> {
-							const mark = p.clientId === data.leaderId ? "✦" : "";
-							return `${mark}${p.clientId} (${p.role})`;
-						}).join("\n")
-					);
+        if (data.type === "roleUpdate") {
+          const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
+          const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
+          const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
+          setRole(newRole);
+          setPlayerText(`You are: [${clientId}] (${newRole})`);
 
-					// leader update
-					if (data.leaderId) {
-						leaderId = data.leaderId; // mutate local arg
-						setIsLeader(clientId === data.leaderId);
-					}
+          setLeftTeamHtml(
+            data.gameState.teams.left.map((p:any)=> {
+              const mark = p.clientId === data.leaderId ? "✦" : "";
+              return `${mark}${p.clientId} (${p.role})`;
+            }).join("\n")
+          );
+          setRightTeamHtml(
+            data.gameState.teams.right.map((p:any)=> {
+              const mark = p.clientId === data.leaderId ? "✦" : "";
+              return `${mark}${p.clientId} (${p.role})`;
+            }).join("\n")
+          );
 
-					setCanStart(data.canStart ?? false);
-				}
+          if (data.leaderId) {
+            setIsLeader(clientId === data.leaderId);
+          }
+          setCanStart(data.canStart ?? false);
+        }
 
-				if (data.type === "state") {
-					setCanStart(data.canStart ?? false);
+        if (data.type === "state") {
+          setCanStart(data.canStart ?? false);
+          if (!gameStarted && (data.gameState.countdown > 0 || data.gameState.gameStarted)) {
+            setGameStarted(true);
+          }
+        }
+      };
 
-					if (!gameStarted && (data.gameState.countdown > 0 || data.gameState.gameStarted)) {
-						setGameStarted(true);
-					}
-				}
-			};
+      ws.onclose = () => {
+        console.log("Lobby socket closed. Reconnecting...");
+        if (active && !reconnectTimer.current) {
+          reconnectTimer.current = setTimeout(() => {
+            connect();
+          }, 10000);
+        }
+      };
 
-			ws.onclose = () => {
-				console.log("Lobby socket closed. Will attempt reconnect...");
-				if (active && !reconnectTimer.current) {
-					reconnectTimer.current = setTimeout(() => {
-						console.log("Reconnecting...");
-						connect();
-					}, 10000); // reconnect after 10 seconds
-				}
-			};
+      ws.onerror = (e) => {
+        console.error("Lobby socket error", e);
+        ws.close();
+      };
 
-			ws.onerror = (e) => {
-				console.error("Lobby socket error", e);
-				ws.close();
-			};
+      return () => {
+        try { ws.close(); } catch {}
+      };
+    }
 
-			// event handlers
-			const keyhandler = (e:KeyboardEvent) => {
-				if (e.key === "F5" || ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="r")) {
-					e.preventDefault();
-					return;
-				}
-			};
-			const disableContextMenu = (e:Event)=>e.preventDefault();
+    connect();
 
-			window.addEventListener("contextmenu", disableContextMenu);
-			window.addEventListener("beforeunload", beforeUnload.current = (e)=>{
-				e.preventDefault();
-				e.returnValue = "Are you sure you want to leave the room?";
-				return e.returnValue;
-			});
-			window.addEventListener("keydown", keyhandler);
+    return () => {
+      active = false;
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+    };
+  }, [roomId, roomName, leaderId]);
 
-			return () => {
-				try{ ws.close(); }catch{};
-				window.removeEventListener("contextmenu", disableContextMenu);
-				window.removeEventListener("beforeunload", beforeUnload.current as any);
-				window.removeEventListener("keydown", keyhandler);
-			};
-		}
+  return {
+    socket,
+    statusText,
+    playerText,
+    leftTeamHtml,
+    rightTeamHtml,
+    isLeader,
+    role,
+    ready,
+    setReady,
+    gameStarted,
+    canStart,
+  };
+}
 
-		connect();
-
-		return () => {
-			active = false;
-			if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-		};
-	}, []);
+export default function Room({
+    roomId,
+    roomName,
+    leaderId,
+    onBack
+}: {
+    roomId: string;
+    roomName: string;
+    leaderId: string;
+    onBack: () => void;
+}) {
+    useBlockLeave();
+    const {
+        socket,
+        statusText,
+        playerText,
+        leftTeamHtml,
+        rightTeamHtml,
+        isLeader,
+        role,
+        ready,
+        setReady,
+        gameStarted,
+        canStart,
+    } = useRoomWebSocket({ roomId, roomName, leaderId });
 
 	// Buttons
 	function onSwitch() {
@@ -171,11 +184,10 @@ export default function Room({ roomId, roomName, leaderId, onBack }: { roomId:st
 	}
 
 	// if game started, render Game component
-	if (gameStarted && socket) {
+	if (gameStarted) {
 		return <Game
 			roomId={roomId}
 			roomName={roomName}
-			socket={socket}
 			clientId={sessionStorage.getItem("pongClientId")||ensureClientId()}
 			initialRole={role}
 			onBack={onBack}
