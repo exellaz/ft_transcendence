@@ -24,12 +24,18 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 	const [role, setRole] = useState(initialRole);
 	const [scoreText, setScoreText] = useState("Score: 0 - 0");
 	const [statusText, setStatusText] = useState(`Room: ${roomName}`);
+    const [settingView, setSettingView] = useState("");
 	const [gameOver, setGameOver] = useState(false);
 	const [winner, setWinner] = useState<string | null>(null);
 	const [playerResult, setPlayerResult] = useState<"win" | "lose" | null>(null);
 	const [isSpectator, setIsSpectator] = useState(false);
 	const [gameState, setGameState] = useState<any>(null);
 	const socketRef = useRef<WebSocket | null>(null);
+    const [setting, setSetting] = useState<any>({
+        ballSize: BALLSIZE,
+        PaddleHeight: PADDLEHEIGHT,
+        PaddleWidth: PADDLEWIDTH,
+    });
 
 	useEffect(() => {
 		// create websocket connection with player id, room id, and side
@@ -96,8 +102,12 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					}
 					//update game state
 					setGameState(data.gameState);
+                    if (data.gameState.setting) {
+                        setSetting(data.gameState.setting);
+                    }
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
+                    setSettingView(`Ball Speed: ${data.gameState.setting?.ballSpeed}, Ball Size: ${data.gameState.setting?.ballSize}, Paddle Height: ${data.gameState.setting?.paddleHeight}, Paddle Width: ${data.gameState.setting?.paddleWidth}`);
 					setIsSpectator(role === "spectator");
 					//check for game over
 					const gameWinner = data.result?.winner || null;
@@ -138,6 +148,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 		playerResult,
 		isSpectator,
 		gameState,
+        setting,
 	};
 }
 
@@ -149,13 +160,18 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
  * @param isSpectator Whether the viewer is a spectator
  * @param playerResult Result for the player ("win", "lose", or null)
  */
-function draw_container(canvas: HTMLCanvasElement | null, state: any, isSpectator?: boolean, playerResult: "win" | "lose" | null = null) {
+function draw_container(
+    canvas: HTMLCanvasElement | null,
+    state: any,
+    isSpectator?: boolean,
+    playerResult: "win" | "lose" | null = null
+) {
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
-	const paddleWidth = PADDLEWIDTH;
-	const paddleHeight = PADDLEHEIGHT;
-	const ballSize = BALLSIZE;
+	const paddleWidth = state.setting?.paddleWidth;
+	const paddleHeight = state.setting?.paddleHeight;
+	const ballSize = state.setting?.ballSize;
 
 	ctx.clearRect(0,0,canvas.width, canvas.height);
 
@@ -276,6 +292,7 @@ export default function Game({
 		playerResult,
 		isSpectator,
 		gameState,
+        setting,
 	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
 
 	//--- create game board ---
@@ -292,9 +309,9 @@ export default function Game({
 	//--- redraw the game when game state changes ---
 	useEffect(() => {
 		if (gameState) {
-			draw_container(canvasRef.current!, gameState, isSpectator, playerResult);
+			draw_container(canvasRef.current!, { ...gameState, setting}, isSpectator, playerResult);
 		}
-	}, [gameState, isSpectator, playerResult]);
+	}, [gameState, isSpectator, playerResult, setting]);
 
 	//--- handle keypresses, beforeunload ---
 	useEffect(()=>{

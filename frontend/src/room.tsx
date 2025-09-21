@@ -4,6 +4,7 @@ import { BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE } from "./constants";
 import Game from "./game";
 import Chat from "./chat";
 import { useBlockLeave } from "./useBlockLeave.tsx";
+import RoomSettingsForm from "./gameSetting.tsx";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -40,7 +41,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 
 		async function connect() {
 			// set room settings
-			await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
+			//await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
 
 			// pick role (leader gets left_player1)
 			let roleLocal = clientId === leaderId ? "left_player1" : "spectator";
@@ -311,6 +312,8 @@ export default function Room({
 
 			{/* Chat Component */}
 			<Chat roomId={roomId} />
+
+            <RoomSettingsForm roomId={roomId} isLeader={isLeader}/>
 		</div>
 	);
 }

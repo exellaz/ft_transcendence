@@ -175,7 +175,10 @@ export class Game implements IGame {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({
                         type: "state",
-                        gameState: room.gameState,
+                        gameState: {
+                            ...room.gameState,
+                            setting: room.setting
+                        },
                         leaderId: room.leaderId,
                         canStart: room.canStart
                     }));
