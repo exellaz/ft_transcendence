@@ -208,7 +208,10 @@ export class Game implements IGame {
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const msg = {
 						type: "state",
-						gameState: room.gameState,
+						gameState: {
+                            ...room.gameState,
+                            setting: room.setting
+                        },
 						isSpectator
 					};
 					// console.log("game state Sending to client:", playerId, "\n", JSON.stringify(msg)); //// debug
@@ -230,7 +233,10 @@ export class Game implements IGame {
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const msg = {
 						type: "state",
-						gameState: room.gameState,
+						gameState: {
+                            ...room.gameState,
+                            setting: room.setting
+                        },
 						result: room.result || null,
 						isSpectator
 					};

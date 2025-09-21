@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BASE_WIDTH, BASE_HEIGHT, PADDLEWIDTH, PADDLEHEIGHT, BALLSIZE } from "./constants";
+import { BASE_WIDTH, BASE_HEIGHT } from "./constants";
 import { useBlockLeave } from "./useBlockLeave";
 
 // game structure
@@ -32,9 +32,9 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 	const [gameState, setGameState] = useState<any>(null);
 	const socketRef = useRef<WebSocket | null>(null);
     const [setting, setSetting] = useState<any>({
-        ballSize: BALLSIZE,
-        PaddleHeight: PADDLEHEIGHT,
-        PaddleWidth: PADDLEWIDTH,
+        ballSize: 0,
+        PaddleHeight: 0,
+        PaddleWidth: 0,
     });
 
 	useEffect(() => {
@@ -61,22 +61,22 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 				try {
 					data = JSON.parse(event.data);
 				} catch {
-					ws.close(1003, "Invalid JSON");
+					console.error("Invalid JSON");
 					return;
 				}
 
 				// validate message structure
 				if (typeof data !== "object" || data === null) {
-					ws.close(1003, "Invalid message format");
+					console.error("Invalid message format");
 					return;
 				}
 				if (typeof data.type !== "string") {
-					ws.close(1003, "Invalid message: missing type");
+					console.error("Invalid message: missing type: ", data);
 					return;
 				}
 				const allowedTypes = ["roleUpdate", "state"];
 				if (!allowedTypes.includes(data.type)) {
-					ws.close(1003, `unsupported message type ${data.type}`);
+					console.error(`unsupported message type ${data.type}`);
 					return;
 				}
 
@@ -84,7 +84,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 				if (data.type === "roleUpdate") {
 					//validata the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) {
-						ws.close(1003, "Invalid game state");
+						console.error("Invalid game state");
 						return;
 					}
 					//update role based on clientId
@@ -97,7 +97,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 				if (data.type === "state") {
 					//validate the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) {
-						ws.close(1003, "Invalid game state");
+						console.error("Invalid game state");
 						return;
 					}
 					//update game state
@@ -149,6 +149,7 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 		isSpectator,
 		gameState,
         setting,
+		settingView,
 	};
 }
 
@@ -293,6 +294,7 @@ export default function Game({
 		isSpectator,
 		gameState,
         setting,
+		settingView,
 	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
 
 	//--- create game board ---
@@ -369,6 +371,7 @@ export default function Game({
 	<div className="p-4 text-center">
 	  <h1 id="roleText">{statusText}</h1>
 	  <h2 id="scoreText">{scoreText}</h2>
+	  <h2 id="settingText">{settingView}</h2>
 	  <canvas id="game" ref={canvasRef} className="mx-auto block" width={BASE_WIDTH} height={BASE_HEIGHT} />
 	  {/* if game is over the have the leave button */}
 	  <div className="mt-4">

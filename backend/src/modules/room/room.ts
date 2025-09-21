@@ -151,6 +151,7 @@ export function startRoomLoop(room: Room) {
 export function roomStartGame(room: Room) {
 	if (!room.gameState.gameStarted && !room.gameState.countdown) {
 		room.startTime = new Date();
+		console.log(`room setting: ${JSON.stringify(room.setting)}`);
 		room.game.resetBall(room, "left");
 	}
 }
@@ -214,7 +215,10 @@ export function roomEndGame(room: Room, forced = false) {
     //braodcast everyone the game is ended
     broadcast(room, JSON.stringify({
         type: "state",
-        gameState: room.gameState,
+        gameState: {
+            ...room.gameState,
+            setting: room.setting
+        },
         isSpectator: false, //everyone get the result
     }));
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);

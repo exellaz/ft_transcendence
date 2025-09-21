@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ensureClientId, roomSetting, determineSide } from "./utils";
-import { BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE } from "./constants";
+import { ensureClientId, determineSide } from "./utils";
 import Game from "./game";
 import Chat from "./chat";
 import { useBlockLeave } from "./useBlockLeave.tsx";
@@ -67,22 +66,23 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 					try {
 						data = JSON.parse(ev.data);
 					} catch {
-						ws.close(1003, "Invalid JSON");
+						console.error("Invalid JSON:", ev.data);
 						return;
 					}
 
 					// validate message structure
 					if (typeof data !== "object" || data === null) {
-						ws.close(1003, "Invalid message format");
+						console.error("Invalid message format");
 						return;
 					}
 					if (typeof data.type !== "string") {
-						ws.close(1003, "Invalid message: missing type");
+						console.error("Invalid message: missing type:", data);
 						return;
 					}
 					const allowedTypes = ["roleUpdate", "state"];
 					if (!allowedTypes.includes(data.type)) {
-						ws.close(1003, `unsupported message type ${data.type}`);
+						if (data.type === "chat") return;
+						console.error(`unsupported message type ${data.type}`);
 						return;
 					}
 
@@ -90,7 +90,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 					if (data.type === "roleUpdate") {
 						// validate the game state
 						if (typeof data.gameState !== "object" || data.gameState === null) {
-							ws.close(1003, "Invalid roleUpdate: missing gameState");
+							console.error("Invalid roleUpdate: missing gameState");
 							return;
 						}
 						// update role base in clientId
@@ -123,7 +123,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 					if (data.type === "state") {
 						// validate the game state
 						if (typeof data.gameState !== "object" || data.gameState === null) {
-							ws.close(1003, "Invalid state: missing gameState");
+							console.error("Invalid state: missing gameState");
 							return;
 						}
 						// update can start status
@@ -135,7 +135,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 					}
 				} catch (err) {
 					console.error("Invalid room message:", err);
-					ws.close(1011, "server error");
+					ws.close(1000, "server error");
 				}
 			};
 

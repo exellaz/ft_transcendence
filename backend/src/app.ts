@@ -123,6 +123,32 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
 });
 
 /**
+ * @brief HTTP endpoint to get a specific room by id (with settings).
+ * @param roomId Room ID from client
+ * @return Room object (id, name, settings, etc.)
+ */
+fastify.get("/room/:roomId", async (req, reply) => {
+	const { roomId } = req.params as { roomId: string };
+	const room = rooms.get(roomId);
+	if (!room) {
+		return reply.code(404).send({ error: "Room not found" });
+	}
+
+	return {
+		id: room.id,
+		name: room.name,
+		teamSize: room.teamSize,
+		width: room.width,
+		height: room.height,
+		setting: room.setting, // 👈 important for frontend
+		gameStarted: room.gameState.gameStarted,
+		gameEnded: !!room.gameState.gameEnded,
+		private: room.private,
+		leaderId: room.leaderId,
+	};
+});
+
+/**
  * @brief HTTP endpoint to get recent match records.
  * @param limit Optional query parameter to limit number of records (default 10)
  * @return Array of match records to client

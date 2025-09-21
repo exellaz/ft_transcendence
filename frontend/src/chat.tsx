@@ -32,21 +32,21 @@ export function useLiveChatWebSocket(roomId: string) {
                 try {
                     data = JSON.parse(ev.data);
                 } catch {
-                    ws.close(1003, "Invalid JSON");
+                    console.error("Invalid JSON");
                     return;
                 }
 
                 if (typeof data !== "object" || data === null) {
-                    ws.close(1003, "Invalid message format");
+                    console.error("Invalid message format");
                     return;
                 }
                 if (typeof data.type !== "string") {
-                    ws.close(1003, "Invalid message: missing type");
+                    console.error("Invalid message: missing type: ", data);
                     return;
                 }
                 const allowedTypes = ["chat"];
                 if (!allowedTypes.includes(data.type)) {
-                    ws.close(1003, `unsupported message type ${data.type}`);
+                    console.error(`unsupported message type ${data.type}`);
                     return;
                 }
                 if (data.type === "chat") {
@@ -56,7 +56,7 @@ export function useLiveChatWebSocket(roomId: string) {
                 }
             } catch (err) {
                 console.error("Invalid chat message:", err);
-				ws.close(1011, "server error");
+				ws.close(1000, "server error");
             }
         });
 
@@ -64,7 +64,8 @@ export function useLiveChatWebSocket(roomId: string) {
         ws.addEventListener("close", () => console.log("Chat ws disconnected"));
 
         return () => {
-            try { ws.close(); } catch {}
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
+				ws.close(1000, "Chat closed");
             socketRef.current = null;
         };
     }, [roomId]);
