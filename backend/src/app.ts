@@ -4,6 +4,7 @@ import websocketPlugin from "@fastify/websocket";
 import { rooms, createRoom, generateRoomId} from "./modules/room/room.ts";
 import { getAllMatches } from "./plugins/database.ts";
 import roomWsRoutes from "./modules/room/room.ws.ts";
+import { DEFAULT_SETTING } from "./modules/room/room.ts";
 import gameWsRoute from "./modules/game/game.ws.ts";
 import liveChatRoutes from "./modules/chat/liveChat.ws.ts";
 
@@ -52,21 +53,45 @@ fastify.get("/rooms", async () => {
 fastify.post("/create-room", async (req, reply) => {
 	// console.log("request /Create-room:", req.body); ////debug
 	const body: any = req.body;
-	const { name, teamSize, leaderId, width, height, isPrivate } = body;
 
+	//assign body parameters to variables
+	const {
+		name,
+		teamSize,
+		leaderId,
+		width,
+		height,
+		isPrivate,
+		ballSpeed,
+		paddleHeight,
+		paddleWidth,
+		ballSize,
+		paddleSpeed
+	} = body;
+
+	// Validate required fields
 	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
 		return reply.code(400).send({ error: "Team size and name are required" });
 	}
 	if (typeof width !== "number" || typeof height !== "number") {
 		return reply.code(400).send({ error: "Width and height are required" });
 	}
-
-	// private rooms require a leaderId
 	if (isPrivate && (!leaderId || typeof leaderId !== "string")) {
 	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
 	}
 
+	// Generate a unique room ID
 	const roomId = generateRoomId();
+
+	//initialize game setting
+	const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
+	if (typeof ballSpeed === "number") initialSetting.ballSpeed = ballSpeed; // if client provided a valid setting, use it to override the default
+	if (typeof paddleHeight === "number") initialSetting.paddleHeight = paddleHeight;
+	if (typeof paddleWidth === "number") initialSetting.paddleWidth = paddleWidth;
+	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
+	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
+
+	// Create and store the new room
 	const room = createRoom(
 		roomId,
 		name,
@@ -74,7 +99,8 @@ fastify.post("/create-room", async (req, reply) => {
 		isPrivate ? leaderId : "",
 		width,
 		height,
-		!!isPrivate
+		!!isPrivate,
+		initialSetting // 👈 important for frontend
 	);
 
 	rooms.set(roomId, room);
@@ -83,6 +109,7 @@ fastify.post("/create-room", async (req, reply) => {
 	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
 	);
 
+	// Respond with room details to client
 	const response = {
 		roomId,
 		name,
@@ -90,6 +117,7 @@ fastify.post("/create-room", async (req, reply) => {
 		gameStarted: room.gameState.gameStarted,
 		...(isPrivate ? { leaderId } : {}), // only include leaderId if private
 		private: room.private,
+		setting: room.setting // 👈 important for frontend
 	};
 	// console.log("responding /create-room:", response); ////debug
 	return response;
@@ -113,13 +141,32 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
         return reply.code(404).send({ error: "Room not found" });
     }
 
-    const { ballSpeed, paddleHeight, paddleWidth, ballSize } = req.body as { ballSpeed?: number; paddleHeight?: number ; paddleWidth?: number; ballSize?: number };
+	// update only provided settings from client
+    const {
+		ballSpeed,
+		paddleHeight,
+		paddleWidth,
+		ballSize,
+		paddleSpeed
+	} = req.body as {
+		ballSpeed?: number;
+		paddleHeight?: number ;
+		paddleWidth?: number;
+		ballSize?: number
+		paddleSpeed?: number
+	};
+
+	// change setting if valid
     room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;
     room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
     room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
     room.setting.ballSize = ballSize ?? room.setting.ballSize;
+	room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
+
 	// console.log("updated room setting:", room.setting); ////debug
-    return { success: true };
+
+	// Notify all connected clients in the room about the setting change
+    return { success: true, setting: room.setting };
 });
 
 /**
@@ -134,6 +181,7 @@ fastify.get("/room/:roomId", async (req, reply) => {
 		return reply.code(404).send({ error: "Room not found" });
 	}
 
+	//notify room details to client
 	return {
 		id: room.id,
 		name: room.name,

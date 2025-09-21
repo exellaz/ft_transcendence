@@ -107,7 +107,13 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
                     }
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
-                    setSettingView(`Ball Speed: ${data.gameState.setting?.ballSpeed}, Ball Size: ${data.gameState.setting?.ballSize}, Paddle Height: ${data.gameState.setting?.paddleHeight}, Paddle Width: ${data.gameState.setting?.paddleWidth}`);
+                    setSettingView(`
+						Ball Speed: ${data.gameState.setting?.ballSpeed},
+						Ball Size: ${data.gameState.setting?.ballSize},
+						Paddle Height: ${data.gameState.setting?.paddleHeight},
+						Paddle Width: ${data.gameState.setting?.paddleWidth},
+						Paddle Speed: ${data.gameState.setting?.paddleSpeed}
+					`);
 					setIsSpectator(role === "spectator");
 					//check for game over
 					const gameWinner = data.result?.winner || null;
@@ -344,12 +350,13 @@ export default function Game({
 	useEffect(()=>{
 		const updateKeyPress = window.setInterval(()=>{
 			if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
-				if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -10 }));
-				if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: 10 }));
+				const speed = setting?.paddleSpeed;
+				if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -speed }));
+				if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: speed }));
 			}
 		}, 1000/60); //make 60 frames per second
 		return () => clearInterval(updateKeyPress); // cleanup when finished
-	}, [role, gameOver, socket]);
+	}, [role, gameOver, socket, setting?.paddleSpeed]);
 
 	//--- handle back to lobby ---
 	function handleBack() {

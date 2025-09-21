@@ -57,7 +57,8 @@ export default async function gameWsRoute(fastify: any) {
 							room.gameState.paddles[player.id!] ?? 0,
 							msg.dy,
 							room.height,
-							room.setting.paddleHeight
+							room.setting.paddleHeight,
+							room.setting.paddleSpeed
 						);
 					}
 				}

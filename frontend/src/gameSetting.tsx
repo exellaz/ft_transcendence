@@ -11,6 +11,7 @@ export default function RoomSettingsForm({ roomId, isLeader }: RoomSettingsFormP
   const [paddleHeight, setPaddleHeight] = useState<number | null>(null);
   const [paddleWidth, setPaddleWidth] = useState<number | null>(null);
   const [ballSize, setBallSize] = useState<number | null>(null);
+  const [paddleSpeed, setPaddleSpeed] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -21,10 +22,12 @@ export default function RoomSettingsForm({ roomId, isLeader }: RoomSettingsFormP
 			const res = await fetch(import.meta.env.VITE_API_URL + `/room/${roomId}`);
 			if (!res.ok) throw new Error("Failed to fetch room data");
 			const data = await res.json();
+			console.log("Fetch setting response:", data.setting); ////debug
 			setBallSpeed(data.setting.ballSpeed);
 			setPaddleHeight(data.setting.paddleHeight);
 			setPaddleWidth(data.setting.paddleWidth);
 			setBallSize(data.setting.ballSize);
+			setPaddleSpeed(data.setting.paddleSpeed);
 		} catch (err) {
 			console.error(err);
 		}
@@ -35,10 +38,10 @@ export default function RoomSettingsForm({ roomId, isLeader }: RoomSettingsFormP
   // Handle setting submit
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-	if (ballSpeed === null || paddleHeight === null || paddleWidth === null || ballSize === null) return;
+	if (ballSpeed === null || paddleHeight === null || paddleWidth === null || ballSize === null || paddleSpeed === null) return;
     setSaving(true);
     try {
-      await roomSetting(roomId, ballSpeed, paddleHeight, paddleWidth, ballSize);
+      await roomSetting(roomId, ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed);
 	  setOpen(false);
     } catch (err) {
       console.error(err);
@@ -66,7 +69,7 @@ export default function RoomSettingsForm({ roomId, isLeader }: RoomSettingsFormP
           <div className="bg-white rounded-lg shadow-lg p-6 w-[400px] max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Room Settings</h3>
 
-            {ballSpeed === null || paddleHeight === null || paddleWidth === null || ballSize === null ? (
+            {ballSpeed === null || paddleHeight === null || paddleWidth === null || ballSize === null || paddleSpeed === null ? (
               <div>Loading settings...</div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -157,6 +160,29 @@ export default function RoomSettingsForm({ roomId, isLeader }: RoomSettingsFormP
                       max={50}
                       value={ballSize}
                       onChange={(e) => setBallSize(Number(e.target.value))}
+                      className="w-16 border px-1"
+                    />
+                  </div>
+                </div>
+
+				{/* Paddle Speed */}
+                <div>
+                  <label className="block font-medium">Ball Size</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min={1}
+                      max={10}
+                      value={paddleSpeed}
+                      onChange={(e) => setPaddleSpeed(Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={paddleSpeed}
+                      onChange={(e) => setPaddleSpeed(Number(e.target.value))}
                       className="w-16 border px-1"
                     />
                   </div>

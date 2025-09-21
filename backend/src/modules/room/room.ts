@@ -24,6 +24,7 @@ export interface Room {
 		paddleHeight: number; // paddle height
 		paddleWidth: number; // paddle width
 		ballSize: number; // ball size
+		paddleSpeed: number; // paddle speed
 	};
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
@@ -56,6 +57,15 @@ export interface Room {
     private: boolean; // Flag to indicate if the room is private
 }
 
+//default value for setting
+export const DEFAULT_SETTING = {
+	ballSpeed: 5,
+	paddleHeight: 80,
+	paddleWidth: 10,
+	ballSize: 10,
+	paddleSpeed: 3
+};
+
 /**
  * @brief initialize all rooms as a map
  * @key room id
@@ -81,9 +91,12 @@ export function generateRoomId(length = 6): string {
  * @param teamSize team size (default: 1)
  * @param width room width (default: 800)
  * @param height room height (default: 400)
+ * @param leaderId client id of the room leader (default: "")
+ * @param isPrivate whether the room is private (default: false)
+ * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number, isPrivate: boolean): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number, isPrivate: boolean, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
 	const room: Room = {
 		id,
 		name,
@@ -91,10 +104,8 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		width,
 		height,
 		setting: {
-			ballSpeed: 1,
-			paddleHeight: 80,
-			paddleWidth: 10,
-			ballSize: 10,
+			...DEFAULT_SETTING, // start with default setting
+			...initialSetting, // override with any valid client-provided settings
 		},
 		gameState: {
 			ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },

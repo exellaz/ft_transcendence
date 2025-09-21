@@ -104,15 +104,16 @@ export async function determineSide(roomId: string): Promise<"left" | "right"> {
  * @param paddleHeight height of the paddle
  * @param paddleWidth width of the paddle
  * @param ballSize size of the ball
+ * @param paddleSpeed speed of the paddle
  * @return updated room settings to client in JSON format
  * @note it also sends the updated settings to the backend
 */
-export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number) {
+export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number, paddleSpeed: number) {
   try {
     const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize }),
+      body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed }),
     });
 
     if (!res.ok) throw new Error("Failed to update room settings");

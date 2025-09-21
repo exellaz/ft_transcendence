@@ -8,7 +8,7 @@ import type { playerInfo } from "../room/room.ts";
 interface IGame {
 	resetBall(room: Room, scoredSide: "left" | "right"): void;
 	setPaddlePositionWithTeam(room: Room): void;
-	updatePaddlePosition(current: number, dy: number, gameHeight: number, paddleHeight: number): number;
+	updatePaddlePosition(current: number, dy: number, gameHeight: number, paddleHeight: number, paddleSpeed: number): number;
 	updateBall(room: Room): void;
 	gameLoop(room: Room): void;
 }
@@ -89,9 +89,10 @@ export class Game implements IGame {
 		current: number,
 		dy: number,
 		gameHeight: number,
-		paddleHeight: number
+		paddleHeight: number,
+		paddleSpeed: number
 	): number {
-		return Math.max(0, Math.min(gameHeight - paddleHeight, current + dy));
+		return Math.max(0, Math.min(gameHeight - paddleHeight, current + dy * paddleSpeed));
 	}
 
 	/**
@@ -233,10 +234,7 @@ export class Game implements IGame {
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const msg = {
 						type: "state",
-						gameState: {
-                            ...room.gameState,
-                            setting: room.setting
-                        },
+						gameState: room.gameState,
 						result: room.result || null,
 						isSpectator
 					};
