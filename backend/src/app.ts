@@ -24,8 +24,13 @@ app.setErrorHandler((error, request, reply) => {
 	  return reply.status(error.statusCode).send(fail(error.message));
 	}
 
-	console.error(error);
-	return reply.status(500).send(fail("Internal server error"));
+	console.log("Error Message: |, ", error.message, " |")
+
+	// Fastify validation errors (AJV)
+	if ((error as any).validation)
+		return reply.status(400).send(fail(error.message || "Invalid request parameters"));
+
+	return reply.status(500).send(fail(error.message || "Internal server error"));
   });
 
 export default app;
