@@ -103,11 +103,13 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
                     setSettingView(`
+						<b>Current Settings: </b>
 						Ball Speed: ${data.gameState.setting?.ballSpeed},
 						Ball Size: ${data.gameState.setting?.ballSize},
 						Paddle Height: ${data.gameState.setting?.paddleHeight},
 						Paddle Width: ${data.gameState.setting?.paddleWidth},
-						Paddle Speed: ${data.gameState.setting?.paddleSpeed}
+						Paddle Speed: ${data.gameState.setting?.paddleSpeed},
+						Winning Score: ${data.gameState.setting?.winningScore}
 					`);
 					setIsSpectator(role === "spectator");
 					//check for game over

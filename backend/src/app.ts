@@ -66,7 +66,8 @@ fastify.post("/create-room", async (req, reply) => {
 		paddleHeight,
 		paddleWidth,
 		ballSize,
-		paddleSpeed
+		paddleSpeed,
+		scorePoint
 	} = body;
 
 	// Validate required fields
@@ -90,6 +91,7 @@ fastify.post("/create-room", async (req, reply) => {
 	if (typeof paddleWidth === "number") initialSetting.paddleWidth = paddleWidth;
 	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
 	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
+	if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
 
 	// Create and store the new room
 	const room = createRoom(
@@ -147,13 +149,15 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
 		paddleHeight,
 		paddleWidth,
 		ballSize,
-		paddleSpeed
+		paddleSpeed,
+		scorePoint
 	} = req.body as {
 		ballSpeed?: number;
-		paddleHeight?: number ;
+		paddleHeight?: number;
 		paddleWidth?: number;
-		ballSize?: number
-		paddleSpeed?: number
+		ballSize?: number;
+		paddleSpeed?: number;
+		scorePoint?: number;
 	};
 
 	// change setting if valid
@@ -162,6 +166,7 @@ fastify.post("/room/:roomId/setting", async (req, reply) => {
     room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
     room.setting.ballSize = ballSize ?? room.setting.ballSize;
 	room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
+	room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
 
 	// console.log("updated room setting:", room.setting); ////debug
 

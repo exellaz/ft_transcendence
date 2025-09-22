@@ -222,7 +222,7 @@ export class Game implements IGame {
 		}
 
 		// step 4: check for game end condition (first to 1 point)
-		if (room.gameState.score.left >= 2 || room.gameState.score.right >= 2) {
+		if (room.gameState.score.left >= room.setting.scorePoint || room.gameState.score.right >= room.setting.scorePoint) {
 			roomEndGame(room, false);
 
             //broadcast game ended with the result
