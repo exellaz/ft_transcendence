@@ -2,12 +2,12 @@ import db from "./db.ts";
 
 export interface User {
   id: number;
-  google_id: string;
+  googleId: string | null;
   email: string;
   name: string;
-  passwordHash: string| null;
-  created_at: string;
-  updated_at: string;
+  passwordHash: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Find a user by Google ID
@@ -17,25 +17,17 @@ export function findUserByGoogleId(googleId: string): User | undefined {
 }
 
 // Insert new user
-export function createUser(
+export function createUserWithGoogle(
   googleId: string,
   email: string,
   name: string,
-): User {
-  const stmt = db.prepare(
-    "INSERT INTO users (google_id, email, name) VALUES (?, ?, ?)",
-  );
+): User | undefined {
+  const stmt = db.prepare(`
+    INSERT INTO users (google_id, email, name, created_at, updated_at)
+    VALUES (?, ?, ?, datetime('now'), datetime('now'))
+  `);
   const info = stmt.run(googleId, email, name);
-
-  return {
-    id: info.lastInsertRowid as number,
-    google_id: googleId,
-    email,
-    name,
-    passwordHash: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  return getUserById(info.lastInsertRowid as number);
 }
 
 // Find or create user
@@ -47,7 +39,9 @@ export function findOrCreateUserFromGoogle(
   const user = findUserByGoogleId(googleId);
   if (user) return user;
 
-  return createUser(googleId, email, name);
+  const created = createUserWithGoogle(googleId, email, name);
+  if (!created) throw new Error("Failed to create user");
+  return created;
 }
 
 export function getUserById(id: number): User | undefined {
@@ -68,8 +62,8 @@ export function updateLastLogin(id: number): void {
 
 export function createUserWithPassword(email: string, name: string, passwordHash: string) {
   const stmt = db.prepare(`
-    INSERT INTO users (email, name, passwordHash, createdAt)
-    VALUES (?, ?, ?, datetime('now'))
+    INSERT INTO users (email, name, password_hash, created_at, updated_at)
+    VALUES (?, ?, ?, datetime('now'), datetime('now'))
     `);
   const result = stmt.run(email, name, passwordHash);
   return getUserById(result.lastInsertRowid as number);

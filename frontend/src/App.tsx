@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GoogleLoginButton from "./GoogleLoginButton";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 function App() {
   const [message, setMessage] = useState("");
@@ -43,7 +43,6 @@ function App() {
       <h1>Google Login Test</h1>
       <GoogleLoginButton onSuccess={handleGoogleSuccess} />
 
-      {/* ⬇️ NEW button */}
       <button
         style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}
         onClick={fetchProfile}
