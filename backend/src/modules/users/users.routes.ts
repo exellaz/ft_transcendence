@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { generateUniqueUserCode } from "./users.service";
 import { ok, fail, ApiError } from "../../utils/response"
+import { getUserByIdSchema } from "./users.schema";
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
   // POST /users (Create User)
@@ -33,7 +34,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 
 
   // GET /users/:id (Get single user)
-  fastify.get("/users/:id", async (request, reply) => {
+  fastify.get("/users/:id", { schema: getUserByIdSchema }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const user = await fastify.db.user.findUnique({
       where: { id: Number(id) },
@@ -90,6 +91,8 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     } catch (err: any) {
       if (err.code === "P2025") // Prisma "record not found"
         throw new ApiError("User not found", 404);
+      else if (err.code === "P2002") // Prisma unique constraint violation
+        throw new ApiError("Username or Email already exists", 400);
 
       throw err; // let Fastify handle other errors
     }
