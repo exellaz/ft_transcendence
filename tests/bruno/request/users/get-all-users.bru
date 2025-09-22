@@ -1,0 +1,19 @@
+meta {
+  name: get-all-users
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/users
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+settings {
+  encodeUrl: true
+}

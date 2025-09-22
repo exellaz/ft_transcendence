@@ -1,0 +1,37 @@
+meta {
+  name: update-user
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/users/4
+  body: json
+  auth: apikey
+}
+
+auth:apikey {
+  key: 
+  value: 
+  placement: header
+}
+
+body:json {
+  {
+    "username": "username444",
+    "email": "username4@gmail.com",
+    "avatarUrl": "username4avatar"
+  }
+}
+
+script:pre-request {
+  req.setBody({
+    "username": "username4444",
+    "email": "username4@gmail.com",
+    "avatarUrl": "username4avatar"
+  })
+}
+
+settings {
+  encodeUrl: true
+}
