@@ -6,14 +6,17 @@ services:
     working_dir: /app
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
     networks:
       - appnet
   backend:
     build: ./backend
     ports:
-      - "4242:4242"
+      - "3000:3000"
     working_dir: /app
     volumes:
+      - ./backend:/app
       - ./backend/room.db:/app/room.db
     networks:
       - appnet
