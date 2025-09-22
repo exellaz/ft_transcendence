@@ -96,7 +96,7 @@ export function generateRoomId(length = 6): string {
  * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number, height: number, isPrivate: boolean, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
 	const room: Room = {
 		id,
 		name,
