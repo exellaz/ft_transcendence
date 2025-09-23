@@ -1,4 +1,10 @@
 {
+  "AdvanceView": {
+    "advancement": "晉級",
+    "congratulations": "恭喜！",
+    "next_round": "你已晉級到下一輪！",
+    "continue": "繼續"
+  },
   "ChooseSpriteView": {
     "choose_sprite": "選擇一個角色",
     "confirm": "確認"
@@ -23,6 +29,14 @@
     "settings": "設定",
     "join_tournament": "參加錦標賽？"
   },
+  "MatchView": {
+    "loading": "載入中...",
+    "ready": "準備",
+    "pending": "等待中",
+    "quarterfinals": "四分之一決賽",
+    "semifinals": "準決賽",
+    "finals": "決賽"
+  },
   "NormalModeView": {
     "choose_action": "選擇操作",
     "create_room": "建立房間",
@@ -39,6 +53,16 @@
     "create_doubles_game": "建立雙人遊戲？",
     "join_singles_game": "加入單人遊戲？",
     "join_doubles_game": "加入雙人遊戲？"
+  },
+  "ResultsView": {
+    "results": "結果",
+    "leave": "離開",
+    "medal_message1": "恭喜！",
+    "medal_message2_gold": "你贏得了金牌！",
+    "medal_message2_silver": "你贏得了銀牌！",
+    "medal_message2_bronze": "你贏得了銅牌！",
+    "participation_message1": "感謝你的參與！",
+    "participation_message2": "你的總排名是第{{position}}名。"
   },
   "SignUpSuccessView": {
     "success_message": "您的帳戶已成功建立！",
@@ -101,10 +125,7 @@
     "normal": "正常",
     "fast": "快",
     "small": "小",
-    "big": "大",
-    "stadium": "體育場",
-    "mansion": "豪宅",
-    "arcade": "街機廳"
+    "big": "大"
   },
   "ProfilePopup": {
     "header": "我的資料",
@@ -158,6 +179,11 @@
   "LiveChat": {
     "live_chat": "即時聊天",
     "send": "發送"
+  },
+  "MapSelector": {
+    "stadium": "體育場",
+    "mansion": "豪宅",
+    "arcade": "街機廳"
   },
   "Medals": {
     "gold": "金牌",

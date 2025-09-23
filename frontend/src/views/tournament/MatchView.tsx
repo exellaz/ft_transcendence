@@ -18,7 +18,7 @@ const MatchView: React.FC = () => {
   const { user } = useUser();
   const userUid = user?.id ?? "";
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
-  const [stage, setStage] = useState("quarterfinals");
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
 
   // TODO: Fetch real data based on tournamentId
@@ -35,7 +35,7 @@ const MatchView: React.FC = () => {
   }, []);
 
   if (players.length < 2) {
-    return <div>Loading...</div>;
+    return <div>{translate("loading")}</div>;
   }
 
   const userDetails = players[0];
@@ -52,7 +52,7 @@ const MatchView: React.FC = () => {
           player.ready ? "bg-green-400" : "bg-red-400"
         }`}
       >
-        {player.ready ? "Ready" : "Pending"}
+        {player.ready ? translate("ready") : translate("pending")}
       </span>
       {/* player avatar and username */}
       <div
@@ -65,11 +65,16 @@ const MatchView: React.FC = () => {
     </div>
   );
 
+  let stageHeader;
+  if (stage === "quarterfinals") stageHeader = translate("quarterfinals");
+  else if (stage === "semifinals") stageHeader = translate("semifinals");
+  else if (stage === "finals") stageHeader = translate("finals");
+
   return (
     <Background>
       <Card size="wide">
         <TournamentHeader>
-          {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
+          {stageHeader}
         </TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
@@ -79,7 +84,7 @@ const MatchView: React.FC = () => {
           <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
         </div>
 
-        <Button variant="green">Ready</Button>
+        <Button variant="green">{translate("ready")}</Button>
       </Card>
       {selectedUid && (
         <ProfilePopup

@@ -20,15 +20,13 @@ import TournamentHeader from "../../components/TournamentHeader";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
-type Stage = "quarterfinals" | "semifinals" | "finals";
-
 const TournamentLobbyView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
-  const [stage, setStage] = useState<Stage>("quarterfinals");
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 
   // TODO: Fetch real data based on tournamentId

@@ -1,4 +1,10 @@
 {
+  "AdvanceView": {
+    "advancement": "Advancement",
+    "congratulations": "Congratulations!",
+    "next_round": "You have advanced to the next round!",
+    "continue": "Continue"
+  },
   "ChooseSpriteView": {
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
@@ -23,6 +29,14 @@
     "settings": "SETTINGS",
     "join_tournament": "Join a tournament?"
   },
+  "MatchView": {
+    "loading": "Loading...",
+    "ready": "Ready",
+    "pending": "Pending",
+    "quarterfinals": "Quarterfinals",
+    "semifinals": "Semifinals",
+    "finals": "Finals"
+  },
   "NormalModeView": {
     "choose_action": "CHOOSE AN ACTION",
     "create_room": "CREATE ROOM",
@@ -39,6 +53,16 @@
     "create_doubles_game": "Create a doubles game?",
     "join_singles_game": "Join a singles game?",
     "join_doubles_game": "Join a doubles game?"
+  },
+  "ResultsView": {
+    "results": "Results",
+    "leave": "Leave",
+    "medal_message1": "Congratulations!",
+    "medal_message2_gold": "You won gold!",
+    "medal_message2_silver": "You won silver!",
+    "medal_message2_bronze": "You won bronze!",
+    "participation_message1": "Thank you for participating!",
+    "participation_message2": "You placed {{position}}th overall."
   },
   "SignUpSuccessView": {
     "success_message": "Your account has been successfully created!",
@@ -101,10 +125,7 @@
     "normal": "Normal",
     "fast": "Fast",
     "small": "Small",
-    "big": "Big",
-    "stadium": "Stadium",
-    "mansion": "Mansion",
-    "arcade": "Arcade"
+    "big": "Big"
   },
   "ProfilePopup": {
     "header": "My Profile",
@@ -159,6 +180,11 @@
     "live_chat": "Live Chat",
     "send": "Send"
   },
+  "MapSelector": {
+    "stadium": "Stadium",
+    "mansion": "Mansion",
+    "arcade": "Arcade"
+  },
   "Medals": {
     "gold": "Gold",
     "silver": "Silver",
@@ -197,8 +223,8 @@
     "switch_teams": "Switch Teams"
   },
   "RoomLayout": {
-    "game_settings": "GAME SETTINGS",
-    "invite_friends": "INVITE FRIENDS"
+    "game_settings": "Game Settings",
+    "invite_friends": "Invite Friends"
   },
   "SocialHub": {
     "tabs": {

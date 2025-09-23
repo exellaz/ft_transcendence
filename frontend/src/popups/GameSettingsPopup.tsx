@@ -20,16 +20,16 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const [ballSpeed, setBallSpeed] = useState(2);
   const [ballSize, setBallSize] = useState(2);
   const [paddleSpeed, setPaddleSpeed] = useState(2);
-  const [selectedMap, setSelectedMap] = useState(translate("stadium"));
+  const [selectedMap, setSelectedMap] = useState("stadium");
   const [resetToDefault, setResetToDefault] = useState(false);
 
-  const maps = [translate("stadium"), translate("mansion"), translate("arcade")];
+  const maps = ["stadium", "mansion", "arcade"];
 
   const handleReset = () => {
     setBallSpeed(2);
     setBallSize(2);
     setPaddleSpeed(2);
-    setSelectedMap(translate("stadium"));
+    setSelectedMap("stadium");
     setResetToDefault(!resetToDefault);
   };
 
