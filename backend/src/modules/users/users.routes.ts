@@ -5,6 +5,73 @@ import { deleteUserByIdSchema, getUserByIdSchema, getUserSettingsByIdSchema, pat
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
+
+  // ============================ USER SETTINGS =================================
+
+  // GET /users/:id/settings
+  fastify.get("/users/:id/settings", { schema: getUserSettingsByIdSchema }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = Number(id);
+
+    const settings = await fastify.db.userSettings.findUnique({
+      where: { userId: userId },
+      select: userSettingsPublicSelect
+    });
+
+    if (!settings)
+      throw new ApiError("User settings not found", 404);
+
+    return ok(settings); // only the 3 fields
+  });
+
+  // PATCH /users/:id/settings  (update single user settings)
+  fastify.patch("/users/:id/settings", { schema: patchUserSettingsByIdSchema }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const userId = Number(id);
+
+    const { language, textSize, inGameCameraTracking } = request.body as {
+      language?: string;
+      textSize?: string;
+      inGameCameraTracking?: string;
+    };
+
+    // Build update object dynamically
+    const data: any = {};
+    if (language !== undefined) data.language = language;
+    if (textSize !== undefined) data.textSize = textSize;
+    if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
+
+    if (Object.keys(data).length === 0)
+      throw new ApiError("No fields to update", 400);
+
+    try {
+      const updatedSettings = await fastify.db.userSettings.update({
+        where: { userId: userId }, // id is a number in SQLite schema usually
+        data,
+        select: userSettingsPublicSelect
+      });
+
+      return ok(updatedSettings);
+    } catch (err: any) {
+      if (err.code === "P2025") // Prisma "record not found"
+        throw new ApiError("User not found", 404);
+
+      throw err; // let Fastify handle other errors
+    }
+  });
+
+  // GET all userSettings (NEEDS TO BE BEFORE /user/:id)
+  fastify.get("/users/settings", async () => {
+    const userSettings = await fastify.db.userSettings.findMany({
+      select: userSettingsPublicSelect
+    });
+
+    return ok(userSettings); // even if empty array, success response
+  });
+
+
+  // ============================ USER =================================
+
   // POST /users (Create User)
   fastify.post("/users", async (request, reply) => {
     const { username, email, password } = request.body as {
@@ -107,58 +174,6 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     });
 
     return ok(users); // even if empty array, success response
-  });
-
-  // GET /users/:id/settings
-  fastify.get("/users/:id/settings", { schema: getUserSettingsByIdSchema }, async (request, reply) => {
-    const { id } = request.params as { id: string };
-    const userId = Number(id);
-
-    const settings = await fastify.db.userSettings.findUnique({
-      where: { userId: userId },
-      select: userSettingsPublicSelect
-    });
-
-    if (!settings)
-      throw new ApiError("User settings not found", 404);
-
-    return ok(settings); // only the 3 fields
-  });
-
-  // PATCH /users/:id/settings  (update single user settings)
-  fastify.patch("/users/:id/settings", { schema: patchUserSettingsByIdSchema }, async (request, reply) => {
-    const { id } = request.params as { id: string };
-    const userId = Number(id);
-
-    const { language, textSize, inGameCameraTracking } = request.body as {
-      language?: string;
-      textSize?: string;
-      inGameCameraTracking?: string;
-    };
-
-    // Build update object dynamically
-    const data: any = {};
-    if (language !== undefined) data.language = language;
-    if (textSize !== undefined) data.textSize = textSize;
-    if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
-
-    if (Object.keys(data).length === 0)
-      throw new ApiError("No fields to update", 400);
-
-    try {
-      const updatedSettings = await fastify.db.userSettings.update({
-        where: { userId: userId }, // id is a number in SQLite schema usually
-        data,
-        select: userSettingsPublicSelect
-      });
-
-      return ok(updatedSettings);
-    } catch (err: any) {
-      if (err.code === "P2025") // Prisma "record not found"
-        throw new ApiError("User not found", 404);
-
-      throw err; // let Fastify handle other errors
-    }
   });
 
 }
