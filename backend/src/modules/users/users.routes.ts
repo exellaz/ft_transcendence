@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { generateUniqueUserCode } from "./users.service";
 import { ok, fail, ApiError } from "../../utils/response"
-import { getUserByIdSchema } from "./users.schema";
+import { deleteUserByIdSchema, getUserByIdSchema, getUserSettingsByIdSchema, patchUserByIdSchema, patchUserSettingsByIdSchema } from "./users.schema";
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
   // POST /users (Create User)
@@ -57,7 +57,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 
 
   // PATCH /users/:id  (update single user)
-  fastify.patch("/users/:id", async (request, reply) => {
+  fastify.patch("/users/:id", { schema: patchUserByIdSchema }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const { username, avatarUrl } = request.body as {
       username?: string;
@@ -96,7 +96,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
   });
 
   // DELETE
-  fastify.delete("/users/:id", async (request) => {
+  fastify.delete("/users/:id", { schema: deleteUserByIdSchema }, async (request) => {
     const { id } = request.params as { id: string };
     try {
       const user = await fastify.db.user.delete({
@@ -136,7 +136,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
   });
 
   // GET /users/:id/settings
-  fastify.get("/users/:id/settings", async (request, reply) => {
+  fastify.get("/users/:id/settings", { schema: getUserSettingsByIdSchema }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
@@ -156,7 +156,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
   });
 
   // PATCH /users/:id/settings  (update single user settings)
-  fastify.patch("/users/:id/settings", async (request, reply) => {
+  fastify.patch("/users/:id/settings", { schema: patchUserSettingsByIdSchema }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 

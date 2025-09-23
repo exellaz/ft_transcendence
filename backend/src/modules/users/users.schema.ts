@@ -58,3 +58,46 @@ export const getUserByIdSchema = {
 		}
 	}
 };
+
+export const patchUserByIdSchema = {
+	params: {
+	  type: "object",
+	  properties: {
+			id: { type: "integer", minimum: 1 }
+	  },
+	  required: ["id"]
+	}
+}
+
+// DELETE user
+export const deleteUserByIdSchema = {
+	params: {
+	  type: "object",
+	  properties: {
+			id: { type: "integer", minimum: 1 }
+	  },
+	  required: ["id"]
+	}
+}
+
+// GET /users/:id/settings
+export const getUserSettingsByIdSchema = {
+	params: {
+	  type: "object",
+	  properties: {
+			id: { type: "integer", minimum: 1 }
+	  },
+	  required: ["id"]
+	}
+}
+
+// PATCH /users/:id/settings  (update single user settings)
+export const patchUserSettingsByIdSchema = {
+	params: {
+		type: "object",
+		properties: {
+			id: { type: "integer", minimum: 1 }
+		},
+		required: ["id"]
+	}
+}
