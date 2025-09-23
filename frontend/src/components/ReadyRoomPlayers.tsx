@@ -101,20 +101,26 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
     <>
       {/* Two-column team layout */}
       <div className="relative w-full h-full flex-row-start gap-6">
-        <TeamColumn title={translate("left_team")} teamPlayers={leftTeamPlayers} />
+        <TeamColumn
+          title={translate("left_team")}
+          teamPlayers={leftTeamPlayers}
+        />
         {/* Switch Team Button */}
         <div
           className="bg-yellow-400 rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2 cursor-pointer"
           onClick={onSwitchTeam}
         >
           <img
-            className="h-10"
+            className="h-10 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
             src="/assets/switch.png"
             alt="Switch Teams"
             title={translate("switch_teams")}
           />
         </div>
-        <TeamColumn title={translate("right_team")} teamPlayers={rightTeamPlayers} />
+        <TeamColumn
+          title={translate("right_team")}
+          teamPlayers={rightTeamPlayers}
+        />
       </div>
 
       {selectedUid && (

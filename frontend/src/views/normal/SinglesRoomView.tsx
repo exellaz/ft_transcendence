@@ -65,8 +65,16 @@ const SinglesRoomView: React.FC = () => {
         <div className="w-full h-full flex-row-center gap-10">
           <div className="w-[50%] h-full flex-col-between gap-6">
             <TournamentHeader>
-              <p>{translate("singles_room")}</p>
-              <p>({translate("room_id")}: {roomId})</p>
+              <div className="flex-row-center gap-2">
+                <p>{translate("singles_room")}</p>
+                <img
+                  src="/assets/link.png"
+                  className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+                />
+              </div>
+              <p>
+                ({translate("room_id")}: {roomId})
+              </p>
             </TournamentHeader>
             <ReadyRoomPlayers variant="singles" players={players} />
             <div className="flex-row-center gap-6">
