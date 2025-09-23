@@ -1,0 +1,27 @@
+meta {
+  name: patch-user-badrequest
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/users/abc
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "updatedName",
+    "avatarUrl": "https://example.com/avatar.png"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.success: eq false
+}
+
+settings {
+  encodeUrl: true
+}
