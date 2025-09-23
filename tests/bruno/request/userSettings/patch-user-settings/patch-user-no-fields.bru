@@ -1,0 +1,22 @@
+meta {
+  name: patch-user-settings-no-fields
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/users/1/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  }
+}
+
+assert {
+	res.status: eq 400
+	res.body.success: eq false
+	res.body.error: contains "No fields to update"
+}
