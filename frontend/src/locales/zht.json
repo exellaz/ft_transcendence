@@ -83,9 +83,6 @@
   "SettingsPopup": {
     "header": "設定",
     "language": "語言",
-    "camera_tracking": "遊戲內攝影機追蹤",
-    "static": "靜態",
-    "dynamic": "動態",
     "english": "英語",
     "simplified_chinese": "簡體中文",
     "traditional_chinese": "繁體中文"
