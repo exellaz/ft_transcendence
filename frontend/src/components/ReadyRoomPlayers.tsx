@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { WaitingRoomPlayer } from "../types/apiInterfaces";
 import { getUserColor } from "../utils/colorUtils";
 
@@ -16,6 +17,8 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   variant,
   onSwitchTeam,
 }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
 
   const leftTeamPlayers = players.filter((player) => player.team === "left");
@@ -40,7 +43,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <img
           src="/assets/crown.png"
           alt="Leader"
-          title="Leader"
+          title={translate("leader")}
           className={
             player.leader
               ? `absolute -top-3 -right-2 rotate-33 ${
@@ -68,7 +71,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
     <div
       className={`${basicCellStyling} border-2 border-dashed border-gray-600 opacity-50`}
     >
-      <p className="text-gray-500 text-sm">Waiting For Player</p>
+      <p className="text-gray-500 text-sm">{translate("waiting")}</p>
     </div>
   );
 
@@ -98,20 +101,20 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
     <>
       {/* Two-column team layout */}
       <div className="relative w-full h-full flex-row-start gap-6">
-        <TeamColumn title="Left Team" teamPlayers={leftTeamPlayers} />
+        <TeamColumn title={translate("left_team")} teamPlayers={leftTeamPlayers} />
         {/* Switch Team Button */}
         <div
-          className="absolute top-0 left-1/2 transform -translate-x-1/2 cursor-pointer"
+          className="bg-yellow-400 rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2 cursor-pointer"
           onClick={onSwitchTeam}
         >
           <img
-            className="h-8"
+            className="h-10"
             src="/assets/switch.png"
             alt="Switch Teams"
-            title="Switch Teams"
+            title={translate("switch_teams")}
           />
         </div>
-        <TeamColumn title="Right Team" teamPlayers={rightTeamPlayers} />
+        <TeamColumn title={translate("right_team")} teamPlayers={rightTeamPlayers} />
       </div>
 
       {selectedUid && (

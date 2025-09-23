@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
@@ -12,6 +13,8 @@ interface RoomLayoutProps {
 }
 
 const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`RoomLayout.${key}`);
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showInviteFriends, setShowInviteFriends] = useState(false);
 
@@ -21,9 +24,12 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
   return (
     <Background>
       <div className="absolute top-10 right-10 flex-col-center gap-6">
-      <Button variant="profile" onClick={() => setShowGameSettings(true)}>Game Settings</Button>
-      <Button variant="profile" onClick={() => setShowInviteFriends(true)}>Invite Friends</Button>
-      
+        <Button variant="profile" onClick={() => setShowGameSettings(true)}>
+          {translate("game_settings")}
+        </Button>
+        <Button variant="profile" onClick={() => setShowInviteFriends(true)}>
+          {translate("invite_friends")}
+        </Button>
       </div>
       {children}
       <GameSettingsPopup

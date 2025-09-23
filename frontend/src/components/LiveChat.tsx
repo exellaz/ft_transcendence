@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   WaitingTournamentPlayer,
   LiveChatMessage,
@@ -14,6 +15,8 @@ const LiveChat: React.FC<{
   setMessage: (msg: string) => void;
   onSendMessage: () => void;
 }> = ({ players, chatMessages, message, setMessage, onSendMessage }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`LiveChat.${key}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,7 +30,7 @@ const LiveChat: React.FC<{
 
   return (
     <div className="w-[50%] h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
-      <p className="text-white text-xl font-bold">Live Chat</p>
+      <p className="text-white text-xl font-bold">{translate("live_chat")}</p>
       <div
         ref={messagesEndRef}
         className="h-[400px] overflow-y-auto scrollbar-hide"
@@ -61,7 +64,7 @@ const LiveChat: React.FC<{
           className="flex-1 bg-input-gray rounded-lg text-white px-3 py-2 outline-none"
         />
         <Button variant="send" onClick={onSendMessage}>
-          Send
+          {translate("send")}
         </Button>
       </div>
     </div>

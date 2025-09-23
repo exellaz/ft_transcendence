@@ -1,4 +1,15 @@
 {
+  "ChooseSpriteView": {
+    "choose_sprite": "选择一个角色",
+    "confirm": "确认"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "双人房间",
+    "room_id": "房间ID",
+    "ready": "准备",
+    "leave_room": "离开房间",
+    "leave_confirmation": "你确定要离开房间吗？"
+  },
   "LoginView": {
     "username": "用户名",
     "password": "密码",
@@ -41,8 +52,21 @@
     "confirm_password": "确认密码",
     "signup": "注册"
   },
-  "ChooseSpriteView": {
-    "choose_sprite": "选择一个角色"
+  "SinglesRoomView": {
+    "singles_room": "单人房间",
+    "room_id": "房间ID",
+    "ready": "准备",
+    "leave_room": "离开房间",
+    "leave_confirmation": "你确定要离开房间吗？"
+  },
+  "TournamentLobbyView": {
+    "quarterfinals": "四分之一决赛",
+    "semifinals": "半决赛",
+    "finals": "决赛",
+    "tournament_lobby": "锦标赛大厅",
+    "ready": "准备",
+    "quit": "退出",
+    "quit_confirmation": "你确定要退出锦标赛吗？"
   },
   "BasicInfoPopup": {
     "loading": "加载中...",
@@ -72,7 +96,15 @@
     "paddle_speed": "板速",
     "choose_map": "选择地图",
     "restore_default": "重置为默认",
-    "save_changes": "保存更改"
+    "save_changes": "保存更改",
+    "slow": "慢",
+    "normal": "正常",
+    "fast": "快",
+    "small": "小",
+    "big": "大",
+    "stadium": "体育场",
+    "mansion": "豪宅",
+    "arcade": "街机厅"
   },
   "ProfilePopup": {
     "header": "我的资料",
@@ -123,6 +155,15 @@
     "block": "屏蔽",
     "unblock": "取消屏蔽"
   },
+  "LiveChat": {
+    "live_chat": "实时聊天",
+    "send": "发送"
+  },
+  "Medals": {
+    "gold": "金牌",
+    "silver": "银牌",
+    "bronze": "铜牌"
+  },
   "Messaging": {
     "loading": "加载中...",
     "online": "在线",
@@ -144,6 +185,21 @@
     "friends": "好友",
     "log_out": "登出"
   },
+  "ReadyPlayers": {
+    "ready": "准备",
+    "pending": "等待中"
+  },
+  "ReadyRoomPlayers": {
+    "leader": "队长",
+    "waiting": "等待玩家",
+    "left_team": "左队",
+    "right_team": "右队",
+    "switch_teams": "切换队伍"
+  },
+  "RoomLayout": {
+    "game_settings": "游戏设置",
+    "invite_friends": "邀请好友"
+  },
   "SocialHub": {
     "tabs": {
       "friends": "好友",
@@ -152,10 +208,9 @@
     },
     "add_friend": "添加好友",
     "search_friend": "搜索好友",
-    "enter_friend_uid": "输入好友UID",
-    "enter_uid": "输入UID",
+    "enter_friend_username": "输入好友用户名",
     "friend_added": "好友已添加。",
-    "uid_not_exist": "UID不存在。",
+    "username_not_exist": "用户名不存在。",
     "back": "返回"
   }
 }

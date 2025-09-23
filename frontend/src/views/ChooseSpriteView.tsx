@@ -54,7 +54,7 @@ const ChooseSpriteView: React.FC = () => {
             navigate("/tournament");
           }}
         >
-          Confirm
+          {translate("confirm")}
         </Button>
       </Card>
     </Background>

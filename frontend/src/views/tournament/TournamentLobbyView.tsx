@@ -20,13 +20,15 @@ import TournamentHeader from "../../components/TournamentHeader";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
+type Stage = "quarterfinals" | "semifinals" | "finals";
+
 const TournamentLobbyView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
-  const [stage, setStage] = useState("quarterfinals");
+  const [stage, setStage] = useState<Stage>("quarterfinals");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 
   // TODO: Fetch real data based on tournamentId
@@ -57,24 +59,29 @@ const TournamentLobbyView: React.FC = () => {
     }
   }
 
+  let stageHeader;
+  if (stage === "quarterfinals") stageHeader = translate("quarterfinals");
+  else if (stage === "semifinals") stageHeader = translate("semifinals");
+  else if (stage === "finals") stageHeader = translate("finals");
+
   return (
     <Background>
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
           <div className="w-[50%] h-full flex-col-between">
             <TournamentHeader>
-              <span>Pre-{stage.charAt(0).toUpperCase() + stage.slice(1)}</span>
-              <span>Tournament Lobby</span>
+              <span>{stageHeader}</span>
+              <span>{translate("tournament_lobby")}</span>
             </TournamentHeader>
             <ReadyPlayers players={players} />
             <div className="flex-row-center gap-6">
-              <Button variant="green">Ready</Button>
+              <Button variant="green">{translate("ready")}</Button>
               {stage === "quarterfinals" && (
                 <Button
                   variant="red"
                   onClick={() => setShowQuitTournament(true)}
                 >
-                  Quit
+                  {translate("quit")}
                 </Button>
               )}
             </div>
@@ -89,7 +96,7 @@ const TournamentLobbyView: React.FC = () => {
         </div>
       </Card>
       <ConfirmationPopup
-        text="Are you sure you want to quit the tournament?"
+        text={translate("quit_confirmation")}
         open={showQuitTournament}
         onClose={() => setShowQuitTournament(false)}
         redirectPath="/main-menu"

@@ -65,14 +65,14 @@ const SinglesRoomView: React.FC = () => {
         <div className="w-full h-full flex-row-center gap-10">
           <div className="w-[50%] h-full flex-col-between gap-6">
             <TournamentHeader>
-              <p>Singles Room</p>
-              <p>(Room ID: {roomId})</p>
+              <p>{translate("singles_room")}</p>
+              <p>({translate("room_id")}: {roomId})</p>
             </TournamentHeader>
             <ReadyRoomPlayers variant="singles" players={players} />
             <div className="flex-row-center gap-6">
-              <Button variant="green">Ready</Button>
+              <Button variant="green">{translate("ready")}</Button>
               <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
-                Leave Room
+                {translate("leave_room")}
               </Button>
             </div>
           </div>
@@ -86,7 +86,7 @@ const SinglesRoomView: React.FC = () => {
         </div>
       </Card>
       <ConfirmationPopup
-        text="Are you sure you want to leave the room?"
+        text={translate("leave_confirmation")}
         open={showLeaveRoom}
         onClose={() => setShowLeaveRoom(false)}
         redirectPath="/main-menu"

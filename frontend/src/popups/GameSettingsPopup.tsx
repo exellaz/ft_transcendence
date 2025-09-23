@@ -20,16 +20,16 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const [ballSpeed, setBallSpeed] = useState(2);
   const [ballSize, setBallSize] = useState(2);
   const [paddleSpeed, setPaddleSpeed] = useState(2);
-  const [selectedMap, setSelectedMap] = useState("Map 1");
+  const [selectedMap, setSelectedMap] = useState(translate("stadium"));
   const [resetToDefault, setResetToDefault] = useState(false);
 
-  const maps = ["Map 1", "Map 2", "Map 3", "Map 4"];
+  const maps = [translate("stadium"), translate("mansion"), translate("arcade")];
 
   const handleReset = () => {
     setBallSpeed(2);
     setBallSize(2);
     setPaddleSpeed(2);
-    setSelectedMap("Map 1");
+    setSelectedMap(translate("stadium"));
     setResetToDefault(!resetToDefault);
   };
 
@@ -42,19 +42,19 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
           <Slider
             label={translate("ball_speed")}
             value={ballSpeed}
-            options={["Slow", "Normal", "Fast"]}
+            options={[translate("slow"), translate("normal"), translate("fast")]}
             onChange={setBallSpeed}
           />
           <Slider
             label={translate("ball_size")}
             value={ballSize}
-            options={["Small", "Normal", "Big "]}
+            options={[translate("small"), translate("normal"), translate("big")]}
             onChange={setBallSize}
           />
           <Slider
             label={translate("paddle_speed")}
             value={paddleSpeed}
-            options={["Slow", "Normal", "Fast"]}
+            options={[translate("slow"), translate("normal"), translate("fast")]}
             onChange={setPaddleSpeed}
           />
         </div>

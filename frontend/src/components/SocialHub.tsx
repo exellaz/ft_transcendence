@@ -109,10 +109,9 @@ const SocialHub: React.FC<SocialHubProps> = ({
                   <div className="h-full flex-col-around">
                     <div className="w-full h-[300px] flex-col-around rounded-3xl border-gray-300 border-3 p-10">
                       <p className="text-white text-xl font-bold">
-                        {translate("enter_friend_uid")}
+                        {translate("enter_friend_username")}
                       </p>
                       <Input
-                        placeholder={translate("enter_uid")}
                         value={friendUID}
                         onChange={(e) => setFriendUID(e.target.value)}
                       />
@@ -123,7 +122,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
                       )}
                       {addFriendStatus === "error" && (
                         <p className="text-red-400">
-                          {translate("uid_not_exist")}
+                          {translate("username_not_exist")}
                         </p>
                       )}
                       <Button onClick={handleAddFriend}>
