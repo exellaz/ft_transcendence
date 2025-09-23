@@ -68,7 +68,7 @@ model UserSettings {
   inGameCameraTracking CameraTracking @default(static) @map("in_game_camera_tracking")
 
   // Relation
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
