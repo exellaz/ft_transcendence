@@ -1,7 +1,8 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { generateUniqueUserCode } from "./users.service";
-import { ok, fail, ApiError } from "../../utils/response"
+import { ok, ApiError } from "../../utils/response"
 import { deleteUserByIdSchema, getUserByIdSchema, getUserSettingsByIdSchema, patchUserByIdSchema, patchUserSettingsByIdSchema } from "./users.schema";
+import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 
 async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
   // POST /users (Create User)
@@ -38,16 +39,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     const { id } = request.params as { id: string };
     const user = await fastify.db.user.findUnique({
       where: { id: Number(id) },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        avatarUrl: true,
-        usercode: true,
-        status: true,
-        joinedAt: true,
-        updatedAt: true
-      }
+      select: userPublicSelect
     });
     if (!user)
       throw new ApiError("User not found", 404);
@@ -76,12 +68,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       const updatedUser = await fastify.db.user.update({
         where: { id: Number(id) }, // id is a number in SQLite schema usually
         data,
-        select: { // return only these fields from database
-          id: true,
-          username: true,
-          avatarUrl: true,
-          joinedAt: true,
-        },
+        select: userPublicSelect
       });
 
       return ok(updatedUser);
@@ -101,11 +88,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     try {
       const user = await fastify.db.user.delete({
         where: { id: Number(id) },
-        select: { // return only these fields from database
-          id: true,
-          email: true,
-          username: true,
-        },
+        select: userPublicSelect,
       });
 
       return ok(user);
@@ -120,16 +103,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
   // READ (all users)
   fastify.get("/users", async () => {
     const users = await fastify.db.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        avatarUrl: true,
-        usercode: true,
-        status: true,
-        joinedAt: true,
-        updatedAt: true
-      }
+      select: userPublicSelect
     });
 
     return ok(users); // even if empty array, success response
@@ -142,11 +116,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 
     const settings = await fastify.db.userSettings.findUnique({
       where: { userId: userId },
-      select: {
-        language: true,
-        textSize: true,
-        inGameCameraTracking: true,
-      },
+      select: userSettingsPublicSelect
     });
 
     if (!settings)
@@ -179,12 +149,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       const updatedSettings = await fastify.db.userSettings.update({
         where: { userId: userId }, // id is a number in SQLite schema usually
         data,
-        select: { // return only these fields from database
-          userId: true,
-          language: true,
-          textSize: true,
-          inGameCameraTracking: true,
-        },
+        select: userSettingsPublicSelect
       });
 
       return ok(updatedSettings);
