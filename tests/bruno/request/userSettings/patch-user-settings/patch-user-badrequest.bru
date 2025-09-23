@@ -1,19 +1,20 @@
 meta {
-  name: patch-user-badrequest
+  name: patch-user-settings-badrequest
   type: http
-  seq: 5
+  seq: 4
 }
 
 patch {
-  url: {{baseUrl}}/users/abc
+  url: {{baseUrl}}/users/abc/settings
   body: json
   auth: none
 }
 
 body:json {
   {
-    "username": "updatedName",
-    "avatarUrl": "https://example.com/avatar.png"
+    "language": "chinese",
+    "textSize": "large",
+    "inGameCameraTracking": "dynamic"
   }
 }
 

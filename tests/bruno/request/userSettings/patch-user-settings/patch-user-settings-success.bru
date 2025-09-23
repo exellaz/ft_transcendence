@@ -5,25 +5,26 @@ meta {
 }
 
 patch {
-  url: {{baseUrl}}/users/1
+  url: {{baseUrl}}/users/1/settings
   body: json
   auth: none
 }
 
 body:json {
   {
-    "username": "updatedName",
-    "avatarUrl": "https://example.com/avatar.png"
+    "language": "chinese",
+    "textSize": "large",
+    "inGameCameraTracking": "dynamic"
   }
 }
 
 assert {
   res.status: eq 200
   res.body.success: eq true
-  res.body.data.id: isNumber
-  res.body.data.username: eq "updatedName"
-  res.body.data.avatarUrl: eq "https://example.com/avatar.png"
-  res.body.data.joinedAt: isString
+  res.body.data.userId: isNumber
+  res.body.data.language: eq "chinese"
+  res.body.data.textSize: eq "large"
+  res.body.data.inGameCameraTracking: eq "dynamic"
 }
 
 settings {

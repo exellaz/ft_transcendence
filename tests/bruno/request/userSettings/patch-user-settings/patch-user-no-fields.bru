@@ -1,11 +1,11 @@
 meta {
-  name: patch-user-no-fields
+  name: patch-user-settings-no-fields
   type: http
-  seq: 4
+  seq: 3
 }
 
 patch {
-  url: {{baseUrl}}/users/1
+  url: {{baseUrl}}/users/1/settings
   body: json
   auth: none
 }
