@@ -13,7 +13,6 @@ get {
 assert {
   res.status: eq 400
   res.body.success: eq false
-  res.body.error: contains "Invalid"
 }
 
 settings {

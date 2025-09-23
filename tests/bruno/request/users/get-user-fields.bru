@@ -27,8 +27,8 @@ tests {
     const myProperty = res.getBody().data.avatarUrl; // Assuming 'myProperty' exists in the response body
   
     // Assert that 'myProperty' is either a string or a number
-    expect(myProperty).to.satisfy(
-      (val) => typeof val === "string" || typeof val === null
+    expect(myProperty).to.satisfy((val) => 
+      typeof val === "string" || val === null
     );
   
   });
