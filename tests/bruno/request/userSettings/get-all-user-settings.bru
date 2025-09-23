@@ -1,0 +1,19 @@
+meta {
+  name: get-all-user-settings
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/users/settings
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 200
+}
+
+settings {
+  encodeUrl: true
+}

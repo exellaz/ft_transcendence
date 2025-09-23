@@ -15,6 +15,7 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
+import TestView from "./views/TestView"
 import Popup from "./popups/SettingsPopup";
 
 const App: React.FC = () => {
@@ -38,6 +39,7 @@ const App: React.FC = () => {
           <Route path="/results" element={<ResultsView />} />
           <Route path="/singles-room" element={<SinglesRoomView />} />
           <Route path="/doubles-room" element={<DoublesRoomView />} />
+          <Route path="/test" element={<TestView />} />
         </Routes>
       </BrowserRouter>
       <Popup open={showPopup} onClose={() => setShowPopup(false)} />
