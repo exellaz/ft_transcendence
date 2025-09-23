@@ -59,17 +59,15 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
   // PATCH /users/:id  (update single user)
   fastify.patch("/users/:id", async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { avatarUrl, username, email } = request.body as {
-      avatarUrl?: string;
+    const { username, avatarUrl } = request.body as {
       username?: string;
-      email?: string;
+      avatarUrl?: string;
     };
 
     // Build update object dynamically
     const data: any = {};
-    if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
     if (username !== undefined) data.username = username;
-    if (email !== undefined) data.email = email;
+    if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
     if (Object.keys(data).length === 0)
       throw new ApiError("No fields to update", 400);
@@ -80,7 +78,6 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
         data,
         select: { // return only these fields from database
           id: true,
-          email: true,
           username: true,
           avatarUrl: true,
           joinedAt: true,
@@ -92,7 +89,7 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       if (err.code === "P2025") // Prisma "record not found"
         throw new ApiError("User not found", 404);
       else if (err.code === "P2002") // Prisma unique constraint violation
-        throw new ApiError("Username or Email already exists", 400);
+        throw new ApiError("Username already exists", 400);
 
       throw err; // let Fastify handle other errors
     }
