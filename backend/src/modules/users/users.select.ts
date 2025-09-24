@@ -5,7 +5,6 @@ export const userPublicSelect = {
 	username: true,
 	email: true,
 	avatarUrl: true,
-	usercode: true,
 	status: true,
 	joinedAt: true,
 	updatedAt: true,

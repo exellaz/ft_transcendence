@@ -48,7 +48,6 @@ model User {
   password   String
   email      String         @unique
   avatarUrl  String?        @map("avatar_url")
-  usercode   String         @unique      // 6-digit code (Prisma can enforce unique, but not "must be 6 digits")
   status     userStatus     @default(offline) @map("status")
   joinedAt   DateTime       @default(now()) @map("joined_at")
   updatedAt  DateTime       @default(now()) @map("updated_at")

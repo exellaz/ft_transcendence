@@ -26,7 +26,6 @@ export interface User {
   username: string;
   email: string;
   avatarUrl?: string;
-  usercode: string;
   status: UserStatus;
   joinedAt: Date;
   updatedAt: Date;

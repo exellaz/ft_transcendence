@@ -21,7 +21,6 @@ export const getUserByIdSchema = {
 						username: { type: "string" },
 						email: { type: "string" },
 						avatarUrl: { type: ["string", "null"] },
-						usercode: { type: "string" },
 						status: { type: "string" }, // could refine with enum if you want
 						joinedAt: { type: "string", format: "date-time" },
 						updatedAt: { type: "string", format: "date-time" }
@@ -31,7 +30,6 @@ export const getUserByIdSchema = {
 						"username",
 						"email",
 						"avatarUrl",
-						"usercode",
 						"status",
 						"joinedAt",
 						"updatedAt"

@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { generateUniqueUserCode } from "./users.service";
 import { ok, ApiError } from "../../utils/response"
 import { deleteUserByIdSchema, getUserByIdSchema, getUserSettingsByIdSchema, patchUserByIdSchema, patchUserSettingsByIdSchema } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
@@ -80,14 +79,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 	  password: string;
 	};
     try {
-	  	const usercode = await generateUniqueUserCode(fastify, username);
-      console.log(usercode);
 			const user = await fastify.db.user.create({
         data: {
           username,
           email,
           password,
-          usercode,
           settings: { create: {} }, // use all @default values
         },
       });

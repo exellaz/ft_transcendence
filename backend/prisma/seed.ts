@@ -14,7 +14,6 @@ async function main() {
         username: `username${i}`,
         email: `username${i}@gmail.com`,
         password: `username${i}pw`,
-        usercode: String(100000 + i), // 6-digit code, adjust as you like
         settings: {
           create: {}, // uses defaults for language, textSize, inGameCameraTracking
         },
