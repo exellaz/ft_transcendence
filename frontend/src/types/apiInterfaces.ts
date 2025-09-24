@@ -99,6 +99,7 @@ export interface WaitingTournamentPlayer {
 // Chat message in tournament lobby
 export interface LiveChatMessage {
   uid: string;
+  from: string;
   text: string;
   timestamp: string; // ISO string or formatted
 }

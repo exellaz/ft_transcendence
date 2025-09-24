@@ -12,8 +12,18 @@ import SettingsPopup from "../popups/SettingsPopup";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 const MainMenuView: React.FC = () => {
-  ensureClientId();
-  sessionStorage.setItem("pongUserName", "player");
+
+  //? For testing purpose, assign a test user name and sprite based on client ID
+  const clientId = ensureClientId(); //? make a test user id
+  const clientIdLastDigit = parseInt(clientId.slice(-1));
+  if (clientIdLastDigit % 2 === 0) {
+	  sessionStorage.setItem("pongUserName", "player 1"); //? make a test user name
+	  sessionStorage.setItem("pongUserSprite", "../../../public/assets/green-ghost.png"); //? make a test user sprite
+  } else {
+	  sessionStorage.setItem("pongUserName", "player 2"); //? make a test user name
+	  sessionStorage.setItem("pongUserSprite", "../../../public/assets/yellow-ghost.png"); //? make a test user sprite
+  }
+
   const { t } = useTranslation();
   const translate = (key: string) => t(`MainMenuView.${key}`);
   const navigate = useNavigate();

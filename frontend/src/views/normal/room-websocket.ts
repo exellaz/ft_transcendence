@@ -32,7 +32,8 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	useEffect(() => {
 		// get clientId and playerName from sessionStorage
 		const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
-		const playerName = sessionStorage.getItem("pongPlayerName") || "Guest";
+		const playerName = sessionStorage.getItem("pongUserName") || "Guest";
+		const playerSprite = sessionStorage.getItem("pongUserSprite") || "unknown"; // default sprite
 
 		async function connect() {
 			// set room settings
@@ -45,7 +46,10 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 
 			// create websocket connection with player id, room id, side and player name
 			const chooseSide = await determineSide(roomId);
-			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerName)}`);
+			console.log("ws side:", chooseSide);
+			console.log("ws player name:", playerName);
+			console.log("ws player sprite:", playerSprite);
+			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`);
 			socketRef.current = ws;
 
 			// open connection
@@ -97,17 +101,27 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 						setPlayerText(`You are: ${playerName} [${clientId}] (${newRole})`);
 						// update team lists on left
 						setLeftTeamHtml(
-							data.gameState.teams.left.map((p:any)=> {
-								const mark = p.clientId === data.leaderId ? "✦" : "";
-								return `${mark}${p.playerName} [${p.clientId}] (${p.role})`;
-							}).join("\n")
+							data.gameState.teams.left.map((p:any)=> ({
+								leader: p.clientId === data.leaderId,
+								username: p.playerName,
+								uid: p.clientId,
+								role: p.role,
+								spriteUrl: p.spriteUrl,
+								ready: p.ready,
+								team: p.role.startsWith("left") ? "left" : "right"
+							}))
 						);
 						// update team lists on right
 						setRightTeamHtml(
-							data.gameState.teams.right.map((p:any)=> {
-								const mark = p.clientId === data.leaderId ? "✦" : "";
-								return `${mark}${p.playerName} [${p.clientId}] (${p.role})`;
-							}).join("\n")
+							data.gameState.teams.right.map((p:any)=> ({
+								leader: p.clientId === data.leaderId,
+								username: p.playerName,
+								uid: p.clientId,
+								role: p.role,
+								spriteUrl: p.spriteUrl,
+								ready: p.ready,
+								team: p.role.startsWith("left") ? "left" : "right"
+							}))
 						);
 						// update player leader
 						if (data.leaderId) {
@@ -152,6 +166,28 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 		connect();
 	}, [roomId, roomName, leaderId]);
 
+	function onSwitch() {
+		if (!socketRef.current || ready) return;
+		const newSide = role.startsWith("left") ? "right" : "left";
+		socketRef.current.send(JSON.stringify({ type: "switchSide", side: newSide }));
+	}
+
+	function onReady() {
+	  if (!socketRef.current || isLeader) return;
+	  const newReady = !ready;
+	  setReady(newReady);
+	  socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
+	}
+	function onStartBtn() {
+	  if (!isLeader || !socketRef.current) return;
+	  socketRef.current.send(JSON.stringify({ type: "start", start: true }));
+	}
+	function onLeave() {
+	  try { socketRef.current?.close(); } catch {}
+	  sessionStorage.removeItem("pongRoomName");
+	  sessionStorage.removeItem("pongRoomId");
+	}
+
 	return {
 		socket: socketRef.current,
 		statusText,
@@ -164,5 +200,9 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 		setReady,
 		gameStarted,
 		canStart,
+		onSwitch,
+		onReady,
+		onStartBtn,
+		onLeave,
 	};
 }

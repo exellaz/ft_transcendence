@@ -80,6 +80,8 @@
     "singles_room": "Singles Room",
     "room_id": "Room ID",
     "ready": "Ready",
+	"unready": "Unready",
+	"start": "Start",
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?"
   },

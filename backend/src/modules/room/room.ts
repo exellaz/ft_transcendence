@@ -8,6 +8,10 @@ export interface playerInfo {
     clientId: string; // client id
     playerName: string; // player username
     role: string; // "left" or "right"
+	team: "left" | "right"; // team side
+	leader: boolean; // whether the player is the leader
+	spriteUrl: string; // URL of the player's sprite
+	ready: boolean; // whether the player is ready
 }
 
 /**
@@ -51,7 +55,7 @@ export interface Room {
 	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
-    readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
+    // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
     //startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
@@ -124,7 +128,7 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		chatHistory: [] as any [],
 		disconnectPlayers: new Set(),
 		game: new Game(),
-		readyStatus: new Map(),
+		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,
 		private: isPrivate,

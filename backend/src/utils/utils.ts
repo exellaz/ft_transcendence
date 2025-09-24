@@ -10,6 +10,7 @@ export interface WSContext {
 	room: any;
 	side?: "left" | "right";
     playerName: string;
+	playerSprite: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
     const roomId = url.searchParams.get("room");
     const side = url.searchParams.get("side") as "left" | "right" | null;
     const playerName = url.searchParams.get("name");
+	const playerSprite = url.searchParams.get("sprite");
 
     if (!clientId) {
 		socket.close(1008, "Client id is required");
@@ -46,6 +48,11 @@ export function validateConnection(socket: any, req:any): WSContext | null {
         return null;
     }
 
+	if (!playerSprite) {
+		socket.close(1008, "Player sprite is required");
+		return null;
+	}
+
 	const room = rooms.get(roomId);
 	if (!room) {
 		socket.close(1008, "Room not found");
@@ -58,6 +65,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
         room,
         side: side ?? undefined,
         playerName,
+        playerSprite,
     };
 }
 
@@ -83,7 +91,7 @@ export function updateCanStart(room: Room): boolean {
     const nonLeaderPlayers = leaderPlayer
         ? allPlayers.filter((p: any) => p.clientId !== leaderId)
         : allPlayers;
-    const allReady = nonLeaderPlayers.every((p: any) => room.readyStatus.get(p.clientId));
+    const allReady = nonLeaderPlayers.every((p: any) => room.clientRoles.get(p.clientId)?.ready);
 
     // check if teams are balanced
     const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
@@ -183,7 +191,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
 	if (!newPlayer) return;
-    broadcast(room, createLiveChatMessage("system", `${newPlayer.playerName} (${oldRole}) switched to ${newPlayer.role}`));
+    broadcast(room, createLiveChatMessage("system", "system", `${newPlayer.playerName} (${oldRole}) switched to ${newPlayer.role}`));
     console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role} in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug
 
@@ -191,7 +199,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     if (socket) {
         socket.send(JSON.stringify({
             type: "roleUpdate",
-            newPlayer: { id: clientId, role: newPlayer.role, playerName: newPlayer.playerName },
+            newPlayer: newPlayer,
             gameState: room.gameState,
             leaderId: room.leaderId,
             disconnectPlayers: room.disconnectPlayers,
@@ -202,11 +210,11 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
 	const canStart = updateCanStart(room);
     broadcast(room, {
         type: "roleUpdate",
-        newPlayer: { id: clientId, role: newPlayer.role, playerName: newPlayer.playerName },
+        newPlayer: newPlayer,
         gameState: room.gameState,
         leaderId: room.leaderId,
         disconnectPlayers: room.disconnectPlayers,
-		readyStatus: Object.fromEntries(room.readyStatus.entries()),
+		readyStatus: newPlayer.ready,
 		canStart: canStart,
     });
 

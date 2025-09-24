@@ -13,6 +13,8 @@
     "doubles_room": "雙人房間",
     "room_id": "房間ID",
     "ready": "準備",
+	"unready": "取消準備",
+	"start": "開始遊戲",
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？"
   },

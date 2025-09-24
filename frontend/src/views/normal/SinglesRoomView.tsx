@@ -1,34 +1,35 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import type {
+	WaitingRoomPlayer,
+} from "../../types/apiInterfaces";
 // import {
 //   mockWaitingSinglesRoomPlayers,
 //   mockSinglesRoomLiveChat,
 // } from "../../data/mockUsers";
-import type {
-  WaitingRoomPlayer,
-  LiveChatMessage,
-} from "../../types/apiInterfaces";
-import { useNavigate } from "react-router-dom";
 
-import { formatTimestamp } from "../../utils/date";
-
+// components
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
 import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
-
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
+// hooks
 import { useRoomWebSocket } from "./room-websocket";
+import { useLiveChatWebSocket } from "./liveChat-websocket";
 
+/**
+ * @brief View for Singles Room
+ * - Shows players, chat, and room controls
+*/
 const SinglesRoomView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`SinglesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
-  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
-  const [message, setMessage] = useState("");
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
 
@@ -43,18 +44,31 @@ const SinglesRoomView: React.FC = () => {
   //   console.log("roomName:", roomName);
   //   console.log("user id", sessionStorage.getItem("pongClientId"));
 
+  //live chat websocket
   const {
-	socket,
-	statusText,
-	playerText,
+	chatMessages,
+	message,
+	setMessage,
+	handleSendMsg
+  } = useLiveChatWebSocket(roomId);
+
+  //room websocket
+  const {
 	leftTeamHtml,
 	rightTeamHtml,
 	isLeader,
-	role,
 	ready,
-	setReady,
-	gameStarted,
 	canStart,
+	onSwitch,
+	onReady,
+	onStartBtn,
+	onLeave,
+	//? socket,
+	//? statusText,
+	//? playerText,
+	//? role,
+	//? setReady,
+	//? gameStarted,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
   ////debug
@@ -70,49 +84,19 @@ const SinglesRoomView: React.FC = () => {
 //   console.log("Game started:", gameStarted);
 //   console.log("Can start game:", canStart);
 
+  //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-    // Split HTML strings back into arrays
-    const leftTeam = leftTeamHtml
-      ? leftTeamHtml.split("\n").map((line) => {
-          const match = line.match(/(✦?)(.+?) \[(.+?)\] \((.+?)\)/);
-          if (!match) return null;
-          const [, leaderMark, username, uid, role] = match;
-          return {
-            leader: !!leaderMark,
-            uid,
-            username: username.trim(),
-            spriteUrl: "/assets/default.png", // TODO: replace with real sprite
-            ready: false, // you’ll need to update this based on server info
-            team: "left" as const,
-          };
-        }).filter(Boolean)
-      : [];
-
-    const rightTeam = rightTeamHtml
-      ? rightTeamHtml.split("\n").map((line) => {
-          const match = line.match(/(✦?)(.+?) \[(.+?)\] \((.+?)\)/);
-          if (!match) return null;
-          const [, leaderMark, username, uid, role] = match;
-          return {
-            leader: !!leaderMark,
-            uid,
-            username: username.trim(),
-            spriteUrl: "/assets/default.png",
-            ready: false,
-            team: "right" as const,
-          };
-        }).filter(Boolean)
-      : [];
-
-    setPlayers(
-      [...leftTeam, ...rightTeam].filter(Boolean) as WaitingRoomPlayer[]
-    );
+    const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
+	console.log("leftTeam:", leftTeam); //// debug
+    const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
+	console.log("rightTeam:", rightTeam); //// debug
+    setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
 
-////debug
-// console.log("leftTeamHtml:", leftTeamHtml);
-// console.log("rightTeamHtml:", rightTeamHtml);
-// console.log("Parsed players:", players);
+  ////debug
+//   console.log("leftTeamHtml:", leftTeamHtml);
+//   console.log("rightTeamHtml:", rightTeamHtml);
+//   console.log("Parsed players:", players);
 
   // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
@@ -131,42 +115,16 @@ const SinglesRoomView: React.FC = () => {
 //     setChatMessages(mockSinglesRoomLiveChat["t1"]);
 //   }, []);
 
-
-  function onSwitch() {
-    if (ready || !socket) return;
-    const newSide = role.startsWith("left") ? "right" : "left";
-    socket.send(JSON.stringify({ type: "switchSide", side: newSide }));
-  }
-
-  function onReady() {
-    if (isLeader || !socket) return;
-    const newReady = !ready;
-    setReady(newReady);
-    socket.send(JSON.stringify({ type: "ready", ready: newReady }));
-  }
-
-  function onStartBtn() {
-    if (!isLeader || !socket) return;
-    socket.send(JSON.stringify({ type: "start", start: true }));
-  }
-
-  function onLeave() {
-    try { socket?.close(); } catch {}
-    sessionStorage.removeItem("pongRoomName");
-    sessionStorage.removeItem("pongRoomId");
-	navigate("/main-menu");
-  }
-
   // todo: Replace 1 with current user id
-  function handleSendMessage() {
-    if (message.trim()) {
-      setChatMessages([
-        ...chatMessages,
-        { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
-      ]);
-      setMessage("");
-    }
-  }
+//   function handleSendMessage() {
+//     if (message.trim()) {
+//       setChatMessages([
+//         ...chatMessages,
+//         { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
+//       ]);
+//       setMessage("");
+//     }
+//   }
 
   return (
     <RoomLayout>
@@ -201,12 +159,12 @@ const SinglesRoomView: React.FC = () => {
 			      disabled={!canStart}
 			      onClick={onStartBtn}
 			    >
-			      {translate("start_game")}
+			      {translate("start")}
 			    </Button>
 			  )}
 
 			  {/* Leave button */}
-			  <Button variant="red" onClick={onLeave}>
+			  <Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
 			    {translate("leave_room")}
 			  </Button>
 			</div>
@@ -216,7 +174,7 @@ const SinglesRoomView: React.FC = () => {
             chatMessages={chatMessages}
             message={message}
             setMessage={setMessage}
-            onSendMessage={handleSendMessage}
+            onSendMessage={handleSendMsg}
           />
         </div>
       </Card>

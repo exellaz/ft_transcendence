@@ -12,6 +12,7 @@ interface ReadyRoomPlayersProps {
   onSwitchTeam?: () => void;
 }
 
+// Component to display players in ready room with team switch functionality
 const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   players,
   variant,
@@ -21,6 +22,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
 
+  // Separate players into left and right teams
   const leftTeamPlayers = players.filter((player) => player.team === "left");
   const rightTeamPlayers = players.filter((player) => player.team === "right");
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
@@ -101,7 +103,8 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
     <>
       {/* Two-column team layout */}
       <div className="relative w-full h-full flex-row-start gap-6">
-        <TeamColumn
+        {/* Left Team Column */}
+		<TeamColumn
           title={translate("left_team")}
           teamPlayers={leftTeamPlayers}
         />
@@ -117,12 +120,14 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
             title={translate("switch_teams")}
           />
         </div>
+        {/* Right Team Column */}
         <TeamColumn
           title={translate("right_team")}
           teamPlayers={rightTeamPlayers}
         />
       </div>
 
+	  {/* Profile Popup */}
       {selectedUid && (
         <ProfilePopup
           open={true}
