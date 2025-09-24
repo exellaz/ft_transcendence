@@ -10,7 +10,6 @@ import { authenticate } from "./plugins/authenticate.ts";
 import { hashPassword, verifyPassword } from "./authService.ts";
 import { createUserWithPassword, getUserByEmail } from "./userModel.ts";
 
-
 const Fastify = fastify;
 
 dotenv.config();
@@ -25,6 +24,28 @@ server.register(cors, {
 
 server.get("/health", async () => ({ status: "ok" }));
 
+function validateRegistrationInput(
+  email: string,
+  password: string,
+  name: string,
+) {
+  const errors: string[] = [];
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    errors.push("Invalid email format");
+  }
+  if (password.length < 8) {
+    errors.push("Password must be at least 8 characters");
+  }
+  if (name.trim().length < 2) {
+    errors.push("Name must be at least 2 characters");
+  }
+  if (name.length > 24) {
+    errors.push("Name must be at most 24 characters");
+  }
+  return errors;
+}
+
 server.post("/auth/register", async (request, reply) => {
   const { email, password, name } = request.body as {
     email?: string;
@@ -33,21 +54,47 @@ server.post("/auth/register", async (request, reply) => {
   };
 
   if (!email || !password || !name) {
-    return reply.code(400).send({ error: "Missing fields" });
+    return reply
+      .code(400)
+      .send({ error: "Missing required fields: email, password, name" });
   }
 
-  const exists = getUserByEmail(email);
+  const validationErrors = validateRegistrationInput(email, password, name);
+  if (validationErrors.length > 0) {
+    return reply
+      .code(400)
+      .send({ error: "Validation failed", details: validationErrors });
+  }
+
+  const exists = getUserByEmail(email.toLocaleLowerCase().trim());
   if (exists) {
     return reply.code(400).send({ error: "Email already registered" });
   }
 
-  const passwordHash = await hashPassword(password);
-  const user = createUserWithPassword(email, name, passwordHash);
-  if (!user) {
-    throw new Error("User not found");
-  }
+  try {
+    const passwordHash = await hashPassword(password);
+    const user = createUserWithPassword(email, name, passwordHash);
+    if (!user) {
+      throw new Error("Failed to create user");
+    }
 
-  return reply.send({ ok: true, user: { id: user.id, email: user.email, name: user.name } });
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      authConfig.jwtSecret as Secret,
+      { expiresIn: authConfig.jwtExpiresIn } as SignOptions,
+    );
+
+    request.log.info(`User registered successfully: ${user.email}`);
+
+    return reply.send({
+      ok: true,
+      token,
+      user: { id: user.id, email: user.email, name: user.name },
+    });
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: "Registration failed" });
+  }
 });
 
 server.post("/auth/login", async (request, reply) => {
@@ -60,24 +107,37 @@ server.post("/auth/login", async (request, reply) => {
     return reply.code(400).send({ error: "Missing email or password" });
   }
 
-  const user = getUserByEmail(email);
-  if (!user || !user.passwordHash) {
-    return reply.code(401).send({ error: "Invalid credentials" });
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = getUserByEmail(email);
+    if (!user || !user.password_hash) {
+      request.log.warn(`Login failed for email: ${normalizedEmail}`);
+      return reply.code(401).send({ error: "Invalid credentials" });
+    }
+
+    const valid = await verifyPassword(password, user.password_hash);
+    if (!valid) {
+      request.log.warn(`Failed password attempt for email: ${normalizedEmail}`);
+      return reply.code(401).send({ error: "Invalid credentials" });
+    }
+
+    updateLastLogin(user.id);
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      authConfig.jwtSecret as Secret,
+      { expiresIn: authConfig.jwtExpiresIn } as SignOptions,
+    );
+
+    return reply.send({
+      ok: true,
+      token,
+      user: { id: user.id, email: user.email, name: user.name },
+    });
+  } catch (error) {
+    request.log.error(error);
+    return reply.code(500).send({ error: "Login failed" });
   }
-
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    return reply.code(401).send({ error: "Invalid credentials" });
-  }
-
-  // issue JWT
-  const token = jwt.sign(
-    { userId: user.id, email: user.email },
-    authConfig.jwtSecret as Secret,
-    { expiresIn: authConfig.jwtExpiresIn } as SignOptions,
-  );
-
-  return reply.send({ ok: true, token });
 });
 
 server.post("/auth/google", async (request, reply) => {

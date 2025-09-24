@@ -2,12 +2,12 @@ import db from "./db.ts";
 
 export interface User {
   id: number;
-  googleId: string | null;
+  google_id: string | null;
   email: string;
   name: string;
-  passwordHash: string | null;
-  createdAt: string;
-  updatedAt: string;
+  password_hash: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // Find a user by Google ID
@@ -50,7 +50,9 @@ export function getUserById(id: number): User | undefined {
 }
 
 export function getUserByEmail(email: string): User | undefined {
-  return db.prepare("SELECT * FROM users WHERE email = ?").get(email) as User | undefined;
+  return db.prepare("SELECT * FROM users WHERE email = ?").get(email) as
+    | User
+    | undefined;
 }
 
 export function updateLastLogin(id: number): void {
@@ -60,7 +62,11 @@ export function updateLastLogin(id: number): void {
   stmt.run(id);
 }
 
-export function createUserWithPassword(email: string, name: string, passwordHash: string) {
+export function createUserWithPassword(
+  email: string,
+  name: string,
+  passwordHash: string,
+) {
   const stmt = db.prepare(`
     INSERT INTO users (email, name, password_hash, created_at, updated_at)
     VALUES (?, ?, ?, datetime('now'), datetime('now'))
