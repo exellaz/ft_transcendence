@@ -1,0 +1,242 @@
+{
+  "AdvanceView": {
+    "advancement": "晉級",
+    "congratulations": "恭喜！",
+    "next_round": "你已晉級到下一輪！",
+    "continue": "繼續"
+  },
+  "ChooseSpriteView": {
+    "choose_sprite": "選擇一個角色",
+    "confirm": "確認"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "雙人房間",
+    "room_id": "房間ID",
+    "ready": "準備",
+    "leave_room": "離開房間",
+    "leave_confirmation": "你確定要離開房間嗎？"
+  },
+  "LoginView": {
+    "username": "用戶名",
+    "password": "密碼",
+    "login": "登入",
+    "continue_with_google": "使用 Google 繼續",
+    "signup_prompt": "還沒有帳號？註冊"
+  },
+  "MainMenuView": {
+    "tournament_mode": "錦標賽模式",
+    "normal_mode": "普通模式",
+    "settings": "設定",
+    "join_tournament": "參加錦標賽？"
+  },
+  "MatchView": {
+    "loading": "載入中...",
+    "ready": "準備",
+    "pending": "等待中",
+    "quarterfinals": "四分之一決賽",
+    "semifinals": "準決賽",
+    "finals": "決賽"
+  },
+  "NormalModeView": {
+    "choose_action": "選擇操作",
+    "create_room": "建立房間",
+    "join_room": "加入房間",
+    "back": "返回",
+    "choose_type": "選擇遊戲類型",
+    "singles": "單人遊戲",
+    "doubles": "雙人遊戲",
+    "choose_join": "選擇加入方式",
+    "quick_join": "快速加入",
+    "join_private": "加入私人房間",
+    "enter_room_id": "輸入房間ID",
+    "create_singles_game": "建立單人遊戲？",
+    "create_doubles_game": "建立雙人遊戲？",
+    "join_singles_game": "加入單人遊戲？",
+    "join_doubles_game": "加入雙人遊戲？"
+  },
+  "ResultsView": {
+    "results": "結果",
+    "leave": "離開",
+    "medal_message1": "恭喜！",
+    "medal_message2_gold": "你贏得了金牌！",
+    "medal_message2_silver": "你贏得了銀牌！",
+    "medal_message2_bronze": "你贏得了銅牌！",
+    "participation_message1": "感謝你的參與！",
+    "participation_message2": "你的總排名是第{{position}}名。"
+  },
+  "SignUpSuccessView": {
+    "success_message": "您的帳戶已成功建立！",
+    "login": "登入"
+  },
+  "SignUpView": {
+    "username": "用戶名",
+    "username_available": "用戶名可用",
+    "email": "電子郵件",
+    "password": "密碼",
+    "confirm_password": "確認密碼",
+    "signup": "註冊"
+  },
+  "SinglesRoomView": {
+    "singles_room": "單人房間",
+    "room_id": "房間ID",
+    "ready": "準備",
+    "leave_room": "離開房間",
+    "leave_confirmation": "你確定要離開房間嗎？"
+  },
+  "TournamentLobbyView": {
+    "quarterfinals": "四分之一決賽",
+    "semifinals": "準決賽",
+    "finals": "決賽",
+    "tournament_lobby": "錦標賽大廳",
+    "ready": "準備",
+    "quit": "退出",
+    "quit_confirmation": "你確定要退出錦標賽嗎？"
+  },
+  "BasicInfoPopup": {
+    "loading": "載入中...",
+    "header": "基本資訊",
+    "joined": "加入時間",
+    "change_avatar": "更換頭像",
+    "username": "用戶名",
+    "username_available": "用戶名可用",
+    "email": "電子郵件",
+    "save_changes": "儲存更改",
+    "cancel": "取消",
+    "upload_avatar": "上傳新頭像",
+    "upload_avatar_button": "上傳頭像",
+    "confirm_upload": "確認上傳",
+    "avatar_updated": "頭像已更新。",
+    "avatar_update_error": "頭像更新失敗。",
+    "back": "返回"
+  },
+  "ConfirmationPopup": {
+    "yes": "是",
+    "no": "否"
+  },
+  "GameSettingsPopup": {
+    "header": "遊戲設定",
+    "ball_speed": "球速",
+    "ball_size": "球大小",
+    "paddle_speed": "板速",
+    "choose_map": "選擇地圖",
+    "restore_default": "重置為預設",
+    "save_changes": "儲存更改",
+    "slow": "慢",
+    "normal": "正常",
+    "fast": "快",
+    "small": "小",
+    "big": "大"
+  },
+  "ProfilePopup": {
+    "header": "我的資料",
+    "header_other": "資料",
+    "add_friend": "新增好友",
+    "block": "封鎖"
+  },
+  "SettingsPopup": {
+    "header": "設定",
+    "language": "語言",
+    "english": "英語",
+    "simplified_chinese": "簡體中文",
+    "traditional_chinese": "繁體中文"
+  },
+  "TournamentStatsPopup": {
+    "loading": "載入中...",
+    "header": "錦標賽統計",
+    "summary": "概要",
+    "medals": {
+      "gold": "金牌",
+      "silver": "銀牌",
+      "bronze": "銅牌"
+    },
+    "tournaments_played": "參賽次數",
+    "average_ranking": "平均排名",
+    "history": "歷史",
+    "no": "編號",
+    "date": "日期",
+    "ranking": "排名",
+    "match": "比賽",
+    "opponent": "對手",
+    "score": "比分",
+    "result": "結果",
+    "quarterfinals": "四強賽",
+    "semifinals": "準決賽",
+    "finals": "決賽",
+    "won": "勝利",
+    "lost": "失敗"
+  },
+  "CascadeCard": {
+    "confirm_block": "確定要封鎖 {{username}} 嗎？",
+    "confirm_unblock": "確定要解除封鎖 {{username}} 嗎？",
+    "blocked": "{{username}} 已被封鎖。",
+    "unblocked": "{{username}} 已解除封鎖。",
+    "yes": "是",
+    "no": "否",
+    "back_to_chat": "返回聊天",
+    "block": "封鎖",
+    "unblock": "解除封鎖"
+  },
+  "LiveChat": {
+    "live_chat": "即時聊天",
+    "send": "發送"
+  },
+  "MapSelector": {
+    "stadium": "體育場",
+    "mansion": "豪宅",
+    "arcade": "街機廳"
+  },
+  "Medals": {
+    "gold": "金牌",
+    "silver": "銀牌",
+    "bronze": "銅牌"
+  },
+  "Messaging": {
+    "loading": "載入中...",
+    "online": "在線",
+    "offline": "離線",
+    "type_message": "輸入訊息",
+    "send": "發送"
+  },
+  "ProfileContents": {
+    "loading": "載入中...",
+    "joined": "加入時間",
+    "tournaments_played": "參賽次數",
+    "average_ranking": "平均排名"
+  },
+  "ProfileDropdown": {
+    "loading": "載入中...",
+    "my_profile": "我的資料",
+    "basic_info": "基本資訊",
+    "tournament_stats": "錦標賽統計",
+    "friends": "好友",
+    "log_out": "登出"
+  },
+  "ReadyPlayers": {
+    "ready": "準備",
+    "pending": "等待中"
+  },
+  "ReadyRoomPlayers": {
+    "leader": "隊長",
+    "waiting": "等待玩家",
+    "left_team": "左隊",
+    "right_team": "右隊",
+    "switch_teams": "切換隊伍"
+  },
+  "RoomLayout": {
+    "game_settings": "遊戲設定",
+    "invite_friends": "邀請好友"
+  },
+  "SocialHub": {
+    "tabs": {
+      "friends": "好友",
+      "requests": "請求",
+      "blocked": "已封鎖"
+    },
+    "add_friend": "新增好友",
+    "search_friend": "搜尋好友",
+    "enter_friend_username": "輸入好友用戶名",
+    "friend_added": "好友已新增。",
+    "username_not_exist": "用戶名不存在。",
+    "back": "返回"
+  }
+}
