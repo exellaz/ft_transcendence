@@ -1,0 +1,22 @@
+meta {
+  name: patch-user-no-fields
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/users/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+  }
+}
+
+assert {
+	res.status: eq 400
+	res.body.success: eq false
+	res.body.error: contains "No fields to update"
+}

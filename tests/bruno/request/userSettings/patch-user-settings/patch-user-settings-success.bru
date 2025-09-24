@@ -1,0 +1,32 @@
+meta {
+  name: patch-user-settings-success
+  type: http
+  seq: 1
+}
+
+patch {
+  url: {{baseUrl}}/users/1/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "language": "chinese",
+    "textSize": "large",
+    "inGameCameraTracking": "dynamic"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.userId: isNumber
+  res.body.data.language: eq "chinese"
+  res.body.data.textSize: eq "large"
+  res.body.data.inGameCameraTracking: eq "dynamic"
+}
+
+settings {
+  encodeUrl: true
+}

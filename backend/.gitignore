@@ -1,16 +1,43 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
+# dependencies (bun install)
 node_modules
+
+# output
+out
 dist
-dist-ssr
-*.local
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+bun.lock
+app.db
+
+/src/generated/prisma
+./prisma/database/
 
 # Editor directories and files
 .vscode/*
@@ -22,6 +49,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-.env
-app.db

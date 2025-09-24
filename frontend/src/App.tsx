@@ -1,58 +1,50 @@
-import { useState } from "react";
-import GoogleLoginButton from "../components/GoogleLoginButton";
+import React, { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-function App() {
-  const [message, setMessage] = useState("");
+import AdvanceView from "./views/tournament/AdvanceView";
+import ChooseSpriteView from "./views/ChooseSpriteView";
+import DoublesRoomView from "./views/normal/DoublesRoomView";
+import GameView from "./views/GameView";
+import LoginView from "./views/LoginView";
+import MainMenuView from "./views/MainMenuView";
+import MatchView from "./views/tournament/MatchView";
+import NormalModeView from "./views/NormalModeView";
+import ResultsView from "./views/tournament/ResultsView";
+import SinglesRoomView from "./views/normal/SinglesRoomView";
+import SignUpSuccessView from "./views/SignUpSuccessView";
+import SignUpView from "./views/SignUpView";
+import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
-  const handleGoogleSuccess = async (idToken: string) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
+import TestView from "./views/TestView"
+import Popup from "./popups/SettingsPopup";
 
-      const data = await res.json();
-      console.log("Backend response:", data);
-      setMessage(JSON.stringify(data, null, 2));
-    } catch (err) {
-      console.error(err);
-      setMessage("Login failed");
-    }
-  };
-
-  const fetchProfile = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage("No token found, login first!");
-      return;
-    }
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await res.json();
-    setMessage(JSON.stringify(data, null, 2));
-  };
+const App: React.FC = () => {
+  const [showPopup, setShowPopup] = useState(false);
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Google Login Test</h1>
-      <GoogleLoginButton onSuccess={handleGoogleSuccess} />
-
-      <button
-        style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}
-        onClick={fetchProfile}
-      >
-        Get Profile
-      </button>
-
-      <pre>{message}</pre>
-    </div>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LoginView />} />
+          <Route path="/login" element={<LoginView />} />
+          <Route path="/signup" element={<SignUpView />} />
+          <Route path="/signup-success" element={<SignUpSuccessView />} />
+          <Route path="/main-menu" element={<MainMenuView />} />
+          <Route path="/normal" element={<NormalModeView />} />
+          <Route path="/choose-sprite" element={<ChooseSpriteView />} />
+          <Route path="/tournament" element={<TournamentLobbyView />} />
+          <Route path="/match" element={<MatchView />} />
+          <Route path="/game" element={<GameView />} />
+          <Route path="/advance" element={<AdvanceView />} />
+          <Route path="/results" element={<ResultsView />} />
+          <Route path="/singles-room" element={<SinglesRoomView />} />
+          <Route path="/doubles-room" element={<DoublesRoomView />} />
+          <Route path="/test" element={<TestView />} />
+        </Routes>
+      </BrowserRouter>
+      <Popup open={showPopup} onClose={() => setShowPopup(false)} />
+    </>
   );
-}
+};
 
 export default App;

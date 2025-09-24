@@ -1,0 +1,18 @@
+meta {
+  name: get-user-settings-success
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/users/1/settings
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.userId: isNumber
+  res.body.data.language: isString
+  res.body.data.textSize: isString
+  res.body.data.inGameCameraTracking: isString
+}

@@ -1,0 +1,24 @@
+meta {
+  name: patch-user-notfound
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{baseUrl}}/users/99999999
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "updatedName",
+    "avatarUrl": "https://example.com/avatar.png"
+  }
+}
+
+assert {
+	res.status: eq 404
+	res.body.success: eq false
+	res.body.error: contains "User not found"
+}
