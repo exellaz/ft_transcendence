@@ -28,17 +28,13 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
-    const { language, textSize, inGameCameraTracking } = request.body as {
+    const { language } = request.body as {
       language?: string;
-      textSize?: string;
-      inGameCameraTracking?: string;
     };
 
     // Build update object dynamically
     const data: any = {};
     if (language !== undefined) data.language = language;
-    if (textSize !== undefined) data.textSize = textSize;
-    if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
 
     if (Object.keys(data).length === 0)
       throw new ApiError("No fields to update", 400);

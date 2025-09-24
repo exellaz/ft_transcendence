@@ -10,17 +10,6 @@ export enum Language {
 	MALAY = "malay",
 }
 
-export enum TextSize {
-	SMALL = "small",
-	MEDIUM = "medium",
-	LARGE = "large",
-}
-
-export enum CameraTracking {
-	STATIC = "static",
-	DYNAMIC = "dynamic",
-}
-
 export interface User {
   id: number;
   username: string;
@@ -34,8 +23,6 @@ export interface User {
 export interface UserSettings {
 	userId: number;
 	language: Language;
-	textSize: TextSize;
-	inGameCameraTracking: CameraTracking;
 }
 
 export interface ApiResponse<T> {
@@ -95,8 +82,6 @@ export interface GetUserSettingsResponse extends ApiResponse<UserSettings> {}
 export interface UpdateUserSettingsRequest {
   id: string;              // user ID to update
   language?: string;       // optional
-  textSize?: string;          // optional
-  inGameCameraTracking?: string;      // optional
 }
 
 export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}

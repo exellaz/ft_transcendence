@@ -15,7 +15,7 @@ async function main() {
         email: `username${i}@gmail.com`,
         password: `username${i}pw`,
         settings: {
-          create: {}, // uses defaults for language, textSize, inGameCameraTracking
+          create: {}, // uses defaults
         },
       },
     });

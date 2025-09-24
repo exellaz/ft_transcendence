@@ -12,9 +12,7 @@ patch {
 
 body:json {
   {
-    "language": "chinese",
-    "textSize": "large",
-    "inGameCameraTracking": "dynamic"
+    "language": "chinese"
   }
 }
 
@@ -23,8 +21,6 @@ assert {
   res.body.success: eq true
   res.body.data.userId: isNumber
   res.body.data.language: eq "chinese"
-  res.body.data.textSize: eq "large"
-  res.body.data.inGameCameraTracking: eq "dynamic"
 }
 
 settings {

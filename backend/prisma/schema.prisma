@@ -18,21 +18,10 @@ enum FriendshipStatus {
   blocked
 }
 
-enum CameraTracking {
-  static
-  dynamic
-}
-
 enum Language {
   english
   chinese
   malay
-}
-
-enum TextSize {
-  small
-  medium
-  large
 }
 
 enum userStatus {
@@ -63,8 +52,6 @@ model User {
 model UserSettings {
   userId    Int                       @id @map("user_id")
   language  Language                  @default(english)
-  textSize  TextSize                  @default(medium) @map("text_size")
-  inGameCameraTracking CameraTracking @default(static) @map("in_game_camera_tracking")
 
   // Relation
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
