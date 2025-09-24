@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface MedalsProps {
   gold?: number;
@@ -7,6 +8,8 @@ interface MedalsProps {
 }
 
 const Medals: React.FC<MedalsProps> = ({ gold, silver, bronze }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`Medals.${key}`);
   const displayGold = gold ?? "-";
   const displaySilver = silver ?? "-";
   const displayBronze = bronze ?? "-";
@@ -14,15 +17,15 @@ const Medals: React.FC<MedalsProps> = ({ gold, silver, bronze }) => {
   return (
     <div className="w-full flex justify-around text-center text-5xl font-bold">
       <div className="w-1/6">
-        <img src="/assets/gold.png" alt="Gold" title="Gold"/>
+        <img src="/assets/gold.png" alt="Gold" title={translate("gold")} />
         <span className="text-gold">{displayGold}</span>
       </div>
       <div className="w-1/6">
-        <img src="/assets/silver.png" alt="Silver" title="Silver"/>
+        <img src="/assets/silver.png" alt="Silver" title={translate("silver")} />
         <span className="text-silver">{displaySilver}</span>
       </div>
       <div className="w-1/6">
-        <img src="/assets/bronze.png" alt="Bronze" title="Bronze"/>
+        <img src="/assets/bronze.png" alt="Bronze" title={translate("bronze")} />
         <span className="text-bronze">{displayBronze}</span>
       </div>
     </div>

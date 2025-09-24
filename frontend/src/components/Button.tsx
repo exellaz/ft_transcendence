@@ -14,16 +14,17 @@ interface ButtonProps {
     | "bigYellow"
     | "profile"
     | "dropdown"
-    | "send";
+    | "send"
+    | "mapSelector"
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
   icon?: React.ReactNode;
 }
 
-const padding = "py-2";
+const padding = "py-3";
 const longRound = `w-full rounded-full ${padding}`;
-const shortRound = `w-32 rounded-full ${padding}`;
+const shortRound = `w-36 rounded-full ${padding}`;
 const smallRound = "rounded-full px-4 py-1";
 const yellow = "bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white";
 const green = "bg-green-500 hover:bg-green-600 text-black hover:text-white";
@@ -43,7 +44,8 @@ const variantClasses: Record<string, string> = {
   bigYellow: `w-full h-25 rounded-3xl text-2xl ${yellow}`,
   profile: `w-60 rounded-full text-xl ${padding} ${yellow}`,
   dropdown: `w-48 border border-gray-400 rounded ${padding} ${white}`,
-  send: `rounded px-4 ${padding} ${yellow}`,
+  send: `rounded px-4 py-2 ${yellow}`,
+  mapSelector: `w-12 h-12 rounded-full text-6xl pb-4 flex-row-center ${brown}`
 };
 
 const Button: React.FC<ButtonProps> = ({

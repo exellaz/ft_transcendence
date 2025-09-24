@@ -1,29 +1,22 @@
 import React, { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import type {
-  TournamentLobbyPlayer,
-  TournamentLobbyChatMessage,
+  WaitingTournamentPlayer,
+  LiveChatMessage,
 } from "../types/apiInterfaces";
+import { getUserColor } from "../utils/colorUtils";
 
 import Button from "../components/Button";
 
-const usernameColors = [
-  "text-red-400",
-  "text-blue-400",
-  "text-green-400",
-  "text-yellow-400",
-  "text-purple-400",
-  "text-pink-400",
-  "text-orange-400",
-  "text-teal-400",
-];
-
 const LiveChat: React.FC<{
-  players: TournamentLobbyPlayer[];
-  chatMessages: TournamentLobbyChatMessage[];
+  players: WaitingTournamentPlayer[];
+  chatMessages: LiveChatMessage[];
   message: string;
   setMessage: (msg: string) => void;
   onSendMessage: () => void;
 }> = ({ players, chatMessages, message, setMessage, onSendMessage }) => {
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`LiveChat.${key}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,34 +29,28 @@ const LiveChat: React.FC<{
   }, [chatMessages]); // Runs every time messages change
 
   return (
-    <div className="w-1/2 h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
-      <p className="text-white text-xl font-bold">Live Chat</p>
-      <div ref={messagesEndRef} className="h-[400px] overflow-y-auto scrollbar-hide">
+    <div className="w-[50%] h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
+      <p className="text-white text-xl font-bold">{translate("live_chat")}</p>
+      <div
+        ref={messagesEndRef}
+        className="h-[400px] overflow-y-auto scrollbar-hide"
+      >
         {chatMessages.map((msg, idx) => {
           const player = players.find((p) => p.uid === msg.uid);
           return (
             <div key={idx} className="mb-2">
               <div className="flex items-baseline justify-between flex-wrap">
-              <span
-                className={`font-bold ${
-                  usernameColors[
-                    (player ? players.indexOf(player) : 0) %
-                      usernameColors.length
-                  ]
-                }`}
-              >
-                {player ? player.username : "Unknown"}:
-              </span>{" "}
-              <span className="text-xs text-gray-400">
-                {msg.timestamp}
-              </span>
+                <span className={`font-bold ${getUserColor(msg.uid)}`}>
+                  {player ? player.username : "Unknown"}:
+                </span>{" "}
+                <span className="text-gray-400 text-xs">{msg.timestamp}</span>
               </div>
               <div className="text-white break-words">{msg.text}</div>
             </div>
           );
         })}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex-row-center gap-2">
         <input
           type="text"
           value={message}
@@ -74,10 +61,10 @@ const LiveChat: React.FC<{
             }
           }}
           placeholder="Type a message..."
-          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white outline-none"
+          className="flex-1 bg-input-gray rounded-lg text-white px-3 py-2 outline-none"
         />
         <Button variant="send" onClick={onSendMessage}>
-          Send
+          {translate("send")}
         </Button>
       </div>
     </div>

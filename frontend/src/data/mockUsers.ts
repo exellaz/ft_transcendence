@@ -7,8 +7,9 @@ import type {
   BlockedUser,
   FriendMessaging,
   Profile,
-  TournamentLobbyPlayer,
-  TournamentLobbyChatMessage,
+  WaitingTournamentPlayer,
+  WaitingRoomPlayer,
+  LiveChatMessage,
   MatchPlayer,
 } from "../types/apiInterfaces";
 
@@ -703,9 +704,9 @@ export const mockProfiles: Profile[] = [
   },
 ];
 
-export const mockTournamentLobbyPlayers: Record<
+export const mockWaitingTournamentPlayers: Record<
   string,
-  TournamentLobbyPlayer[]
+  WaitingTournamentPlayer[]
 > = {
   t1: [
     {
@@ -759,10 +760,7 @@ export const mockTournamentLobbyPlayers: Record<
   ],
 };
 
-export const mockTournamentLobbyChat: Record<
-  string,
-  TournamentLobbyChatMessage[]
-> = {
+export const mockTournamentLiveChat: Record<string, LiveChatMessage[]> = {
   t1: [
     { uid: "u1", text: "Hello!", timestamp: "2025-09-07 13:45" },
     { uid: "u2", text: "Ready to play!", timestamp: "2025-09-07 13:46" },
@@ -800,5 +798,194 @@ export const mockMatchPlayers: Record<string, MatchPlayer[]> = {
       spriteUrl: "/assets/red-ghost.png",
       ready: false,
     },
+  ],
+};
+
+export const mockWaitingSinglesRoomPlayers: Record<
+  string,
+  WaitingRoomPlayer[]
+> = {
+  t1: [
+    {
+      leader: true,
+      uid: "u1",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+      team: "left",
+    },
+    {
+      leader: false,
+      uid: "u2",
+      username: "Player2",
+      spriteUrl: "/assets/green-ghost.png",
+      ready: false,
+      team: "right",
+    },
+  ],
+};
+
+export const mockSinglesRoomLiveChat: Record<string, LiveChatMessage[]> = {
+  t1: [
+    {
+      uid: "u1",
+      text: "hey! ready for this match?",
+      timestamp: "2025-09-19 14:30",
+    },
+    {
+      uid: "u2",
+      text: "yeah let's go! you picked a tough map",
+      timestamp: "2025-09-19 14:30",
+    },
+    {
+      uid: "u1",
+      text: "haha map 3 is my favorite",
+      timestamp: "2025-09-19 14:31",
+    },
+    {
+      uid: "u2",
+      text: "fair enough, i usually play map 1",
+      timestamp: "2025-09-19 14:31",
+    },
+    {
+      uid: "u1",
+      text: "what paddle speed you using?",
+      timestamp: "2025-09-19 14:32",
+    },
+    {
+      uid: "u2",
+      text: "fast paddle, normal ball",
+      timestamp: "2025-09-19 14:32",
+    },
+    {
+      uid: "u1",
+      text: "nice, i went with normal everything",
+      timestamp: "2025-09-19 14:33",
+    },
+    {
+      uid: "u2",
+      text: "solid choice. good luck!",
+      timestamp: "2025-09-19 14:33",
+    },
+    {
+      uid: "u1",
+      text: "you too! may the best player win",
+      timestamp: "2025-09-19 14:34",
+    },
+    { uid: "u2", text: "let's do this 🏓", timestamp: "2025-09-19 14:34" },
+    { uid: "u1", text: "ready when you are", timestamp: "2025-09-19 14:35" },
+  ],
+};
+
+export const mockWaitingDoublesRoomPlayers: Record<
+  string,
+  WaitingRoomPlayer[]
+> = {
+  t1: [
+    {
+      leader: true,
+      uid: "u1",
+      username: "Player1",
+      spriteUrl: "/assets/yellow-ghost.png",
+      ready: true,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u2",
+      username: "Player2",
+      spriteUrl: "/assets/green-ghost.png",
+      ready: false,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u3",
+      username: "Player3",
+      spriteUrl: "/assets/blue-ghost.png",
+      ready: true,
+      team: "right",
+    },
+    {
+      leader: false,
+      uid: "u4",
+      username: "Player4",
+      spriteUrl: "/assets/red-ghost.png",
+      ready: true,
+      team: "right",
+    },
+  ],
+};
+
+export const mockDoublesRoomLiveChat: Record<string, LiveChatMessage[]> = {
+  t1: [
+    {
+      uid: "u1",
+      text: "hey team! who wants to be my partner?",
+      timestamp: "2025-09-19 15:20",
+    },
+    {
+      uid: "u2",
+      text: "i'm down! u3 and u4 can team up",
+      timestamp: "2025-09-19 15:20",
+    },
+    { uid: "u3", text: "sounds good to me", timestamp: "2025-09-19 15:21" },
+    {
+      uid: "u4",
+      text: "perfect, me and u3 vs you two",
+      timestamp: "2025-09-19 15:21",
+    },
+    {
+      uid: "u1",
+      text: "nice! what map should we play?",
+      timestamp: "2025-09-19 15:22",
+    },
+    {
+      uid: "u3",
+      text: "how about map 2? it's good for doubles",
+      timestamp: "2025-09-19 15:22",
+    },
+    {
+      uid: "u2",
+      text: "agreed, map 2 has more space",
+      timestamp: "2025-09-19 15:23",
+    },
+    {
+      uid: "u4",
+      text: "works for me. what about ball speed?",
+      timestamp: "2025-09-19 15:23",
+    },
+    {
+      uid: "u1",
+      text: "let's go with normal settings",
+      timestamp: "2025-09-19 15:24",
+    },
+    {
+      uid: "u3",
+      text: "normal is fine, keeps it fair",
+      timestamp: "2025-09-19 15:24",
+    },
+    {
+      uid: "u2",
+      text: "u1, you take the left side?",
+      timestamp: "2025-09-19 15:25",
+    },
+    { uid: "u1", text: "sure thing partner!", timestamp: "2025-09-19 15:25" },
+    {
+      uid: "u4",
+      text: "u3 and i are ready when you are",
+      timestamp: "2025-09-19 15:26",
+    },
+    {
+      uid: "u3",
+      text: "this is gonna be epic 🏓",
+      timestamp: "2025-09-19 15:26",
+    },
+    {
+      uid: "u2",
+      text: "let's show them what we got!",
+      timestamp: "2025-09-19 15:27",
+    },
+    { uid: "u1", text: "ready to start!", timestamp: "2025-09-19 15:27" },
   ],
 };

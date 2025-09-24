@@ -47,30 +47,30 @@ const Messaging: React.FC<MessagingProps> = ({
   if (!friend) return <div>{translate("loading")}</div>;
 
   return (
-    <div className="rounded-3xl flex flex-col h-full w-full">
+    <div className="w-full h-full rounded-3xl flex flex-col">
       {/* Header */}
       <div
-        className="flex items-center gap-4 px-4 py-3 border-b border-gray-300 cursor-pointer"
+        className="flex items-center gap-4 border-b border-gray-300 px-4 py-3 cursor-pointer"
         onClick={onProfileClick}
       >
         <Avatar src={friendBasic.avatarUrl} size={40} />
-        <span className="font-bold text-xl text-white">
+        <span className="text-white text-xl font-bold">
           {friendBasic.username}
         </span>
         {/* Status */}
         <span
-          className={`ml-auto text-sm font-semibold px-3 py-1 rounded-full ${
+          className={`rounded-full text-white text-sm font-semibold ml-auto px-4 py-2 ${
             friendBasic.online
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+              ? "bg-green-500"
+              : "bg-red-500"
           }`}
         >
           {friendBasic.online ? translate("online") : translate("offline")}
         </span>
       </div>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide p-4">
-        <div className="flex flex-col gap-3">
+      <div className="h-full overflow-y-auto scrollbar-hide p-4">
+        <div className="flex flex-col gap-4">
           {(friend.messages ?? []).map((msg, idx) => (
             <div
               key={idx}
@@ -79,7 +79,7 @@ const Messaging: React.FC<MessagingProps> = ({
               }`}
             >
               <div
-                className={`max-w-[70%] px-4 py-2 rounded-2xl shadow
+                className={`max-w-[70%] rounded-2xl px-4 py-2 
                   ${
                     msg.senderUid === userUid
                       ? "bg-yellow-400 text-black"
@@ -96,10 +96,10 @@ const Messaging: React.FC<MessagingProps> = ({
         </div>
       </div>
       {/* Input Bar */}
-      <div className="flex items-center px-4 py-3 border-t border-gray-300 gap-2">
+      <div className="flex-row-center gap-4 border-t border-gray-300 px-4 py-3">
         <input
           type="text"
-          className="flex-1 px-3 py-2 rounded-lg bg-input-gray text-white"
+          className="flex-1 rounded-lg bg-input-gray text-white px-3 py-2 outline-none"
           placeholder={translate("type_message")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
