@@ -62,12 +62,12 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
       />
       <div className="w-full flex justify-around">
         <StatsBadge
-          className="w-2/5"
+          className="w-[40%]"
           label={translate("tournaments_played")}
           value={user.stats.tournamentsPlayed}
         />
         <StatsBadge
-          className="w-2/5"
+          className="w-[40%]"
           label={translate("average_ranking")}
           value={user.stats.averageRanking}
         />

@@ -96,7 +96,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userUid }) => {
             />
           </div>
           <div className="w-full flex-row-center gap-6">
-            <Button variant="yellow">{translate("save_changes")}</Button>
+            <Button>{translate("save_changes")}</Button>
             <Button variant="brown">{translate("cancel")}</Button>
           </div>
         </>

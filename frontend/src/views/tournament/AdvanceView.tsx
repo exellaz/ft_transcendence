@@ -16,9 +16,9 @@ const AdvanceView: React.FC = () => {
     <Background>
       <Card size="result">
         <div className="w-full h-full flex-col-between">
-          <TournamentHeader>Advancement</TournamentHeader>
+          <TournamentHeader>{translate("advancement")}</TournamentHeader>
           <p className="text-center text-yellow-400 text-2xl">
-            Congratulations! <br /> You have advanced to the next round!
+            {translate("congratulations")} <br /> {translate("next_round")}
           </p>
           <div className="w-40 h-40">
             <img
@@ -28,7 +28,7 @@ const AdvanceView: React.FC = () => {
             />
           </div>
           <Button variant="green" onClick={() => navigate("/tournament")}>
-            Continue
+            {translate("continue")}
           </Button>
         </div>
       </Card>

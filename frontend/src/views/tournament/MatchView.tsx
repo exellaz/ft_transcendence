@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserProvider";
-import { mockMatchPlayers } from "../data/mockUsers";
-import type { MatchPlayer } from "../types/apiInterfaces";
+import { useUser } from "../../context/UserProvider";
+import { mockMatchPlayers } from "../../data/mockUsers";
+import type { MatchPlayer } from "../../types/apiInterfaces";
 
-import Avatar from "../components/Avatar";
-import Background from "../components/Background";
-import Button from "../components/Button";
-import Card from "../components/Card";
-import TournamentHeader from "../components/TournamentHeader";
+import Avatar from "../../components/Avatar";
+import Background from "../../components/Background";
+import Button from "../../components/Button";
+import Card from "../../components/Card";
+import TournamentHeader from "../../components/TournamentHeader";
 
-import ProfilePopup from "../popups/ProfilePopup";
+import ProfilePopup from "../../popups/ProfilePopup";
 
 const MatchView: React.FC = () => {
   const { t } = useTranslation();
@@ -18,7 +18,7 @@ const MatchView: React.FC = () => {
   const { user } = useUser();
   const userUid = user?.id ?? "";
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
-  const [stage, setStage] = useState("quarterfinals");
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
 
   // TODO: Fetch real data based on tournamentId
@@ -35,7 +35,7 @@ const MatchView: React.FC = () => {
   }, []);
 
   if (players.length < 2) {
-    return <div>Loading...</div>;
+    return <div>{translate("loading")}</div>;
   }
 
   const userDetails = players[0];
@@ -45,31 +45,36 @@ const MatchView: React.FC = () => {
     player: MatchPlayer;
     onClick: (uid: string) => void;
   }> = ({ player, onClick }) => (
-    <div
-      key={player.uid}
-      className="flex-col-center gap-4"
-    >
+    <div key={player.uid} className="flex-col-center gap-4">
       {/* player status */}
       <span
         className={`rounded-full px-3 py-2 ${
           player.ready ? "bg-green-400" : "bg-red-400"
         }`}
       >
-        {player.ready ? "Ready" : "Pending"}
+        {player.ready ? translate("ready") : translate("pending")}
       </span>
       {/* player avatar and username */}
-      <div className="flex-col-center gap-2 cursor-pointer" onClick={() => onClick(player.uid)}>
+      <div
+        className="flex-col-center gap-2 cursor-pointer"
+        onClick={() => onClick(player.uid)}
+      >
         <Avatar src={player.spriteUrl} size={120} />
         <span>{player.username}</span>
       </div>
     </div>
   );
 
+  let stageHeader;
+  if (stage === "quarterfinals") stageHeader = translate("quarterfinals");
+  else if (stage === "semifinals") stageHeader = translate("semifinals");
+  else if (stage === "finals") stageHeader = translate("finals");
+
   return (
     <Background>
       <Card size="wide">
         <TournamentHeader>
-          {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
+          {stageHeader}
         </TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
@@ -78,8 +83,8 @@ const MatchView: React.FC = () => {
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
           <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
         </div>
-        
-        <Button variant="green">Ready</Button>
+
+        <Button variant="green">{translate("ready")}</Button>
       </Card>
       {selectedUid && (
         <ProfilePopup

@@ -1,4 +1,21 @@
 {
+  "AdvanceView": {
+    "advancement": "Advancement",
+    "congratulations": "Congratulations!",
+    "next_round": "You have advanced to the next round!",
+    "continue": "Continue"
+  },
+  "ChooseSpriteView": {
+    "choose_sprite": "Choose a sprite",
+    "confirm": "Confirm"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "Doubles Room",
+    "room_id": "Room ID",
+    "ready": "Ready",
+    "leave_room": "Leave Room",
+    "leave_confirmation": "Are you sure you want to leave the room?"
+  },
   "LoginView": {
     "username": "Username",
     "password": "Password",
@@ -12,12 +29,40 @@
     "settings": "SETTINGS",
     "join_tournament": "Join a tournament?"
   },
+  "MatchView": {
+    "loading": "Loading...",
+    "ready": "Ready",
+    "pending": "Pending",
+    "quarterfinals": "Quarterfinals",
+    "semifinals": "Semifinals",
+    "finals": "Finals"
+  },
   "NormalModeView": {
+    "choose_action": "CHOOSE AN ACTION",
+    "create_room": "CREATE ROOM",
+    "join_room": "JOIN ROOM",
+    "back": "BACK",
+    "choose_type": "CHOOSE GAME TYPE",
     "singles": "SINGLES",
     "doubles": "DOUBLES",
-    "back": "BACK",
+    "choose_join": "CHOOSE HOW TO JOIN",
+    "quick_join": "QUICK JOIN",
+    "join_private": "JOIN PRIVATE ROOM",
+    "enter_room_id": "Enter room ID",
     "create_singles_game": "Create a singles game?",
-    "create_doubles_game": "Create a doubles game?"
+    "create_doubles_game": "Create a doubles game?",
+    "join_singles_game": "Join a singles game?",
+    "join_doubles_game": "Join a doubles game?"
+  },
+  "ResultsView": {
+    "results": "Results",
+    "leave": "Leave",
+    "medal_message1": "Congratulations!",
+    "medal_message2_gold": "You won gold!",
+    "medal_message2_silver": "You won silver!",
+    "medal_message2_bronze": "You won bronze!",
+    "participation_message1": "Thank you for participating!",
+    "participation_message2": "You placed {{position}}th overall."
   },
   "SignUpSuccessView": {
     "success_message": "Your account has been successfully created!",
@@ -31,8 +76,21 @@
     "confirm_password": "Confirm password",
     "signup": "SIGN UP"
   },
-  "ChooseSpriteView": {
-    "choose_sprite": "Choose a sprite"
+  "SinglesRoomView": {
+    "singles_room": "Singles Room",
+    "room_id": "Room ID",
+    "ready": "Ready",
+    "leave_room": "Leave Room",
+    "leave_confirmation": "Are you sure you want to leave the room?"
+  },
+  "TournamentLobbyView": {
+    "quarterfinals": "Quarterfinals",
+    "semifinals": "Semifinals",
+    "finals": "Finals",
+    "tournament_lobby": "Tournament Lobby",
+    "ready": "Ready",
+    "quit": "Quit",
+    "quit_confirmation": "Are you sure you want to quit the tournament?"
   },
   "BasicInfoPopup": {
     "loading": "Loading...",
@@ -55,6 +113,20 @@
     "yes": "YES",
     "no": "NO"
   },
+  "GameSettingsPopup": {
+    "header": "Game Settings",
+    "ball_speed": "Ball Speed",
+    "ball_size": "Ball Size",
+    "paddle_speed": "Paddle Speed",
+    "choose_map": "Choose A Map",
+    "restore_default": "Restore Default",
+    "save_changes": "Save Changes",
+    "slow": "Slow",
+    "normal": "Normal",
+    "fast": "Fast",
+    "small": "Small",
+    "big": "Big"
+  },
   "ProfilePopup": {
     "header": "My Profile",
     "header_other": "Profile",
@@ -64,9 +136,6 @@
   "SettingsPopup": {
     "header": "Settings",
     "language": "Language",
-    "camera_tracking": "In-Game Camera Tracking",
-    "static": "Static",
-    "dynamic": "Dynamic",
     "english": "English",
     "simplified_chinese": "简体中文",
     "traditional_chinese": "繁體中文"
@@ -107,6 +176,20 @@
     "block": "Block",
     "unblock": "Unblock"
   },
+  "LiveChat": {
+    "live_chat": "Live Chat",
+    "send": "Send"
+  },
+  "MapSelector": {
+    "stadium": "Stadium",
+    "mansion": "Mansion",
+    "arcade": "Arcade"
+  },
+  "Medals": {
+    "gold": "Gold",
+    "silver": "Silver",
+    "bronze": "Bronze"
+  },
   "Messaging": {
     "loading": "Loading...",
     "online": "Online",
@@ -128,6 +211,21 @@
     "friends": "FRIENDS",
     "log_out": "LOG OUT"
   },
+  "ReadyPlayers": {
+    "ready": "Ready",
+    "pending": "Pending"
+  },
+  "ReadyRoomPlayers": {
+    "leader": "Leader",
+    "waiting": "Waiting For Player",
+    "left_team": "Left Team",
+    "right_team": "Right Team",
+    "switch_teams": "Switch Teams"
+  },
+  "RoomLayout": {
+    "game_settings": "Game Settings",
+    "invite_friends": "Invite Friends"
+  },
   "SocialHub": {
     "tabs": {
       "friends": "Friends",
@@ -136,10 +234,9 @@
     },
     "add_friend": "Add Friend",
     "search_friend": "Search friend",
-    "enter_friend_uid": "Enter friend UID",
-    "enter_uid": "Enter UID",
+    "enter_friend_username": "Enter friend's username",
     "friend_added": "Friend has been added.",
-    "uid_not_exist": "UID does not exist.",
+    "username_not_exist": "Username does not exist.",
     "back": "Back"
   }
 }
