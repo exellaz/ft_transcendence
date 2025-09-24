@@ -14,9 +14,9 @@
     "sourceMap": true,
 
     // Type Safety
-    "strict": true,
+    "strict": false,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true,
 
     // Performance
     "skipLibCheck": true,

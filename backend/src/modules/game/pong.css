@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen;
+}
+
+canvas {
+  @apply rounded shadow-lg border-4 border-cyan-400 bg-gray-800;
+}

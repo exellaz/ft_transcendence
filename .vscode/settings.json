@@ -1,0 +1,20 @@
+{
+    "workbench.colorCustomizations": {
+        "folderRegexColor.custom1": "#31e2cd",
+        "folderRegexColor.custom2": "#ff0000",
+        "folderRegexColor.custom3": "#ffc23d",
+        "folderRegexColor.custom4": "#3a393b",
+        "terminal.background": "#00000000",
+        "terminal.ansiRed": "#ff6969",
+        "commandCenter.border": "#15202b99",
+        "sash.hoverBorder": "#69c585",
+        "statusBarItem.hoverBackground": "#389153",
+        "statusBarItem.remoteBackground": "#46b668",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#46b668",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#46b66899",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.remoteColor": "#46b668"
+}
