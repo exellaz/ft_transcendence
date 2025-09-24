@@ -1,0 +1,15 @@
+meta {
+  name: create-friendship
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/friendships
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

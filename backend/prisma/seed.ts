@@ -3,11 +3,11 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const num = 10; // 👈 set how many users you want
   await prisma.user.deleteMany();
 	// reset the sequence manually (id start from 1)
 	await prisma.$executeRawUnsafe(`DELETE FROM sqlite_sequence WHERE name='users';`);
 
+  let num = 10; // 👈 set how many users you want
   for (let i = 1; i <= num; i++) {
     await prisma.user.create({
       data: {
@@ -21,7 +21,17 @@ async function main() {
     });
   }
 
-  console.log(`✅ Seeded ${num} users with settings`);
+  num = 5;
+  for (let i = 1; i <= num; i++) {
+    await prisma.friendship.create({
+      data: {
+        userId: i,
+        friendId: i + 1,
+        status: "accepted",
+      },
+    });
+  }
+  console.log(`✅ Seeded ${num} friendships`);
 }
 
 main()

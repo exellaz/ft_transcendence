@@ -4,6 +4,7 @@ import dbConnector from "./plugins/db"
 import userRoutes from "./modules/users/users.routes"
 import authRoutes from "./modules/auth/auth.routes";
 import { fail, ApiError } from "./utils/response";
+import friendsRoutes from "./modules/friendship/friends.routes";
 
 const app = Fastify({
   logger: true
@@ -17,6 +18,7 @@ app.register(fastifyCors, {
 app.register(dbConnector);
 app.register(userRoutes);
 app.register(authRoutes);
+app.register(friendsRoutes);
 
 // Global error handler (call after all routes/plugins)
 app.setErrorHandler((error, request, reply) => {
