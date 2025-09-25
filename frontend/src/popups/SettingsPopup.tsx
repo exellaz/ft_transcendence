@@ -22,21 +22,34 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // API mutation to update settings
   const { mutate } = useApiMutation(updateUserSettingsById);
 
+  // prefix - i18n naming; value - database schema naming
   const languageOptions = [
-    { value: "en", label: translate("english") },
-    { value: "zhs", label: translate("simplified_chinese") },
-    { value: "zht", label: translate("traditional_chinese") },
+    { prefix: "en", value: "english", label: translate("english") },
+    {
+      prefix: "zhs",
+      value: "simplified_chinese",
+      label: translate("simplified_chinese"),
+    },
+    {
+      prefix: "zht",
+      value: "traditional_chinese",
+      label: translate("traditional_chinese"),
+    },
   ];
 
-  const handleLanguageChange = async (newLanguage: string) => {
-    setLanguage(newLanguage);
+  const handleLanguageChange = async (option: (typeof languageOptions)[0]) => {
+    if (option.prefix === language) return;
+    setLanguage(option.prefix);
 
     const result = await mutate({
       id: "1",
-      language: newLanguage,
+      language: option.value,
     });
 
-    if (!result.success) alert(`${t("ApiState.error")}: ${result.error}`);
+    if (!result.success) {
+      alert(`${t("ApiState.error")}: ${result.error}`);
+      setLanguage(language); // revert on error
+    }
   };
 
   return (
@@ -47,12 +60,12 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         <Subheader>{translate("language")}</Subheader>
         {languageOptions.map((option) => (
           <button
-            key={option.value}
+            key={option.prefix}
             type="button"
-            onClick={() => handleLanguageChange(option.value)}
+            onClick={() => handleLanguageChange(option)}
             className={`w-[80%] h-20 rounded text-2xl font-bold cursor-pointer
           ${
-            language === option.value
+            language === option.prefix
               ? "bg-yellow-400 text-black"
               : "bg-brown text-white"
           }
