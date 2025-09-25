@@ -4,6 +4,7 @@ interface InputProps {
   type?: string;
   placeholder?: string;
   value?: string;
+  disabled?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   icon?: React.ReactNode;
@@ -13,6 +14,7 @@ const Input: React.FC<InputProps> = ({
   type = "text",
   placeholder,
   value,
+  disabled = false,
   onChange,
   className = "",
   icon,
@@ -23,6 +25,7 @@ const Input: React.FC<InputProps> = ({
       type={type}
       placeholder={placeholder}
       value={value}
+      disabled={disabled}
       onChange={onChange}
       className="w-full bg-transparent text-white outline-none"
     />

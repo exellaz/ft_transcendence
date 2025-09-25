@@ -35,10 +35,10 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading,
     error,
     refetch,
-  } = useApiQuery(() => getUserById({ id: Number(userId) }), [open]);
+  } = useApiQuery(() => getUserById({ id: Number(1) }), [open]);
 
   // API mutation to update user data
-  const { mutate: updateUser } = useApiMutation(updateUserById);
+  const { mutate } = useApiMutation(updateUserById);
 
   // Avatar upload states
   const [showAvatarUpload, setShowAvatarUpload] = React.useState(false);
@@ -49,13 +49,9 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // Form states
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
 
   useEffect(() => {
-    if (user) {
-      setUsername(user.username);
-      setEmail(user.email);
-    }
+    if (user) setUsername(user.username);
   }, [user]);
 
   // TODO: Delete when API is integrated
@@ -69,6 +65,28 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // useEffect(() => {
   //   setUser(getBasicInfoByUid(userId, mockBasicInfo) || null);
   // }, [userId]);
+
+  const handleSave = async (): Promise<void> => {
+    // return if no changes to username
+    if (!user || username === user.username) return;
+
+    const result = await mutate({
+      id: user.id.toString(),
+      username: username,
+    });
+
+    if (result.success) {
+      refetch();
+    } else {
+      alert(`${t("ApiState.error")}: ${result.error}`);
+    }
+  };
+
+  // Cancel will reset the username to its original value
+  // user.username is the username fetched from the API
+  function handleCancel() {
+    if (user) setUsername(user.username);
+  }
 
   function handleClose() {
     onClose();
@@ -103,25 +121,30 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         </div>
         <div className="w-full flex-col-center gap-2">
           <Input
-            value={user.username}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             placeholder={translate("username")}
             icon={
               <img src="/assets/user.png" alt="user.png" className="w-10" />
             }
           />
           <Status text={translate("username_available")} color="green" />
+          {/* Email is read-only */}
           <Input
             value={user.email}
             placeholder={translate("email")}
             type="email"
+            disabled={true}
             icon={
               <img src="/assets/email.png" alt="email.png" className="w-10" />
             }
           />
         </div>
         <div className="w-full flex-row-center gap-6">
-          <Button>{translate("save_changes")}</Button>
-          <Button variant="brown">{translate("cancel")}</Button>
+          <Button onClick={handleSave}>{translate("save_changes")}</Button>
+          <Button variant="brown" onClick={handleCancel}>
+            {translate("cancel")}
+          </Button>
         </div>
       </>
     );
@@ -139,7 +162,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           {!selectedFile && (
             // identical to yellow Button styling
             <label
-              className="w-32 rounded-full bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white py-2 
+              className="w-36 rounded-full bg-yellow-400 hover:bg-yellow-500 text-black hover:text-white py-3 
                 font-bold text-center cursor-pointer transition-colors"
             >
               {translate("upload_avatar_button")}
