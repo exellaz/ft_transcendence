@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx src/server.ts",
-    "dev2": "nodemon --watch src --exec ts-node src/app.ts",
+    "dev2": "nodemon --watch src --exec ts-node src/loginApp.ts",
     "build": "tsc -b",
     "start": "node dist/server.js",
     "start2": "node dist/app.js",
