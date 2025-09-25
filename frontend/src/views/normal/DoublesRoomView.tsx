@@ -1,35 +1,93 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  mockWaitingDoublesRoomPlayers,
-  mockDoublesRoomLiveChat,
-} from "../../data/mockUsers";
+import { useNavigate } from "react-router-dom";
 import type {
-  WaitingRoomPlayer,
-  LiveChatMessage,
+    WaitingRoomPlayer,
 } from "../../types/apiInterfaces";
+//import {
+//  mockWaitingDoublesRoomPlayers,
+//  mockDoublesRoomLiveChat,
+//} from "../../data/mockUsers";
 
-import { formatTimestamp } from "../../utils/date";
-
+// components
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
 import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
-
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
+
+// hooks
+import { useRoomWebSocket } from "./room-websocket";
+import { useLiveChatWebSocket } from "./liveChat-websocket";
 
 const DoublesRoomView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`DoublesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
-  const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
-  const [message, setMessage] = useState("");
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
+  const navigate = useNavigate();
 
   // TODO: Replace with actual room ID from route or context
-  const roomId = "t1";
+  const roomId = sessionStorage.getItem("pongRoomId") || "t1";
+  const roomName = sessionStorage.getItem("pongRoomName") || "Room 1";
+  const leaderId = sessionStorage.getItem("pongRoomLeaderId") || "1";
+
+  ////debug
+  //   console.log("Room Leader ID:", leaderId);
+  //   console.log("roomId:", roomId);
+  //   console.log("roomName:", roomName);
+  //   console.log("user id", sessionStorage.getItem("pongClientId"));
+
+  //live chat websocket
+  const {
+    chatMessages,
+    message,
+    setMessage,
+    handleSendMsg
+  } = useLiveChatWebSocket(roomId);
+
+  //room websocket
+  const {
+    leftTeamHtml,
+    rightTeamHtml,
+    isLeader,
+    ready,
+    canStart,
+    onSwitch,
+    onReady,
+    onStartBtn,
+    onLeave,
+    //? socket,
+    //? statusText,
+    //? playerText,
+    //? role,
+    //? setReady,
+    //? gameStarted,
+  } = useRoomWebSocket({roomId, roomName, leaderId});
+
+  ////debug
+//   console.log("WebSocket:", socket);
+//   console.log("status:", statusText);
+//   console.log("Player info:", playerText);
+//   console.log("Left team HTML:", leftTeamHtml);
+//   console.log("Right team HTML:", rightTeamHtml);
+//   console.log("Is leader:", isLeader);
+//   console.log("Role:", role);
+//   console.log("Ready status:", ready);
+//   console.log("Set ready function:", setReady);
+//   console.log("Game started:", gameStarted);
+//   console.log("Can start game:", canStart);
+
+  //get left and right team players from leftTeamHtml and rightTeamHtml
+  React.useEffect(() => {
+    const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
+    console.log("leftTeam:", leftTeam); //// debug
+    const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
+    console.log("rightTeam:", rightTeam); //// debug
+    setPlayers([...leftTeam, ...rightTeam]);
+  }, [leftTeamHtml, rightTeamHtml]);
 
   // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
@@ -43,21 +101,21 @@ const DoublesRoomView: React.FC = () => {
   // }, [roomId]);
 
   // TODO: Remove mock data when integrating real API
-  React.useEffect(() => {
-    setPlayers(mockWaitingDoublesRoomPlayers["t1"]);
-    setChatMessages(mockDoublesRoomLiveChat["t1"]);
-  }, []);
+//  React.useEffect(() => {
+//    setPlayers(mockWaitingDoublesRoomPlayers["t1"]);
+//    setChatMessages(mockDoublesRoomLiveChat["t1"]);
+//  }, []);
 
   // todo: Replace 1 with current user id
-  function handleSendMessage() {
-    if (message.trim()) {
-      setChatMessages([
-        ...chatMessages,
-        { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
-      ]);
-      setMessage("");
-    }
-  }
+//  function handleSendMessage() {
+//    if (message.trim()) {
+//      setChatMessages([
+//        ...chatMessages,
+//        { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
+//      ]);
+//      setMessage("");
+//    }
+//  }
 
   return (
     <RoomLayout>
@@ -76,12 +134,30 @@ const DoublesRoomView: React.FC = () => {
                 ({translate("room_id")}: {roomId})
               </p>
             </TournamentHeader>
-            <ReadyRoomPlayers variant="doubles" players={players} />
+            <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} isReady={ready} />
             <div className="flex-row-center gap-6">
-              <Button variant="green">{translate("ready")}</Button>
-              <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
-                {translate("leave_room")}
-              </Button>
+              {/* Ready button (not for leader) */}
+			  {!isLeader && (
+			    <Button variant="green" onClick={onReady}>
+			      {ready ? translate("unready") : translate("ready")}
+			    </Button>
+			  )}
+
+			  {/* Start button (leader only) */}
+			  {isLeader && (
+			    <Button
+			      variant="green"
+			      disabled={!canStart}
+			      onClick={onStartBtn}
+			    >
+			      {translate("start")}
+			    </Button>
+			  )}
+
+			  {/* Leave button */}
+			  <Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
+			    {translate("leave_room")}
+			  </Button>
             </div>
           </div>
           <LiveChat
@@ -89,7 +165,7 @@ const DoublesRoomView: React.FC = () => {
             chatMessages={chatMessages}
             message={message}
             setMessage={setMessage}
-            onSendMessage={handleSendMessage}
+            onSendMessage={handleSendMsg}
           />
         </div>
       </Card>
