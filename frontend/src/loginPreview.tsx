@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GoogleLoginButton from "../components/GoogleLoginButton";
+import GoogleLoginButton from "./components/GoogleLoginButton";
 
 function PreviewLogin() {
   const [message, setMessage] = useState("");
