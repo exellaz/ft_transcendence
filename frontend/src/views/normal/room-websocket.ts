@@ -32,8 +32,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	useEffect(() => {
 		// get clientId and playerName from sessionStorage
 		const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
-		const playerName = sessionStorage.getItem("pongUserName") || "Guest";
-		const playerSprite = sessionStorage.getItem("pongUserSprite") || "unknown"; // default sprite
+		const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
 
 		async function connect() {
 			// set room settings
@@ -47,9 +46,9 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 			// create websocket connection with player id, room id, side and player name
 			const chooseSide = await determineSide(roomId);
 			console.log("ws side:", chooseSide);
-			console.log("ws player name:", playerName);
-			console.log("ws player sprite:", playerSprite);
-			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`);
+			console.log("ws player name:", playerInfo.name);
+			console.log("ws player sprite:", playerInfo.sprite);
+			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerInfo.name)}&sprite=${encodeURIComponent(playerInfo.sprite)}`);
 			socketRef.current = ws;
 
 			// open connection
@@ -98,7 +97,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 						const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
 						const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
 						setRole(newRole);
-						setPlayerText(`You are: ${playerName} [${clientId}] (${newRole})`);
+						setPlayerText(`You are: ${playerInfo.name} [${clientId}] (${newRole})`);
 						// update team lists on left
 						setLeftTeamHtml(
 							data.gameState.teams.left.map((p:any)=> ({

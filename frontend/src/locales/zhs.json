@@ -82,6 +82,8 @@
     "singles_room": "单人房间",
     "room_id": "房间ID",
     "ready": "准备",
+    "unready": "取消准备",
+    "start": "开始游戏",
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？"
   },

@@ -10,6 +10,7 @@ interface ReadyRoomPlayersProps {
   players: WaitingRoomPlayer[];
   variant: "singles" | "doubles";
   onSwitchTeam?: () => void;
+  isReady: boolean;
 }
 
 // Component to display players in ready room with team switch functionality
@@ -17,6 +18,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   players,
   variant,
   onSwitchTeam,
+  isReady
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
@@ -54,14 +56,16 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
               : "hidden"
           }
         />
+        {/* player not ready is red, ready is green. if the player is leader ring is yellow */}
         <Avatar
           src={player.spriteUrl}
           size={variant === "doubles" ? 30 : 50}
           className={
-            player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"
+            `${isReady ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`
           }
         />
       </div>
+      {/* get player name color */}
       <p className={`text-lg font-bold ${getUserColor(player.uid)}`}>
         {player.username}
       </p>

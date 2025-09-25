@@ -15,14 +15,37 @@ const MainMenuView: React.FC = () => {
 
   //? For testing purpose, assign a test user name and sprite based on client ID
   const clientId = ensureClientId(); //? make a test user id
-  const clientIdLastDigit = parseInt(clientId.slice(-1));
-  if (clientIdLastDigit % 2 === 0) {
-	  sessionStorage.setItem("pongUserName", "player 1"); //? make a test user name
-	  sessionStorage.setItem("pongUserSprite", "../../../public/assets/green-ghost.png"); //? make a test user sprite
-  } else {
-	  sessionStorage.setItem("pongUserName", "player 2"); //? make a test user name
-	  sessionStorage.setItem("pongUserSprite", "../../../public/assets/yellow-ghost.png"); //? make a test user sprite
+
+  let prevId: string | null = null;
+  let playerInfo: { id: string; name: string; sprite: string } | null = null;
+  function generateName() {
+    const names = ["alice", "bob", "charlie", "dave", "eve"];
+    return names[Math.floor(Math.random() * names.length)];
   }
+
+  function generateSprite() {
+    const sprites = [
+      "../../../public/assets/green-ghost.png",
+      "../../../public/assets/white-ghost.png",
+      "../../../public/assets/blue-ghost.png",
+      "../../../public/assets/purple-ghost.png",
+      "../../../public/assets/yellow-ghost.png",
+    ];
+    return sprites[Math.floor(Math.random() * sprites.length)];
+  }
+  function getPlayerInfo(newId: string) {
+    if (newId !== prevId) {
+      playerInfo = {
+        id: newId,
+        name: generateName(),
+        sprite: generateSprite(),
+      };
+      prevId = newId;
+    }
+    return playerInfo;
+  }
+
+  sessionStorage.setItem("playerInfo", JSON.stringify(getPlayerInfo(clientId)));
 
   const { t } = useTranslation();
   const translate = (key: string) => t(`MainMenuView.${key}`);
