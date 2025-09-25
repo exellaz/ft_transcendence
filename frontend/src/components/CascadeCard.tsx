@@ -44,13 +44,13 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
     }
   };
 
-  let content;
+  let children: React.ReactNode;
   const textStyle = "text-center text-lg font-bold text-white";
 
   // Confirmation dialog (all tabs)
   if (showConfirm) {
     if (!actionDone) {
-      content = (
+      children = (
         <div className="w-full h-full flex-col-center p-10 gap-6">
           <div className={textStyle}>
             {actionType === "block"
@@ -72,7 +72,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         </div>
       );
     } else {
-      content = (
+      children = (
         <div className="w-full h-full flex-col-center p-10 gap-6">
           <div className={textStyle}>
             {actionType === "block"
@@ -89,9 +89,9 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
     activeTab === "requests" ||
     activeTab === "blocked"
   ) {
-    content = (
+    children = (
       <div className="w-full h-full flex-col-between p-10">
-        <ProfileContents userUid={selectedUser.uid} />
+        <ProfileContents userId={selectedUser.uid} />
         {activeTab === "friends" && (
           <div className="flex-row-center gap-6">
             <Button onClick={() => setShowProfile(false)}>
@@ -117,7 +117,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
   // Messaging view (Friends tab, default)
   else if (activeTab === "friends" && !showProfile) {
-    content = (
+    children = (
       <Messaging
         friendBasic={selectedUser as FriendBasic}
         friendUid={selectedUser.uid}
@@ -127,7 +127,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="flex-1 border-gray-300 border-3 rounded-3xl">{content}</div>
+    <div className="flex-1 border-gray-300 border-3 rounded-3xl">{children}</div>
   );
 };
 

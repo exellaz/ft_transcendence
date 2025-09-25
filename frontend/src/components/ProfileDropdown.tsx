@@ -13,7 +13,7 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
-  userUid: string;
+  userId: string;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -21,7 +21,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
-  userUid,
+  userId,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
@@ -65,24 +65,24 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     },
   ];
 
-  // TODO: Fetch real data based on userUid
+  // TODO: Fetch real data based on userId
   // useEffect(() => {
   //   // Fetch user's basic info
-  //   fetch(`/api/profile-dropdown?userUid=${userUid}`)
+  //   fetch(`/api/profile-dropdown?userId=${userId}`)
   //     .then((res) => res.json())
   //     .then(setUser);
-  // }, [userUid]);
+  // }, [userId]);
 
   // TODO: Delete when API is integrated
   function getProfileDropdownByUid(
-    userUid: string,
+    userId: string,
     data: ProfileDropdownInfo[]
   ): ProfileDropdownInfo | undefined {
-    return data.find((user) => user.uid === userUid);
+    return data.find((user) => user.uid === userId);
   }
   useEffect(() => {
-    setUser(getProfileDropdownByUid(userUid, mockProfileDropdownInfo) || null);
-  }, [userUid]);
+    setUser(getProfileDropdownByUid(userId, mockProfileDropdownInfo) || null);
+  }, [userId]);
 
   if (!user) return <div>{translate("loading")}</div>;
 

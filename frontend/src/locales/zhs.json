@@ -165,6 +165,12 @@
     "won": "胜利",
     "lost": "失败"
   },
+  "ApiState": {
+    "loading": "加载中...",
+    "error": "错误",
+    "try_again": "重试",
+    "not_found": "未找到记录。"
+  },
   "CascadeCard": {
     "confirm_block": "确定要屏蔽 {{username}} 吗？",
     "confirm_unblock": "确定要取消屏蔽 {{username}} 吗？",

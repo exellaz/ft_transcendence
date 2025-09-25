@@ -165,6 +165,12 @@
     "won": "勝利",
     "lost": "失敗"
   },
+  "ApiState": {
+    "loading": "載入中...",
+    "error": "錯誤",
+    "try_again": "重試",
+    "not_found": "未找到記錄。"
+  },
   "CascadeCard": {
     "confirm_block": "確定要封鎖 {{username}} 嗎？",
     "confirm_unblock": "確定要解除封鎖 {{username}} 嗎？",

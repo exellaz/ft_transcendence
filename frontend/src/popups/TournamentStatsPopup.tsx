@@ -13,37 +13,37 @@ import Subheader from "../components/Subheader";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userUid: string;
+  userId: string;
 }
 
 const TournamentStatsPopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  userUid,
+  userId,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentStatsPopup.${key}`);
   const [user, setUser] = useState<TournamentStats | null>(null);
   const [expandedIdx, setExpandedIdx] = React.useState<number | null>(null);
 
-  // TODO: Fetch real data based on userUid
+  // TODO: Fetch real data based on userId
   // useEffect(() => {
   //   // Fetch user's tournament stats
-  //   fetch(`/api/tournament-stats?userUid=${userUid}`)
+  //   fetch(`/api/tournament-stats?userId=${userId}`)
   //     .then((res) => res.json())
   //     .then(setUser);
-  // }, [userUid]);
+  // }, [userId]);
 
   // TODO: Delete when API is integrated
   function getTournamentStatsByUid(
-    userUid: string,
+    userId: string,
     data: TournamentStats[]
   ): TournamentStats | undefined {
-    return data.find((user) => user.uid === userUid);
+    return data.find((user) => user.uid === userId);
   }
   useEffect(() => {
-    setUser(getTournamentStatsByUid(userUid, mockTournamentStats) || null);
-  }, [userUid]);
+    setUser(getTournamentStatsByUid(userId, mockTournamentStats) || null);
+  }, [userId]);
 
   if (!user) return <div>{translate("loading")}</div>;
 

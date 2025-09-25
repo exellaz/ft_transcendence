@@ -165,6 +165,12 @@
     "won": "Won",
     "lost": "Lost"
   },
+  "ApiState": {
+    "loading": "Loading...",
+    "error": "Error",
+    "try_again": "Try Again",
+    "not_found": "Record not found."
+  },
   "CascadeCard": {
     "confirm_block": "Are you sure you want to block {{username}}?",
     "confirm_unblock": "Are you sure you want to unblock {{username}}?",
