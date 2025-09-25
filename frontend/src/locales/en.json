@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "username_required": "Username is required",
+    "username_length": "Username must be 3-12 characters",
+    "username_characters": "Only letters, numbers, and underscores allowed"
+  },
   "AdvanceView": {
     "advancement": "Advancement",
     "congratulations": "Congratulations!",

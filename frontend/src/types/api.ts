@@ -10,6 +10,17 @@ export enum Language {
 	MALAY = "malay",
 }
 
+export enum TextSize {
+	SMALL = "small",
+	MEDIUM = "medium",
+	LARGE = "large",
+}
+
+export enum CameraTracking {
+	STATIC = "static",
+	DYNAMIC = "dynamic",
+}
+
 export interface User {
   id: number;
   username: string;
@@ -24,6 +35,8 @@ export interface User {
 export interface UserSettings {
 	userId: number;
 	language: Language;
+	textSize: TextSize;
+	inGameCameraTracking: CameraTracking;
 }
 
 export interface ApiResponse<T> {

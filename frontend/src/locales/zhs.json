@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "加载中...",
+    "username_required": "用户名是必填项",
+    "username_length": "用户名必须为3-12个字符",
+    "username_characters": "只允许字母、数字和下划线"
+  },
   "AdvanceView": {
     "advancement": "晋级",
     "congratulations": "恭喜！",

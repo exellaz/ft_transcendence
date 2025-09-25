@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useApiQuery } from "../hooks/useApi";
+import { getUserById } from "../lib/apiClient";
 import { useNavigate } from "react-router-dom";
-import type { ProfileDropdownInfo } from "../types/apiInterfaces";
 // TODO: Remove mock data import when integrating real API
-import { mockProfileDropdownInfo } from "../data/mockUsers";
+// import type { ProfileDropdownInfo } from "../types/apiInterfaces";
+// import { mockProfileDropdownInfo } from "../data/mockUsers";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
@@ -25,9 +27,29 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
-  const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
+
+  // API query for user data
+  const { data: user, refetch } = useApiQuery(
+    () => getUserById({ id: Number(1) }),
+    []
+  );
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Listen for user info updates
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      refetch(); // Refresh profile data
+    };
+
+    // Listen for custom events (you'll dispatch this from BasicInfoPopup)
+    window.addEventListener("userUpdated", handleUserUpdate);
+
+    return () => {
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
+  }, [refetch]);
+
   const menuItems = [
     {
       label: translate("my_profile"),
@@ -65,26 +87,17 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     },
   ];
 
-  // TODO: Fetch real data based on userId
-  // useEffect(() => {
-  //   // Fetch user's basic info
-  //   fetch(`/api/profile-dropdown?userId=${userId}`)
-  //     .then((res) => res.json())
-  //     .then(setUser);
-  // }, [userId]);
-
   // TODO: Delete when API is integrated
-  function getProfileDropdownByUid(
-    userId: string,
-    data: ProfileDropdownInfo[]
-  ): ProfileDropdownInfo | undefined {
-    return data.find((user) => user.uid === userId);
-  }
-  useEffect(() => {
-    setUser(getProfileDropdownByUid(userId, mockProfileDropdownInfo) || null);
-  }, [userId]);
-
-  if (!user) return <div>{translate("loading")}</div>;
+  // const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
+  // function getProfileDropdownByUid(
+  //   userId: string,
+  //   data: ProfileDropdownInfo[]
+  // ): ProfileDropdownInfo | undefined {
+  //   return data.find((user) => user.uid === userId);
+  // }
+  // useEffect(() => {
+  //   setUser(getProfileDropdownByUid(userId, mockProfileDropdownInfo) || null);
+  // }, [userId]);
 
   return (
     <div className="fixed top-10 right-10">
@@ -94,11 +107,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         className="flex-row-center gap-4 shadow"
       >
         <div>
-          <Avatar src={user.avatarUrl} size={80}/>
+          <Avatar src={user?.avatarUrl} size={80} />
         </div>
-        {user.username.length > 8
+        {user ? (user.username.length > 8
           ? user.username.slice(0, 8) + "..."
-          : user.username}
+          : user.username) : t("common.loading")}
       </Button>
 
       {open && (

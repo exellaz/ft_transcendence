@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import { getUserById, updateUserById } from "../lib/apiClient";
 import { formatDate } from "../utils/date";
+import { validateUsername } from "../utils/validation";
 // TODO: Remove mock data import when integrating real API
 // import type { BasicInfo } from "../types/apiInterfaces";
 // import { mockBasicInfo } from "../data/mockUsers";
@@ -68,15 +69,24 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   const handleSave = async (): Promise<void> => {
     // return if no changes to username
-    if (!user || username === user.username) return;
+    if (!user || username.trim() === user.username) return;
+
+    // validate username
+    const validation = validateUsername(username, t);
+    if (!validation.isValid) {
+      alert(validation.error);
+      return;
+    }
 
     const result = await mutate({
       id: user.id.toString(),
-      username: username,
+      username: username.trim(),
     });
 
     if (result.success) {
       refetch();
+      // notify ProfileDropdown about updated user data
+      window.dispatchEvent(new CustomEvent('userUpdated'));
     } else {
       alert(`${t("ApiState.error")}: ${result.error}`);
     }
