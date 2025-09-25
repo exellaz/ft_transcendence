@@ -1,13 +1,18 @@
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
-import dbConnector from "./plugins/db"
-import userRoutes from "./modules/users/users.routes"
+import dbConnector from "./plugins/db";
+import userRoutes from "./modules/users/users.routes";
 import authRoutes from "./modules/auth/auth.routes";
+import gameRoutes from "./modules/game/game.routes";
+import websocketPlugin from "@fastify/websocket";
+import fastifyStatic from "@fastify/static";
+
 import { fail, ApiError } from "./utils/response";
 
 const app = Fastify({
   logger: true
 });
+await app.register(websocketPlugin);
 
 app.register(fastifyCors, {
 	origin: "*",
@@ -17,6 +22,7 @@ app.register(fastifyCors, {
 app.register(dbConnector);
 app.register(userRoutes);
 app.register(authRoutes);
+app.register(gameRoutes);
 
 // Global error handler (call after all routes/plugins)
 app.setErrorHandler((error, request, reply) => {

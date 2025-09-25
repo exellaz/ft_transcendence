@@ -1,0 +1,94 @@
+{
+  "state": {
+    "camera": {
+      "position": {
+        "x": -4.702207979491519e-22,
+        "y": 0,
+        "className": "Point2D"
+      }
+    },
+    "bgColor": "#000000",
+    "gameObjects": [
+      {
+        "className": "ball",
+        "id": 0,
+        "position": {
+          "x": 0,
+          "y": 49.6
+        }
+      },
+      {
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "className": "camera"
+      },
+      {
+        "id": 2,
+        "position": {
+          "x": -250,
+          "y": 0
+        }
+      },
+      {
+        "id": 8,
+        "position": {
+          "x": 250,
+          "y": 30
+        }
+      },
+      {
+        "id": 14,
+        "position": {
+          "x": -650,
+          "y": 60
+        }
+      },
+      {
+        "id": 20,
+        "position": {
+          "x": 650,
+          "y": 0
+        }
+      },
+      {
+        "className": "OnScreenLabel",
+        "id": 26,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scale": {
+          "x": 9.997663466413659,
+          "y": 9.997663466413659
+        },
+        "text": "Right Wins!"
+      },
+      {
+        "className": "label",
+        "id": 27,
+        "position": {
+          "x": -50,
+          "y": 20
+        },
+        "text": "1"
+      },
+      {
+        "className": "label",
+        "id": 28,
+        "position": {
+          "x": 50,
+          "y": 20
+        },
+        "text": "3"
+      }
+    ],
+    "type": "partial"
+  },
+  "metadata": {
+    "timestamp": 1758802618319,
+    "delta": 0.018538832999998704,
+    "fps": 0
+  }
+}

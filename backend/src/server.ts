@@ -3,7 +3,7 @@ import { testMyGame } from "./modules/game/server";
 
 // Start server
 const start = async () => {
-  console.log("?>>>>>", testMyGame);
+  testMyGame();
 
   try {
     await app.listen({ port: 3000, host: "0.0.0.0" });
