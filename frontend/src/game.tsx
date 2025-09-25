@@ -45,11 +45,6 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 
 		// open connection
 		ws.addEventListener("open", () => {
-			const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400, 1);
-			const scaledWidth = 800 * scale;
-			const scaledHeight = 400 * scale;
-			ws.send(JSON.stringify({ type: "setWidth", width: scaledWidth }));
-			ws.send(JSON.stringify({ type: "setHeight", height: scaledHeight }));
 			console.log("Game ws connected");
 		});
 
@@ -108,11 +103,13 @@ export function useGameWebSocket({ roomId, roomName, clientId, initialRole, play
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
                     setSettingView(`
+						<b>Current Settings: </b>
 						Ball Speed: ${data.gameState.setting?.ballSpeed},
 						Ball Size: ${data.gameState.setting?.ballSize},
 						Paddle Height: ${data.gameState.setting?.paddleHeight},
 						Paddle Width: ${data.gameState.setting?.paddleWidth},
-						Paddle Speed: ${data.gameState.setting?.paddleSpeed}
+						Paddle Speed: ${data.gameState.setting?.paddleSpeed},
+						Winning Score: ${data.gameState.setting?.winningScore}
 					`);
 					setIsSpectator(role === "spectator");
 					//check for game over
@@ -176,18 +173,25 @@ function draw_container(
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
+
 	const paddleWidth = state.setting?.paddleWidth;
 	const paddleHeight = state.setting?.paddleHeight;
 	const ballSize = state.setting?.ballSize;
 
-	ctx.clearRect(0,0,canvas.width, canvas.height);
+	ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any existing transforms
+	ctx.clearRect(0,0,canvas.width, canvas.height); // Clear the canvas
+
+    // Apply scaling transform
+    const scaleX = canvas.width/ BASE_WIDTH;
+    const scaleY = canvas.height / BASE_HEIGHT;
+    ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
 
 	//if game over, show winner
 	if (playerResult) {
 		ctx.font = "48px Arial";
 		ctx.fillStyle = "green";
 		ctx.textAlign = "center";
-		ctx.fillText(playerResult === "win" ? "You Win!" : "You Lose!", canvas.width/2, canvas.height/2);
+		ctx.fillText(playerResult === "win" ? "You Win!" : "You Lose!", BASE_WIDTH/2, BASE_HEIGHT/2);
 		return;
 	}
 
@@ -201,7 +205,7 @@ function draw_container(
 		ctx.font = "48px Arial";
 		ctx.fillStyle = "gray";
 		ctx.textAlign = "center";
-		ctx.fillText(`Game starts in ${remaining}...`, canvas.width/2, canvas.height/2);
+		ctx.fillText(`Game starts in ${remaining}...`, BASE_WIDTH/2, BASE_HEIGHT/2);
 		return;
 	}
 
@@ -210,17 +214,14 @@ function draw_container(
 		ctx.font = "32px Arial";
 		ctx.fillStyle = "gray";
 		ctx.textAlign = "center";
-		ctx.fillText("Waiting for all players to connect...", canvas.width/2, canvas.height/2);
+		ctx.fillText("Waiting for all players to connect...", BASE_WIDTH/2, BASE_HEIGHT/2);
 		return;
 	}
-
-	const scaleX = canvas.width / 800;
-	const scaleY = canvas.height / 400;
 
 	//spectator view
 	if (isSpectator) {
 		ctx.beginPath();
-		ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
+		ctx.arc(state.ball.x, state.ball.y, ballSize, 0, Math.PI * 2);
 		ctx.fillStyle = "black";
 		ctx.fill();
 
@@ -228,19 +229,19 @@ function draw_container(
 			const y = state.paddles[clientId];
 			let x: number;
 			if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
-				x = 1 * scaleX;
+				x = 1;
 			} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-				x = canvas.width - paddleWidth * scaleX - 1;
+				x = BASE_WIDTH - paddleWidth - 1;
 			} else continue;
 			ctx.fillStyle = "black";
-			ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
+			ctx.fillRect(x, y, paddleWidth, paddleHeight);
 		}
 		return;
 	}
 
 	// Draw ball
 	ctx.beginPath();
-	ctx.arc(state.ball.x * scaleX, state.ball.y * scaleY, ballSize * scaleX, 0, Math.PI * 2);
+	ctx.arc(state.ball.x, state.ball.y, ballSize, 0, Math.PI * 2);
 	ctx.fillStyle = "black";
 	ctx.fill();
 
@@ -249,13 +250,14 @@ function draw_container(
 		const y = state.paddles[clientId];
 		let x: number;
 		if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
-			x = 1 * scaleX;
+			x = 1;
 		} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-			x = canvas.width - paddleWidth * scaleX - 1;
+			x = BASE_WIDTH - paddleWidth - 1;
 		} else continue;
 		ctx.fillStyle = "black";
-		ctx.fillRect(x, y*scaleY, paddleWidth * scaleX, paddleHeight * scaleY);
+		ctx.fillRect(x, y, paddleWidth, paddleHeight);
 	}
+	return;
 }
 
 /************************************** Game Component **************************************/
@@ -302,17 +304,6 @@ export default function Game({
         setting,
 		settingView,
 	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
-
-	//--- create game board ---
-	useEffect(()=>{
-		const canvas = canvasRef.current!;
-		function createUI() {
-			canvas.width = Math.min(window.innerWidth / (BASE_WIDTH/BASE_WIDTH), 1) * BASE_WIDTH;
-			canvas.height = Math.min(window.innerHeight / (BASE_HEIGHT/BASE_HEIGHT), 1) * BASE_HEIGHT;
-			canvas.style.border = "5px solid black";
-		}
-		createUI();
-	}, []);
 
 	//--- redraw the game when game state changes ---
 	useEffect(() => {
@@ -379,7 +370,7 @@ export default function Game({
 	  <h1 id="roleText">{statusText}</h1>
 	  <h2 id="scoreText">{scoreText}</h2>
 	  <h2 id="settingText">{settingView}</h2>
-	  <canvas id="game" ref={canvasRef} className="mx-auto block" width={BASE_WIDTH} height={BASE_HEIGHT} />
+	  <canvas id="game" ref={canvasRef} className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1] box-border" width={BASE_WIDTH} height={BASE_HEIGHT} />
 	  {/* if game is over the have the leave button */}
 	  <div className="mt-4">
 		{(isSpectator || gameOver) && (

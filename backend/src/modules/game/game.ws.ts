@@ -40,7 +40,7 @@ export default async function gameWsRoute(fastify: any) {
 				}
 
 				// --- allow type ---
-				const allowedTypes = ["move", "setWidth", "setHeight"];
+				const allowedTypes = ["move"];
 				if (!allowedTypes.includes(msg.type)) {
 					socket.close(1003, `unsupported message type ${msg.type}`);
 					return;
@@ -61,20 +61,6 @@ export default async function gameWsRoute(fastify: any) {
 							room.setting.paddleSpeed
 						);
 					}
-				}
-				if (msg.type === "setWidth") {
-					if (typeof msg.width !== "number" || msg.width === undefined || msg.width === null) {
-						socket.close(1003, "Invalid width: [width]");
-						return;
-					}
-					room.width = msg.width;
-				}
-				if (msg.type === "setHeight") {
-					if (typeof msg.height !== "number" || msg.height === undefined || msg.height === null) {
-						socket.close(1003, "Invalid height: [height]");
-						return;
-					}
-					room.height = msg.height;
 				}
 
 			} catch (err) {
