@@ -206,9 +206,9 @@ export class WebSocketHandler implements IWebSocketHandler {
 					return;
 				}
 
-				const playerObj = room.clientRoles.get(clientId);
-				if (!playerObj) return;
-				if (playerObj.ready && clientId !== room.leaderId) {
+				//const playerObj = room.clientRoles.get(clientId);
+				//if (!playerObj) return;
+				if (player.ready && clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
 					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`);
 					return;
@@ -230,9 +230,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 				// Step 1: check player is ready
                 const player = room.clientRoles.get(clientId);
                 if (!player) return;
+                //update the player ready status
                 if (player) {
                     player.ready = msg.ready;
                 }
+                //update the team each player ready status in gameState
 				room.gameState.teams.left = room.gameState.teams.left.map((p:any) => {
                     if (p.clientId === clientId) {
                         return { ...p, ready: msg.ready };
