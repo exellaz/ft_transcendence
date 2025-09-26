@@ -10,7 +10,7 @@ const Background: React.FC<BackgroundProps> = ({
   variant = "grass",
 }) => (
   <div
-    className="min-h-screen w-full flex-row-center"
+    className="relative min-h-screen w-full flex-row-center"
     style={
       variant === "plain"
         ? { backgroundColor: "var(--color-card-blue)" } // or use the hex code directly

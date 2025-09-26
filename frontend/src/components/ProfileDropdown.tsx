@@ -100,7 +100,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   // }, [userId]);
 
   return (
-    <div className="fixed top-10 right-10">
+    <div className="fixed top-10 right-10 z-20">
       <Button
         variant="profile"
         onClick={() => setOpen(!open)}
