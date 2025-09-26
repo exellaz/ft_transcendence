@@ -1,5 +1,5 @@
-import { WebSocketHandler } from "../../utils/webSocketHandler"
-import { validateConnection } from "../../utils/utils";
+import { WebSocketHandler } from "../../utils/webSocketHandler.ts"
+import { validateConnection } from "../../utils/utils.ts";
 
 const wsHandler = new WebSocketHandler();
 

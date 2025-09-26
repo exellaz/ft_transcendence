@@ -1,6 +1,6 @@
-import type { Room } from "../room/room";
-import { rooms, roomEndGame } from "../room/room";
-import type { playerInfo } from "../room/room";
+import type { Room } from "../room/room.ts";
+import { rooms, roomEndGame } from "../room/room.ts";
+import type { playerInfo } from "../room/room.ts";
 
 /**
  * @brief Interface for Game class method
@@ -66,22 +66,14 @@ export class Game implements IGame {
 		const leftRole = room.gameState.teams.left;
 		const leftPositions = distributePaddle(leftRole);
 		for (let i = 0; i < leftRole.length; i++) {
-			const clientId = leftRole[i]?.clientId;
-			const position = leftPositions[i];
-			if (clientId !== undefined && position !== undefined) {
-				room.gameState.paddles[clientId] = position;
-			}
+			room.gameState.paddles[leftRole[i].clientId] = leftPositions[i];
 		}
 
 		//right team
 		const rightRole = room.gameState.teams.right;
 		const rightPositions = distributePaddle(rightRole);
 		for (let i = 0; i < rightRole.length; i++) {
-			const client = rightRole[i];
-			const position = rightPositions[i];
-			if (client !== undefined && position !== undefined) {
-				room.gameState.paddles[client.clientId] = position;
-			}
+			room.gameState.paddles[rightRole[i].clientId] = rightPositions[i];
 		}
 	}
 
@@ -133,7 +125,6 @@ export class Game implements IGame {
 		// Bounce off paddles
 		for (const clientId in room.gameState.paddles) { //look for player id in paddles
 			const paddleY = room.gameState.paddles[clientId];
-            if (!paddleY) continue;
             //check left is belong this player or not
 			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientId) && ball.x - ballSize <= paddleWidth) {
 				if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {

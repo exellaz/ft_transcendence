@@ -6,20 +6,23 @@ services:
     working_dir: /app
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
     networks:
       - appnet
+    volumes:
+      - ./frontend:/app # bind mount
+      - /app/node_modules   # anonymous volume for container's node_modules
   backend:
     build: ./backend
     ports:
       - "3000:3000"
     working_dir: /app
-    volumes:
-      - ./backend:/app
-      - ./backend/room.db:/app/room.db
     networks:
       - appnet
+    volumes:
+      - ./backend:/app # bind mount
+      - /app/node_modules  # anonymous volume for container's node_modules
+      - ./backend/prisma/database:/app/prisma/database
+
 networks:
   appnet:
     driver: bridge

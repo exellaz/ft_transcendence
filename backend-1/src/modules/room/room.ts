@@ -1,8 +1,8 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game } from "../game/game"; // import game loop
-import { liveChatMessage } from "../chat/liveChat"; // import chat message type
-//import { saveMatchResult } from "../../plugins/database";
-import { broadcast } from "../../utils/utils";
+import { Game } from "../game/game.ts"; // import game loop
+import { liveChatMessage } from "../chat/liveChat.ts"; // import chat message type
+import { saveMatchResult } from "../../plugins/database.ts";
+import { broadcast } from "../../utils/utils.ts";
 
 export interface playerInfo {
     clientId: string; // client id
@@ -241,7 +241,5 @@ export function roomEndGame(room: Room, forced = false) {
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
 
 	// Save match result to database
-	//saveMatchResult(room, room.duration);
+	saveMatchResult(room, room.duration);
 }
-
-
