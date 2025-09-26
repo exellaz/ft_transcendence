@@ -143,7 +143,7 @@ const SinglesRoomView: React.FC = () => {
                 ({translate("room_id")}: {roomId})
               </p>
             </TournamentHeader>
-            <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} isReady={ready} />
+            <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} />
 			<div className="flex-row-center gap-6">
 			  {/* Ready button (not for leader) */}
 			  {!isLeader && (

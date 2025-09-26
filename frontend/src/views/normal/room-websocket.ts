@@ -166,7 +166,8 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	}, [roomId, roomName, leaderId]);
 
 	function onSwitch() {
-		if (!socketRef.current || ready) return;
+		if (!socketRef.current) return;
+        if (ready && !isLeader) return;
 		const newSide = role.startsWith("left") ? "right" : "left";
 		socketRef.current.send(JSON.stringify({ type: "switchSide", side: newSide }));
 	}

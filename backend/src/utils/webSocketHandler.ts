@@ -185,11 +185,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 			}
 
 			// --- handle message ---
+            //get certain clientId from socket
 			const clientId = room.sockets.get(socket);
-			if (!clientId) return; //if no client id exit
+			if (!clientId) return;
+            // get player info from clientId
 			const player = room.clientRoles.get(clientId);
-
-			//if no player then exit
 			if (!player) return;
 
 			if (msg.type === "switchSide") {
@@ -206,7 +206,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 					return;
 				}
 
-				const playerObj = room.clientRoles.get(role.id);
+				const playerObj = room.clientRoles.get(clientId);
 				if (!playerObj) return;
 				if (playerObj.ready && clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
@@ -228,6 +228,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (role.role === "spectator" || clientId === room.leaderId) return;
 
 				// Step 1: check player is ready
+                const player = room.clientRoles.get(clientId);
+                if (!player) return;
+                if (player) {
+                    player.ready = msg.ready;
+                }
 				room.gameState.teams.left = room.gameState.teams.left.map((p:any) => {
                     if (p.clientId === clientId) {
                         return { ...p, ready: msg.ready };
@@ -241,7 +246,7 @@ export class WebSocketHandler implements IWebSocketHandler {
                     return p;
                 });
 
-                broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
+                broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				//broadcastState(room);
 				const { canStart, reason } = updateCanStart(room);
@@ -365,13 +370,17 @@ export class WebSocketHandler implements IWebSocketHandler {
 			//if have remaining player when leader left pass leader to the player
 			if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
 				room.leaderId = remainingPlayers[0];
-				broadcast(room, createLiveChatMessage("system", "system", `leader change to ${room.clientRoles.get(room.leaderId)?.playerName} [ ${room.leaderId} ].`));
+                const newLeader = room.clientRoles.get(room.leaderId);
+                if (newLeader) {
+                    newLeader.leader = true;
+                };
+				broadcast(room, createLiveChatMessage("system", "system", `leader change to ${room.clientRoles.get(room.leaderId)?.playerName}.`));
 				console.log(`Leader ${room.clientRoles.get(clientId)?.playerName} [ ${clientId} ] left. New leader is ${room.clientRoles.get(room.leaderId)?.playerName} [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
 
 				//notify all in the room about new leader
 				broadcast(room, {
 					type: "roleUpdate",
-					newPlayer: { id: clientId, role: room.clientRoles.get(clientId)?.role, playerName: room.clientRoles.get(clientId)?.playerName },
+					newPlayer: newLeader,
 					gameState: room.gameState,
 					leaderId: room.leaderId,
 				});
@@ -383,7 +392,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		//---- case: disconnect during game ----
 		if (role && role !== "spectator" && room.gameState.gameStarted) {
 			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
-			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role}) disconnect.`));
+			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnect.`));
 
 			//freeze their paddle position
 			if (room.gameState.paddles[clientId] !== undefined) {
@@ -411,7 +420,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// ---- case: disconnect during countdown ----
 		if (role && role !== "spectator" && room.gameState.countdown > 0 && !room.gameState.gameStarted) {
 			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] disconnected during countdown in room ${room.name} (${roomId})`);
-			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role}) disconnected during countdown.`));
+			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnected during countdown.`));
 
 			broadcast(room, {
 				type: "roleUpdate",
@@ -433,7 +442,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// ---- case: leave before game start / game ended ----
 		if (!room.gameState.gameStarted && room.gameState.countdown === 0) {
 			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`);
-			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role}) left.`));
+			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} left.`));
 
 			//remove player from team
 			if (role && role !== "spectator") {

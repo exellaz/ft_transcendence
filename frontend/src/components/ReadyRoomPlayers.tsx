@@ -10,7 +10,6 @@ interface ReadyRoomPlayersProps {
   players: WaitingRoomPlayer[];
   variant: "singles" | "doubles";
   onSwitchTeam?: () => void;
-  isReady: boolean;
 }
 
 // Component to display players in ready room with team switch functionality
@@ -18,7 +17,6 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   players,
   variant,
   onSwitchTeam,
-  isReady
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
@@ -29,6 +27,13 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const rightTeamPlayers = players.filter((player) => player.team === "right");
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
 
+	// Determine if current user is leader or ready
+	const currentId = sessionStorage.getItem("pongClientId");
+	const currentUser = players.find((p) => p.uid === currentId);
+	const isLeader = currentUser ? currentUser.leader : false;
+	const isReady = currentUser ? currentUser.ready : false;
+
+	// Basic styling for player and empty cells
   const basicCellStyling = `w-full bg-input-gray rounded-xl ${
     variant === "doubles"
       ? "h-[70px] flex-row-center"
@@ -116,10 +121,10 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <div
           className={`
             rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2
-            ${isReady ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
+            ${(isReady && !isLeader) ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
           `}
           onClick={() => {
-            if (!isReady) {
+            if (!isReady || isLeader) {
               onSwitchTeam?.();
             }
           }}
@@ -127,7 +132,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           <img
             className={`
               h-10 transition-all duration-200
-              ${isReady ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
+              ${(isReady && !isLeader) ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
             `}
             src="/assets/switch.png"
             alt="Switch Teams"

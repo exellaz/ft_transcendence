@@ -185,9 +185,16 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     function rebuildSide(players: any[], side: "left" | "right"): any[] {
         return players.map((p, i) => {
             const newRole = `${side}_player${i + 1}`;
-            // update mapping (preserve other fields)
-            room.clientRoles.set(p.clientId, { ...p, role: newRole });
-            return { ...p, role: newRole };
+            // preserve readiness from gameState if available
+            const oldReady =
+                room.gameState.teams.left.find((pl: any) => pl.clientId === p.clientId)?.ready ??
+                room.gameState.teams.right.find((pl: any) => pl.clientId === p.clientId)?.ready ??
+                p.ready ?? false;
+
+            const updated = { ...p, role: newRole, ready: oldReady };
+
+            room.clientRoles.set(p.clientId, updated);
+            return updated;
         });
     }
 
@@ -201,8 +208,8 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
 	if (!newPlayer) return;
-    broadcast(room, createLiveChatMessage("system", "system", `${newPlayer.playerName} (${oldRole}) switched to ${newPlayer.role}`));
-    console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role} in room ${room.name} (${room.id})`);
+    broadcast(room, createLiveChatMessage("system", "system", `${newPlayer.playerName} switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side.`));
+    console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug
 
     // notify to the client about his new role
