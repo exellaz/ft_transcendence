@@ -11,42 +11,43 @@ import MainLayout from "../layout/MainLayout";
 import SettingsPopup from "../popups/SettingsPopup";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
-const MainMenuView: React.FC = () => {
+function mockUser() {
+    const clientId = ensureClientId();
 
-  //? For testing purpose, assign a test user name and sprite based on client ID
-  const clientId = ensureClientId(); //? make a test user id
-
-  let prevId: string | null = null;
-  let playerInfo: { id: string; name: string; sprite: string } | null = null;
-  function generateName() {
-    const names = ["alice", "bob", "charlie", "dave", "eve"];
-    return names[Math.floor(Math.random() * names.length)];
-  }
-
-  function generateSprite() {
-    const sprites = [
-      "../../../assets/green-ghost.png",
-      "../../../assets/white-ghost.png",
-      "../../../assets/blue-ghost.png",
-      "../../../assets/purple-ghost.png",
-      "../../../assets/yellow-ghost.png",
-    ];
-    return sprites[Math.floor(Math.random() * sprites.length)];
-  }
-  function getPlayerInfo(newId: string) {
-    if (newId !== prevId) {
-      playerInfo = {
-        id: newId,
-        name: generateName(),
-        sprite: generateSprite(),
-      };
-      prevId = newId;
+    let prevId: string | null = null;
+    let playerInfo: { id: string; name: string; sprite: string } | null = null;
+    function generateName() {
+      const names = ["alice", "bob", "charlie", "dave", "eve"];
+      return names[Math.floor(Math.random() * names.length)];
     }
-    return playerInfo;
-  }
 
-  sessionStorage.setItem("playerInfo", JSON.stringify(getPlayerInfo(clientId)));
+    function generateSprite() {
+      const sprites = [
+        "../../../assets/green-ghost.png",
+        "../../../assets/white-ghost.png",
+        "../../../assets/blue-ghost.png",
+        "../../../assets/purple-ghost.png",
+        "../../../assets/yellow-ghost.png",
+      ];
+      return sprites[Math.floor(Math.random() * sprites.length)];
+    }
+    function getPlayerInfo(newId: string) {
+      if (newId !== prevId) {
+        playerInfo = {
+          id: newId,
+          name: generateName(),
+          sprite: generateSprite(),
+        };
+        prevId = newId;
+      }
+      return playerInfo;
+    }
+    sessionStorage.setItem("playerInfo", JSON.stringify(getPlayerInfo(clientId)));
+}
 
+mockUser(); //? For testing purpose, create a mock user if not already present
+
+const MainMenuView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`MainMenuView.${key}`);
   const navigate = useNavigate();

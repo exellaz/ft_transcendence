@@ -8,6 +8,7 @@ import Input from "../components/Input";
 import Logo from "../components/Logo";
 import MainLayout from "../layout/MainLayout";
 import Subheader from "../components/Subheader";
+import Status from "../components/Status";
 
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
@@ -26,6 +27,8 @@ const NormalModeView: React.FC = () => {
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
   const [showJoinDoublesGame, setShowJoinDoublesGame] = useState(false);
+  const [status, setStatus] = useState<{ text: string; color: "green" | "red" } | null>(null);
+
 
   // 🔹 API Helpers
 
@@ -60,7 +63,7 @@ const NormalModeView: React.FC = () => {
       sessionStorage.setItem("pongRoomLeaderId", room.leaderId); // consistent key
       navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
     } else {
-      alert("❌ Failed to create room");
+      setStatus({ text: "❌ Failed to create room", color: "red" });
     }
   }
 
@@ -100,11 +103,11 @@ const NormalModeView: React.FC = () => {
     const room = rooms.find((r: any) => r.id === roomId.trim());
 
     if (!room) {
-      alert("❌ Room not found");
+      setStatus({ text: "❌ Room not found", color: "red" });
       return;
     }
     if (room.leftPlayers + room.rightPlayers >= room.teamSize * 2) {
-      alert("❌ Room is full");
+      setStatus({ text: "❌ Room is full", color: "red" });
       return;
     }
 
@@ -115,6 +118,7 @@ const NormalModeView: React.FC = () => {
 
   // Helper to go back one step
   const handleBack = () => {
+    setStatus(null); // reset the error to null to prevent show old error
     if (menuStep === "action") {
       navigate("/main-menu");
     } else if (menuStep === "createRoom") {
@@ -123,6 +127,7 @@ const NormalModeView: React.FC = () => {
       setMenuStep("action");
     } else if (menuStep === "quickJoin" || menuStep === "privateJoin") {
       setMenuStep("joinOptions");
+      setRoomId(""); // reset room id input
     }
   };
 
@@ -135,7 +140,10 @@ const NormalModeView: React.FC = () => {
             <Subheader>{translate("choose_action")}</Subheader>
             <Button
               variant="bigYellow"
-              onClick={() => setMenuStep("createRoom")}
+              onClick={() => {
+                setStatus(null); // reset the error to null to prevent show old error
+                setMenuStep("createRoom")
+            }}
             >
               {translate("create_room")}
             </Button>
@@ -218,6 +226,7 @@ const NormalModeView: React.FC = () => {
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
                 />
+                {status && <Status text={status.text} color={status.color} className="mb-4" />} {/* show error status */}
                 <Button onClick={handleJoinPrivateRoom}>
 					{translate("join_room")}
 				</Button>
