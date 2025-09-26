@@ -103,6 +103,7 @@ function updateGameObjects() {
     if (client.socket && client.socket.readyState === 1) {
       try {
         if (client.handshakeComplete && client.receivedFullState) {
+          console.log("message sent");
           client.socket.send(output);
         }
         while (client.outputQueue.length > 0) {
@@ -121,6 +122,8 @@ function updateGameObjects() {
 
 
 async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
+
+
   fastify.get("/ws", { websocket: true }, (socket, req) => {
     if (!socket)
       return req.log.info("Received normal HTTP request to /ws — ignoring");
@@ -137,18 +140,28 @@ async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     })
 
     socket.on("message", (msg) => {
-      try {
-        const data = JSON.parse(msg.toString());
-        console.log("Server received:", data);  // <-- add this
-        player.update(data);
-      } catch (e) {
-        console.error("Error parsing message:", e);
+      const data = JSON.parse(msg.toString());
+      if (data["type"] === "ready") {
+        console.log("✅ Client handshake complete");
+        player.handshakeComplete = true; // mark ready
+        player.socket.send(JSON.stringify({
+          type: "ready",
+          payload: {}
+        }));
       }
+      if (data["type"] === "received_full_state") {
+        player.receivedFullState = true;
+      }
+
+      player.update(data); // update this player's state only
+
     });
 
     socket.on("close", () => {
       clients.delete(player);
     });
+
+
   });
 }
 

@@ -7,6 +7,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
+  
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -16,6 +17,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    fs: {
+      allow: [".."], // allow Vite to access ../shared
+    },
     watch: {
       usePolling: true,
     },
@@ -23,7 +27,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"), // so "@/views/GameView" works
-      "@src": path.resolve(__dirname, "../../../backend/src/modules/src"), // point to shared folder
+      "@shared": path.resolve(__dirname, "../shared"), // 👈 add this
     },
   },
 });

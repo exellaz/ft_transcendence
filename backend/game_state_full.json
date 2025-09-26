@@ -2,7 +2,7 @@
   "state": {
     "camera": {
       "position": {
-        "x": -53.58819640777959,
+        "x": 0,
         "y": 0,
         "className": "Point2D"
       }
@@ -13,8 +13,8 @@
         "className": "ball",
         "id": 0,
         "position": {
-          "x": 118.59,
-          "y": -145.13
+          "x": 0,
+          "y": 0
         },
         "components": [
           2,
@@ -23,7 +23,7 @@
       },
       {
         "position": {
-          "x": -53.59,
+          "x": 0,
           "y": 0
         },
         "className": "camera"
@@ -565,10 +565,10 @@
           "y": 0
         },
         "scale": {
-          "x": 9.999999999999996,
-          "y": 9.999999999999996
+          "x": 9.683340651200513,
+          "y": 9.683340651200513
         },
-        "text": "",
+        "text": "2",
         "font": "75px Impact",
         "color": "#ffffff",
         "zIndex": 100,
@@ -613,7 +613,7 @@
           "x": 10,
           "y": 10
         },
-        "text": "1",
+        "text": "0",
         "font": "75px Georgia",
         "color": "#47fabf",
         "zIndex": -10,
@@ -905,8 +905,8 @@
     "type": "full"
   },
   "metadata": {
-    "timestamp": 1758783023485,
-    "delta": 0.0181059580000001,
+    "timestamp": 1758854207552,
+    "delta": 0.018320264999999836,
     "fps": 0
   }
 }

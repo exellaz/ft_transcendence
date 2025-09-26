@@ -81,6 +81,7 @@ export class Sprite extends Component {
 	}
 
 	init() {
+		if (this.image) return this; // ✅ don't re-init if already has an image
 		const diameter = Math.max(this.host.scale.x, this.host.scale.y);
 
 		if (typeof document === "undefined") {
@@ -133,7 +134,12 @@ export class Sprite extends Component {
 			this.imageLoaded = true;
 			if (this.onLoad)
 				this.onLoad();
+			console.log(`successfully loaded ${this.image.src}`);
 		}
+
+		this.image.onerror = (e) => {
+			console.error(`❌ Failed to load image: ${this.image.src}`, e);
+		};
 
 		return this;
 	}
@@ -142,8 +148,7 @@ export class Sprite extends Component {
 		if (this.imagePath !== null)
 			drawImg(viewport, this, camera);
 	}
-
-
+}
 
 	// clone(): Sprite {
 	//     const clonedImage = new Image();
@@ -167,7 +172,6 @@ export class Sprite extends Component {
 	//         pos: this.pos
 	//     });
 	// }
-}
 
 export function drawImg(
 	viewport: Viewport,

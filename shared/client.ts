@@ -3,7 +3,7 @@ import { Point2D, Vector2D, interpolate } from './objects/Coordinates.js'
 import { GameObject } from './objects/GameObject.js';
 import { Glow } from './objects/Glow.js';
 import { drawImg, Sprite, Tags, type Renderable } from './objects/Sprite.js'
-import { HitBox } from './objects/Hitbox.js'
+import { HitBox } from './objects/HitBox.js'
 import { Viewport } from './objects/Viewport.js'
 import { PongGame } from './game/pong.js';
 import { Arrow } from './game/Padel.js';

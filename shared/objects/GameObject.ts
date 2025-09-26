@@ -3,7 +3,7 @@ import { type Renderable, Sprite } from './Sprite.js';
 import type { PongGame } from '../game/pong.js';
 import type { Viewport } from './Viewport.js'; 
 import { Component } from './Component.js';
-import { HitBox } from './Hitbox.js';
+import { HitBox } from './HitBox.js';
 import { clientScripts } from '../game/clientScripts.js';
 
 const RenderableMarker = Symbol("Renderable");

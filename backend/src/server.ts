@@ -1,9 +1,7 @@
 import app from "./app"
-import { testMyGame } from "./modules/game/server";
 
 // Start server
 const start = async () => {
-  testMyGame();
 
   try {
     await app.listen({ port: 3000, host: "0.0.0.0" });

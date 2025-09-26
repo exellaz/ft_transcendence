@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     // File Layout
+
     "rootDir": "./src",
     "outDir": "./dist",
 
@@ -25,5 +26,5 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"]
+  "include": ["src", "../shared/utils", "../shared/client.ts", "../shared/entry_test.ts", "../shared/game.routes.ts", "../shared/server.ts", "../shared/objects", "../shared/game"]
 }

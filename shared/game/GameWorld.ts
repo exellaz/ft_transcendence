@@ -2,7 +2,7 @@ import { Point2D, Vector2D } from '../objects/Coordinates.js';
 import { GameObject } from '../objects/GameObject.js';
 import type { Camera } from '../objects/Camera.js';
 import { Viewport } from '../objects/Viewport.js';
-import { HitBox } from '../objects/Hitbox.js';
+import { HitBox } from '../objects/HitBox.js';
 import { PeriodicTimer, Timer } from '../objects/Timer.js';
 import { Arrow } from './Padel.js';
 

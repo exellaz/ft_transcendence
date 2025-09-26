@@ -3,7 +3,7 @@ import fastifyCors from "@fastify/cors";
 import dbConnector from "./plugins/db";
 import userRoutes from "./modules/users/users.routes";
 import authRoutes from "./modules/auth/auth.routes";
-import gameRoutes from "./modules/game/game.routes";
+import gameRoutes from "../../shared/game.routes";
 import websocketPlugin from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 

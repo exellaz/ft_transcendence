@@ -3,12 +3,10 @@ import { Vector2D, Point2D } from "./Coordinates.js";
 
 export class Viewport {
 	
-	ctx: CanvasRenderingContext2D
-	
-	width: number;
-	height: number;
-	camera: Camera = null;
-
+	ctx!: CanvasRenderingContext2D;
+	width!: number;
+	height!: number;
+	camera: Camera | null = null;
 	constructor(params: Partial<Viewport>) {
 		Object.assign(this, params);
 	}

@@ -2,7 +2,7 @@ import { BlendMode } from '../objects/Blendmodes.js';
 import { Vector2D, Point2D } from '../objects/Coordinates.js';
 import { GameObject, exportCleanup } from '../objects/GameObject.js';
 import { Glow } from '../objects/Glow.js';
-import { HitBox } from '../objects/Hitbox.js';
+import { HitBox } from '../objects/HitBox.js';
 import { ImageObject, Interpolate } from '../objects/ImageObject.js';
 import { HorizontalAlign, Label } from '../objects/Label.js';
 import { Outline } from '../objects/Outline.js';

@@ -1,7 +1,7 @@
 import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.js';
 import { exportCleanup, GameObject } from '../objects/GameObject.js';
 import { Sprite } from '../objects/Sprite.js';
-import { HitBox } from '../objects/Hitbox.js';
+import { HitBox } from '../objects/HitBox.js';
 import { Glow } from '../objects/Glow.js';
 import { BlendMode } from '../objects/Blendmodes.js';
 import { Padel } from './Padel.js';
