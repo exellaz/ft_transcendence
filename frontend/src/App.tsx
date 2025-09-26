@@ -15,12 +15,9 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
-import TestView from "./views/TestView"
-import Popup from "./popups/SettingsPopup";
+import TestView from "./views/TestView";
 
 const App: React.FC = () => {
-  const [showPopup, setShowPopup] = useState(false);
-
   return (
     <>
       <BrowserRouter>
@@ -42,7 +39,6 @@ const App: React.FC = () => {
           <Route path="/test" element={<TestView />} />
         </Routes>
       </BrowserRouter>
-      <Popup open={showPopup} onClose={() => setShowPopup(false)} />
     </>
   );
 };

@@ -11,7 +11,7 @@ i18n.use(initReactI18next).init({
     zhs: { translation: zhs },
     zht: { translation: zht },
   },
-  lng: localStorage.getItem("lang") || "zhs",
+  lng: localStorage.getItem("lang") || "en",
   fallbackLng: "en",
   interpolation: { escapeValue: false },
 });

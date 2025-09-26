@@ -12,7 +12,7 @@ interface ReadyPlayersProps {
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyPlayers.${key}`);
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <>
@@ -39,7 +39,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
             {/* Avatar & Username */}
             <div
               className="flex-col-center gap-2 cursor-pointer"
-              onClick={() => setSelectedUid(player.uid)}
+              onClick={() => setSelectedId(player.uid)}
             >
               <Avatar
                 src={player.spriteUrl}
@@ -52,11 +52,11 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
           </div>
         ))}
       </div>
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userId={selectedId}
           variant="other"
         />
       )}

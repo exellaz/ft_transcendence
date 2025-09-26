@@ -19,7 +19,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const leftTeamPlayers = players.filter((player) => player.team === "left");
   const rightTeamPlayers = players.filter((player) => player.team === "right");
@@ -37,7 +37,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   }> = ({ player }) => (
     <div
       className={`${basicCellStyling} gap-4 cursor-pointer`}
-      onClick={() => setSelectedUid(player.uid)}
+      onClick={() => setSelectedId(player.uid)}
     >
       <div className="relative">
         <img
@@ -123,11 +123,11 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         />
       </div>
 
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userId={selectedId}
           variant="other"
         />
       )}

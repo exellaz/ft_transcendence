@@ -18,8 +18,10 @@ const MatchView: React.FC = () => {
   const { user } = useUser();
   const userUid = user?.id ?? "";
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
+    "quarterfinals"
+  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // TODO: Fetch real data based on tournamentId
   // React.useEffect(() => {
@@ -73,24 +75,22 @@ const MatchView: React.FC = () => {
   return (
     <Background>
       <Card size="wide">
-        <TournamentHeader>
-          {stageHeader}
-        </TournamentHeader>
+        <TournamentHeader>{stageHeader}</TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
-          <MatchPlayerCard player={userDetails} onClick={setSelectedUid} />
+          <MatchPlayerCard player={userDetails} onClick={setSelectedId} />
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
-          <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
+          <MatchPlayerCard player={opponentDetails} onClick={setSelectedId} />
         </div>
 
         <Button variant="green">{translate("ready")}</Button>
       </Card>
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userUid={selectedId}
           variant="other"
         />
       )}
