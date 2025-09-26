@@ -228,14 +228,23 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (role.role === "spectator" || clientId === room.leaderId) return;
 
 				// Step 1: check player is ready
-				const playerObj = room.clientRoles.get(role.id);
-				if (playerObj) {
-				  playerObj.ready = msg.ready;
-				}
-				broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
+				room.gameState.teams.left = room.gameState.teams.left.map((p:any) => {
+                    if (p.clientId === clientId) {
+                        return { ...p, ready: msg.ready };
+                    }
+                    return p;
+                });
+				room.gameState.teams.right = room.gameState.teams.right.map((p:any) => {
+                    if (p.clientId === clientId) {
+                        return { ...p, ready: msg.ready };
+                    }
+                    return p;
+                });
+
+                broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"}.`));
 				console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
 				//broadcastState(room);
-				const canStart = updateCanStart(room);
+				const { canStart, reason } = updateCanStart(room);
 				broadcast(room, {
 					type: "roleUpdate",
 					gameState: room.gameState,
@@ -244,9 +253,9 @@ export class WebSocketHandler implements IWebSocketHandler {
 				});
 
 				// auto -start check for equal teams (alert message only)
-				if (!canStart && room.gameState.teams.left.length !== room.gameState.teams.right.length) {
-					broadcast(room, createLiveChatMessage("system", "system", "Cannot start: teams are not equal."));
-					console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: teams are not equal`);
+				if (!canStart && reason && msg.ready) {
+					broadcast(room, createLiveChatMessage("system", "system", `Cannot start: ${reason}`));
+					console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: ${reason}`);
 					return;
 				}
 
@@ -299,12 +308,12 @@ export class WebSocketHandler implements IWebSocketHandler {
 					room.gameState.countdown = 5 * 60; //? 5 seconds countdown
 					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);
 					broadcast(room, createLiveChatMessage("system", "system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
-					const canStartleader = updateCanStart(room);
+					const { canStart } = updateCanStart(room);
 					broadcast(room, {
 						type: "roleUpdate",
 						gameState: room.gameState,
 						leaderId: room.leaderId,
-						canStart: canStartleader,
+						canStart: canStart,
 					});
 					return;
 				}

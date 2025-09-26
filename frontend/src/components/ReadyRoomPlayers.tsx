@@ -61,7 +61,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           src={player.spriteUrl}
           size={variant === "doubles" ? 30 : 50}
           className={
-            `${isReady ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`
+            `${player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`
           }
         />
       </div>

@@ -74,7 +74,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
  * @param room The game room object
  * @note Updates the "canStart" property of the room and broadcasts state if it changes
 */
-export function updateCanStart(room: Room): boolean {
+export function updateCanStart(room: Room): { canStart: boolean; reason: string | null } {
 
     // get leader's role
     const leaderId = room.leaderId;
@@ -91,13 +91,23 @@ export function updateCanStart(room: Room): boolean {
     const nonLeaderPlayers = leaderPlayer
         ? allPlayers.filter((p: any) => p.clientId !== leaderId)
         : allPlayers;
-    const allReady = nonLeaderPlayers.every((p: any) => room.clientRoles.get(p.clientId)?.ready);
+    const allReady = nonLeaderPlayers.every((p: any) => p.ready);
 
     // check if teams are balanced
     const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
 
-    //if all ready, more than 1 player, and teams are balanced, can start
-    room.canStart = allReady && allPlayers.length > 1 && teamsBalanced;
+    // --- decide why ---
+    let reason: string | null = null;
+    if (allPlayers.length <= 1) {
+        reason = "Not enough players";
+    } else if (!teamsBalanced) {
+        reason = "Teams are not equal";
+    } else if (!allReady) {
+        reason = "Not all players are ready";
+    }
+
+    // set canStart based on conditions
+    room.canStart = reason === null;
 
     // console.log("updateCanStart:", { ////debug
     //     allPlayers,
@@ -107,7 +117,7 @@ export function updateCanStart(room: Room): boolean {
     //     canStart: room.canStart
     // });
 
-    return room.canStart;
+    return { canStart: room.canStart, reason };
 }
 
 /**
@@ -207,7 +217,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     }
 
     // notify all clients about the switch
-	const canStart = updateCanStart(room);
+	const { canStart } = updateCanStart(room);
     broadcast(room, {
         type: "roleUpdate",
         newPlayer: newPlayer,
