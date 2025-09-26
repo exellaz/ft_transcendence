@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 export function ensureClientId() {
   let clientId = sessionStorage.getItem("pongClientId");
   if (!clientId) {
-    clientId = "P" + Math.floor(Math.random() * 1e6).toString().padStart(6, "0");
+    clientId = Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
     sessionStorage.setItem("pongClientId", clientId);
   }
   return clientId;

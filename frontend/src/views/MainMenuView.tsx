@@ -25,11 +25,11 @@ const MainMenuView: React.FC = () => {
 
   function generateSprite() {
     const sprites = [
-      "../../../public/assets/green-ghost.png",
-      "../../../public/assets/white-ghost.png",
-      "../../../public/assets/blue-ghost.png",
-      "../../../public/assets/purple-ghost.png",
-      "../../../public/assets/yellow-ghost.png",
+      "../../../assets/green-ghost.png",
+      "../../../assets/white-ghost.png",
+      "../../../assets/blue-ghost.png",
+      "../../../assets/purple-ghost.png",
+      "../../../assets/yellow-ghost.png",
     ];
     return sprites[Math.floor(Math.random() * sprites.length)];
   }

@@ -114,11 +114,21 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         />
         {/* Switch Team Button */}
         <div
-          className="bg-yellow-400 rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2 cursor-pointer"
-          onClick={onSwitchTeam}
+          className={`
+            rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2
+            ${isReady ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
+          `}
+          onClick={() => {
+            if (!isReady) {
+              onSwitchTeam?.();
+            }
+          }}
         >
           <img
-            className="h-10 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+            className={`
+              h-10 transition-all duration-200
+              ${isReady ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
+            `}
             src="/assets/switch.png"
             alt="Switch Teams"
             title={translate("switch_teams")}
