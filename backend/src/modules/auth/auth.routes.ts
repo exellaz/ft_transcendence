@@ -1,27 +1,8 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ok, ApiError } from "../../utils/response";
-import { hashPassword } from "../../authService";
-import { getUserByEmail, createUserWithPassword } from "../../userModel";
-import jwt from "jsonwebtoken";
-import { authConfig } from "../../config/authConfig";
-
-function validateRegistrationInput(email: string, password: string, name: string) {
-  const errors: string[] = [];
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    errors.push("Invalid email format");
-  }
-  if (password.length < 8) {
-    errors.push("Password must be at least 8 characters");
-  }
-  if (name.trim().length < 2) {
-    errors.push("Name must be at least 2 characters");
-  }
-  if (name.length > 24) {
-    errors.push("Name must be at most 24 characters");
-  }
-  return errors;
-}
+import { postUserRegisterSchema } from "../users/users.schema";
+import { hashPassword, generateAuthToken, validateRegistrationInput } from "../users/users.service";
+import { userPublicSelect } from "../users/users.select";
 
 async function authRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
@@ -45,58 +26,70 @@ async function authRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 
 	});
 
-	fastify.post("/auth/register", async (request, reply) => {
-		const { email, password, name } = request.body as {
-		email?: string;
-		password?: string;
-		name?: string;
-		};
+ fastify.post("/auth/register", { schema: postUserRegisterSchema }, async (request, reply) => {
+    const { email, password, username } = request.body as {
+      email: string;
+      password: string;
+      username: string;
+    };
 
-		// Basic validation
-		if (!email || !password || !name) {
-		throw new ApiError("Missing required fields: email, password, name", 400);
-		}
+    const validationErrors = validateRegistrationInput(email, password, username);
+    if (validationErrors.length > 0) {
+      throw new ApiError(`Validation failed: ${validationErrors.join(", ")}`, 400);
+    }
 
-		// Input validation
-		const validationErrors = validateRegistrationInput(email, password, name);
-		if (validationErrors.length > 0) {
-		throw new ApiError(`Validation failed: ${validationErrors.join(", ")}`, 400);
-		}
+    try {
+      const existingUser = await fastify.db.user.findFirst({
+        where: {
+          OR: [
+            { email: email.toLowerCase().trim() },
+            { username: username.trim() }
+          ]
+        }
+      });
 
-		// Check if user already exists
-		const exists = getUserByEmail(email.toLowerCase().trim());
-		if (exists) {
-		throw new ApiError("Email already registered", 400);
-		}
+      if (existingUser) {
+        throw new ApiError("Email or username already registered", 400);
+      }
 
-		try {
-		// Create user
-		const passwordHash = await hashPassword(password);
-		const user = createUserWithPassword(email.toLowerCase().trim(), name.trim(), passwordHash);
+      // Hash password
+      const hashedPassword = await hashPassword(password);
 
-		if (!user) {
-			throw new ApiError("Failed to create user", 500);
-		}
+      // Create user with settings
+      const user = await fastify.db.user.create({
+        data: {
+          username: username.trim(),
+          email: email.toLowerCase().trim(),
+          password: hashedPassword,
+          settings: { create: {} },
+        },
+        select: userPublicSelect
+      });
 
-		// Create JWT token
-		const token = jwt.sign(
-			{ userId: user.id, email: user.email },
-			authConfig.jwtSecret as jwt.Secret,
-			{ expiresIn: authConfig.jwtExpiresIn } as jwt.SignOptions,
-		);
+      // Generate JWT token
+      const token = generateAuthToken(user.id, user.email);
 
-		request.log.info(`User registered successfully: ${user.email}`);
+      request.log.info(`User registered successfully: ${user.email}`);
 
-		return ok({
-			token,
-			user: { id: user.id, email: user.email, name: user.name },
-		});
-		} catch (error) {
-		if (error instanceof ApiError) throw error;
-		request.log.error(error);
-		throw new ApiError("Registration failed", 500);
-		}
-	});
+      return reply.status(201).send(ok({
+        token,
+        user
+      }));
+
+    } catch (error) {
+        console.log('Caught error:', error);
+        console.log('Error type:', typeof error);
+        console.log('Error name:', (error as any)?.name);
+        console.log('Error message:', (error as any)?.message);
+        console.log('Error code:', (error as any)?.code);
+        console.log('Full error:', JSON.stringify(error, null, 2));
+
+        if (error instanceof ApiError) throw error;
+
+        request.log.error({ error }, "Registration failed");
+        throw new ApiError("Registration failed", 500);
+    }
+  });
 
 }
 

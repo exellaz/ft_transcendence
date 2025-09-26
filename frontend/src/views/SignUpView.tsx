@@ -74,7 +74,7 @@ const SignUpView: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.username,
+          username: formData.username,
           email: formData.email,
           password: formData.password,
         }),
@@ -86,7 +86,7 @@ const SignUpView: React.FC = () => {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // 🎯 SUCCESS: Store token and redirect
+      // SUCCESS: Store token and redirect
       localStorage.setItem('token', data.token);
       navigate('/signup-success');
 
