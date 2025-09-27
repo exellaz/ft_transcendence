@@ -68,3 +68,21 @@ export function validateRegistrationInput(email: string, password: string, usern
 
   return errors;
 }
+
+export async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(plainPassword, hashedPassword);
+}
+
+export function validateLoginInput(identifier: string, password: string) {
+  const errors: string[] = [];
+
+  if (!identifier || identifier.trim().length === 0) {
+    errors.push("Username or email is required");
+  }
+
+  if (!password || password.length === 0) {
+    errors.push("Password is required");
+  }
+
+  return errors;
+}
