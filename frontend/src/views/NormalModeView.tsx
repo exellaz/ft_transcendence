@@ -53,7 +53,7 @@ const NormalModeView: React.FC = () => {
 
 	const room = await createRoomAPI(
 	  teamSize,
-	  `Room ${teamSize}v${teamSize}`,
+	  teamSize === 1 ? "Singles Room" : "Doubles Room",
 	  width,
 	  height,
 	  { leaderId: clientId, isPrivate }

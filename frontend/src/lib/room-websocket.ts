@@ -186,6 +186,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	  try { socketRef.current?.close(); } catch {}
 	  sessionStorage.removeItem("pongRoomName");
 	  sessionStorage.removeItem("pongRoomId");
+	  sessionStorage.removeItem("pongRoomLeaderId");
 	}
 
 	return {

@@ -18,17 +18,20 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showInviteFriends, setShowInviteFriends] = useState(false);
 
-  const { user } = useUser();
-  const userUid = user?.id ?? "";
+  const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
   const roomId = sessionStorage.getItem("pongRoomId");
   if (!roomId) return <div>{translate("no_room")}</div>;
+  const roomLeaderId = sessionStorage.getItem("pongRoomLeaderId") || "";
+
 
   return (
     <Background>
       <div className="absolute top-10 right-10 flex-col-center gap-6">
+		{roomLeaderId === playerInfo.id && (
         <Button variant="profile" onClick={() => setShowGameSettings(true)}>
           {translate("game_settings")}
         </Button>
+		)}
         <Button variant="profile" onClick={() => setShowInviteFriends(true)}>
           {translate("invite_friends")}
         </Button>

@@ -34,8 +34,7 @@ const SinglesRoomView: React.FC = () => {
   if (!roomId) return <div>{translate("no_room_id")}</div>;
   const roomName = sessionStorage.getItem("pongRoomName");
   if (!roomName) return <div>{translate("no_room_name")}</div>;
-  const leaderId = sessionStorage.getItem("pongRoomLeaderId");
-  if (!leaderId) return <div>{translate("no_leader_id")}</div>;
+  const leaderId = sessionStorage.getItem("pongRoomLeaderId") || "";
 
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
@@ -102,6 +101,16 @@ const SinglesRoomView: React.FC = () => {
                 <img
                   src="/assets/link.png"
                   className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+				  onClick={() => {
+                      if (roomId) {
+                        navigator.clipboard.writeText(roomId).then(() => {
+                          // Optional: show toast or alert
+                          alert("Room ID copied to clipboard!");
+                        }).catch(err => {
+                          console.error("Failed to copy:", err);
+                        });
+                      }
+                  }}
                 />
               </div>
               <p>
@@ -128,7 +137,7 @@ const SinglesRoomView: React.FC = () => {
 			    </Button>
 			  )}
 			  {/* Leave button */}
-			  <Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
+			  <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
 			    {translate("leave_room")}
 			  </Button>
 			</div>
@@ -147,8 +156,11 @@ const SinglesRoomView: React.FC = () => {
       <ConfirmationPopup
         text={translate("leave_confirmation")}
         open={showLeaveRoom}
-        onClose={() => setShowLeaveRoom(false)}
-        redirectPath="/main-menu"
+        onClose={() => {setShowLeaveRoom(false)}}
+		onConfirm={() => {
+			onLeave();
+			navigate("/main-menu");
+		}}
       />
     </RoomLayout>
   );
