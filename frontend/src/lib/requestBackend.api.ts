@@ -119,20 +119,12 @@ export async function determineSide(roomId: string): Promise<"left" | "right"> {
  * @return updated room settings to client in JSON format
  * @note it also sends the updated settings to the backend
 */
-<<<<<<< HEAD:frontend/src/utils.tsx
-export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number, paddleSpeed: number, scorePoint: number) {
-=======
 export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number, paddleSpeed: number, scorePoint: number, map: string) {
->>>>>>> trans2/main:frontend/src/lib/requestBackend.api.ts
   try {
     const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-<<<<<<< HEAD:frontend/src/utils.tsx
-      body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed, scorePoint }),
-=======
       body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed, scorePoint, map }),
->>>>>>> trans2/main:frontend/src/lib/requestBackend.api.ts
     });
 
     if (!res.ok) throw new Error("Failed to update room settings");

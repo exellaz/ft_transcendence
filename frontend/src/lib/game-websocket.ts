@@ -109,15 +109,6 @@ export function useGameWebSocket({
 					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
 					setStatusText(`Room: ${roomName} | Role: ${role}`);
                     setSettingView(`
-<<<<<<< HEAD:frontend/src/game.tsx
-						<b>Current Settings: </b>
-						Ball Speed: ${data.gameState.setting?.ballSpeed},
-						Ball Size: ${data.gameState.setting?.ballSize},
-						Paddle Height: ${data.gameState.setting?.paddleHeight},
-						Paddle Width: ${data.gameState.setting?.paddleWidth},
-						Paddle Speed: ${data.gameState.setting?.paddleSpeed},
-						Winning Score: ${data.gameState.setting?.winningScore}
-=======
 						Ball Speed: ${data.gameState.setting?.ballSpeed || 0},
 						Ball Size: ${data.gameState.setting?.ballSize || 0},
 						Paddle Height: ${data.gameState.setting?.paddleHeight || 0},
@@ -125,7 +116,6 @@ export function useGameWebSocket({
 						Paddle Speed: ${data.gameState.setting?.paddleSpeed || 0},
 						Winning Score: ${data.gameState.setting?.scorePoint || 0},
 						map: ${data.gameState.setting?.map}
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 					`);
 					setIsSpectator(role === "spectator");
 					//check for game over
@@ -198,13 +188,8 @@ export function draw_container(
 	ctx.clearRect(0,0,canvas.width, canvas.height); // Clear the canvas
 
     // Apply scaling transform
-<<<<<<< HEAD:frontend/src/game.tsx
-    const scaleX = canvas.width/ BASE_WIDTH;
-    const scaleY = canvas.height / BASE_HEIGHT;
-=======
     const scaleX = canvas.width/ 800;
     const scaleY = canvas.height / 400;
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
     ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
 
 	//if game over, show winner
@@ -212,11 +197,7 @@ export function draw_container(
 		ctx.font = "48px Arial";
 		ctx.fillStyle = "green";
 		ctx.textAlign = "center";
-<<<<<<< HEAD:frontend/src/game.tsx
-		ctx.fillText(playerResult === "win" ? "You Win!" : "You Lose!", BASE_WIDTH/2, BASE_HEIGHT/2);
-=======
 		ctx.fillText(playerResult === "win" ? "You Win!" : "You Lose!", 800/2, 400/2);
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 		return;
 	}
 
@@ -230,11 +211,7 @@ export function draw_container(
 		ctx.font = "48px Arial";
 		ctx.fillStyle = "gray";
 		ctx.textAlign = "center";
-<<<<<<< HEAD:frontend/src/game.tsx
-		ctx.fillText(`Game starts in ${remaining}...`, BASE_WIDTH/2, BASE_HEIGHT/2);
-=======
 		ctx.fillText(`Game starts in ${remaining}...`, 800/2, 400/2);
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 		return;
 	}
 
@@ -243,11 +220,7 @@ export function draw_container(
 		ctx.font = "32px Arial";
 		ctx.fillStyle = "gray";
 		ctx.textAlign = "center";
-<<<<<<< HEAD:frontend/src/game.tsx
-		ctx.fillText("Waiting for all players to connect...", BASE_WIDTH/2, BASE_HEIGHT/2);
-=======
 		ctx.fillText("Waiting for all players to connect...", 800/2, 400/2);
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 		return;
 	}
 
@@ -264,11 +237,7 @@ export function draw_container(
 			if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
 				x = 1;
 			} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-<<<<<<< HEAD:frontend/src/game.tsx
-				x = BASE_WIDTH - paddleWidth - 1;
-=======
 				x = 800 - paddleWidth - 1;
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 			} else continue;
 			ctx.fillStyle = "black";
 			ctx.fillRect(x, y, paddleWidth, paddleHeight);
@@ -289,138 +258,10 @@ export function draw_container(
 		if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
 			x = 1;
 		} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-<<<<<<< HEAD:frontend/src/game.tsx
-			x = BASE_WIDTH - paddleWidth - 1;
-=======
 			x = 800 - paddleWidth - 1;
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 		} else continue;
 		ctx.fillStyle = "black";
 		ctx.fillRect(x, y, paddleWidth, paddleHeight);
 	}
 	return;
-<<<<<<< HEAD:frontend/src/game.tsx
-}
-
-/************************************** Game Component **************************************/
-/**
- * @brief Main Game component
- * @param roomId ID of the game room
- * @param roomName Name of the game room
- * @param clientId Unique client identifier
- * @param initialRole Initial role of the player (left_player1, right_player1, spectator, etc.)
- * @param playerName Name of the player
- * @param onBack Callback function to handle back to lobby
-*/
-export default function Game({
-	roomId,
-	roomName,
-	clientId,
-	initialRole,
-	playerName,
-	onBack
-} : {
-	roomId:string;
-	roomName:string;
-	clientId:string;
-	initialRole:string;
-	playerName:string;
-	onBack:()=>void
-}) {
-	//prevent accidental refresh or leave
-	useBlockLeave();
-	//ref to the canvas
-	const canvasRef = useRef<HTMLCanvasElement | null>(null);
-	//keep track of which keys are pressed
-	const keysRef = useRef({ up:false, down:false });
-	//use custom hook to manage websocket and game state
-	const {
-		socket,
-		role,
-		scoreText,
-		statusText,
-		gameOver,
-		playerResult,
-		isSpectator,
-		gameState,
-        setting,
-		settingView,
-	} = useGameWebSocket({ roomId, roomName, clientId, initialRole, playerName });
-
-	//--- redraw the game when game state changes ---
-	useEffect(() => {
-		if (gameState) {
-			draw_container(canvasRef.current!, { ...gameState, setting}, isSpectator, playerResult);
-		}
-	}, [gameState, isSpectator, playerResult, setting]);
-
-	//--- handle keypresses, beforeunload ---
-	useEffect(()=>{
-		const keyhandler = (e: KeyboardEvent) => {
-			if (!gameOver) {
-				if (role !== "spectator") {
-					if (e.type === "keydown") {
-						if (e.key === "ArrowUp") keysRef.current.up = true;
-						if (e.key === "ArrowDown") keysRef.current.down = true;
-					}
-					if (e.type === "keyup") {
-						if (e.key === "ArrowUp") keysRef.current.up = false;
-						if (e.key === "ArrowDown") keysRef.current.down = false;
-					}
-				}
-			}
-		};
-		window.addEventListener("keydown", keyhandler);
-		window.addEventListener("keyup", keyhandler);
-
-		return () => {
-			window.removeEventListener("keydown", keyhandler);
-			window.removeEventListener("keyup", keyhandler);
-		};
-	}, [gameOver, role, isSpectator]);
-
-	//--- send keypress updates to server ---
-	useEffect(()=>{
-		const updateKeyPress = window.setInterval(()=>{
-			if (role !== "spectator" && !gameOver && socket && socket.readyState === WebSocket.OPEN) {
-				const speed = setting?.paddleSpeed;
-				if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -speed }));
-				if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: speed }));
-			}
-		}, 1000/60); //make 60 frames per second
-		return () => clearInterval(updateKeyPress); // cleanup when finished
-	}, [role, gameOver, socket, setting?.paddleSpeed]);
-
-	//--- handle back to lobby ---
-	function handleBack() {
-		if (role !== "spectator" && !gameOver) {
-			const confirmLeave = window.confirm(
-				"The game is still in progress. Are you sure you want to leave?"
-			);
-			if (!confirmLeave) return;
-		}
-		//close socket and remove all info in session storage
-		try { socket?.close(); } catch {}
-		sessionStorage.removeItem("pongRoomName");
-		sessionStorage.removeItem("pongRoomId");
-		//back to lobby
-		onBack();
-	}
-
-  return (
-	<div className="p-4 text-center">
-	  <h1 id="roleText">{statusText}</h1>
-	  <h2 id="scoreText">{scoreText}</h2>
-	  <h2 id="settingText">{settingView}</h2>
-	  <canvas id="game" ref={canvasRef} className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1] box-border" width={BASE_WIDTH} height={BASE_HEIGHT} />
-	  {/* if game is over the have the leave button */}
-	  <div className="mt-4">
-		{(isSpectator || gameOver) && (
-			<button id="backLobbyBtn" onClick={handleBack} className="px-3 py-1 border">Back to Lobby</button>
-		)}
-	  </div>
-	</div>
-  );
-=======
->>>>>>> trans2/main:frontend/src/lib/game-websocket.ts
 }
