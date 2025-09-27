@@ -15,37 +15,35 @@ import ConfirmationPopup from "../popups/ConfirmationPopup";
  * @brief is just a test user generator
 */
 function mockUser() {
-    const clientId = ensureClientId();
+  const clientId = ensureClientId();
 
-    let prevId: string | null = null;
-    let playerInfo: { id: string; name: string; sprite: string } | null = null;
-    function generateName() {
-      const names = ["alice", "bob", "charlie", "dave", "eve"];
-      return names[Math.floor(Math.random() * names.length)];
-    }
+  const existing = sessionStorage.getItem("playerInfo");
+  if (existing) return JSON.parse(existing);
 
-    function generateSprite() {
-      const sprites = [
-        "../../../assets/green-ghost.png",
-        "../../../assets/white-ghost.png",
-        "../../../assets/blue-ghost.png",
-        "../../../assets/purple-ghost.png",
-        "../../../assets/yellow-ghost.png",
-      ];
-      return sprites[Math.floor(Math.random() * sprites.length)];
-    }
-    function getPlayerInfo(newId: string) {
-      if (newId !== prevId) {
-        playerInfo = {
-          id: newId,
-          name: generateName(),
-          sprite: generateSprite(),
-        };
-        prevId = newId;
-      }
-      return playerInfo;
-    }
-    sessionStorage.setItem("playerInfo", JSON.stringify(getPlayerInfo(clientId)));
+  function generateName() {
+    const names = ["alice", "bob", "charlie", "dave", "eve"];
+    return names[Math.floor(Math.random() * names.length)];
+  }
+
+  function generateSprite() {
+    const sprites = [
+      "../../../assets/green-ghost.png",
+      "../../../assets/white-ghost.png",
+      "../../../assets/blue-ghost.png",
+      "../../../assets/purple-ghost.png",
+      "../../../assets/yellow-ghost.png",
+    ];
+    return sprites[Math.floor(Math.random() * sprites.length)];
+  }
+
+  const playerInfo = {
+    id: clientId,
+    name: generateName(),
+    sprite: generateSprite(),
+  };
+
+  sessionStorage.setItem("playerInfo", JSON.stringify(playerInfo));
+  return playerInfo;
 }
 
 mockUser(); //? For testing purpose, create a mock user if not already present

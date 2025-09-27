@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
 import Button from "../components/Button";
@@ -18,6 +17,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showInviteFriends, setShowInviteFriends] = useState(false);
 
+  //TODO replace with JWT
   const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
   const roomId = sessionStorage.getItem("pongRoomId");
   if (!roomId) return <div>{translate("no_room")}</div>;
