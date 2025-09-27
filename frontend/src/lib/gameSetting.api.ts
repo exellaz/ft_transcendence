@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { roomSetting } from "../utils/utils";
+import { roomSetting } from "./requestBackend.api";
 
 export function useRoomSettings(roomId: string) {
   const [settings, setSettings] = useState<{

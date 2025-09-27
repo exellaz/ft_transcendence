@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
-import { useGameWebSocket, draw_container } from "./game-websocket";
+import { useGameWebSocket, draw_container } from "../lib/game-websocket";
 
 const GameView: React.FC = () => {
   const { t } = useTranslation();
@@ -12,16 +12,18 @@ const GameView: React.FC = () => {
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
   const navigate = useNavigate();
 
+  // TODO: Replace with actual JWT
   const roomId = sessionStorage.getItem("pongRoomId") || "t1";
   const roomName = sessionStorage.getItem("pongRoomName") || "Room 1";
   const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || '{}');
   const clientId = playerInfo.id;
-	const playerName = playerInfo.name;
-	const playerSprite = playerInfo.sprite;
-	const initialRole = sessionStorage.getItem("playerSide") || "";
-	console.log("GameView - playerInfo:", playerInfo);
-	console.log("GameView - initialRole:", initialRole);
+  const playerName = playerInfo.name;
+  const playerSprite = playerInfo.sprite;
+  const initialRole = sessionStorage.getItem("playerSide") || "";
+  console.log("GameView - playerInfo:", playerInfo);
+  console.log("GameView - initialRole:", initialRole);
 
+  // -------------------------------- Websockets --------------------------------
   const {
     socket,
 	  role,
@@ -43,6 +45,7 @@ const GameView: React.FC = () => {
       playerSprite
   });
 
+  // -------------------------------- Effect --------------------------------
   //canvas and key
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const keysRef = useRef({ up: false, down: false });
@@ -93,6 +96,7 @@ const GameView: React.FC = () => {
     return () => cancelAnimationFrame(animationFrame);
   }, [socket, gameOver, role, setting]);
 
+  // -------------------------------- Render --------------------------------
   return (
     <Background variant="plain">
       <div className="w-full h-full flex-col-center gap-10 px-25">

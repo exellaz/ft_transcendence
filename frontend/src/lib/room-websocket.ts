@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ensureClientId, determineSide } from "../../utils/utils.ts";
+import { ensureClientId, determineSide } from "./requestBackend.api";
 
 // room structure
 export interface UseRoomWebSocketParams {

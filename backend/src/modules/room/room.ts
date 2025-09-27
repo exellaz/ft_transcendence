@@ -243,7 +243,7 @@ export function roomEndGame(room: Room, forced = false) {
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
 
 	// Save match result to database
-	//saveMatchResult(room, room.duration);
+	saveMatchResult(room, room.duration);
 }
 
 

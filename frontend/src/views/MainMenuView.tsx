@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ensureClientId } from "../utils/utils.ts";
+import { ensureClientId } from "../lib/requestBackend.api.ts";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -11,6 +11,9 @@ import MainLayout from "../layout/MainLayout";
 import SettingsPopup from "../popups/SettingsPopup";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
+/**
+ * @brief is just a test user generator
+*/
 function mockUser() {
     const clientId = ensureClientId();
 

@@ -4,10 +4,6 @@ import { useNavigate } from "react-router-dom";
 import type {
 	WaitingRoomPlayer,
 } from "../../types/apiInterfaces";
-// import {
-//   mockWaitingSinglesRoomPlayers,
-//   mockSinglesRoomLiveChat,
-// } from "../../data/mockUsers";
 
 // components
 import Button from "../../components/Button";
@@ -19,11 +15,11 @@ import RoomLayout from "../../layout/RoomLayout";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
 // hooks
-import { useRoomWebSocket } from "./room-websocket";
-import { useLiveChatWebSocket } from "./liveChat-websocket";
+import { useRoomWebSocket } from "../../lib/room-websocket";
+import { useLiveChatWebSocket } from "../../lib/liveChat-websocket";
 
 /**
- * @brief View for Singles Room
+ * @brief Singles Room
  * - Shows players, chat, and room controls
 */
 const SinglesRoomView: React.FC = () => {
@@ -33,17 +29,15 @@ const SinglesRoomView: React.FC = () => {
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
 
-  // TODO: Replace with actual room ID from route or context
-  const roomId = sessionStorage.getItem("pongRoomId") || "t1";
-  const roomName = sessionStorage.getItem("pongRoomName") || "Room 1";
-  const leaderId = sessionStorage.getItem("pongRoomLeaderId") || "1";
+  // TODO: Replace with actual JWT
+  const roomId = sessionStorage.getItem("pongRoomId");
+  if (!roomId) return <div>{translate("no_room_id")}</div>;
+  const roomName = sessionStorage.getItem("pongRoomName");
+  if (!roomName) return <div>{translate("no_room_name")}</div>;
+  const leaderId = sessionStorage.getItem("pongRoomLeaderId");
+  if (!leaderId) return <div>{translate("no_leader_id")}</div>;
 
-  ////debug
-  //   console.log("Room Leader ID:", leaderId);
-  //   console.log("roomId:", roomId);
-  //   console.log("roomName:", roomName);
-  //   console.log("user id", sessionStorage.getItem("pongClientId"));
-
+  //-------------------------------- Websockets --------------------------------
   //live chat websocket
   const {
 	chatMessages,
@@ -67,19 +61,8 @@ const SinglesRoomView: React.FC = () => {
 	gameStarted,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
-  ////debug
-//   console.log("WebSocket:", socket);
-//   console.log("status:", statusText);
-//   console.log("Player info:", playerText);
-//   console.log("Left team HTML:", leftTeamHtml);
-//   console.log("Right team HTML:", rightTeamHtml);
-//   console.log("Is leader:", isLeader);
-//   console.log("Role:", role);
-//   console.log("Ready status:", ready);
-//   console.log("Set ready function:", setReady);
-//   console.log("Game started:", gameStarted);
-//   console.log("Can start game:", canStart);
-
+  // -------------------------------- Effect --------------------------------
+  //navigate to game view if game started
   React.useEffect(() => {
     if (gameStarted) {
       sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
@@ -97,11 +80,6 @@ const SinglesRoomView: React.FC = () => {
     setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
 
-  ////debug
-//   console.log("leftTeamHtml:", leftTeamHtml);
-//   console.log("rightTeamHtml:", rightTeamHtml);
-//   console.log("Parsed players:", players);
-
   // TODO: Fetch real data based on roomId
   // React.useEffect(() => {
   //   // Replace with real API calls
@@ -112,24 +90,6 @@ const SinglesRoomView: React.FC = () => {
   //     .then((res) => res.json())
   //     .then(setChatMessages);
   // }, [roomId]);
-
-  // TODO: Remove mock data when integrating real API
-  //   React.useEffect(() => {
-    //     setPlayers(mockWaitingSinglesRoomPlayers["t1"]);
-    //     setChatMessages(mockSinglesRoomLiveChat["t1"]);
-    //   }, []);
-
-    // todo: Replace 1 with current user id
-    //   function handleSendMessage() {
-        //     if (message.trim()) {
-//       setChatMessages([
-//         ...chatMessages,
-//         { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
-//       ]);
-//       setMessage("");
-//     }
-//   }
-
 
   return (
     <RoomLayout>
@@ -148,6 +108,7 @@ const SinglesRoomView: React.FC = () => {
                 ({translate("room_id")}: {roomId})
               </p>
             </TournamentHeader>
+			{/* player team block: check ready and switch button */}
             <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} />
 			<div className="flex-row-center gap-6">
 			  {/* Ready button (not for leader) */}
@@ -172,6 +133,7 @@ const SinglesRoomView: React.FC = () => {
 			  </Button>
 			</div>
           </div>
+		  {/* live chat */}
           <LiveChat
             players={players}
             chatMessages={chatMessages}
@@ -181,6 +143,7 @@ const SinglesRoomView: React.FC = () => {
           />
         </div>
       </Card>
+	  {/* confirm to leave room */}
       <ConfirmationPopup
         text={translate("leave_confirmation")}
         open={showLeaveRoom}

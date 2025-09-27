@@ -206,8 +206,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 					return;
 				}
 
-				//const playerObj = room.clientRoles.get(clientId);
-				//if (!playerObj) return;
 				if (player.ready && clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
 					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`);
@@ -272,22 +270,17 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				// Step 2: auto-start (public room)
 				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length) && room.leaderId === "") {
-					if (room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length)) {
-						broadcast(room, createLiveChatMessage("system", "system", "All players ready. Teams are full."));
-					}
 					room.gameState.countdown = 5 * 60; //? 3 seconds countdown
 					//room.startRequestedBy = "auto";
 					room.gameState.gameStarted = false;
 
-					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId})`);
+					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId ? room.leaderId : "none"})`);
 					broadcast(room, createLiveChatMessage("system", "system", `All players ready. Game starting in ${room.gameState.countdown / 60} seconds...`));
 
-					//setTimeout(() => {
-						if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
-							roomStartGame(room);
-							startRoomLoop(room);
-						}
-					//}, room.gameState.countdown); //3 seconds delay
+					if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+						roomStartGame(room);
+						startRoomLoop(room);
+					}
 				}
 				return;
 			}
@@ -303,7 +296,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 					if (totalPlayers < room.teamSize * 2) {
 						socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
 						console.log(`Player ${player.playerName} (${role.role}) [${role.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
-						broadcast(room, createLiveChatMessage("system", "system", `Cannot start: insufficient players`));
 						return;
 					}
 
@@ -311,7 +303,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 					if(!room.canStart) {
 						socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
 						console.log(`Player ${player.playerName} (${role.role}) [${role.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
-						broadcast(room, createLiveChatMessage("system", "system", `Cannot start: player not ready`));
 						return;
 					}
 

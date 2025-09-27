@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { LiveChatMessage } from "../../types/apiInterfaces";
-import { formatTimestamp } from "../../utils/date";
+import type { LiveChatMessage } from "../types/apiInterfaces";
+import { formatTimestamp } from "../utils/date";
 
 /**
  * @brief Custom hook to manage live chat via WebSocket
