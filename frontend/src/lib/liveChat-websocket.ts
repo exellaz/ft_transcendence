@@ -1,0 +1,97 @@
+import { useEffect, useRef, useState } from "react";
+import type { LiveChatMessage } from "../types/apiInterfaces";
+import { formatTimestamp } from "../utils/date";
+
+/**
+ * @brief Custom hook to manage live chat via WebSocket
+ * @param roomId The chat room ID
+ * @returns An object containing the list of messages and a send function
+ */
+export function useLiveChatWebSocket(roomId: string) {
+    const [messages, setMessages] = useState<LiveChatMessage[]>([]);
+	const [message, setMessage] = useState("");
+    const socketRef = useRef<WebSocket | null>(null);
+
+	// Get current user info from sessionStorage
+	const uid = sessionStorage.getItem("pongClientId") || "0";
+	const username = sessionStorage.getItem("pongUserName") || "Guest";
+
+    useEffect(() => {
+        if (socketRef.current) return; // already connected
+
+		// create websocket connection with room id
+        const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-chat?room=${roomId}`);
+        socketRef.current = ws;
+
+        // open connection
+        ws.addEventListener("open", () => console.log("Chat ws connected"));
+
+        // handle incoming message / event from server
+        ws.addEventListener("message", (ev) => {
+            try {
+                let data;
+                try {
+                    data = JSON.parse(ev.data);
+                } catch {
+                    console.error("Invalid JSON");
+                    return;
+                }
+
+                if (typeof data !== "object" || data === null) {
+                    console.error("Invalid message format");
+                    return;
+                }
+                if (typeof data.type !== "string") {
+                    console.error("Invalid message: missing type: ", data);
+                    return;
+                }
+                const allowedTypes = ["chat"];
+                if (!allowedTypes.includes(data.type)) {
+                    console.error(`unsupported message type ${data.type}`);
+                    return;
+                }
+                if (data.type === "chat") {
+                    setMessages((prev) => [
+						...prev,
+						{
+							uid: data.uid || "system",
+							from: data.from || "System",
+							text: data.text,
+							timestamp: formatTimestamp(new Date(data.time || Date.now())),
+						}]);
+                }
+            } catch (err) {
+                console.error("Invalid chat message:", err);
+				ws.close(1000, "server error");
+            }
+        });
+
+        // close connection
+        ws.addEventListener("close", () => console.log("Chat ws disconnected"));
+
+        return () => {
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)
+				ws.close(1000, "Chat closed");
+            socketRef.current = null;
+        };
+    }, [roomId]);
+
+    function handleSendMsg() {
+        const ws = socketRef.current;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+		if (!message.trim()) return; // ignore empty messages
+        ws.send(
+            JSON.stringify({
+                type: "chat",
+                room: roomId,
+				uid,
+                from: username,
+                text: message.trim(),
+				timestamp: formatTimestamp(new Date()),
+            })
+        );
+		setMessage("");
+    }
+
+    return { chatMessages: messages, message, setMessage, handleSendMsg };
+}

@@ -1,7 +1,7 @@
-import { chatRooms } from "../modules/chat/liveChat.ws.ts";
-import { rooms, type Room } from "../modules/room/room.ts";
-import { Game } from "../modules/game/game.ts";
-import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
+import { chatRooms } from "../modules/chat/liveChat.ws";
+import { rooms, type Room } from "../modules/room/room";
+import { Game } from "../modules/game/game";
+import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 
 export interface WSContext {
@@ -10,6 +10,7 @@ export interface WSContext {
 	room: any;
 	side?: "left" | "right";
     playerName: string;
+	playerSprite: string;
 }
 
 /**
@@ -25,6 +26,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
     const roomId = url.searchParams.get("room");
     const side = url.searchParams.get("side") as "left" | "right" | null;
     const playerName = url.searchParams.get("name");
+	const playerSprite = url.searchParams.get("sprite");
 
     if (!clientId) {
 		socket.close(1008, "Client id is required");
@@ -36,7 +38,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
 		return null;
 	}
 
-	if (side && side !== "left" && side !== "right") {
+	if (!side || (side && side !== "left" && side !== "right")) {
 		socket.close(1008, "Side is required");
 		return null;
 	}
@@ -45,6 +47,11 @@ export function validateConnection(socket: any, req:any): WSContext | null {
         socket.close(1008, "Player name is required");
         return null;
     }
+
+	if (!playerSprite) {
+		socket.close(1008, "Player sprite is required");
+		return null;
+	}
 
 	const room = rooms.get(roomId);
 	if (!room) {
@@ -58,6 +65,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
         room,
         side: side ?? undefined,
         playerName,
+        playerSprite,
     };
 }
 
@@ -66,7 +74,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
  * @param room The game room object
  * @note Updates the "canStart" property of the room and broadcasts state if it changes
 */
-export function updateCanStart(room: Room): boolean {
+export function updateCanStart(room: Room): { canStart: boolean; reason: string | null } {
 
     // get leader's role
     const leaderId = room.leaderId;
@@ -83,13 +91,23 @@ export function updateCanStart(room: Room): boolean {
     const nonLeaderPlayers = leaderPlayer
         ? allPlayers.filter((p: any) => p.clientId !== leaderId)
         : allPlayers;
-    const allReady = nonLeaderPlayers.every((p: any) => room.readyStatus.get(p.clientId));
+    const allReady = nonLeaderPlayers.every((p: any) => p.ready);
 
     // check if teams are balanced
     const teamsBalanced = leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
 
-    //if all ready, more than 1 player, and teams are balanced, can start
-    room.canStart = allReady && allPlayers.length > 1 && teamsBalanced;
+    // --- decide why ---
+    let reason: string | null = null;
+    if (allPlayers.length <= 1) {
+        reason = "Not enough players";
+    } else if (!teamsBalanced) {
+        reason = "Teams are not equal";
+    } else if (!allReady) {
+        reason = "Not all players are ready";
+    }
+
+    // set canStart based on conditions
+    room.canStart = reason === null;
 
     // console.log("updateCanStart:", { ////debug
     //     allPlayers,
@@ -99,7 +117,7 @@ export function updateCanStart(room: Room): boolean {
     //     canStart: room.canStart
     // });
 
-    return room.canStart;
+    return { canStart: room.canStart, reason };
 }
 
 /**
@@ -167,9 +185,16 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     function rebuildSide(players: any[], side: "left" | "right"): any[] {
         return players.map((p, i) => {
             const newRole = `${side}_player${i + 1}`;
-            // update mapping (preserve other fields)
-            room.clientRoles.set(p.clientId, { ...p, role: newRole });
-            return { ...p, role: newRole };
+            // preserve readiness from gameState if available
+            const oldReady =
+                room.gameState.teams.left.find((pl: any) => pl.clientId === p.clientId)?.ready ??
+                room.gameState.teams.right.find((pl: any) => pl.clientId === p.clientId)?.ready ??
+                p.ready ?? false;
+
+            const updated = { ...p, role: newRole, ready: oldReady };
+
+            room.clientRoles.set(p.clientId, updated);
+            return updated;
         });
     }
 
@@ -183,15 +208,15 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
 	if (!newPlayer) return;
-    broadcast(room, createLiveChatMessage("system", `${newPlayer.playerName} (${oldRole}) switched to ${newPlayer.role}`));
-    console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role} in room ${room.name} (${room.id})`);
+    broadcast(room, createLiveChatMessage("system", "system", `${newPlayer.playerName} switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side.`));
+    console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug
 
     // notify to the client about his new role
     if (socket) {
         socket.send(JSON.stringify({
             type: "roleUpdate",
-            newPlayer: { id: clientId, role: newPlayer.role, playerName: newPlayer.playerName },
+            newPlayer: newPlayer,
             gameState: room.gameState,
             leaderId: room.leaderId,
             disconnectPlayers: room.disconnectPlayers,
@@ -199,14 +224,14 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     }
 
     // notify all clients about the switch
-	const canStart = updateCanStart(room);
+	const { canStart } = updateCanStart(room);
     broadcast(room, {
         type: "roleUpdate",
-        newPlayer: { id: clientId, role: newPlayer.role, playerName: newPlayer.playerName },
+        newPlayer: newPlayer,
         gameState: room.gameState,
         leaderId: room.leaderId,
         disconnectPlayers: room.disconnectPlayers,
-		readyStatus: Object.fromEntries(room.readyStatus.entries()),
+		readyStatus: newPlayer.ready,
 		canStart: canStart,
     });
 

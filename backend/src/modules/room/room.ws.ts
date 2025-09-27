@@ -1,5 +1,5 @@
-import { WebSocketHandler } from "../../utils/webSocketHandler.ts"
-import { validateConnection } from "../../utils/utils.ts";
+import { WebSocketHandler } from "../../utils/webSocketHandler"
+import { validateConnection } from "../../utils/utils";
 
 const wsHandler = new WebSocketHandler();
 
@@ -10,8 +10,8 @@ export default async function roomWsRoutes(fastify: any) {
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
 		// step 1: Assign role to client (player, spectator, etc.)
-		const { clientId, roomId, room, side, playerName } = context;
-		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName);
+		const { clientId, roomId, room, side, playerName, playerSprite } = context;
+		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 		//  console.log("Websocket assign role response: ", player); //// debug
 
 		// step 2: handle incoming messages from clients

@@ -3,6 +3,7 @@
  */
 export interface liveChatMessage {
 	type: "chat";
+	uid: string;
 	from: string;
 	text: string;
 	time: number;
@@ -14,9 +15,10 @@ export interface liveChatMessage {
  * @param text - The content of the message
  * @returns A ChatMessage object (a message with info about sender and timestamp)
 */
-export function createLiveChatMessage(from: string, text: string): liveChatMessage {
+export function createLiveChatMessage(uid:string, from: string, text: string): liveChatMessage {
 	return {
 		type: "chat",
+		uid: uid || "system",
 		from,
 		text,
 		time: Date.now(),

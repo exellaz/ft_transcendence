@@ -1,13 +1,17 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game } from "../game/game.ts"; // import game loop
-import { liveChatMessage } from "../chat/liveChat.ts"; // import chat message type
-import { saveMatchResult } from "../../plugins/database.ts";
-import { broadcast } from "../../utils/utils.ts";
+import { Game } from "../game/game"; // import game loop
+import { liveChatMessage } from "../chat/liveChat"; // import chat message type
+//import { saveMatchResult } from "../../plugins/database";
+import { broadcast } from "../../utils/utils";
 
 export interface playerInfo {
     clientId: string; // client id
     playerName: string; // player username
     role: string; // "left" or "right"
+	team: "left" | "right"; // team side
+	leader: boolean; // whether the player is the leader
+	spriteUrl: string; // URL of the player's sprite
+	ready: boolean; // whether the player is ready
 }
 
 /**
@@ -26,6 +30,7 @@ export interface Room {
 		ballSize: number; // ball size
 		paddleSpeed: number; // paddle speed
 		scorePoint: number; // points to win the game
+		map: string; // game map
 	};
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
@@ -51,7 +56,7 @@ export interface Room {
 	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
-    readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
+    // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
     //startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
@@ -64,8 +69,9 @@ export const DEFAULT_SETTING = {
 	paddleHeight: 80,
 	paddleWidth: 10,
 	ballSize: 10,
-	paddleSpeed: 3,
+	paddleSpeed: 2,
 	scorePoint: 5,
+	map: "stadium",
 };
 
 /**
@@ -124,7 +130,7 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		chatHistory: [] as any [],
 		disconnectPlayers: new Set(),
 		game: new Game(),
-		readyStatus: new Map(),
+		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,
 		private: isPrivate,
@@ -237,5 +243,7 @@ export function roomEndGame(room: Room, forced = false) {
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
 
 	// Save match result to database
-	saveMatchResult(room, room.duration);
+	// saveMatchResult(room, room.duration);
 }
+
+

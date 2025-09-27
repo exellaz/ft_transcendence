@@ -1,6 +1,6 @@
-import { WebSocketHandler } from "../../utils/webSocketHandler.ts"
-import { Game } from "./game.ts"
-import { validateConnection } from "../../utils/utils.ts";
+import { WebSocketHandler } from "../../utils/webSocketHandler"
+import { Game } from "./game"
+import { validateConnection } from "../../utils/utils";
 
 const wsHandler = new WebSocketHandler();
 
@@ -13,8 +13,8 @@ export default async function gameWsRoute(fastify: any) {
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
 		// Step 1: Assign role to client (player, spectator, etc.)
-		const { clientId, roomId, room, side, playerName } = context;
-		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName);
+		const { clientId, roomId, room, side, playerName, playerSprite } = context;
+		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 		const game = new Game();
 
 		// Step 2: handle incoming messages from clients

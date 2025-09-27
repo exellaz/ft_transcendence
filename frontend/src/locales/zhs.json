@@ -1,0 +1,246 @@
+{
+  "AdvanceView": {
+    "advancement": "晋级",
+    "congratulations": "恭喜！",
+    "next_round": "你已晋级到下一轮！",
+    "continue": "继续"
+  },
+  "ChooseSpriteView": {
+    "choose_sprite": "选择一个角色",
+    "confirm": "确认"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "双人房间",
+    "room_id": "房间ID",
+    "ready": "准备",
+	"unready": "取消准备",
+	"start": "开始游戏",
+    "leave_room": "离开房间",
+    "leave_confirmation": "你确定要离开房间吗？"
+  },
+  "LoginView": {
+    "username": "用户名",
+    "password": "密码",
+    "login": "登录",
+    "continue_with_google": "使用谷歌继续",
+    "signup_prompt": "还没有账号？注册"
+  },
+  "MainMenuView": {
+    "tournament_mode": "锦标赛模式",
+    "normal_mode": "普通模式",
+    "settings": "设置",
+    "join_tournament": "参加锦标赛？"
+  },
+  "MatchView": {
+    "loading": "加载中...",
+    "ready": "准备",
+    "pending": "等待中",
+    "quarterfinals": "四分之一决赛",
+    "semifinals": "半决赛",
+    "finals": "决赛"
+  },
+  "NormalModeView": {
+    "choose_action": "选择操作",
+    "create_room": "创建房间",
+    "join_room": "加入房间",
+    "back": "返回",
+    "choose_type": "选择游戏类型",
+    "singles": "单人游戏",
+    "doubles": "双人游戏",
+    "choose_join": "选择加入方式",
+    "quick_join": "快速加入",
+    "join_private": "加入私人房间",
+    "enter_room_id": "输入房间ID",
+    "create_singles_game": "创建单人游戏？",
+    "create_doubles_game": "创建双人游戏？",
+    "join_singles_game": "加入单人游戏？",
+    "join_doubles_game": "加入双人游戏？"
+  },
+  "ResultsView": {
+    "results": "结果",
+    "leave": "离开",
+    "medal_message1": "恭喜！",
+    "medal_message2_gold": "你赢得了金牌！",
+    "medal_message2_silver": "你赢得了银牌！",
+    "medal_message2_bronze": "你赢得了铜牌！",
+    "participation_message1": "感谢你的参与！",
+    "participation_message2": "你的总排名是第{{position}}名。"
+  },
+  "SignUpSuccessView": {
+    "success_message": "您的账户已成功创建！",
+    "login": "登录"
+  },
+  "SignUpView": {
+    "username": "用户名",
+    "username_available": "用户名可用",
+    "email": "电子邮件",
+    "password": "密码",
+    "confirm_password": "确认密码",
+    "signup": "注册"
+  },
+  "SinglesRoomView": {
+    "singles_room": "单人房间",
+    "room_id": "房间ID",
+    "ready": "准备",
+    "unready": "取消准备",
+    "start": "开始游戏",
+    "leave_room": "离开房间",
+    "leave_confirmation": "你确定要离开房间吗？"
+  },
+  "TournamentLobbyView": {
+    "quarterfinals": "四分之一决赛",
+    "semifinals": "半决赛",
+    "finals": "决赛",
+    "tournament_lobby": "锦标赛大厅",
+    "ready": "准备",
+    "quit": "退出",
+    "quit_confirmation": "你确定要退出锦标赛吗？"
+  },
+  "BasicInfoPopup": {
+    "loading": "加载中...",
+    "header": "基本信息",
+    "joined": "加入时间",
+    "change_avatar": "更换头像",
+    "username": "用户名",
+    "username_available": "用户名可用",
+    "email": "电子邮件",
+    "save_changes": "保存更改",
+    "cancel": "取消",
+    "upload_avatar": "上传新头像",
+    "upload_avatar_button": "上传头像",
+    "confirm_upload": "确认上传",
+    "avatar_updated": "头像已更新。",
+    "avatar_update_error": "头像更新失败。",
+    "back": "返回"
+  },
+  "ConfirmationPopup": {
+    "yes": "是",
+    "no": "否"
+  },
+  "GameSettingsPopup": {
+    "header": "游戏设置",
+    "ball_speed": "球速",
+    "ball_size": "球大小",
+    "paddle_speed": "板速",
+    "choose_map": "选择地图",
+    "restore_default": "重置为默认",
+    "save_changes": "保存更改",
+    "slow": "慢",
+    "normal": "正常",
+    "fast": "快",
+    "small": "小",
+    "big": "大"
+  },
+  "ProfilePopup": {
+    "header": "我的资料",
+    "header_other": "资料",
+    "add_friend": "添加好友",
+    "block": "屏蔽"
+  },
+  "SettingsPopup": {
+    "header": "设置",
+    "language": "语言",
+    "english": "英语",
+    "simplified_chinese": "简体中文",
+    "traditional_chinese": "繁体中文"
+  },
+  "TournamentStatsPopup": {
+    "loading": "加载中...",
+    "header": "锦标赛统计",
+    "summary": "概要",
+    "medals": {
+      "gold": "金牌",
+      "silver": "银牌",
+      "bronze": "铜牌"
+    },
+    "tournaments_played": "参赛次数",
+    "average_ranking": "平均排名",
+    "history": "历史",
+    "no": "编号",
+    "date": "日期",
+    "ranking": "排名",
+    "match": "比赛",
+    "opponent": "对手",
+    "score": "比分",
+    "result": "结果",
+    "quarterfinals": "四分之一决赛",
+    "semifinals": "半决赛",
+    "finals": "决赛",
+    "won": "胜利",
+    "lost": "失败"
+  },
+  "CascadeCard": {
+    "confirm_block": "确定要屏蔽 {{username}} 吗？",
+    "confirm_unblock": "确定要取消屏蔽 {{username}} 吗？",
+    "blocked": "{{username}} 已被屏蔽。",
+    "unblocked": "{{username}} 已取消屏蔽。",
+    "yes": "是",
+    "no": "否",
+    "back_to_chat": "返回聊天",
+    "block": "屏蔽",
+    "unblock": "取消屏蔽"
+  },
+  "LiveChat": {
+    "live_chat": "实时聊天",
+    "send": "发送"
+  },
+  "MapSelector": {
+    "stadium": "体育场",
+    "mansion": "豪宅",
+    "arcade": "街机厅"
+  },
+  "Medals": {
+    "gold": "金牌",
+    "silver": "银牌",
+    "bronze": "铜牌"
+  },
+  "Messaging": {
+    "loading": "加载中...",
+    "online": "在线",
+    "offline": "离线",
+    "type_message": "输入消息",
+    "send": "发送"
+  },
+  "ProfileContents": {
+    "loading": "加载中...",
+    "joined": "加入时间",
+    "tournaments_played": "参赛次数",
+    "average_ranking": "平均排名"
+  },
+  "ProfileDropdown": {
+    "loading": "加载中...",
+    "my_profile": "我的资料",
+    "basic_info": "基本信息",
+    "tournament_stats": "锦标赛统计",
+    "friends": "好友",
+    "log_out": "登出"
+  },
+  "ReadyPlayers": {
+    "ready": "准备",
+    "pending": "等待中"
+  },
+  "ReadyRoomPlayers": {
+    "leader": "队长",
+    "waiting": "等待玩家",
+    "left_team": "左队",
+    "right_team": "右队",
+    "switch_teams": "切换队伍"
+  },
+  "RoomLayout": {
+    "game_settings": "游戏设置",
+    "invite_friends": "邀请好友"
+  },
+  "SocialHub": {
+    "tabs": {
+      "friends": "好友",
+      "requests": "请求",
+      "blocked": "已屏蔽"
+    },
+    "add_friend": "添加好友",
+    "search_friend": "搜索好友",
+    "enter_friend_username": "输入好友用户名",
+    "friend_added": "好友已添加。",
+    "username_not_exist": "用户名不存在。",
+    "back": "返回"
+  }
+}
