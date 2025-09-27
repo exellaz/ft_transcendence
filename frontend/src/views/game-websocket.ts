@@ -114,7 +114,8 @@ export function useGameWebSocket({
 						Paddle Height: ${data.gameState.setting?.paddleHeight || 0},
 						Paddle Width: ${data.gameState.setting?.paddleWidth || 0},
 						Paddle Speed: ${data.gameState.setting?.paddleSpeed || 0},
-						Winning Score: ${data.gameState.setting?.scorePoint || 0}
+						Winning Score: ${data.gameState.setting?.scorePoint || 0},
+						map: ${data.gameState.setting?.map}
 					`);
 					setIsSpectator(role === "spectator");
 					//check for game over

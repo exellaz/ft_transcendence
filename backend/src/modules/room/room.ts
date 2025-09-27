@@ -30,6 +30,7 @@ export interface Room {
 		ballSize: number; // ball size
 		paddleSpeed: number; // paddle speed
 		scorePoint: number; // points to win the game
+		map: string; // game map
 	};
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
@@ -68,8 +69,9 @@ export const DEFAULT_SETTING = {
 	paddleHeight: 80,
 	paddleWidth: 10,
 	ballSize: 10,
-	paddleSpeed: 3,
+	paddleSpeed: 2,
 	scorePoint: 5,
+	map: "stadium",
 };
 
 /**

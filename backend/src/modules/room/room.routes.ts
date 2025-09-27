@@ -36,7 +36,8 @@ export default async function roomRoutes(app: FastifyInstance) {
     		paddleWidth,
     		ballSize,
     		paddleSpeed,
-    		scorePoint
+    		scorePoint,
+    		map
     	} = body;
 
     	// Validate required fields
@@ -61,6 +62,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
     	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
     	if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
+		if (typeof map === "string") initialSetting.map = map;
 
     	// Create and store the new room
     	const room = createRoom(
@@ -110,7 +112,8 @@ export default async function roomRoutes(app: FastifyInstance) {
             paddleWidth,
             ballSize,
             paddleSpeed,
-            scorePoint
+            scorePoint,
+			map
         } = req.body as {
             ballSpeed?: number;
             paddleHeight?: number;
@@ -118,6 +121,7 @@ export default async function roomRoutes(app: FastifyInstance) {
             ballSize?: number;
             paddleSpeed?: number;
             scorePoint?: number;
+			map?: string;
         };
 
         // change setting if valid
@@ -127,6 +131,7 @@ export default async function roomRoutes(app: FastifyInstance) {
         room.setting.ballSize = ballSize ?? room.setting.ballSize;
         room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
         room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
+		room.setting.map = map ?? room.setting.map;
 
         // console.log("updated room setting:", room.setting); ////debug
 

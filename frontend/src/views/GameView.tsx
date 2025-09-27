@@ -29,7 +29,7 @@ const GameView: React.FC = () => {
 	  playerResult,
 	  isSpectator,
 	  gameState,
-    setting,
+      setting,
 	  //winner,
 	  scoreText,
 	  statusText,
@@ -77,14 +77,20 @@ const GameView: React.FC = () => {
 
   // send keypresses
   useEffect(() => {
-    const interval = setInterval(() => {
+    let animationFrame: number;
+
+	//requestAnimationFrame: is a api for create smooth animations
+    const loop = () => {
       if (socket && socket.readyState === WebSocket.OPEN && !gameOver && role !== "spectator") {
-        const speed = setting?.paddleSpeed || 5;
+        const speed = setting?.paddleSpeed;
         if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -speed }));
         if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: speed }));
       }
-    }, 1000 / 60);
-    return () => clearInterval(interval);
+      animationFrame = requestAnimationFrame(loop);
+    };
+
+    loop(); // start loop
+    return () => cancelAnimationFrame(animationFrame);
   }, [socket, gameOver, role, setting]);
 
   return (
@@ -96,7 +102,14 @@ const GameView: React.FC = () => {
           <p className="text-xs">{scoreText}</p>
           <p className="text-xs">{settingView}</p>
         </TournamentHeader>
-        <div className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 bg-white border-black aspect-[2/1]">
+        <div
+		  className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1]"
+		    style={{
+              backgroundImage: `url('/assets/${setting?.map}.png')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            }}
+		  >
           {/* game image */}
           <canvas
             ref={canvasRef}

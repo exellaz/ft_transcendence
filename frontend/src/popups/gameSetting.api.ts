@@ -54,6 +54,7 @@ export function useRoomSettings(roomId: string) {
         newSettings.ballSize,
         newSettings.paddleSpeed,
         newSettings.scorePoint,
+		newSettings.map
       );
       setSettings(newSettings);
     } catch (err) {

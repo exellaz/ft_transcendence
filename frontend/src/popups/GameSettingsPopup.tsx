@@ -18,11 +18,10 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameSettingsPopup.${key}`);
 
-  // Game settings state
   // fetch settings from API
-  const { settings, setSettings, loading, saving, saveSettings, resetSettings } =
-    useRoomSettings(roomId);
+  const { settings, setSettings, loading, saving, saveSettings, resetSettings } = useRoomSettings(roomId);
 
+  // available maps
   const maps = ["stadium", "mansion", "arcade"];
 
   // handle reset (restore backend defaults)
@@ -30,12 +29,15 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
     resetSettings();
   };
 
+  // handle save (send to backend)
   const handleSave = () => {
     if (settings) {
       saveSettings(settings);
+	  onClose();
     }
   };
 
+  // loading state
   if (loading || !settings) {
     return (
       <PopupCard size="large" open={open} onClose={onClose}>
@@ -52,6 +54,7 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
       <div className="w-full h-full flex-row-start gap-15 px-10">
         {/* Left side - Sliders */}
         <div className="h-full flex-1 flex-col-center gap-6">
+		      {/* ball speed */}
           <Slider
             label={translate("ball_speed")}
             value={settings.ballSpeed}
@@ -62,23 +65,25 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
             ]}
             onChange={(value) => setSettings({ ...settings, ballSpeed: value })}
           />
+					{/* ball size */}
           <Slider
             label={translate("ball_size")}
             value={settings.ballSize}
             options={[
                 { label: translate("small"), value: 5 },
                 { label: translate("normal"), value: 10 },
-                { label: translate("big"), value: 20 },
+                { label: translate("big"), value: 15 },
             ]}
             onChange={(value) => setSettings({ ...settings, ballSize: value })}
           />
+					{/* paddle speed */}
           <Slider
             label={translate("paddle_speed")}
             value={settings.paddleSpeed}
             options={[
                 { label: translate("slow"), value: 1 },
-                { label: translate("normal"), value: 3 },
-                { label: translate("fast"), value: 10 },
+                { label: translate("normal"), value: 2 },
+                { label: translate("fast"), value: 3 },
             ]}
             onChange={(value) => setSettings({ ...settings, paddleSpeed: value })}
           />
@@ -93,6 +98,7 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
           />
         </div>
       </div>
+			{/* Buttons */}
       <div className="flex-row-center gap-6">
         <Button onClick={handleReset}>{translate("restore_default")}</Button>
         <Button variant="green" onClick={handleSave} disabled={saving}>
