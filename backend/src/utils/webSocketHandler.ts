@@ -1,8 +1,8 @@
-import { Game } from "../modules/game/game.ts";
-import type { Room } from "../modules/room/room.ts";
-import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "../modules/room/room.ts";
-import { createLiveChatMessage, } from "../modules/chat/liveChat.ts";
-import { broadcast, handleSwitchSide, updateCanStart } from "./utils.ts";
+import { Game } from "../modules/game/game";
+import type { Room } from "../modules/room/room";
+import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "../modules/room/room";
+import { createLiveChatMessage, } from "../modules/chat/liveChat";
+import { broadcast, handleSwitchSide, updateCanStart } from "./utils";
 
 const game = new Game(); //create game object
 
@@ -248,8 +248,10 @@ export class WebSocketHandler implements IWebSocketHandler {
                     return p;
                 });
 
-                broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} is ${msg.ready ? "ready" : "unready"}.`));
-				console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ${msg.ready ? "ready" : "unready"} in room (${room.name}) [${room.id}]`);
+                if (msg.ready == true) {
+                    broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} is ready`));
+                    console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ready in room (${room.name}) [${room.id}]`);
+                }
 				//broadcastState(room);
 				const { canStart, reason } = updateCanStart(room);
 				broadcast(room, {
@@ -261,8 +263,10 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				// auto -start check for equal teams (alert message only)
 				if (!canStart && reason && msg.ready) {
-					broadcast(room, createLiveChatMessage("system", "system", `Cannot start: ${reason}`));
-					console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: ${reason}`);
+                    if (reason === "Teams are not equal") {
+                        broadcast(room, createLiveChatMessage("system", "system", `Cannot start: Teams are not equal`));
+                        console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: Teams are not equal`);
+                    }
 					return;
 				}
 

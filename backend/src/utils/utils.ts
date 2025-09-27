@@ -1,7 +1,7 @@
-import { chatRooms } from "../modules/chat/liveChat.ws.ts";
-import { rooms, type Room } from "../modules/room/room.ts";
-import { Game } from "../modules/game/game.ts";
-import { createLiveChatMessage } from "../modules/chat/liveChat.ts";
+import { chatRooms } from "../modules/chat/liveChat.ws";
+import { rooms, type Room } from "../modules/room/room";
+import { Game } from "../modules/game/game";
+import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 
 export interface WSContext {
@@ -38,7 +38,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
 		return null;
 	}
 
-	if (side && side !== "left" && side !== "right") {
+	if (!side || (side && side !== "left" && side !== "right")) {
 		socket.close(1008, "Side is required");
 		return null;
 	}
