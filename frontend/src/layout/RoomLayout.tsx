@@ -20,6 +20,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
 
   const { user } = useUser();
   const userUid = user?.id ?? "";
+  const roomId = sessionStorage.getItem("pongRoomId");
+  if (!roomId) return <div>{translate("no_room")}</div>;
 
   return (
     <Background>
@@ -35,6 +37,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
       <GameSettingsPopup
         open={showGameSettings}
         onClose={() => setShowGameSettings(false)}
+        roomId={roomId}
       />
       <InviteFriendsPopup
         open={showInviteFriends}

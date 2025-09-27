@@ -42,11 +42,11 @@ const NormalModeView: React.FC = () => {
     const clientId = ensureClientId();
     const scale = Math.min(
       window.innerWidth / 800,
-      window.innerHeight / 600,
+      window.innerHeight / 400,
       1
     );
     const width = 800 * scale;
-    const height = 600 * scale;
+    const height = 400 * scale;
 
     const room = await createRoomAPI(
       teamSize,
@@ -78,9 +78,9 @@ const NormalModeView: React.FC = () => {
     );
 
     if (!room) {
-	    const scale = Math.min(window.innerWidth / 800, window.innerHeight / 600, 1);
+	    const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400, 1);
 	    const width = 800 * scale;
-	    const height = 600 * scale;
+	    const height = 400 * scale;
 		room = await createRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height, { isPrivate: false });
 
 		if (!room) {

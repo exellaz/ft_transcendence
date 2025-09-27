@@ -63,12 +63,8 @@ const SinglesRoomView: React.FC = () => {
 	onReady,
 	onStartBtn,
 	onLeave,
-	//? socket,
-	//? statusText,
-	//? playerText,
-	//? role,
-	//? setReady,
-	//? gameStarted,
+	role,
+	gameStarted,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
   ////debug
@@ -84,12 +80,20 @@ const SinglesRoomView: React.FC = () => {
 //   console.log("Game started:", gameStarted);
 //   console.log("Can start game:", canStart);
 
+  React.useEffect(() => {
+    if (gameStarted) {
+      sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
+      navigate("/game");
+    }
+  }, [gameStarted, navigate]);
+
+
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
     const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
-	console.log("leftTeam:", leftTeam); //// debug
+    console.log("leftTeam:", leftTeam); //// debug
     const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
-	console.log("rightTeam:", rightTeam); //// debug
+    console.log("rightTeam:", rightTeam); //// debug
     setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
 
@@ -110,14 +114,14 @@ const SinglesRoomView: React.FC = () => {
   // }, [roomId]);
 
   // TODO: Remove mock data when integrating real API
-//   React.useEffect(() => {
-//     setPlayers(mockWaitingSinglesRoomPlayers["t1"]);
-//     setChatMessages(mockSinglesRoomLiveChat["t1"]);
-//   }, []);
+  //   React.useEffect(() => {
+    //     setPlayers(mockWaitingSinglesRoomPlayers["t1"]);
+    //     setChatMessages(mockSinglesRoomLiveChat["t1"]);
+    //   }, []);
 
-  // todo: Replace 1 with current user id
-//   function handleSendMessage() {
-//     if (message.trim()) {
+    // todo: Replace 1 with current user id
+    //   function handleSendMessage() {
+        //     if (message.trim()) {
 //       setChatMessages([
 //         ...chatMessages,
 //         { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
@@ -125,6 +129,7 @@ const SinglesRoomView: React.FC = () => {
 //       setMessage("");
 //     }
 //   }
+
 
   return (
     <RoomLayout>
@@ -151,7 +156,6 @@ const SinglesRoomView: React.FC = () => {
 			      {ready ? translate("unready") : translate("ready")}
 			    </Button>
 			  )}
-
 			  {/* Start button (leader only) */}
 			  {isLeader && (
 			    <Button
@@ -162,7 +166,6 @@ const SinglesRoomView: React.FC = () => {
 			      {translate("start")}
 			    </Button>
 			  )}
-
 			  {/* Leave button */}
 			  <Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
 			    {translate("leave_room")}

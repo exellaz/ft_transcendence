@@ -59,12 +59,8 @@ const DoublesRoomView: React.FC = () => {
     onReady,
     onStartBtn,
     onLeave,
-    //? socket,
-    //? statusText,
-    //? playerText,
-    //? role,
-    //? setReady,
-    //? gameStarted,
+    role,
+    gameStarted,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
   ////debug
@@ -79,6 +75,13 @@ const DoublesRoomView: React.FC = () => {
 //   console.log("Set ready function:", setReady);
 //   console.log("Game started:", gameStarted);
 //   console.log("Can start game:", canStart);
+
+  React.useEffect(() => {
+    if (gameStarted) {
+      sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
+      navigate("/game");
+    }
+  }, [gameStarted, navigate]);
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
@@ -134,7 +137,7 @@ const DoublesRoomView: React.FC = () => {
                 ({translate("room_id")}: {roomId})
               </p>
             </TournamentHeader>
-            <ReadyRoomPlayers variant="doubles" players={players} onSwitchTeam={onSwitch} isReady={ready} />
+            <ReadyRoomPlayers variant="doubles" players={players} onSwitchTeam={onSwitch} />
             <div className="flex-row-center gap-6">
               {/* Ready button (not for leader) */}
 			  {!isLeader && (
