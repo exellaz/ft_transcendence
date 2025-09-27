@@ -1,0 +1,4 @@
+vars {
+  baseUrl: http://HOST:PORT
+  id: 1
+}
