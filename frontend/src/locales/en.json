@@ -20,6 +20,7 @@
     "username": "Username",
     "password": "Password",
     "login": "LOGIN",
+    "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
     "signup_prompt": "Don’t have an account? Sign up"
   },

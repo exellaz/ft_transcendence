@@ -20,6 +20,7 @@
     "username": "用户名",
     "password": "密码",
     "login": "登录",
+    "loading": "加载中...",
     "continue_with_google": "使用谷歌继续",
     "signup_prompt": "还没有账号？注册"
   },

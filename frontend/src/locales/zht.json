@@ -20,6 +20,7 @@
     "username": "用戶名",
     "password": "密碼",
     "login": "登入",
+    "loading": "載入中...",
     "continue_with_google": "使用 Google 繼續",
     "signup_prompt": "還沒有帳號？註冊"
   },

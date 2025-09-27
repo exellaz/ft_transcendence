@@ -22,7 +22,7 @@ function PreviewLogin() {
   };
 
   const fetchProfile = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
     if (!token) {
       setMessage("No token found, login first!");
       return;
