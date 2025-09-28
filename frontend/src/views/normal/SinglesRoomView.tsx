@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import type {
-	WaitingRoomPlayer,
-} from "../../types/apiInterfaces";
+import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 
 // components
 import Button from "../../components/Button";
@@ -30,11 +28,12 @@ const SinglesRoomView: React.FC = () => {
   const navigate = useNavigate();
 
   // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("pongRoomId");
+  const roomId = sessionStorage.getItem("RoomId");
   if (!roomId) return <div>{translate("no_room_id")}</div>;
-  const roomName = sessionStorage.getItem("pongRoomName");
+  const roomName = sessionStorage.getItem("RoomName");
   if (!roomName) return <div>{translate("no_room_name")}</div>;
-  const leaderId = sessionStorage.getItem("pongRoomLeaderId") || "";
+  const leaderId = sessionStorage.getItem("RoomLeaderId") || "";
+  const roomType = sessionStorage.getItem("RoomType") || "";
 
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
@@ -98,24 +97,32 @@ const SinglesRoomView: React.FC = () => {
             <TournamentHeader>
               <div className="flex-row-center gap-2">
                 <p>{translate("singles_room")}</p>
-                <img
-                  src="/assets/link.png"
-                  className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
-				  onClick={() => {
+                {roomType === "private" && (
+                  <>
+                    <img
+                    src="/assets/link.png"
+                    className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+                    onClick={() => {
                       if (roomId) {
                         navigator.clipboard.writeText(roomId).then(() => {
-                          // Optional: show toast or alert
-                          alert("Room ID copied to clipboard!");
+                        // Optional: show toast or alert
+                        alert("Room ID copied to clipboard!");
                         }).catch(err => {
-                          console.error("Failed to copy:", err);
+                        console.error("Failed to copy:", err);
                         });
                       }
-                  }}
-                />
+                    }}
+                    />
+                  </>
+                )}
               </div>
-              <p>
-                ({translate("room_id")}: {roomId})
-              </p>
+                {roomType === "private" && (
+                  <>
+                    <p>
+                      ({translate("room_id")}: {roomId})
+                    </p>
+                  </>
+                )}
             </TournamentHeader>
 			{/* player team block: check ready and switch button */}
             <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} />
