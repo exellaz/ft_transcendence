@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
+
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
+import { useRoomWebSocket } from "../lib/room-websocket";
 
 const GameView: React.FC = () => {
   const { t } = useTranslation();
@@ -20,19 +22,17 @@ const GameView: React.FC = () => {
   const playerName = playerInfo.name;
   const playerSprite = playerInfo.sprite;
   const initialRole = sessionStorage.getItem("playerSide") || "";
-  console.log("GameView - playerInfo:", playerInfo);
-  console.log("GameView - initialRole:", initialRole);
 
   // -------------------------------- Websockets --------------------------------
   const {
     socket,
 	  role,
 	  gameOver,
+      winner,
 	  playerResult,
 	  isSpectator,
 	  gameState,
       setting,
-	  //winner,
 	  scoreText,
 	  statusText,
 	  settingView,

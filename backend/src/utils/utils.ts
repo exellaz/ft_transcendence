@@ -1,5 +1,5 @@
 import { chatRooms } from "../modules/chat/liveChat.ws";
-import { rooms, type Room } from "../modules/room/room";
+import { rooms, roomEndGame, type Room } from "../modules/room/room";
 import { Game } from "../modules/game/game";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
@@ -236,4 +236,79 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     });
 
     return newPlayer.role;
+}
+
+export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod: number, isDuringGame: boolean) {
+    const player = room.clientRoles.get(clientId);
+    if (!player) return;
+
+    // mark as disconnected
+    room.disconnectPlayers.add(clientId);
+
+    // notify everyone
+    broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnected.`));
+    broadcast(room, {
+        type: "roleUpdate",
+        gameState: room.gameState,
+        leaderId: room.leaderId,
+        disconnected: Array.from(room.disconnectPlayers),
+    });
+
+    // cancel any existing timer
+    if (!room.disconnectTimers) room.disconnectTimers = new Map();
+    if (room.disconnectTimers.has(clientId)) {
+        clearTimeout(room.disconnectTimers.get(clientId)!);
+        room.disconnectTimers.delete(clientId);
+    }
+
+    // start timer
+    const timer = setTimeout(() => {
+        console.log(`Grace timer expired for ${player.playerName}.`);
+
+        // remove from disconnects
+        room.disconnectPlayers.delete(clientId);
+
+        // remove from teams and paddles
+        room.gameState.teams.left = room.gameState.teams.left.filter(p => p.clientId !== clientId);
+        room.gameState.teams.right = room.gameState.teams.right.filter(p => p.clientId !== clientId);
+        delete room.gameState.paddles[clientId];
+        room.clientRoles.delete(clientId);
+
+        // if during game, determine winner if only one team left
+        if (isDuringGame) {
+            const leftRemaining = room.gameState.teams.left.length;
+            const rightRemaining = room.gameState.teams.right.length;
+            let winner: "left" | "right" | null = null;
+            if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
+            else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
+            if (winner && !room.gameState.gameEnded) {
+                roomEndGame(room, true, winner);
+                rooms.delete(room.id);
+                return;
+            }
+        }
+
+        // notify updated state
+        broadcast(room, {
+            type: "roleUpdate",
+            gameState: room.gameState,
+            leaderId: room.leaderId,
+            disconnected: Array.from(room.disconnectPlayers),
+        });
+
+        // delete room if no players left
+        const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
+        if (totalPlayers === 0) {
+            console.log(`All players left, deleting room ${room.name} (${room.id})`);
+            rooms.delete(room.id);
+        }
+
+        if (room.disconnectTimers) {
+            room.disconnectTimers.delete(clientId);
+        }
+    }, gracePeriod);
+
+    if (room.disconnectTimers) {
+        room.disconnectTimers.set(clientId, timer);
+    }
 }
