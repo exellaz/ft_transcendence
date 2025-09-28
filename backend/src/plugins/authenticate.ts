@@ -93,3 +93,9 @@ export async function authenticate(
     throw new ApiError("Unauthorized", 401);
   }
 }
+
+export function requireOwnership(userId: number, requestUserId: number) {
+  if (userId !== requestUserId) {
+    throw new ApiError("Access denied", 403);
+  }
+}
