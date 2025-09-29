@@ -11,43 +11,6 @@ import MainLayout from "../layout/MainLayout";
 import SettingsPopup from "../popups/SettingsPopup";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
-/**
- * @brief is just a test user generator
-*/
-function mockUser() {
-  const clientId = ensurePlayerId();
-
-  const existing = sessionStorage.getItem("playerInfo");
-  if (existing) return JSON.parse(existing);
-
-  function generateName() {
-    const names = ["alice", "bob", "charlie", "dave", "eve"];
-    return names[Math.floor(Math.random() * names.length)];
-  }
-
-  function generateSprite() {
-    const sprites = [
-      "../../../assets/green-ghost.png",
-      "../../../assets/white-ghost.png",
-      "../../../assets/blue-ghost.png",
-      "../../../assets/purple-ghost.png",
-      "../../../assets/yellow-ghost.png",
-    ];
-    return sprites[Math.floor(Math.random() * sprites.length)];
-  }
-
-  const playerInfo = {
-    id: clientId,
-    name: generateName(),
-    sprite: generateSprite(),
-  };
-
-  sessionStorage.setItem("playerInfo", JSON.stringify(playerInfo));
-  return playerInfo;
-}
-
-mockUser(); //? For testing purpose, create a mock user if not already present
-
 const MainMenuView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`MainMenuView.${key}`);

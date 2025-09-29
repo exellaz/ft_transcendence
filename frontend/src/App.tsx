@@ -17,6 +17,7 @@ import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
 import TestView from "./views/TestView"
 import Popup from "./popups/SettingsPopup";
+import ChoosePlayer from "./views/mockUser";
 
 const App: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -40,6 +41,7 @@ const App: React.FC = () => {
           <Route path="/singles-room/:roomId" element={<SinglesRoomView />} />
           <Route path="/doubles-room/:roomId" element={<DoublesRoomView />} />
           <Route path="/test" element={<TestView />} />
+		  <Route path="/mock" element={<ChoosePlayer />} /> { /* backdoor for testing player selection */ }
         </Routes>
       </BrowserRouter>
       <Popup open={showPopup} onClose={() => setShowPopup(false)} />
