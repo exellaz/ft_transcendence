@@ -36,7 +36,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading,
     error,
     refetch,
-  } = useApiQuery(() => getUserById({ id: Number(1) }), [open]);
+  } = useApiQuery(() => getUserById({ id: Number(userId) }), [open]);
 
   // API mutation to update user data
   const { mutate } = useApiMutation(updateUserById);

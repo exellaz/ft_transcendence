@@ -25,14 +25,14 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
   // }, [userId]);
 
   // TODO: Delete when API is integrated
-  function getProfileByUid(
+  function getProfileById(
     userId: string,
     data: Profile[]
   ): Profile | undefined {
-    return data.find((user) => user.uid === userId);
+    return data.find((user) => user.id === userId);
   }
   useEffect(() => {
-    setUser(getProfileByUid(userId, mockProfiles) || null);
+    setUser(getProfileById(userId, mockProfiles) || null);
   }, [userId]);
 
   if (!user) return <div>{translate("loading")}</div>;
@@ -49,7 +49,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
               ? user.username.slice(0, 10) + "…"
               : user.username}
           </p>
-          <p>ID: {user.uid}</p>
+          <p>ID: {user.id}</p>
           <p>
             {translate("joined")}: {user.joinDate}
           </p>

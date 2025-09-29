@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
 import { useApiMutation } from "../hooks/useApi";
 import { updateUserSettingsById } from "../lib/apiClient";
@@ -11,13 +12,14 @@ import Subheader from "../components/Subheader";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
 }
 
-const SettingsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
+const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`SettingsPopup.${key}`);
   const { language, setLanguage } = useLanguage();
+  const { user } = useUser();
+  const userId = user?.id ?? "";
 
   // API mutation to update settings
   const { mutate } = useApiMutation(updateUserSettingsById);
@@ -42,7 +44,7 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     setLanguage(option.prefix);
 
     const result = await mutate({
-      id: "1",
+      id: userId,
       language: option.value,
     });
 
