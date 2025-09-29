@@ -1,27 +1,52 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 
 interface User {
   id: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+  status: string;
+  joinedAt: string;
+  updatedAt: string;
 }
 
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  isAuthenticated: boolean;
+  logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   // todo: update with real user data from backend
-  const fakeUser: User = {
-    id: "u0",
-  };
+  // const [user, ]: User = {
+  //   id: "u0",
+  // };
 
-  const [user, setUser] = useState<User | null>(fakeUser);
+  const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      // TODO: Validate token in backend
+    }
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    setUser(null);
+  }
+
+  const isAuthenticated = !!user;
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user,
+      setUser,
+      isAuthenticated,
+      logout
+      }}>
       {children}
     </UserContext.Provider>
   );
