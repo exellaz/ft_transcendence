@@ -1,6 +1,6 @@
 import { Game } from "../modules/game/game";
 import type { Room } from "../modules/room/room";
-import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "../modules/room/room";
+import { rooms, startRoomLoop, roomStartGame} from "../modules/room/room";
 import { createLiveChatMessage, } from "../modules/chat/liveChat";
 import { broadcast, handleSwitchSide, updateCanStart, handlePlayerDisconnect } from "./utils";
 
@@ -401,7 +401,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 			}
 		}
 
-        const GRACE_PERIOD = 60 * 1000; //? timeout for reconnect
+        const GRACE_PERIOD = 10 * 1000; //? timeout for reconnect
 
         // ---- case: disconnect during game ----
         if (role && role !== "spectator" && room.gameState.gameStarted) {

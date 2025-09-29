@@ -247,6 +247,12 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
     });
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
 
+	const roomId = room.id;
+	if (rooms.has(roomId)) {
+		console.log(`Deleted room ${roomId} after game end.`);
+		rooms.delete(roomId);
+	}
+
 	// Save match result to database
 	// saveMatchResult(room, room.duration);
 }

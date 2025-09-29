@@ -145,7 +145,7 @@ export function useGameWebSocket({
 
 		// close socket when component unmount
 		return () => ws.close();
-	}, [roomId, clientId, initialRole, role, roomName, gameOver]); //re-run effect if any of these change
+	}, [roomId, clientId, initialRole, roomName]); //re-run effect if any of these change
 
 	return {
 		socket: socketRef.current,

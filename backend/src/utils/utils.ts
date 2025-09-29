@@ -244,14 +244,15 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
 
     // mark as disconnected
     room.disconnectPlayers.add(clientId);
+	// console.log("room.disconnectPlayers:", room.disconnectPlayers); ////debug
 
     // notify everyone
+	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds.`);
     broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnected.`));
     broadcast(room, {
         type: "roleUpdate",
         gameState: room.gameState,
         leaderId: room.leaderId,
-        disconnected: Array.from(room.disconnectPlayers),
     });
 
     // cancel any existing timer
@@ -263,7 +264,7 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
 
     // start timer
     const timer = setTimeout(() => {
-        console.log(`Grace timer expired for ${player.playerName}.`);
+        console.log(`${player.playerName} fail to reconnect.`);
 
         // remove from disconnects
         room.disconnectPlayers.delete(clientId);
@@ -283,7 +284,6 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
             else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
             if (winner && !room.gameState.gameEnded) {
                 roomEndGame(room, true, winner);
-                rooms.delete(room.id);
                 return;
             }
         }
@@ -293,15 +293,7 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
             type: "roleUpdate",
             gameState: room.gameState,
             leaderId: room.leaderId,
-            disconnected: Array.from(room.disconnectPlayers),
         });
-
-        // delete room if no players left
-        const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-        if (totalPlayers === 0) {
-            console.log(`All players left, deleting room ${room.name} (${room.id})`);
-            rooms.delete(room.id);
-        }
 
         if (room.disconnectTimers) {
             room.disconnectTimers.delete(clientId);
