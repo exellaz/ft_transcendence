@@ -8,6 +8,7 @@ import Logo from "../components/Logo";
 import Input from "../components/Input";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
+import { register } from "../lib/apiClient";
 
 const SignUpView: React.FC = () => {
   const { t } = useTranslation();
@@ -68,26 +69,18 @@ const SignUpView: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+      if (!response.success || !response.data) {
+        throw new Error(response.error || 'Registration failed');
       }
 
       // SUCCESS: Store token and redirect
-      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('authToken', response.data.token);
       navigate('/signup-success');
 
     } catch (err) {
