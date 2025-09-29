@@ -1,0 +1,24 @@
+meta {
+  name: get-all-friends-by-userId-badrequest
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/friendships/1?status=abc
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: pending
+}
+
+assert {
+  res.status: eq 400
+  res.body.success: eq false
+}
+
+settings {
+  encodeUrl: true
+}

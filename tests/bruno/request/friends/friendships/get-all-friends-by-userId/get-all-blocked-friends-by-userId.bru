@@ -1,0 +1,24 @@
+meta {
+  name: get-all-blocked-friends-by-userId
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/friendships/1?status=blocked
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: blocked
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
+}

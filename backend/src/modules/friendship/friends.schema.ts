@@ -7,7 +7,14 @@ export const getFriendShipsByUserIdSchema = {
 			userId: { type: "integer", minimum: 1 }
 	  },
 	  required: ["userId"]
-	}
+	},
+	querystring: {
+		type: "object",
+		properties: {
+		  status: { type: "string", enum: ["pending", "accepted", "blocked"] },
+		},
+		required: ["status"], // or leave this out if optional
+	  },
 }
 
 // POST /friendships

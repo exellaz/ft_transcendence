@@ -1,0 +1,24 @@
+meta {
+  name: get-all-pending-friends-by-userId
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/friendships/1?status=pending
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: pending
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
+}

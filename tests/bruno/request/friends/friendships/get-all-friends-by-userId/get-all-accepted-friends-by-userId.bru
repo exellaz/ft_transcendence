@@ -1,0 +1,24 @@
+meta {
+  name: get-all-accepted-friends-by-userId
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/friendships/1?status=accepted
+  body: none
+  auth: inherit
+}
+
+params:query {
+  status: accepted
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
+}

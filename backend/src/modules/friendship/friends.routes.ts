@@ -12,7 +12,7 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 		const { status } = request.query as { status?: "pending" | "accepted" | "blocked" };
 
 		if (!status)
-			throw new ApiError("Missing status query param")
+			throw new ApiError("Missing status query param", 400);
 
 		type FriendshipWithUsers = Prisma.FriendshipGetPayload<{
 			include: { user: true; friend: true };
@@ -57,10 +57,9 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 
 	// POST /friendships
 	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
-		const { userId, friendId, status } = request.body as {
+		const { userId, friendId } = request.body as {
 			userId: number;
 			friendId: number;
-			status: string;
 		};
 
 		if (userId === friendId) {
