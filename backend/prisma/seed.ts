@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { FriendshipStatus, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -21,17 +21,21 @@ async function main() {
     });
   }
 
-  num = 5;
+  num = 9; // make sure this is divisible by 3 for equal distribution
+  const statuses: FriendshipStatus[] = ["accepted", "pending", "blocked"];
+
   for (let i = 1; i <= num; i++) {
+    const status = statuses[(i - 1) % statuses.length]; // rotate statuses
     await prisma.friendship.create({
       data: {
-        userId: i,
+        userId: 1,
         friendId: i + 1,
-        status: "accepted",
+        status,
       },
     });
   }
-  console.log(`✅ Seeded ${num} friendships`);
+
+  console.log(`✅ Seeded ${num} friendships equally across accepted, pending, and blocked`);
 }
 
 main()
