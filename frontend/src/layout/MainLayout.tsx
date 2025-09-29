@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
-        userId={userId}
+        userId={"0"}
       />
       <BasicInfoPopup
         open={showBasicInfo}
