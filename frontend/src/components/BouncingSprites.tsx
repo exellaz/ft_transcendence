@@ -1,15 +1,16 @@
 import React from 'react';
 import AnimatedSprite from './AnimatedSprite';
+import type { AnimatedSpriteProps } from './AnimatedSprite';
 
 const BouncingSprites: React.FC = () => {
-  const sprites = [
+  const sprites: AnimatedSpriteProps[] = [
     {
       src: '/assets/yellow-ghost.png',
       horizontalPosition: 10,
       mirrorSprite: true
     },
     {
-      src: '/assets/red-ghost.png', // If you have different colored ghosts
+      src: '/assets/red-ghost.png', 
       horizontalPosition: 25,
       mirrorSprite: true
     },
@@ -18,7 +19,7 @@ const BouncingSprites: React.FC = () => {
       horizontalPosition: 75,
     },
     {
-      src: '/assets/blue-ghost.png', // Reuse but different position
+      src: '/assets/blue-ghost.png',
       horizontalPosition: 90,
     }
   ];
@@ -29,10 +30,10 @@ const BouncingSprites: React.FC = () => {
         <AnimatedSprite
           key={index}
           src={sprite.src}
-          horizontalPosition={sprite.horizontalPosition}
+          size={sprite.size}
           speed={sprite.speed}
           delay={sprite.delay}
-          size={sprite.size}
+          horizontalPosition={sprite.horizontalPosition}
           mirrorSprite={sprite.mirrorSprite}
         />
       ))}

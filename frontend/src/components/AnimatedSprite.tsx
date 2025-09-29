@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-interface AnimatedSpriteProps {
+export interface AnimatedSpriteProps {
   src: string;
   size?: number;
   speed?: number;
@@ -20,20 +20,18 @@ interface AnimatedSpriteProps {
 // 7. repeat...
 const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
   src,
-  size = 80,
+  size = 100,
   speed = 5,
   delay = 0,
   horizontalPosition,
   mirrorSprite = false
 }) => {
-  // Randomize starting position (0 to window height)
-  const [position, setPosition] = useState(() => {
-    return Math.random() * (window.innerHeight - size);
-  });
-  // Randomize starting direction
-  const [direction, setDirection] = useState(() => {
-    return Math.random() > 0.5 ? 1 : -1; // Randomly up or down
-  }); // 1 = down, -1 = up
+  // 1 = down, -1 = up
+  // Randomize starting direction and starting position (0 to window height)
+  const [sprite, setSprite] = useState(() => ({
+    pos: Math.random() * (window.innerHeight - size),
+    dir: Math.random() > 0.5 ? 1 : -1,
+  })); 
 
   useEffect(() => {
     const startTime = Date.now() + delay;
@@ -45,25 +43,24 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
         return;
       }
 
-      setPosition((prevPos) => {
+      setSprite((prev) => {
         const windowHeight = window.innerHeight;
         const spriteHeight = size;
         const maxPosition = windowHeight - spriteHeight;
 
-        let newPos = prevPos + direction * speed;
-        let newDirection = direction;
+        let newPos = prev.pos + prev.dir * speed;
+        let newDir = prev.dir;
 
         // Bounce off edges
         if (newPos >= maxPosition) {
           newPos = maxPosition;
-          newDirection = -1;
+          newDir = -1;
         } else if (newPos <= 0) {
           newPos = 0;
-          newDirection = 1;
+          newDir = 1;
         }
 
-        setDirection(newDirection);
-        return newPos;
+        return { pos: newPos, dir: newDir };
       });
 
       requestAnimationFrame(animate);
@@ -82,7 +79,7 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
         width: size,
         height: size,
         left: `${horizontalPosition}%`,
-        top: `${position}px`,
+        top: `${sprite.pos}px`,
         transform: `translateX(-50%) ${mirrorSprite ? 'scaleX(-1)' : ''}` // Center horizontally
       }}
     />
