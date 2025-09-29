@@ -22,7 +22,7 @@ export enum CameraTracking {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   avatarUrl?: string | null;

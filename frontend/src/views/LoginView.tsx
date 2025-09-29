@@ -11,6 +11,8 @@ import Logo from "../components/Logo";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import TextButton from "../components/TextButton";
 
+import { login } from "../lib/apiClient";
+
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`LoginView.${key}`);
@@ -50,25 +52,18 @@ const LoginView: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          identifier: formData.identifier,
-          password: formData.password
-        }),
+      const response = await login({
+        identifier: formData.identifier,
+        password: formData.password,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+      if (!response.success || !response.data) {
+        throw new Error(response.error || "Login failed");
       }
 
       // Success: Store token and user data, then redirect
-      localStorage.setItem("authToken", data.data.token);
-      setUser(data.data.user);
+      localStorage.setItem("authToken", response.data.token);
+      setUser(response.data.user);
       navigate("/main-menu");
     } catch (err) {
       setError((err as Error).message);
