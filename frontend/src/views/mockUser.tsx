@@ -10,11 +10,10 @@ interface PlayerInfo {
 }
 
 interface ChoosePlayerProps {
-  open?: boolean; // 👈 optional now
+  open?: boolean;
   onClose?: () => void;
 }
 
-const availableNames = ["alice", "bob", "charlie", "dave", "eve"];
 const availableSprites = [
   "../../../assets/green-ghost.png",
   "../../../assets/white-ghost.png",
@@ -28,10 +27,11 @@ function loadPlayer(): PlayerInfo {
   const existing = sessionStorage.getItem("playerInfo");
   if (existing) return JSON.parse(existing);
 
+  // Start with empty name + sprite
   const defaultInfo: PlayerInfo = {
     id: clientId,
-    name: "player",
-    sprite: availableSprites[0],
+    name: "",
+    sprite: "",
   };
   sessionStorage.setItem("playerInfo", JSON.stringify(defaultInfo));
   return defaultInfo;
@@ -49,28 +49,32 @@ const ChoosePlayer: React.FC<ChoosePlayerProps> = ({ open = true, onClose }) => 
   if (!open) return null;
 
   function handleDone() {
-    if (onClose) onClose(); // optional callback
-    navigate("/main-menu"); // 👈 go back to Main Menu
+    if (!playerInfo.name.trim() || !playerInfo.sprite) return; // safety check
+    if (onClose) onClose();
+    navigate("/main-menu");
   }
+
+  const isValid = playerInfo.name.trim() !== "" && playerInfo.sprite !== "";
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white rounded-2xl p-6 w-[400px] shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Choose Player</h2>
+        <h2 className="text-xl font-bold mb-4">
+          Mock Player (will be deleted after login done)
+        </h2>
 
-        {/* Name selector */}
+        {/* Name input */}
         <label className="block mb-2">Name:</label>
-        <select
-          className="w-full border rounded p-2 mb-4"
+        <input
+          type="text"
+          className="w-full border rounded p-2 mb-2"
+          placeholder="Enter your name..."
           value={playerInfo.name}
           onChange={(e) => setPlayerInfo({ ...playerInfo, name: e.target.value })}
-        >
-          {availableNames.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
+        />
+        {!playerInfo.name.trim() && (
+          <p className="text-red-500 text-sm mb-2">Name is required</p>
+        )}
 
         {/* Sprite picker */}
         <label className="block mb-2">Sprite:</label>
@@ -89,18 +93,31 @@ const ChoosePlayer: React.FC<ChoosePlayerProps> = ({ open = true, onClose }) => 
             />
           ))}
         </div>
+        {!playerInfo.sprite && (
+          <p className="text-red-500 text-sm mt-2">Sprite is required</p>
+        )}
 
         {/* Preview */}
-        <div className="mt-4 text-center">
-          <p>
-            Selected: <b>{playerInfo.name}</b>
-          </p>
-          <img src={playerInfo.sprite} alt="preview" className="mx-auto w-12 h-12" />
-        </div>
+        {isValid && (
+          <div className="mt-4 text-center">
+            <p>
+              Selected: <b>{playerInfo.name}</b>
+            </p>
+            <img
+              src={playerInfo.sprite}
+              alt="preview"
+              className="mx-auto w-12 h-12"
+            />
+          </div>
+        )}
 
         {/* Done button */}
         <div className="mt-6 flex justify-end">
-          <Button variant="bigYellow" onClick={handleDone}>
+          <Button
+            variant="bigYellow"
+            onClick={handleDone}
+            disabled={!isValid} // only enabled if both chosen
+          >
             Done
           </Button>
         </div>
