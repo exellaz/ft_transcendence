@@ -64,10 +64,10 @@ const NormalModeView: React.FC = () => {
 	if (room) {
 	  // always handle both id and roomId
 	  const roomIdToUse = room.id || room.roomId;
-	  sessionStorage.setItem("RoomId", roomIdToUse);
-	  sessionStorage.setItem("RoomName", room.name);
-	  sessionStorage.setItem("RoomLeaderId", room.leaderId);
-      sessionStorage.setItem("RoomType", "private");
+	//   sessionStorage.setItem("RoomId", roomIdToUse);
+	//   sessionStorage.setItem("RoomName", room.name);
+	//   sessionStorage.setItem("RoomLeaderId", room.leaderId);
+    //   sessionStorage.setItem("RoomType", "private");
 	  navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
 	} else {
 	  setStatus({ text: "❌ Failed to create room", color: "red" });
@@ -101,18 +101,23 @@ const NormalModeView: React.FC = () => {
 
 	//if had room, navigate to it
 	const roomIdToUse = room.id || room.roomId;
-	sessionStorage.setItem("RoomId", roomIdToUse);
-	sessionStorage.setItem("RoomName", room.name);
-	sessionStorage.setItem("RoomLeaderId", room.leaderId);
-    sessionStorage.setItem("RoomType", "public");
-	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
+	// sessionStorage.setItem("RoomId", roomIdToUse);
+	// sessionStorage.setItem("RoomName", room.name);
+	// sessionStorage.setItem("RoomLeaderId", room.leaderId);
+    // sessionStorage.setItem("RoomType", "public");
+	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room, joinType: "public" } });
   }
 
   //join private room - fetch rooms from API, find the room by ID, then navigate to the room
   async function handleJoinPrivateRoom() {
 	//find room by ID
+	const inputId = roomId.trim();
 	const rooms = await fetchRooms();
-	const room = rooms.find((r: any) => r.id === roomId.trim());
+	const room = rooms.find((r: any) =>
+			  (r.id && r.id.toString() === inputId) ||
+			  (r.roomId && r.roomId.toString() === inputId)
+			  && r.private === true
+			);
 
 	//if no room, show error
 	if (!room) {
@@ -125,10 +130,10 @@ const NormalModeView: React.FC = () => {
 	}
 
 	//if found room, navigate to it
-	sessionStorage.setItem("RoomId", room.id);
-	sessionStorage.setItem("RoomName", room.name);
-    sessionStorage.setItem("RoomType", "private");
-	navigate(getRoomPath(room.teamSize, room.id), { state: { room } });
+	// sessionStorage.setItem("RoomId", room.id);
+	// sessionStorage.setItem("RoomName", room.name);
+    // sessionStorage.setItem("RoomType", "private");
+	navigate(getRoomPath(room.teamSize, room.id), { state: { room, joinType: "private" } });
   }
 
   // Helper to go back one step

@@ -359,8 +359,9 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// ---- guard check ----
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;
-		//if already marked as disconnected, ignore
-		if (room.disconnectPlayers.has(clientId)) return;
+		console.log("Disconnect event for", clientId, "disconnectPlayers=", [...room.disconnectPlayers]); ////debug
+		//if already marked as disconnected ( only happen in game )
+		if (room.disconnectPlayers.has(clientId) && room.gameState.gameStarted) return;
 
 		// always trust the latest role from the server mapping
 		const player = room.clientRoles.get(clientId);
@@ -461,7 +462,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 			const playerInfo = room.clientRoles.get(clientId);
 			broadcast(room, {
 				type: "roleUpdate",
-				newPlayer: playerInfo,
+				// newPlayer: playerInfo,
 				gameState: room.gameState,
 				leaderId: room.leaderId,
 				disconnectPlayers: room.disconnectPlayers,

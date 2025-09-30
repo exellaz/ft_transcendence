@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 
 // components
@@ -26,14 +26,45 @@ const SinglesRoomView: React.FC = () => {
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: string; type: string; id: string } | null>(null);
+  const { roomId: paramRoomId } = useParams();
+  const joinType = (location.state as any)?.joinType || "private";
+  console.log("Param roomId:", paramRoomId); //// debug
 
   // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("RoomId");
-  if (!roomId) return <div>{translate("no_room_id")}</div>;
-  const roomName = sessionStorage.getItem("RoomName");
-  if (!roomName) return <div>{translate("no_room_name")}</div>;
-  const leaderId = sessionStorage.getItem("RoomLeaderId") || "";
-  const roomType = sessionStorage.getItem("RoomType") || "";
+  const roomId = sessionStorage.getItem("RoomId") || "";
+//   if (!roomId) return <div>{translate("no_room_id")}</div>;
+//   const roomName = sessionStorage.getItem("RoomName");
+//   if (!roomName) return <div>{translate("no_room_name")}</div>;
+//   const leaderId = sessionStorage.getItem("RoomLeaderId") || "";
+//   const roomType = sessionStorage.getItem("RoomType") || "";
+
+  React.useEffect(() => {
+	if (paramRoomId) {
+		sessionStorage.setItem("RoomId", paramRoomId);
+	}
+  }, [paramRoomId]);
+
+  React.useEffect(() => {
+  if (!roomId) return;
+    fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`)
+      .then(res => res.json())
+      .then(data => {
+		if (joinType === "private" && !data.private) {
+			sessionStorage.removeItem("RoomId");
+			alert("⚠️ this is a public room");
+			navigate("/main-menu");
+			return;
+		}
+        setRoomInfo({
+		  id: data.id,
+          name: data.name,
+          leaderId: data.leader,
+          type: data.private ? "private" : "public",
+        });
+      });
+  }, [roomId, joinType, navigate]);
 
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
@@ -57,7 +88,7 @@ const SinglesRoomView: React.FC = () => {
 	onLeave,
 	role,
 	countdown,
-  } = useRoomWebSocket({roomId, roomName, leaderId});
+  } = useRoomWebSocket({roomId: roomInfo?.id || "", roomName: roomInfo?.name || "", leaderId: roomInfo?.leaderId || ""});
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
@@ -95,6 +126,9 @@ const SinglesRoomView: React.FC = () => {
 
   return (
 	<>
+	{!roomId ? (
+		<div>{translate("no_room_id")}</div>
+	) : (
     <RoomLayout>
 		<div className="relative w-full flex justify-center">
 	       {/* show countdown */}
@@ -111,7 +145,7 @@ const SinglesRoomView: React.FC = () => {
                 <TournamentHeader>
                   <div className="flex-row-center gap-2">
                     <p>{translate("singles_room")}</p>
-                    {roomType === "private" && (
+                    {roomInfo?.type === "private" && (
                       <>
                         <img
                         src="/assets/link.png"
@@ -130,10 +164,10 @@ const SinglesRoomView: React.FC = () => {
                       </>
                     )}
                   </div>
-                    {roomType === "private" && (
+                    {roomInfo?.type === "private" && (
                       <>
                         <p>
-                          ({translate("room_id")}: {roomId})
+                          ({translate("room_id")}: {roomInfo?.id})
                         </p>
                       </>
                     )}
@@ -185,6 +219,7 @@ const SinglesRoomView: React.FC = () => {
 		}}
       />
     </RoomLayout>
+	)}
 	</>
   );
 };
