@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import { getUserById, updateUserById } from "../lib/apiClient";
 import { formatDate } from "../utils/date";
-import { validateUsername } from "../utils/validation";
 // TODO: Remove mock data import when integrating real API
 // import type { BasicInfo } from "../types/apiInterfaces";
 // import { mockBasicInfo } from "../data/mockUsers";

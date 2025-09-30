@@ -15,6 +15,25 @@
     "choose_sprite": "选择一个角色",
     "confirm": "确认"
   },
+  "CustomModeView": {
+    "choose_action": "选择操作",
+    "play_locally": "本地游玩",
+    "create_room": "创建房间",
+    "join_room": "加入房间",
+    "back": "返回",
+    "choose_type": "选择游戏类型",
+    "singles": "单人游戏",
+    "doubles": "双人游戏",
+    "choose_join": "选择加入方式",
+    "quick_join": "快速加入",
+    "join_private": "加入私人房间",
+    "enter_room_id": "输入房间ID",
+    "create_local_game": "创建本地游戏？",
+    "create_singles_game": "创建单人游戏？",
+    "create_doubles_game": "创建双人游戏？",
+    "join_singles_game": "加入单人游戏？",
+    "join_doubles_game": "加入双人游戏？"
+  },
   "DoublesRoomView": {
     "doubles_room": "双人房间",
     "room_id": "房间ID",
@@ -43,23 +62,6 @@
     "quarterfinals": "四分之一决赛",
     "semifinals": "半决赛",
     "finals": "决赛"
-  },
-  "CustomModeView": {
-    "choose_action": "选择操作",
-    "create_room": "创建房间",
-    "join_room": "加入房间",
-    "back": "返回",
-    "choose_type": "选择游戏类型",
-    "singles": "单人游戏",
-    "doubles": "双人游戏",
-    "choose_join": "选择加入方式",
-    "quick_join": "快速加入",
-    "join_private": "加入私人房间",
-    "enter_room_id": "输入房间ID",
-    "create_singles_game": "创建单人游戏？",
-    "create_doubles_game": "创建双人游戏？",
-    "join_singles_game": "加入单人游戏？",
-    "join_doubles_game": "加入双人游戏？"
   },
   "ResultsView": {
     "results": "结果",

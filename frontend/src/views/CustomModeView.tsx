@@ -17,6 +17,7 @@ const CustomModeView: React.FC = () => {
   const navigate = useNavigate();
   const [menuStep, setMenuStep] = useState("action");
   const [roomId, setRoomId] = useState("");
+  const [showCreateLocalGame, setShowCreateLocalGame] = useState(false);
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
@@ -42,6 +43,12 @@ const CustomModeView: React.FC = () => {
         return (
           <>
             <Subheader>{translate("choose_action")}</Subheader>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowCreateLocalGame(true)}
+            >
+              {translate("play_locally")}
+            </Button>
             <Button
               variant="bigYellow"
               onClick={() => setMenuStep("createRoom")}
@@ -142,10 +149,16 @@ const CustomModeView: React.FC = () => {
 
   return (
     <MainLayout>
-      <Card>
+      <Card className="gap-6">
         <Logo />
         {renderMenu()}
       </Card>
+      <ConfirmationPopup
+        text={translate("create_local_game")}
+        open={showCreateLocalGame}
+        onClose={() => setShowCreateLocalGame(false)}
+        redirectPath="/local-game"
+      />
       <ConfirmationPopup
         text={translate("create_singles_game")}
         open={showCreateSinglesGame}

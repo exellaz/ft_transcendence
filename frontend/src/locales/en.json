@@ -15,12 +15,34 @@
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
   },
+  "CustomModeView": {
+    "choose_action": "CHOOSE AN ACTION",
+    "play_locally": "PLAY LOCALLY",
+    "create_room": "CREATE ROOM",
+    "join_room": "JOIN ROOM",
+    "back": "BACK",
+    "choose_type": "CHOOSE GAME TYPE",
+    "singles": "SINGLES",
+    "doubles": "DOUBLES",
+    "choose_join": "CHOOSE HOW TO JOIN",
+    "quick_join": "QUICK JOIN",
+    "join_private": "JOIN PRIVATE ROOM",
+    "enter_room_id": "Enter room ID",
+    "create_local_game": "Create a local game?",
+    "create_singles_game": "Create a singles game?",
+    "create_doubles_game": "Create a doubles game?",
+    "join_singles_game": "Join a singles game?",
+    "join_doubles_game": "Join a doubles game?"
+  },
   "DoublesRoomView": {
     "doubles_room": "Doubles Room",
     "room_id": "Room ID",
     "ready": "Ready",
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?"
+  },
+  "LocalGameView": {
+
   },
   "LoginView": {
     "username_or_email": "Username / Email",
@@ -43,23 +65,6 @@
     "quarterfinals": "Quarterfinals",
     "semifinals": "Semifinals",
     "finals": "Finals"
-  },
-  "CustomModeView": {
-    "choose_action": "CHOOSE AN ACTION",
-    "create_room": "CREATE ROOM",
-    "join_room": "JOIN ROOM",
-    "back": "BACK",
-    "choose_type": "CHOOSE GAME TYPE",
-    "singles": "SINGLES",
-    "doubles": "DOUBLES",
-    "choose_join": "CHOOSE HOW TO JOIN",
-    "quick_join": "QUICK JOIN",
-    "join_private": "JOIN PRIVATE ROOM",
-    "enter_room_id": "Enter room ID",
-    "create_singles_game": "Create a singles game?",
-    "create_doubles_game": "Create a doubles game?",
-    "join_singles_game": "Join a singles game?",
-    "join_doubles_game": "Join a doubles game?"
   },
   "ResultsView": {
     "results": "Results",

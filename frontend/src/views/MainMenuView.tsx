@@ -19,7 +19,7 @@ const MainMenuView: React.FC = () => {
 
   return (
     <MainLayout>
-      <Card>
+      <Card className="gap-6">
         <Logo />
         <Button variant="bigYellow" onClick={() => setShowJoinTournament(true)}>
           {translate("tournament_mode")}
