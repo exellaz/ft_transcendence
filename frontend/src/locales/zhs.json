@@ -15,6 +15,7 @@
     "ready": "准备",
 	"unready": "取消准备",
 	"start": "开始游戏",
+	"game_start": "游戏开始!",
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？"
   },
@@ -84,6 +85,7 @@
     "ready": "准备",
     "unready": "取消准备",
     "start": "开始游戏",
+	"game_start": "游戏开始!",
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？"
   },

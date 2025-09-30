@@ -24,6 +24,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	const [ready, setReady] = useState(false); // Whether the player is ready
 	const [gameStarted, setGameStarted] = useState(false); // Whether the game has started
 	const [canStart, setCanStart] = useState(false); // Whether the game can be started (all players ready)
+	const [countdown, setCountdown] = useState<number | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 
 	// Ensure client ID is set
@@ -78,7 +79,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 						console.error("Invalid message: missing type:", data);
 						return;
 					}
-					const allowedTypes = ["roleUpdate", "state"];
+					const allowedTypes = ["roleUpdate", "state", "countdown", "countdownCancel"];
 					if (!allowedTypes.includes(data.type)) {
 						if (data.type === "chat") return;
 						console.error(`unsupported message type ${data.type}`);
@@ -142,6 +143,16 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 							setGameStarted(true);
 						}
 					}
+					if (data.type === "countdown") {
+						if (typeof data.remaining === "number") {
+							//get the remaining time from server and set to countdown state
+							setCountdown(data.remaining);
+						}
+					}
+					if (data.type === "countdownCancel") {
+						//cancel the countdown
+						setCountdown(null);
+					}
 				} catch (err) {
 					console.error("Invalid room message:", err);
 					ws.close(1000, "server error");
@@ -200,8 +211,8 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 		role,
 		ready,
 		setReady,
-		gameStarted,
 		canStart,
+		countdown,
 		onSwitch,
 		onReady,
 		onStartBtn,

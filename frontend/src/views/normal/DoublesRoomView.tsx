@@ -58,17 +58,21 @@ const DoublesRoomView: React.FC = () => {
     onStartBtn,
     onLeave,
     role,
-    gameStarted,
+	countdown,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
   React.useEffect(() => {
-    if (gameStarted) {
-      sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
-      navigate("/game");
-    }
-  }, [gameStarted, navigate]);
+	//when count down finish delay 1 sec to start game
+	if (countdown === 0) {
+	  const timer = setTimeout(() => {
+		sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
+		navigate("/game");
+	  }, 1000);
+	  return () => clearTimeout(timer);
+	}
+  }, [countdown, navigate, role]);
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
@@ -92,58 +96,68 @@ const DoublesRoomView: React.FC = () => {
 
   return (
     <RoomLayout>
-      <Card size="large">
-        <div className="w-full h-full flex-row-center gap-10">
-          <div className="w-[50%] h-full flex-col-between gap-6">
-            <TournamentHeader>
-              <div className="flex-row-center gap-2">
-                <p>{translate("doubles_room")}</p>
-                <img
-                  src="/assets/link.png"
-                  className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
-                />
-              </div>
-              <p>
-                ({translate("room_id")}: {roomId})
+		<div className="relative w-full flex justify-center">
+			{/* show countdown */}
+	        {countdown !== null && (
+              <p className="absolute -top-8 text-6xl font-bold text-white">
+               {countdown > 0
+                 ? countdown
+                 : translate("game_start")}
               </p>
-            </TournamentHeader>
-			{/* player team block: check ready and switch button */}
-            <ReadyRoomPlayers variant="doubles" players={players} onSwitchTeam={onSwitch} />
-            <div className="flex-row-center gap-6">
-              {/* Ready button (not for leader) */}
-			  {!isLeader && (
-			    <Button variant="green" onClick={onReady}>
-			      {ready ? translate("unready") : translate("ready")}
-			    </Button>
-			  )}
+            )}
+			<Card size="large">
+				<div className="w-full h-full flex-row-center gap-10">
+				<div className="w-[50%] h-full flex-col-between gap-6">
+					<TournamentHeader>
+					<div className="flex-row-center gap-2">
+						<p>{translate("doubles_room")}</p>
+						<img
+						src="/assets/link.png"
+						className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+						/>
+					</div>
+					<p>
+						({translate("room_id")}: {roomId})
+					</p>
+					</TournamentHeader>
+					{/* player team block: check ready and switch button */}
+					<ReadyRoomPlayers variant="doubles" players={players} onSwitchTeam={onSwitch} />
+					<div className="flex-row-center gap-6">
+					{/* Ready button (not for leader) */}
+					{!isLeader && (
+						<Button variant="green" onClick={onReady}>
+						{ready ? translate("unready") : translate("ready")}
+						</Button>
+					)}
 
-			  {/* Start button (leader only) */}
-			  {isLeader && (
-			    <Button
-			      variant="green"
-			      disabled={!canStart}
-			      onClick={onStartBtn}
-			    >
-			      {translate("start")}
-			    </Button>
-			  )}
+					{/* Start button (leader only) */}
+					{isLeader && (
+						<Button
+						variant="green"
+						disabled={!canStart}
+						onClick={onStartBtn}
+						>
+						{translate("start")}
+						</Button>
+					)}
 
-			  {/* Leave button */}
-			  <Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
-			    {translate("leave_room")}
-			  </Button>
-            </div>
-          </div>
-		  {/* live chat */}
-          <LiveChat
-            players={players}
-            chatMessages={chatMessages}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMsg}
-          />
-        </div>
-      </Card>
+					{/* Leave button */}
+					<Button variant="red" onClick={() => { onLeave(); navigate("/main-menu"); }}>
+						{translate("leave_room")}
+					</Button>
+					</div>
+				</div>
+				{/* live chat */}
+				<LiveChat
+					players={players}
+					chatMessages={chatMessages}
+					message={message}
+					setMessage={setMessage}
+					onSendMessage={handleSendMsg}
+				/>
+				</div>
+			</Card>
+		</div>
 	  {/* confirm to leave room */}
       <ConfirmationPopup
         text={translate("leave_confirmation")}

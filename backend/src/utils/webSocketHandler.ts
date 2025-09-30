@@ -2,7 +2,8 @@ import { Game } from "../modules/game/game";
 import type { Room } from "../modules/room/room";
 import { rooms, startRoomLoop, roomStartGame} from "../modules/room/room";
 import { createLiveChatMessage, } from "../modules/chat/liveChat";
-import { broadcast, handleSwitchSide, updateCanStart, handlePlayerDisconnect } from "./utils";
+import { broadcast, handleSwitchSide, updateCanStart, handlePlayerDisconnect, startCountdown, cancelCountdown } from "./utils";
+import { start } from "repl";
 
 const game = new Game(); //create game object
 
@@ -226,61 +227,78 @@ export class WebSocketHandler implements IWebSocketHandler {
 				if (role.role === "spectator" || clientId === room.leaderId) return;
 
 				// Step 1: check player is ready
-                const player = room.clientRoles.get(clientId);
-                if (!player) return;
-                //update the player ready status
-                if (player) {
-                    player.ready = msg.ready;
-                }
-                //update the team each player ready status in gameState
+				const player = room.clientRoles.get(clientId);
+				if (!player) return;
+				//update the player ready status
+				if (player) {
+					player.ready = msg.ready;
+				}
+				//update the team each player ready status in gameState
 				room.gameState.teams.left = room.gameState.teams.left.map((p:any) => {
-                    if (p.clientId === clientId) {
-                        return { ...p, ready: msg.ready };
-                    }
-                    return p;
-                });
+					if (p.clientId === clientId) {
+						return { ...p, ready: msg.ready };
+					}
+					return p;
+				});
 				room.gameState.teams.right = room.gameState.teams.right.map((p:any) => {
-                    if (p.clientId === clientId) {
-                        return { ...p, ready: msg.ready };
-                    }
-                    return p;
-                });
-
-                if (msg.ready == true) {
-                    broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} is ready`));
-                    console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ready in room (${room.name}) [${room.id}]`);
-                }
-				//broadcastState(room);
-				const { canStart, reason } = updateCanStart(room);
-				broadcast(room, {
-					type: "roleUpdate",
-					gameState: room.gameState,
-					leaderId: room.leaderId,
-					canStart: canStart,
+					if (p.clientId === clientId) {
+						return { ...p, ready: msg.ready };
+					}
+					return p;
 				});
 
-				// auto -start check for equal teams (alert message only)
-				if (!canStart && reason && msg.ready) {
-                    if (reason === "Teams are not equal") {
-                        broadcast(room, createLiveChatMessage("system", "system", `Cannot start: Teams are not equal`));
-                        console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: Teams are not equal`);
-                    }
+				if (msg.ready === true) {
+					broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} is ready`));
+					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is ready in room (${room.name}) [${room.id}]`);
+
+					//broadcastState(room);
+					const { canStart, reason } = updateCanStart(room);
+					broadcast(room, {
+						type: "roleUpdate",
+						gameState: room.gameState,
+						leaderId: room.leaderId,
+						canStart: canStart,
+					});
+
+					// auto-start check for equal teams (alert message only)
+					if (!canStart && reason && msg.ready) {
+						if (reason === "Teams are not equal") {
+							broadcast(room, createLiveChatMessage("system", "system", `Cannot start: Teams are not equal`));
+							console.log(`Cannot auto-start game in room (${room.name}) [${room.id}]: Teams are not equal`);
+						}
+						return;
+					}
+
+					// Step 2: auto-start (public room)
+					if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length) && room.leaderId === "") {
+						//room.startRequestedBy = "auto";
+						room.gameState.gameStarted = false;
+
+						console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId ? room.leaderId : "none"})`);
+
+						startCountdown(room, () => {
+							if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+								roomStartGame(room);
+								startRoomLoop(room);
+							}
+						});
+					}
 					return;
 				}
-
-				// Step 2: auto-start (public room)
-				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length) && room.leaderId === "") {
-					//room.startRequestedBy = "auto";
-					room.gameState.gameStarted = false;
-
-					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId ? room.leaderId : "none"})`);
-
-					if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
-						roomStartGame(room);
-						startRoomLoop(room);
-					}
+				else
+				{
+					//if unready during countdown, cancel the countdown and broadcast the player is not ready
+					// console.log(`Player ${player.playerName} (${role.role}) [${role.id}] is not ready in room (${room.name}) [${room.id}]`); ////debug
+					cancelCountdown(room);
+					const { canStart } = updateCanStart(room);
+					broadcast(room, {
+						type: "roleUpdate",
+						gameState: room.gameState,
+						leaderId: room.leaderId,
+						canStart: canStart,
+					});
+					return;
 				}
-				return;
 			}
 			if (msg.type === "start") {
 				if (typeof msg.start !== "boolean" || msg.start === null || msg.start === undefined) {
@@ -292,14 +310,12 @@ export class WebSocketHandler implements IWebSocketHandler {
 					//if not enough player, cannot start
 					const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
 					if (totalPlayers < room.teamSize * 2) {
-						socket.send(JSON.stringify({ type: "error", text: "insufficient players" }));
 						console.log(`Player ${player.playerName} (${role.role}) [${role.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
 						return;
 					}
 
 					//if not all player ready, cannot start
 					if(!room.canStart) {
-						socket.send(JSON.stringify({ type: "error", text: "Not all players are ready" }));
 						console.log(`Player ${player.playerName} (${role.role}) [${role.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
 						return;
 					}
@@ -314,10 +330,13 @@ export class WebSocketHandler implements IWebSocketHandler {
 						canStart: canStart,
 					});
 
-					if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
-						roomStartGame(room);
-						startRoomLoop(room);
-					}
+					// Start the countdown to start the game
+					startCountdown(room, () => {
+						if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+							roomStartGame(room);
+							startRoomLoop(room);
+						}
+					});
 					return;
 				}
 			}
@@ -410,6 +429,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 			broadcast(room, createLiveChatMessage("system", "system", `Spectator left.`));
 			room.clientRoles.delete(clientId);
 			return;
+		}
+
+		// ---- case: disconnect during countdown ----
+		if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+			cancelCountdown(room);
 		}
 
 		// ---- case: leave before game start / game ended ----

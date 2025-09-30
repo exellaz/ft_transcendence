@@ -61,6 +61,8 @@ export interface Room {
 	leaderId: string; // clientId of the room leader
     private: boolean; // Flag to indicate if the room is private
     disconnectTimers?: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle for reconnection grace period
+	countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
+	countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
 //default value for setting

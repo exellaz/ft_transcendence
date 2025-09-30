@@ -56,17 +56,21 @@ const SinglesRoomView: React.FC = () => {
 	onStartBtn,
 	onLeave,
 	role,
-	gameStarted,
+	countdown,
   } = useRoomWebSocket({roomId, roomName, leaderId});
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
   React.useEffect(() => {
-    if (gameStarted) {
-      sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
-      navigate("/game");
+	//when count down finish delay 1 sec to start game
+    if (countdown === 0) {
+      const timer = setTimeout(() => {
+        sessionStorage.setItem("playerSide", role.startsWith("left") ? "left" : "right");
+        navigate("/game");
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [gameStarted, navigate]);
+  }, [countdown, navigate, role]);
 
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
@@ -90,75 +94,86 @@ const SinglesRoomView: React.FC = () => {
   // }, [roomId]);
 
   return (
+	<>
     <RoomLayout>
-      <Card size="large">
-        <div className="w-full h-full flex-row-center gap-10">
-          <div className="w-[50%] h-full flex-col-between gap-6">
-            <TournamentHeader>
-              <div className="flex-row-center gap-2">
-                <p>{translate("singles_room")}</p>
-                {roomType === "private" && (
-                  <>
-                    <img
-                    src="/assets/link.png"
-                    className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
-                    onClick={() => {
-                      if (roomId) {
-                        navigator.clipboard.writeText(roomId).then(() => {
-                        // Optional: show toast or alert
-                        alert("Room ID copied to clipboard!");
-                        }).catch(err => {
-                        console.error("Failed to copy:", err);
-                        });
-                      }
-                    }}
-                    />
-                  </>
-                )}
+		<div className="relative w-full flex justify-center">
+	       {/* show countdown */}
+	       {countdown !== null && (
+             <p className="absolute -top-8 text-6xl font-bold text-white">
+              {countdown > 0
+                ? countdown
+                : translate("game_start")}
+             </p>
+           )}
+          <Card size="large" className="w-full max-w-4xl">
+            <div className="w-full h-full flex-row-center gap-10">
+              <div className="w-[50%] h-full flex-col-between gap-6">
+                <TournamentHeader>
+                  <div className="flex-row-center gap-2">
+                    <p>{translate("singles_room")}</p>
+                    {roomType === "private" && (
+                      <>
+                        <img
+                        src="/assets/link.png"
+                        className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+                        onClick={() => {
+                          if (roomId) {
+                            navigator.clipboard.writeText(roomId).then(() => {
+                            // Optional: show toast or alert
+                            alert("Room ID copied to clipboard!");
+                            }).catch(err => {
+                            console.error("Failed to copy:", err);
+                            });
+                          }
+                        }}
+                        />
+                      </>
+                    )}
+                  </div>
+                    {roomType === "private" && (
+                      <>
+                        <p>
+                          ({translate("room_id")}: {roomId})
+                        </p>
+                      </>
+                    )}
+                </TournamentHeader>
+	    		{/* player team block: check ready and switch button */}
+                <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} />
+	    		<div className="flex-row-center gap-6">
+	    		  {/* Ready button (not for leader) */}
+	    		  {!isLeader && (
+	    		    <Button variant="green" onClick={onReady}>
+	    		      {ready ? translate("unready") : translate("ready")}
+	    		    </Button>
+	    		  )}
+	    		  {/* Start button (leader only) */}
+	    		  {isLeader && (
+	    		    <Button
+	    		      variant="green"
+	    		      disabled={!canStart}
+	    		      onClick={onStartBtn}
+	    		    >
+	    		      {translate("start")}
+	    		    </Button>
+	    		  )}
+	    		  {/* Leave button */}
+	    		  <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
+	    		    {translate("leave_room")}
+	    		  </Button>
+	    		</div>
               </div>
-                {roomType === "private" && (
-                  <>
-                    <p>
-                      ({translate("room_id")}: {roomId})
-                    </p>
-                  </>
-                )}
-            </TournamentHeader>
-			{/* player team block: check ready and switch button */}
-            <ReadyRoomPlayers variant="singles" players={players} onSwitchTeam={onSwitch} />
-			<div className="flex-row-center gap-6">
-			  {/* Ready button (not for leader) */}
-			  {!isLeader && (
-			    <Button variant="green" onClick={onReady}>
-			      {ready ? translate("unready") : translate("ready")}
-			    </Button>
-			  )}
-			  {/* Start button (leader only) */}
-			  {isLeader && (
-			    <Button
-			      variant="green"
-			      disabled={!canStart}
-			      onClick={onStartBtn}
-			    >
-			      {translate("start")}
-			    </Button>
-			  )}
-			  {/* Leave button */}
-			  <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
-			    {translate("leave_room")}
-			  </Button>
-			</div>
-          </div>
-		  {/* live chat */}
-          <LiveChat
-            players={players}
-            chatMessages={chatMessages}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMsg}
-          />
-        </div>
-      </Card>
+	    	  {/* live chat */}
+              <LiveChat
+                players={players}
+                chatMessages={chatMessages}
+                message={message}
+                setMessage={setMessage}
+                onSendMessage={handleSendMsg}
+              />
+            </div>
+          </Card>
+	  </div>
 	  {/* confirm to leave room */}
       <ConfirmationPopup
         text={translate("leave_confirmation")}
@@ -170,6 +185,7 @@ const SinglesRoomView: React.FC = () => {
 		}}
       />
     </RoomLayout>
+	</>
   );
 };
 

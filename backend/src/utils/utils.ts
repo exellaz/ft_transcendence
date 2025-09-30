@@ -304,3 +304,53 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
         room.disconnectTimers.set(clientId, timer);
     }
 }
+
+/**
+ * @brief Start a countdown timer for game start.
+ * @param room The game room object
+ * @param onComplete Callback function to execute when countdown completes
+ * @note Broadcasts countdown updates to all clients in the room
+*/
+export function startCountdown(room: Room, onComplete: () => void) {
+  if (room.countdownTimer) return; // already running
+
+  //set timer for 5 seconds countdown
+  let remaining = 5; //? seconds
+  room.countdownRemaining = remaining;
+
+  //broadcast to clients start from 5
+  broadcast(room, { type: "countdown", remaining });
+
+  room.countdownTimer = setInterval(() => {
+	if (!room.countdownTimer) return;
+	//update remaining time
+	remaining -= 1;
+    room.countdownRemaining = remaining;
+
+	//broadcast to clients to every update countdown
+    broadcast(room, { type: "countdown", remaining });
+
+	if (remaining <= 0) {
+	  //countdown complete
+      clearInterval(room.countdownTimer!);
+      room.countdownTimer = null;
+      room.countdownRemaining = null;
+      onComplete();
+    }
+  }, 1000);
+}
+
+/**
+ * @brief Cancel an ongoing countdown timer.
+ * @param room The game room object
+ * @note Broadcasts countdown cancellation to all clients in the room
+*/
+export function cancelCountdown(room: Room) {
+  if (room.countdownTimer) {
+    clearInterval(room.countdownTimer);
+    room.countdownTimer = null;
+    room.countdownRemaining = null;
+    broadcast(room, { type: "countdownCancel" });
+  }
+}
+
