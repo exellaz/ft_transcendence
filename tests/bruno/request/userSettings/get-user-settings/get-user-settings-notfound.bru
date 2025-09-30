@@ -1,0 +1,21 @@
+meta {
+  name: get-user-settings-notfound
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/users/999999/settings
+  body: none
+  auth: inherit
+}
+
+assert {
+  res.status: eq 404
+  res.body.success: eq false
+  res.body.error: contains "not found"
+}
+
+settings {
+  encodeUrl: true
+}

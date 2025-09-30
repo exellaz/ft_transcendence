@@ -22,3 +22,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+.github
+tests/bruno/environments/*.bru

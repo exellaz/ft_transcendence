@@ -1,0 +1,28 @@
+meta {
+  name: patch-user-settings-badrequest
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/users/abc/settings
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "language": "chinese",
+    "textSize": "large",
+    "inGameCameraTracking": "dynamic"
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.success: eq false
+}
+
+settings {
+  encodeUrl: true
+}

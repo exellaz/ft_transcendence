@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { ensurePlayerId } from "../lib/requestBackend.api.ts";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
