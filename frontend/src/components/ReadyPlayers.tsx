@@ -45,8 +45,13 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
                 src={player.spriteUrl}
                 size={players.length > 2 ? 60 : 120}
               />
-              <span className={`${getUserColor(player.id)}`}>
-                {player.username}
+              <span
+                className={`${getUserColor(player.id)}`}
+                title={player.username}
+              >
+                {player.username.length > 7
+                  ? player.username.slice(0, 7) + "…"
+                  : player.username}
               </span>
             </div>
           </div>

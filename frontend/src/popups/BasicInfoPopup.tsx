@@ -50,6 +50,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // Form states
   const [username, setUsername] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) setUsername(user.username);
@@ -71,12 +72,8 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     // return if no changes to username
     if (!user || username.trim() === user.username) return;
 
-    // validate username
-    const validation = validateUsername(username, t);
-    if (!validation.isValid) {
-      alert(validation.error);
-      return;
-    }
+    // clear previous errors
+    setSaveError(null);
 
     const result = await mutate({
       id: user.id.toString(),
@@ -86,10 +83,15 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     if (result.success) {
       refetch();
       // notify ProfileDropdown about updated user data
-      window.dispatchEvent(new CustomEvent('userUpdated'));
-    } else {
-      alert(`${t("ApiState.error")}: ${result.error}`);
+      window.dispatchEvent(new CustomEvent("userUpdated"));
+    } else if (result.error) {
+      setSaveError(result.error);
     }
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    if (saveError) setSaveError(null); // Clear error when user types
   };
 
   // Cancel will reset the username to its original value
@@ -129,27 +131,23 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             </Button>
           </div>
         </div>
-        <div className="w-full flex-col-center gap-2">
-          <Input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={translate("username")}
-            icon={
-              <img src="/assets/user.png" alt="user.png" className="w-10" />
-            }
-          />
-          <Status text={translate("username_available")} color="green" />
-          {/* Email is read-only */}
-          <Input
-            value={user.email}
-            placeholder={translate("email")}
-            type="email"
-            disabled={true}
-            icon={
-              <img src="/assets/email.png" alt="email.png" className="w-10" />
-            }
-          />
-        </div>
+        <Input
+          value={username}
+          onChange={handleUsernameChange}
+          placeholder={translate("username")}
+          icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+        />
+        {saveError && <Status text={saveError} color="red" />}
+        {/* Email is read-only */}
+        <Input
+          value={user.email}
+          placeholder={translate("email")}
+          type="email"
+          disabled={true}
+          icon={
+            <img src="/assets/email.png" alt="email.png" className="w-10" />
+          }
+        />
         <div className="w-full flex-row-center gap-6">
           <Button onClick={handleSave}>{translate("save_changes")}</Button>
           <Button variant="brown" onClick={handleCancel}>

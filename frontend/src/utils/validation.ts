@@ -8,8 +8,8 @@ export const validateUsername = (
 
   const trimmed = username.trim();
 
-  // Length check: 3-12 characters
-  if (trimmed.length < 3 || trimmed.length > 12) {
+  // Length check: 2-15 characters
+  if (trimmed.length < 2 || trimmed.length > 15) {
     return { isValid: false, error: t("common.username_length") };
   }
 

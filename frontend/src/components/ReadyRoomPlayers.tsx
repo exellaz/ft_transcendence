@@ -60,8 +60,13 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           }
         />
       </div>
-      <p className={`text-lg font-bold ${getUserColor(player.id)}`}>
-        {player.username}
+      <p
+        className={`text-lg font-bold ${getUserColor(player.id)}`}
+        title={player.username}
+      >
+        {player.username.length > 10
+          ? player.username.slice(0, 10) + "…"
+          : player.username}
       </p>
     </div>
   );

@@ -62,7 +62,11 @@ const MatchView: React.FC = () => {
         onClick={() => onClick(player.id)}
       >
         <Avatar src={player.spriteUrl} size={120} />
-        <span>{player.username}</span>
+        <span title={player.username}>
+          {player.username.length > 10
+            ? player.username.slice(0, 10) + "…"
+            : player.username}
+        </span>
       </div>
     </div>
   );

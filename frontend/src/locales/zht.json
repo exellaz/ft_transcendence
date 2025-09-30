@@ -2,7 +2,7 @@
   "common": {
     "loading": "載入中...",
     "username_required": "使用者名稱為必填項",
-    "username_length": "使用者名稱必須為3-12個字元",
+    "username_length": "使用者名稱必須為2-15個字元",
     "username_characters": "只允許字母、數字和底線"
   },
   "AdvanceView": {
