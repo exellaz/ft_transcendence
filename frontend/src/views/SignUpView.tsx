@@ -29,31 +29,34 @@ const SignUpView: React.FC = () => {
     color: "green" | "red";
   } | null>(null);
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
+  const handleInputChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
 
-    // Clear error when user starts typing
-    if (error) setError(null);
+      // Clear error when user starts typing
+      if (error) setError(null);
 
-    // Clear username status when username changes
-    if (field === 'username') setUsernameStatus(null);
-  };
+      // Clear username status when username changes
+      if (field === "username") setUsernameStatus(null);
+    };
 
   const validateForm = (): string | null => {
     if (!formData.username.trim()) return "Username is required";
     if (!formData.email.trim()) return "Email is required";
     if (!formData.password) return "Password is required";
-    if (formData.password !== formData.confirmPassword) return "Passwords do not match";
+    if (formData.password !== formData.confirmPassword)
+      return "Passwords do not match";
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) return "Invalid email format";
 
     // Password validation
-    if (formData.password.length < 8) return "Password must be at least 8 characters long";
+    if (formData.password.length < 8)
+      return "Password must be at least 8 characters long";
 
     return null;
   };
@@ -76,15 +79,14 @@ const SignUpView: React.FC = () => {
       });
 
       if (!response.success || !response.data) {
-        throw new Error(response.error || 'Registration failed');
+        throw new Error(response.error || "Registration failed");
       }
 
       // SUCCESS: Store token and redirect
-      localStorage.setItem('authToken', response.data.token);
-      navigate('/signup-success');
-
+      localStorage.setItem("authToken", response.data.token);
+      navigate("/signup-success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +100,7 @@ const SignUpView: React.FC = () => {
         <Input
           placeholder={translate("username")}
           value={formData.username}
-          onChange={handleInputChange('username')}
+          onChange={handleInputChange("username")}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
         />
 
@@ -110,15 +112,17 @@ const SignUpView: React.FC = () => {
           placeholder={translate("email")}
           type="email"
           value={formData.email}
-          onChange={handleInputChange('email')}
-          icon={<img src="/assets/email.png" alt="email.png" className="w-10" />}
+          onChange={handleInputChange("email")}
+          icon={
+            <img src="/assets/email.png" alt="email.png" className="w-10" />
+          }
         />
 
         <Input
           placeholder={translate("password")}
           type="password"
           value={formData.password}
-          onChange={handleInputChange('password')}
+          onChange={handleInputChange("password")}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
 
@@ -126,20 +130,14 @@ const SignUpView: React.FC = () => {
           placeholder={translate("confirm_password")}
           type="password"
           value={formData.confirmPassword}
-          onChange={handleInputChange('confirmPassword')}
+          onChange={handleInputChange("confirmPassword")}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
 
-        {/* 🎯 NEW: Error display */}
-        {error && (
-          <Status text={error} color="red" />
-        )}
+        {error && <Status text={error} color="red" />}
 
-        <Button
-          onClick={handleSignUp}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Creating Account...' : translate("signup")}
+        <Button onClick={handleSignUp} disabled={isLoading}>
+          {isLoading ? "Creating Account..." : translate("signup")}
         </Button>
       </Card>
     </PreLoginLayout>

@@ -11,6 +11,7 @@ import Divider from "../components/Divider";
 import Input from "../components/Input";
 import Logo from "../components/Logo";
 import PreLoginLayout from "../layout/PreLoginLayout";
+import Status from "../components/Status";
 import TextButton from "../components/TextButton";
 
 const LoginView: React.FC = () => {
@@ -108,7 +109,7 @@ const LoginView: React.FC = () => {
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+        {error && <Status text={error} color="red" />}
         <Button variant="longYellow" onClick={handleLogin}>
           {isLoading ? translate("loading") : translate("login")}
         </Button>
