@@ -5,13 +5,9 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/friendships/1?status=abc
+  url: {{baseUrl}}/friendships/abc/pending
   body: none
   auth: inherit
-}
-
-params:query {
-  status: pending
 }
 
 assert {

@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ok, ApiError } from "../../utils/response";
-import { FriendshipStatus, Prisma } from "@prisma/client";
+import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../users/users.select";
 import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friends.schema";
 
@@ -36,8 +36,8 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 			include: { user: true; friend: true };
 		}>;
 
-
-		const friendships: FriendshipWithUsers[] = await fastify.db.friendship.findMany({
+		// Get all accepted friendships
+		const accepted: FriendshipWithUsers[] = await fastify.db.friendship.findMany({
 			where: {
 				status: "accepted",
 				OR: [
@@ -55,11 +55,29 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 			},
 		});
 
-		if (!friendships)
+		if (!accepted)
 			throw new ApiError("Friendship not found", 404);
 
+		// Get all blocked frienships
+		const blocked: BlockedFriendship[] = await fastify.db.BlockedFriendship.findMany({
+			where: {
+				OR: [
+					{ blockerId: Number(userId) },
+					{ blockedId: Number(userId) }
+				]
+			}
+		});
+
+		// Filter out Blocked friendships
+				// convert to string eg. ("1-2", "3-5") for easy lookup
+		const blockedPairs = new Set(blocked.map(b => `${b.blockerId}-${b.blockedId}`));
+		const nonBlocked = accepted.filter(f =>
+			!blockedPairs.has(`${userId}-${f.friendId}`) &&
+			!blockedPairs.has(`${f.friendId}-${userId}`)
+		);
+
 		// map to always return "the other user"
-		const result = friendships.map(f => {
+		const result = nonBlocked.map(f => {
 			const otherUser = f.userId === Number(userId) ? f.friend : f.user;
 			return {
 				id: f.id,
