@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import type {
-    WaitingRoomPlayer,
-} from "../../types/apiInterfaces";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 
 // components
 import Button from "../../components/Button";
@@ -18,24 +16,53 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 import { useRoomWebSocket } from "../../lib/room-websocket";
 import { useLiveChatWebSocket } from "../../lib/liveChat-websocket";
 
+import { useBlockLeave } from "../../utils/blockRefresh";
+
+
 /**
  * @brief Doubles Room
  * - Shows players, chat, and room controls
 */
 const DoublesRoomView: React.FC = () => {
+  useBlockLeave();
   const { t } = useTranslation();
   const translate = (key: string) => t(`DoublesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: string; type: string; id: string } | null>(null);
+  const { roomId: paramRoomId } = useParams();
+  const joinType = (location.state as any)?.joinType || "private";
+  const roomId = sessionStorage.getItem("RoomId") || "";
 
-  // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("RoomId");
-  if (!roomId) return <div>{translate("no_room_id")}</div>;
-  const roomName = sessionStorage.getItem("RoomName");
-  if (!roomName) return <div>{translate("no_room_name")}</div>;
-  const leaderId = sessionStorage.getItem("RoomLeaderId");
-  if (!leaderId) return <div>{translate("no_leader_id")}</div>;
+  //update session storage when paramRoomId change
+  React.useEffect(() => {
+  	if (paramRoomId) {
+  		sessionStorage.setItem("RoomId", paramRoomId);
+  	}
+  }, [paramRoomId]);
+
+  //fetch room info when request roomId change
+  React.useEffect(() => {
+  if (!roomId) return;
+	fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`)
+	.then(res => res.json())
+	.then(data => {
+		if (joinType === "private" && !data.private) {
+			sessionStorage.removeItem("RoomId");
+			alert("⚠️ this is a public room");
+			navigate("/main-menu");
+			return;
+		}
+		setRoomInfo({
+			id: data.id,
+			name: data.name,
+			leaderId: data.leader,
+			type: data.private ? "private" : "public",
+		});
+	});
+  }, [roomId, joinType, navigate]);
 
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
@@ -59,7 +86,7 @@ const DoublesRoomView: React.FC = () => {
     onLeave,
     role,
 	countdown,
-  } = useRoomWebSocket({roomId, roomName, leaderId});
+  } = useRoomWebSocket({roomId: roomInfo?.id || "", roomName: roomInfo?.name || "", leaderId: roomInfo?.leaderId || ""});
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
@@ -95,6 +122,10 @@ const DoublesRoomView: React.FC = () => {
   // }, [roomId]);
 
   return (
+	<>
+	{!roomId ? (
+		<h1>no room id</h1>
+	) : (
     <RoomLayout>
 		<div className="relative w-full flex justify-center">
 			{/* show countdown */}
@@ -166,6 +197,8 @@ const DoublesRoomView: React.FC = () => {
         redirectPath="/main-menu"
       />
     </RoomLayout>
+	)}
+	</>
   );
 };
 

@@ -16,11 +16,14 @@ import ConfirmationPopup from "../../popups/ConfirmationPopup";
 import { useRoomWebSocket } from "../../lib/room-websocket";
 import { useLiveChatWebSocket } from "../../lib/liveChat-websocket";
 
+import { useBlockLeave }from "../../utils/blockRefresh";
+
 /**
  * @brief Singles Room
  * - Shows players, chat, and room controls
 */
 const SinglesRoomView: React.FC = () => {
+  useBlockLeave();
   const { t } = useTranslation();
   const translate = (key: string) => t(`SinglesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
@@ -30,22 +33,16 @@ const SinglesRoomView: React.FC = () => {
   const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: string; type: string; id: string } | null>(null);
   const { roomId: paramRoomId } = useParams();
   const joinType = (location.state as any)?.joinType || "private";
-  console.log("Param roomId:", paramRoomId); //// debug
-
-  // TODO: Replace with actual JWT
   const roomId = sessionStorage.getItem("RoomId") || "";
-//   if (!roomId) return <div>{translate("no_room_id")}</div>;
-//   const roomName = sessionStorage.getItem("RoomName");
-//   if (!roomName) return <div>{translate("no_room_name")}</div>;
-//   const leaderId = sessionStorage.getItem("RoomLeaderId") || "";
-//   const roomType = sessionStorage.getItem("RoomType") || "";
 
+  //update session storage when paramRoomId change
   React.useEffect(() => {
 	if (paramRoomId) {
 		sessionStorage.setItem("RoomId", paramRoomId);
 	}
   }, [paramRoomId]);
 
+  //fetch room info when request roomId change
   React.useEffect(() => {
   if (!roomId) return;
     fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`)
@@ -127,7 +124,7 @@ const SinglesRoomView: React.FC = () => {
   return (
 	<>
 	{!roomId ? (
-		<div>{translate("no_room_id")}</div>
+		<h1>no room id</h1>
 	) : (
     <RoomLayout>
 		<div className="relative w-full flex justify-center">

@@ -7,7 +7,10 @@ import TournamentHeader from "../components/TournamentHeader";
 
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
 
+import { useBlockLeave } from "../utils/blockRefresh";
+
 const GameView: React.FC = () => {
+  useBlockLeave();
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameView.${key}`);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");

@@ -87,7 +87,7 @@ const SignUpView: React.FC = () => {
       }
 
       // SUCCESS: Store token and redirect
-      localStorage.setItem('token', data.token);
+      sessionStorage.setItem('token', data.token);
       navigate('/signup-success');
 
     } catch (err) {

@@ -120,20 +120,23 @@ export class WebSocketHandler implements IWebSocketHandler {
 			if (socket) {
 				//reconnect during game
 				if (room.disconnectPlayers.has(clientId)) {
-                    //prevent reconnect after game ended
+					console.log(`Leader ${player.playerName} reconnected, keeping leadership`);
+
+					// Cancel any disconnect timer
+					if (room.disconnectTimers && room.disconnectTimers.has(clientId)) {
+						clearTimeout(room.disconnectTimers.get(clientId)!);
+						room.disconnectTimers.delete(clientId);
+					}
+
+					//prevent reconnect after game ended
                     if (room.gameState.gameEnded) {
                         console.log(`Player ${player.playerName} (${player.role}) [ ${clientId} ] fail to reconnect to game because game end`);
                         return { id: clientId, role: player.role, playerName: player.playerName, team: player.team, leader: player.leader, spriteUrl: player.spriteUrl, ready: player.ready};
                     }
 
-                    // Cancel any disconnect timer
-                    if (room.disconnectTimers && room.disconnectTimers.has(clientId)) {
-                        clearTimeout(room.disconnectTimers.get(clientId)!);
-                        room.disconnectTimers.delete(clientId);
-                    }
 
-                    // mark as reconnected
-					room.disconnectPlayers.delete(clientId);
+                    // // mark as reconnected
+					// room.disconnectPlayers.delete(clientId);
 
 					// notify to all in the room about reconnected and unpause if needed
 					console.log(`Player ${player.playerName} (${player.role}) [ ${clientId} ] reconnected as ${player.role} in room ${room.name} (${roomId})`);
@@ -386,35 +389,57 @@ export class WebSocketHandler implements IWebSocketHandler {
         }
 
 		// --- handle leader leaving ---
-		if (clientId === room.leaderId) {
-			//check for remaining players except spectators and the leaving leader
-			const remainingPlayers = room.clientRoles
-				? Array.from(room.clientRoles.entries() as Iterable<[any, any]>)
-					  .filter(([id, p]) => p.role !== "spectator" && id !== clientId)
-					  .map(([id]) => id)
-				: [];
+		// if (clientId === room.leaderId) {
+		// 	//check for remaining players except spectators and the leaving leader
+		// 	const remainingPlayers = room.clientRoles
+		// 		? Array.from(room.clientRoles.entries() as Iterable<[any, any]>)
+		// 			  .filter(([id, p]) => p.role !== "spectator" && id !== clientId)
+		// 			  .map(([id]) => id)
+		// 		: [];
 
-			//if have remaining player when leader left pass leader to the player
-			if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
-				room.leaderId = remainingPlayers[0];
-                const newLeader = room.clientRoles.get(room.leaderId);
-                if (newLeader) {
-                    newLeader.leader = true;
-                };
-				broadcast(room, createLiveChatMessage("system", "system", `leader change to ${room.clientRoles.get(room.leaderId)?.playerName}.`));
-				console.log(`Leader ${room.clientRoles.get(clientId)?.playerName} [ ${clientId} ] left. New leader is ${room.clientRoles.get(room.leaderId)?.playerName} [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
+		// 	//if have remaining player when leader left pass leader to the player
+		// 	if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
+		// 		room.leaderId = remainingPlayers[0];
+        //         const newLeader = room.clientRoles.get(room.leaderId);
+        //         if (newLeader) {
+        //             newLeader.leader = true;
+        //         };
+		// 		broadcast(room, createLiveChatMessage("system", "system", `leader change to ${room.clientRoles.get(room.leaderId)?.playerName}.`));
+		// 		console.log(`Leader ${room.clientRoles.get(clientId)?.playerName} [ ${clientId} ] left. New leader is ${room.clientRoles.get(room.leaderId)?.playerName} [ ${room.leaderId} ] in room ${room.name} (${roomId})`);
 
-				//notify all in the room about new leader
-				broadcast(room, {
-					type: "roleUpdate",
-					newPlayer: newLeader,
-					gameState: room.gameState,
-					leaderId: room.leaderId,
-				});
-			} else {
-				room.leaderId = "";
-			}
-		}
+		// 		//notify all in the room about new leader
+		// 		broadcast(room, {
+		// 			type: "roleUpdate",
+		// 			newPlayer: newLeader,
+		// 			gameState: room.gameState,
+		// 			leaderId: room.leaderId,
+		// 		});
+		// 	} else {
+		// 		room.leaderId = "";
+		// 	}
+		// }
+		if (clientId === room.leaderId && room.disconnectPlayers.has(clientId)) {
+            // mark leader as disconnected but keep leaderId
+            room.disconnectPlayers.add(clientId);
+            console.log(`Leader ${player.playerName} [${clientId}] disconnected, waiting for reconnect`);
+
+            // optional: start a timer to transfer leadership after GRACE_PERIOD
+            const timeout = setTimeout(() => {
+                if (room.disconnectPlayers.has(clientId)) {
+                    const remainingPlayers = Array.from(room.clientRoles.values())
+                        .filter(p => p.role !== "spectator" && p.clientId !== clientId);
+					if (remainingPlayers.length > 0 && remainingPlayers[0]) {
+						room.leaderId = remainingPlayers[0].clientId;
+						remainingPlayers[0].leader = true;
+						broadcast(room, createLiveChatMessage("system", "system", `Leader change to ${remainingPlayers[0].playerName}.`));
+						console.log(`Leader ${player.playerName} [${clientId}] did not reconnect. New leader is ${remainingPlayers[0].playerName}`);
+					}
+                }
+            }, 10000);
+			if (!room.disconnectTimers) room.disconnectTimers = new Map();
+			room.disconnectTimers.set(clientId, timeout);
+        }
+
 
         const GRACE_PERIOD = 10 * 1000; //? timeout for reconnect
 
