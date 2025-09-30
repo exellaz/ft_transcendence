@@ -37,7 +37,6 @@ export interface Room {
 		paddles: { [key: string]: number }; //[key] => client id, [value] => paddle position
 		teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
 		score: { left: number; right: number }; //[key] => team side, [value] => score
-		countdown: number; // countdown number
         gameStarted: boolean; // flag for start game
         gameEnded?: boolean; // flag for end game
 	};
@@ -117,11 +116,10 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 			...initialSetting, // override with any valid client-provided settings
 		},
 		gameState: {
-			ball: { x: width / 2, y: height / 2, dx: 1, dy: 1 },
+			ball: { x: width / 2, y: height / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
 			paddles: {},
 			teams: { left: [], right: [] },
 			score: { left: 0, right: 0 },
-			countdown: 0,
 			gameStarted: false,
 			gameEnded: false,
 		},
@@ -169,7 +167,7 @@ export function startRoomLoop(room: Room) {
  * @param room Room object
 */
 export function roomStartGame(room: Room) {
-	if (!room.gameState.gameStarted && !room.gameState.countdown) {
+	if (!room.gameState.gameStarted) {
 		room.startTime = new Date();
 		console.log(`room setting: ${JSON.stringify(room.setting)}`);
 		room.game.resetBall(room, "left");

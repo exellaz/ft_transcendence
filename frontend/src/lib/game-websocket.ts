@@ -201,50 +201,6 @@ export function draw_container(
 		return;
 	}
 
-	const leftPlayers = state.teams.left.length;
-	const rightPlayers = state.teams.right.length;
-	const allPlayersConnected = (leftPlayers === 2 && rightPlayers === 2) || (leftPlayers ===1 && rightPlayers ===1 && leftPlayers + rightPlayers === 2);
-
-	// countdown before game starts
-	if (!state.gameStarted && state.countdown > 0) {
-		const remaining = Math.ceil(state.countdown/60);
-		ctx.font = "48px Arial";
-		ctx.fillStyle = "gray";
-		ctx.textAlign = "center";
-		ctx.fillText(`Game starts in ${remaining}...`, 800/2, 400/2);
-		return;
-	}
-
-	// if not all players entered, show waiting message
-	if (!allPlayersConnected && !state.gameStarted) {
-		ctx.font = "32px Arial";
-		ctx.fillStyle = "gray";
-		ctx.textAlign = "center";
-		ctx.fillText("Waiting for all players to connect...", 800/2, 400/2);
-		return;
-	}
-
-	//spectator view
-	if (isSpectator) {
-		ctx.beginPath();
-		ctx.arc(state.ball.x, state.ball.y, ballSize, 0, Math.PI * 2);
-		ctx.fillStyle = "black";
-		ctx.fill();
-
-		for (const clientId in state.paddles) {
-			const y = state.paddles[clientId];
-			let x: number;
-			if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
-				x = 1;
-			} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
-				x = 800 - paddleWidth - 1;
-			} else continue;
-			ctx.fillStyle = "black";
-			ctx.fillRect(x, y, paddleWidth, paddleHeight);
-		}
-		return;
-	}
-
 	// Draw ball
 	ctx.beginPath();
 	ctx.arc(state.ball.x, state.ball.y, ballSize, 0, Math.PI * 2);

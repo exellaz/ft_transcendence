@@ -27,13 +27,13 @@ export class Game implements IGame {
 		ball.y = room.height / 2;
 
 		// Pick random direction
-		let dx = scoredSide === "left" ? -1 : 1; // towards the side that conceded the point
-		let dy = (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 0.5 + 0.5); // random vertical
+		ball.dx = scoredSide === "left" ? -room.setting.ballSpeed : room.setting.ballSpeed;
+		ball.dy = room.setting.ballSpeed;
 
 		// Normalize to constant speed
-		const length = Math.sqrt(dx * dx + dy * dy);
-		ball.dx = (dx / length) * room.setting.ballSpeed;
-		ball.dy = (dy / length) * room.setting.ballSpeed;
+		const sign = Math.random() < 0.5 ? 1 : -1;
+		ball.dx = (scoredSide === "left" ? -1 : 1) * room.setting.ballSpeed;
+		ball.dy = sign * room.setting.ballSpeed;
 	}
 
 	/**
@@ -110,6 +110,7 @@ export class Game implements IGame {
 	updateBall(room: Room) {
 		if (!room.gameState.gameStarted) return;
 		const ball = room.gameState.ball;
+		// console.log("before ball: ", ball); ////debug
 		ball.x += ball.dx;
 		ball.y += ball.dy;
 
@@ -154,12 +155,12 @@ export class Game implements IGame {
 		if (ball.x + ballSize < 0) {
 			room.gameState.score.right++;
 			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`); //// debug
-			this.resetBall(room, "right");
+			this.resetBall(room, "left");
 		}
 		else if (ball.x - ballSize > room.width) {
 			room.gameState.score.left++;
 			console.log(`Score: Left ${room.gameState.score.left} - Right ${room.gameState.score.right}`); ////debug
-			this.resetBall(room, "left");
+			this.resetBall(room, "right");
 		}
 	}
 
@@ -175,35 +176,9 @@ export class Game implements IGame {
 			return;
 		}
 
-        // step 1: check for countdown to start game
-		if (room.gameState.countdown > 0) {
-			room.gameState.countdown--;
-			const secondsLeft = Math.ceil(room.gameState.countdown / 60);
-			//  console.log(`Game countdown: ${secondsLeft}`); ////debug
-            //broadcast countdown to all clients
-            for (const client of room.clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(JSON.stringify({
-                        type: "state",
-                        gameState: {
-                            ...room.gameState,
-                            setting: room.setting
-                        },
-                        leaderId: room.leaderId,
-                        canStart: room.canStart
-                    }));
-                }
-            }
-            // Start game when countdown reaches 0
-			if (room.gameState.countdown === 0) {
-				room.gameState.gameStarted = true;
-				room.startTime = new Date();
-				console.log(`Game started in room ${room.id}`); ////debug
-			}
-			return; // Skip updating ball until game starts
-		}
+		room.gameState.gameStarted = true; // ensure game has started
 
-        // step 2: update ball position if game has started
+		// step 2: update ball position if game has started
 		if (room.gameState.gameStarted) {
 			this.updateBall(room);
 		}

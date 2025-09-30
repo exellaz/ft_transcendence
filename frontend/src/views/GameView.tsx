@@ -6,7 +6,6 @@ import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
 
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
-import { useRoomWebSocket } from "../lib/room-websocket";
 
 const GameView: React.FC = () => {
   const { t } = useTranslation();

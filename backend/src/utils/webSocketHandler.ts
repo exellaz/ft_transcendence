@@ -110,11 +110,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 			}
 
 			// check if room is full and start game
-			const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-			if (totalPlayers === room.teamSize * 2 && !room.gameState.gameStarted) {
-				roomStartGame(room);
-				startRoomLoop(room);
-			}
+			// const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
+			// if (totalPlayers === room.teamSize * 2 && !room.gameState.gameStarted) {
+			// 	roomStartGame(room);
+			// 	startRoomLoop(room);
+			// }
 		} else {
 			if (socket) {
 				//reconnect during game
@@ -206,12 +206,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				if (role.role === "spectator") return;
 
-				if (room.gameState.countdown > 0) {
-					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side during countdown" }));
-					console.log(`Player (${role.role}) [${role.id}] fail to switch side during countdown in room (${room.name}) [${room.id}]`);
-					return;
-				}
-
 				if (player.ready && clientId !== room.leaderId) {
 					socket.send(JSON.stringify({ type: "error", text: "Cannot switch side when ready. Unready first." }));
 					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`);
@@ -276,12 +270,10 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 				// Step 2: auto-start (public room)
 				if (canStart && !room.gameState.gameStarted && room.teamSize * 2 === (room.gameState.teams.left.length + room.gameState.teams.right.length) && room.leaderId === "") {
-					room.gameState.countdown = 5 * 60; //? 3 seconds countdown
 					//room.startRequestedBy = "auto";
 					room.gameState.gameStarted = false;
 
 					console.log(`All players ready, auto-starting game in room (${room.name}) [${room.id}], room leader is (${room.leaderId ? room.leaderId : "none"})`);
-					broadcast(room, createLiveChatMessage("system", "system", `All players ready. Game starting in ${room.gameState.countdown / 60} seconds...`));
 
 					if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
 						roomStartGame(room);
@@ -313,9 +305,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 					}
 
 					//execute the start (leader only)
-					room.gameState.countdown = 5 * 60; //? 5 seconds countdown
 					console.log(`Player ${player.playerName} (${role.role}) [${role.id}] started the game in room (${room.name}) [${room.id}]`);
-					broadcast(room, createLiveChatMessage("system", "system", `Game starting in ${room.gameState.countdown / 60} seconds...`));
 					const { canStart } = updateCanStart(room);
 					broadcast(room, {
 						type: "roleUpdate",
@@ -323,6 +313,11 @@ export class WebSocketHandler implements IWebSocketHandler {
 						leaderId: room.leaderId,
 						canStart: canStart,
 					});
+
+					if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+						roomStartGame(room);
+						startRoomLoop(room);
+					}
 					return;
 				}
 			}
@@ -409,12 +404,6 @@ export class WebSocketHandler implements IWebSocketHandler {
             return;
         }
 
-        // ---- case: disconnect during countdown ----
-        if (role && role !== "spectator" && room.gameState.countdown > 0 && !room.gameState.gameStarted) {
-            handlePlayerDisconnect(room, clientId, GRACE_PERIOD, true);
-        	return;
-        }
-
 		// ---- case: spectator leave ----
 		if (role === "spectator") {
 			console.log(`Spectator [ ${clientId} ] left the room ${room.name} (${roomId}).`);
@@ -424,7 +413,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		}
 
 		// ---- case: leave before game start / game ended ----
-		if (!room.gameState.gameStarted && room.gameState.countdown === 0) {
+		if (!room.gameState.gameStarted || room.gameState.gameEnded) {
 			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`);
 			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} left.`));
 

@@ -138,7 +138,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 						// update can start status
 						setCanStart(data.canStart ?? false);
 						//if game able to start then set game started to true
-						if (!gameStarted && (data.gameState.countdown > 0 || data.gameState.gameStarted)) {
+						if (!gameStarted && ( data.gameState.gameStarted)) {
 							setGameStarted(true);
 						}
 					}
