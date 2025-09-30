@@ -1,6 +1,4 @@
 import type {
-  CreateUserRequest,
-  CreateUserResponse,
   GetUserRequest,
   GetUserResponse,
   UpdateUserRequest,
@@ -11,12 +9,29 @@ import type {
   UpdateUserSettingsResponse,
   LoginRequest,
   LoginResponse,
+  RegisterRequest,
+  RegisterResponse
 } from "../types/api";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
 
+// POST /auth/register
+export async function register(
+  payload: RegisterRequest
+): Promise<RegisterResponse> {
+  const res = await fetch(`${API_BASE}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  return res.json();
+};
+
 // POST /auth/login
-export async function login(payload: LoginRequest): Promise<LoginResponse> {
+export async function login(
+  payload: LoginRequest
+): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -24,19 +39,7 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
   });
 
   return res.json();
-}
-// POST /users
-export async function createUser(
-  payload: CreateUserRequest
-): Promise<CreateUserResponse> {
-  const res = await fetch(`${API_BASE}/users`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  return res.json();
-}
+};
 
 // GET /users/:id
 export async function getUserById({

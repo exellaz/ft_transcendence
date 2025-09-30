@@ -3,6 +3,12 @@ import type { ReactNode } from "react";
 
 interface User {
   id: string;
+  username: string;
+  email: string;
+  avatarUrl?: string | null;
+  status: string;
+  joinedAt: string;
+  updatedAt: string;
 }
 
 interface UserContextType {
