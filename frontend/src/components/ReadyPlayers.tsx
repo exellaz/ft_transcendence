@@ -23,7 +23,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
       >
         {players.map((player) => (
           <div
-            key={player.uid}
+            key={player.id}
             className={`flex-col-center gap-4 font-bold ${
               players.length > 2 ? "text-lg" : "text-3xl"
             }`}
@@ -39,13 +39,13 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
             {/* Avatar & Username */}
             <div
               className="flex-col-center gap-2 cursor-pointer"
-              onClick={() => setSelectedId(player.uid)}
+              onClick={() => setSelectedId(player.id)}
             >
               <Avatar
                 src={player.spriteUrl}
                 size={players.length > 2 ? 60 : 120}
               />
-              <span className={`${getUserColor(player.uid)}`}>
+              <span className={`${getUserColor(player.id)}`}>
                 {player.username}
               </span>
             </div>

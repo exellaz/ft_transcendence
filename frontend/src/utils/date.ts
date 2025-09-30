@@ -1,4 +1,4 @@
-export function formatTimestamp(date: Date) {
+export function formatTimestamp(date: Date | string) {
   const d = new Date(date);
   const pad = (n: number) => n.toString().padStart(2, '0');
   const year = d.getFullYear();
@@ -21,7 +21,7 @@ export function formatTimestamp(date: Date) {
   }
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: Date | string) {
   const d = new Date(date);
   const pad = (n: number) => n.toString().padStart(2, '0');
   const year = d.getFullYear();

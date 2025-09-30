@@ -46,13 +46,13 @@ const SocialHub: React.FC<SocialHubProps> = ({
   // const userId = useUser().user?.id;
   // React.useEffect(() => {
   //   // Replace with real API calls
-  //   fetch(`/api/friends?uid=${userId}`)
+  //   fetch(`/api/friends?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setFriends);
-  //   fetch(`/api/requests?uid=${userId}`)
+  //   fetch(`/api/requests?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setRequests);
-  //   fetch(`/api/blocked?uid=${userId}`)
+  //   fetch(`/api/blocked?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setBlocked);
   // }, [userId]);
@@ -65,7 +65,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
   }, []);
 
   function handleAddFriend() {
-    // Simulate UID check
+    // Simulate ID check
     const exists = friends.some((f) => f.id === friendId);
     if (exists) {
       setAddFriendStatus("success");

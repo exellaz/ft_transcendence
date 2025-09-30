@@ -19,7 +19,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
   const [showInviteFriends, setShowInviteFriends] = useState(false);
 
   const { user } = useUser();
-  const userUid = user?.id ?? "";
+  const userId = user?.id ?? "";
 
   return (
     <Background>

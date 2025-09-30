@@ -16,7 +16,7 @@ const MatchView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`MatchView.${key}`);
   const { user } = useUser();
-  const userUid = user?.id ?? "";
+  const userId = user?.id ?? "";
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
     "quarterfinals"
@@ -26,10 +26,10 @@ const MatchView: React.FC = () => {
   // TODO: Fetch real data based on tournamentId
   // React.useEffect(() => {
   //   // Replace with real API calls
-  // fetch(`/api/tournament/${tournamentId}/match/${stage}/player/${uid}`)
+  // fetch(`/api/tournament/${tournamentId}/match/${stage}/player/${id}`)
   //   .then((res) => res.json())
   //   .then(setPlayers);
-  // }, [tournamentId, stage, uid]);
+  // }, [tournamentId, stage, id]);
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
@@ -45,9 +45,9 @@ const MatchView: React.FC = () => {
 
   const MatchPlayerCard: React.FC<{
     player: MatchPlayer;
-    onClick: (uid: string) => void;
+    onClick: (id: string) => void;
   }> = ({ player, onClick }) => (
-    <div key={player.uid} className="flex-col-center gap-4">
+    <div key={player.id} className="flex-col-center gap-4">
       {/* player status */}
       <span
         className={`rounded-full px-3 py-2 ${
@@ -59,7 +59,7 @@ const MatchView: React.FC = () => {
       {/* player avatar and username */}
       <div
         className="flex-col-center gap-2 cursor-pointer"
-        onClick={() => onClick(player.uid)}
+        onClick={() => onClick(player.id)}
       >
         <Avatar src={player.spriteUrl} size={120} />
         <span>{player.username}</span>
@@ -90,7 +90,7 @@ const MatchView: React.FC = () => {
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userUid={selectedId}
+          userId={selectedId}
           variant="other"
         />
       )}

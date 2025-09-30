@@ -53,7 +53,7 @@ const DoublesRoomView: React.FC = () => {
     if (message.trim()) {
       setChatMessages([
         ...chatMessages,
-        { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
+        { id: "0", text: message, timestamp: formatTimestamp(new Date()) },
       ]);
       setMessage("");
     }

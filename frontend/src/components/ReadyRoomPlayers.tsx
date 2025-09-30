@@ -37,7 +37,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   }> = ({ player }) => (
     <div
       className={`${basicCellStyling} gap-4 cursor-pointer`}
-      onClick={() => setSelectedId(player.uid)}
+      onClick={() => setSelectedId(player.id)}
     >
       <div className="relative">
         <img
@@ -60,7 +60,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           }
         />
       </div>
-      <p className={`text-lg font-bold ${getUserColor(player.uid)}`}>
+      <p className={`text-lg font-bold ${getUserColor(player.id)}`}>
         {player.username}
       </p>
     </div>
@@ -84,7 +84,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
       <p className="text-yellow-400 text-xl font-bold">{title}</p>
       <div className="w-full flex-col-center gap-2">
         {teamPlayers.map((player) => (
-          <PlayerCell key={player.uid} player={player} />
+          <PlayerCell key={player.id} player={player} />
         ))}
         {/* Fill empty slots */}
         {Array.from(

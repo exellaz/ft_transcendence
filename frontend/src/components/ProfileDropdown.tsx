@@ -89,14 +89,14 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
-  // function getProfileDropdownByUid(
+  // function getProfileDropdownById(
   //   userId: string,
   //   data: ProfileDropdownInfo[]
   // ): ProfileDropdownInfo | undefined {
-  //   return data.find((user) => user.uid === userId);
+  //   return data.find((user) => user.id === userId);
   // }
   // useEffect(() => {
-  //   setUser(getProfileDropdownByUid(userId, mockProfileDropdownInfo) || null);
+  //   setUser(getProfileDropdownById(userId, mockProfileDropdownInfo) || null);
   // }, [userId]);
 
   return (

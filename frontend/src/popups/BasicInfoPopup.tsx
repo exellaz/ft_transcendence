@@ -57,14 +57,14 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<BasicInfo | null>(null);
-  // function getBasicInfoByUid(
+  // function getBasicInfoById(
   //   userId: string,
   //   data: BasicInfo[]
   // ): BasicInfo | undefined {
-  //   return data.find((user) => user.uid === userId);
+  //   return data.find((user) => user.id === userId);
   // }
   // useEffect(() => {
-  //   setUser(getBasicInfoByUid(userId, mockBasicInfo) || null);
+  //   setUser(getBasicInfoById(userId, mockBasicInfo) || null);
   // }, [userId]);
 
   const handleSave = async (): Promise<void> => {
