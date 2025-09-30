@@ -119,145 +119,66 @@ function genericUpdate(
 }
 
 
-export class GameClient {
-	private ws: WebSocket | null = null;
-	private url: string;
-	private game: PongGame;
-	private viewport: Viewport | null = null;
+class GameClient {
+	
+	private websocketRef: WebSocket | null = null;
 
-	private gameObjectRegistry = new Map<number, GameObject>();
-	private componentRegistry = new Map<number, Component>();
-	private animationFrameId: number | null = null;
-
-	constructor(url: string) {
-		this.url = url;
-		this.game = new PongGame(null, true, []);
+	handleKey(e: KeyboardEvent) {
+		console.log("test");
+		if (isArrowKey(e) && this.websocketRef?.readyState === WebSocket.OPEN)
+			this.sendData("input", { key: e.key, action: e.type });
 	}
 
-	connect() {
-		this.ws = new WebSocket(this.url);
+	sendData (type: string, payload: Record<string, any> = {}) {
+		if (this.websocketRef?.readyState === WebSocket.OPEN) {
+			this.websocketRef.send(JSON.stringify({ type, payload }));
+		}
+	};
 
-		this.ws.onopen = () => {
-			console.log("Connected");
-			this.send("ready");
-		};
-
-		this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
-		this.ws.onclose = () => console.log("Disconnected");
+	public destroy() {
+		this.websocketRef?.close();
+		window.removeEventListener("keydown", this.handleKey);
+		window.removeEventListener("keyup", this.handleKey);
 	}
 
-	disconnect() {
-		this.stop();
-		this.ws?.close();
-		this.ws = null;
-	}
+	constructor(canvasRef) {
+		let game = (new PongGame(null, true, []));
+		let data: Record<string, any> = {};
+		let gameObjectRegistry = (new Map<number, GameObject>());
+		let componentRegistry = (new Map<number, Component>());
 
-	attachCanvas(canvas: HTMLCanvasElement) {
-		const ctx = canvas.getContext("2d");
-		if (!ctx) throw new Error("Canvas 2D context not available");
-		this.viewport = new Viewport({ ctx, width: canvas.width, height: canvas.height });
-	}
-
-	start() {
-		const loop = () => {
-			this.updateWorld();
-			this.draw();
-			this.animationFrameId = requestAnimationFrame(loop);
-		};
-		loop();
-	}
-
-	stop() {
-		if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-		this.animationFrameId = null;
-	}
-
-	send(type: string, payload: any = {}) {
-		if (this.ws?.readyState === WebSocket.OPEN)
-			this.ws.send(JSON.stringify({ type, payload }));
-	}
-
-	sendInput(key: string, action: string) {
-		this.send("input", { key, action });
-	}
-
-	private handleMessage(data: any) {
-		// TODO: hydrate / update registries like in your current loop
-	}
-
-	private updateWorld() {
-		// TODO: sync server data into game object registry
-	}
-
-	private draw() {
-		if (!this.viewport) return;
-		const ctx = this.viewport.ctx;
-		ctx.clearRect(0, 0, this.viewport.width, this.viewport.height);
-
-		for (const obj of this.gameObjectRegistry.values())
-			obj.draw(this.viewport);
-	}
-}
-
-const GameView: React.FC = () => {
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-
-	const { t } = useTranslation();
-	const translate = (key: string) => t(`GameView.${key}`);
-	const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
-
-
-	const websocketRef = useRef<WebSocket | null>(null);
-	const game = useRef(new PongGame(null, true, []));
-	let data: Record<string, any> = {};
-	const gameObjectRegistry = useRef(new Map<number, GameObject>());
-	const componentRegistry = useRef(new Map<number, Component>());
-
-
-	useEffect(() => {
-		const ws = new WebSocket("ws://localhost:3000/ws");
-		websocketRef.current = ws;
-
-		const sendData = (type: string, payload: Record<string, any> = {}) => {
-			if (websocketRef.current?.readyState === WebSocket.OPEN) {
-				websocketRef.current.send(JSON.stringify({ type, payload }));
-			}
-		};
+		this.websocketRef = new WebSocket("ws://localhost:3000/ws");
 
 
 		// -- WEBSOCKET --
 
-		ws.onopen = () => {
+		this.websocketRef.onopen = () => {
 			console.log("initiating handshake");
-			ws.send(JSON.stringify({ type: "ready" }));
+			this.websocketRef?.send(JSON.stringify({ type: "ready" }));
 		} 
 
-		ws.onmessage = (event) => {
+		this.websocketRef.onmessage = (event) => {
 			data = JSON.parse(event.data);
 			console.log(data);
 
 			if (data["type"] === "ready") {
 				console.log("fetching world...");
-				sendData("fetch_world");
+				this.sendData("fetch_world");
 			} 
 
 			if (!data["state"]) return;
-			if (data["state"]["type"] === "full") sendData("received_full_state");
+			if (data["state"]["type"] === "full") this.sendData("received_full_state");
 		};
 
-		ws.onclose = () => console.log("❌ Disconnected");
+		this.websocketRef.onclose = () => console.log("❌ Disconnected");
 
 
-
+  this.handleKey = this.handleKey.bind(this);
 		// -- KEYBOARD --
 
-		function handleKey(e: KeyboardEvent) {
-			if (isArrowKey(e) && websocketRef.current?.readyState === WebSocket.OPEN)
-				sendData("input", { key: e.key, action: e.type });
-		}
 
-		window.addEventListener("keydown", handleKey);
-		window.addEventListener("keyup", handleKey);
+		window.addEventListener("keydown", this.handleKey);
+		window.addEventListener("keyup", this.handleKey);
 
 
 
@@ -271,16 +192,16 @@ const GameView: React.FC = () => {
 			}
 
 			if (data["bgColor"])
-				game.current.world.bgColor = data["bgColor"];
+				game.world.bgColor = data["bgColor"];
 
-			// -- sync server components with current components
+			// -- sync server components with components
 			for (const stateComponent of data["state"]["components"] ?? []) {
-				const component = componentRegistry.current.get(stateComponent.id);
+				const component = componentRegistry.get(stateComponent.id);
 
 				if (component !== undefined)
 					Object.assign(component, revive(stateComponent));
 				else if (componentMap[stateComponent.name])
-					componentRegistry.current.set(stateComponent.id, new componentMap[stateComponent.name](stateComponent));
+					componentRegistry.set(stateComponent.id, new componentMap[stateComponent.name](stateComponent));
 			}
 
 
@@ -306,13 +227,13 @@ const GameView: React.FC = () => {
 
 
 			// Replace any numeric IDs with object references
-			for (const [id, object] of gameObjectRegistry.current) {
+			for (const [id, object] of gameObjectRegistry) {
 
 				object.children = object.children.map((child: any) => {
 					if (typeof child !== "number")
 						return child;
 
-					const childObj = gameObjectRegistry.current.get(child);
+					const childObj = gameObjectRegistry.get(child);
 
 					if (childObj) {
 						childObj.parent = object;
@@ -326,14 +247,14 @@ const GameView: React.FC = () => {
 
 
 			// link components
-			for (const [id, object] of gameObjectRegistry.current) {
+			for (const [id, object] of gameObjectRegistry) {
 				if (object.component_list === undefined)
 					continue;
 
 				for (const id of object.component_list) {
 					if (typeof id !== "number") 
 						continue;
-					const compObj = componentRegistry.current.get(id);
+					const compObj = componentRegistry.get(id);
 					if (!compObj) continue;
 
 					compObj.host = object;
@@ -359,7 +280,7 @@ const GameView: React.FC = () => {
 		}
 
 
-		const canvas = canvasRef.current;
+		const canvas = canvasRef;
 		if (!canvas) return; // exit effect if canvas not ready
 		
 		const ctx = canvas.getContext("2d");
@@ -372,12 +293,12 @@ const GameView: React.FC = () => {
 		});
 
 		function draw() {
-			const renderList = Array.from(gameObjectRegistry.current.values())
+			const renderList = Array.from(gameObjectRegistry.values())
 				.sort((a, b) => a.zIndex - b.zIndex);
 
 			// -- CLEAR CANVAS --
 			ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
-			ctx!.fillStyle = game.current.world.bgColor;
+			ctx!.fillStyle = game.world.bgColor;
 			ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
 
 			// -- RENDER OBJECTS --
@@ -385,15 +306,29 @@ const GameView: React.FC = () => {
 				clientObj.draw(viewport);
 		}
 
-		function getObject(id: number) { return gameObjectRegistry.current.get(id); }
-		function setObject(id: number, object: any) { gameObjectRegistry.current.set(id, object); }
+		function getObject(id: number) { return gameObjectRegistry.get(id); }
+		function setObject(id: number, object: any) { gameObjectRegistry.set(id, object); }
 
 		loop();
+	}
+}
+
+const GameView: React.FC = () => {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
+
+	const { t } = useTranslation();
+	const translate = (key: string) => t(`GameView.${key}`);
+	const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
+
+
+
+
+
+	useEffect(() => {
+		let gameClient = new GameClient(canvasRef.current);
 
 		return () => {
-			ws.close();
-			window.removeEventListener("keydown", handleKey);
-			window.removeEventListener("keyup", handleKey);
+			gameClient.destroy(); // ✅ cleanup
 		};
 
 	}, []);
