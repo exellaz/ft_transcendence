@@ -1,8 +1,8 @@
 import { Game } from "../modules/game/game";
 import type { Room } from "../modules/room/room";
-import { rooms, startRoomLoop, roomStartGame, roomEndGame } from "../modules/room/room";
+import { rooms, startRoomLoop, roomStartGame} from "../modules/room/room";
 import { createLiveChatMessage, } from "../modules/chat/liveChat";
-import { broadcast, handleSwitchSide, updateCanStart } from "./utils";
+import { broadcast, handleSwitchSide, updateCanStart, handlePlayerDisconnect } from "./utils";
 
 const game = new Game(); //create game object
 
@@ -123,6 +123,12 @@ export class WebSocketHandler implements IWebSocketHandler {
                     if (room.gameState.gameEnded) {
                         console.log(`Player ${player.playerName} (${player.role}) [ ${clientId} ] fail to reconnect to game because game end`);
                         return { id: clientId, role: player.role, playerName: player.playerName, team: player.team, leader: player.leader, spriteUrl: player.spriteUrl, ready: player.ready};
+                    }
+
+                    // Cancel any disconnect timer
+                    if (room.disconnectTimers && room.disconnectTimers.has(clientId)) {
+                        clearTimeout(room.disconnectTimers.get(clientId)!);
+                        room.disconnectTimers.delete(clientId);
                     }
 
                     // mark as reconnected
@@ -348,12 +354,21 @@ export class WebSocketHandler implements IWebSocketHandler {
 
 		const role = player.role;
 
+        // Cancel any existing timer
+        if (!room.disconnectTimers) room.disconnectTimers = new Map();
+        if (room.disconnectTimers.has(clientId)) {
+            clearTimeout(room.disconnectTimers.get(clientId)!);
+            room.disconnectTimers.delete(clientId);
+        }
+
 		// ---- Remove socket and client from room ----
 		room.sockets.delete(socket);
 		room.clients.delete(socket);
 
-		// ---- mark as disconnected ----
-		room.disconnectPlayers.add(clientId);
+        // ---- mark as disconnected ----
+        if (!room.disconnectPlayers.has(clientId)) {
+            room.disconnectPlayers.add(clientId);
+        }
 
 		// --- handle leader leaving ---
 		if (clientId === room.leaderId) {
@@ -386,47 +401,19 @@ export class WebSocketHandler implements IWebSocketHandler {
 			}
 		}
 
-		//---- case: disconnect during game ----
-		if (role && role !== "spectator" && room.gameState.gameStarted) {
-			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] disconnect the room ${room.name} (${roomId})`);
-			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnect.`));
+        const GRACE_PERIOD = 10 * 1000; //? timeout for reconnect
 
-			//freeze their paddle position
-			if (room.gameState.paddles[clientId] !== undefined) {
-				room.gameState.paddles[clientId] = room.gameState.paddles[clientId];
-			}
+        // ---- case: disconnect during game ----
+        if (role && role !== "spectator" && room.gameState.gameStarted) {
+            handlePlayerDisconnect(room, clientId, GRACE_PERIOD, true);
+            return;
+        }
 
-			//notify all in the room about disconnected player and pause state
-			broadcast(room, {
-				type: "roleUpdate",
-				gameState: room.gameState,
-				leaderId: room.leaderId,
-				canStart: room.canStart
-			});
-
-			//if both disconnected, end the game
-			const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-			if (room.disconnectPlayers.size >= totalPlayers) {
-				console.log(`All players disconnected, ending game in room ${room.name} (${roomId})`);
-				roomEndGame(room);
-				rooms.delete(room.id);
-			}
-			return;
-		}
-
-		// ---- case: disconnect during countdown ----
-		if (role && role !== "spectator" && room.gameState.countdown > 0 && !room.gameState.gameStarted) {
-			console.log(`Player ${player.playerName} (${role}) [ ${clientId} ] disconnected during countdown in room ${room.name} (${roomId})`);
-			broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnected during countdown.`));
-
-			broadcast(room, {
-				type: "roleUpdate",
-				gameState: room.gameState,
-				leaderId: room.leaderId,
-				disconnected: Array.from(room.disconnectPlayers),
-			});
-			return;
-		}
+        // ---- case: disconnect during countdown ----
+        if (role && role !== "spectator" && room.gameState.countdown > 0 && !room.gameState.gameStarted) {
+            handlePlayerDisconnect(room, clientId, GRACE_PERIOD, true);
+        	return;
+        }
 
 		// ---- case: spectator leave ----
 		if (role === "spectator") {

@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
+
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
+import { useRoomWebSocket } from "../lib/room-websocket";
 
 const GameView: React.FC = () => {
   const { t } = useTranslation();
@@ -13,26 +15,24 @@ const GameView: React.FC = () => {
   const navigate = useNavigate();
 
   // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("pongRoomId") || "t1";
-  const roomName = sessionStorage.getItem("pongRoomName") || "Room 1";
+  const roomId = sessionStorage.getItem("RoomId") || "t1";
+  const roomName = sessionStorage.getItem("RoomName") || "Room 1";
   const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || '{}');
   const clientId = playerInfo.id;
   const playerName = playerInfo.name;
   const playerSprite = playerInfo.sprite;
   const initialRole = sessionStorage.getItem("playerSide") || "";
-  console.log("GameView - playerInfo:", playerInfo);
-  console.log("GameView - initialRole:", initialRole);
 
   // -------------------------------- Websockets --------------------------------
   const {
     socket,
 	  role,
 	  gameOver,
+      winner,
 	  playerResult,
 	  isSpectator,
 	  gameState,
       setting,
-	  //winner,
 	  scoreText,
 	  statusText,
 	  settingView,
@@ -125,7 +125,14 @@ const GameView: React.FC = () => {
           {/* button to exit game */}
           {(isSpectator || gameOver) && (
             <button
-              onClick={() => navigate("/main-menu")}
+              onClick={() => {
+                navigate("/main-menu");
+                sessionStorage.removeItem("playerSide");
+                sessionStorage.removeItem("RoomId");
+                sessionStorage.removeItem("RoomLeaderId");
+                sessionStorage.removeItem("RoomName");
+                sessionStorage.removeItem("RoomType");
+              }}
               className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
             >
               Back to Lobby

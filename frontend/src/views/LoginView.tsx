@@ -28,7 +28,8 @@ const LoginView: React.FC = () => {
           type="password"
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
-        <Button variant="longYellow" onClick={() => navigate("/main-menu")}>{translate("login")}</Button>
+		{/* change the redirect */}
+        <Button variant="longYellow" onClick={() => navigate("/mock")}>{translate("login")}</Button>
         <Divider />
         <Button
           variant="longWhite"

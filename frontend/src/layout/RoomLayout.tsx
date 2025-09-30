@@ -19,9 +19,9 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
 
   //TODO replace with JWT
   const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
-  const roomId = sessionStorage.getItem("pongRoomId");
+  const roomId = sessionStorage.getItem("RoomId");
   if (!roomId) return <div>{translate("no_room")}</div>;
-  const roomLeaderId = sessionStorage.getItem("pongRoomLeaderId") || "";
+  const roomLeaderId = sessionStorage.getItem("RoomLeaderId") || "";
 
 
   return (

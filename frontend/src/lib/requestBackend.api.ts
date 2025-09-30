@@ -2,16 +2,16 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 //const API_URL = `/api`;
 
 /**
- * @brief generate a random client ID and store it in session storage if not already present
- * @return client ID to client
+ * @brief generate a random player ID and store it in session storage if not already present
+ * @return player ID to client
 */
-export function ensureClientId() {
-  let clientId = sessionStorage.getItem("pongClientId");
-  if (!clientId) {
-    clientId = Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
-    sessionStorage.setItem("pongClientId", clientId);
+export function ensurePlayerId() {
+  const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
+  let playerId = playerInfo.id;
+  if (!playerId) {
+    playerId = Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
   }
-  return clientId;
+  return playerId;
 }
 
 /**

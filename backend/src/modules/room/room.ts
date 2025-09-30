@@ -61,6 +61,7 @@ export interface Room {
     //startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: string; // clientId of the room leader
     private: boolean; // Flag to indicate if the room is private
+    disconnectTimers?: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle for reconnection grace period
 }
 
 //default value for setting
@@ -180,7 +181,7 @@ export function roomStartGame(room: Room) {
  * @param room Room object
  * @param forced Whether to force end the game
 */
-export function roomEndGame(room: Room, forced = false) {
+export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" | "right" | "draw") {
 	// If game already ended, do nothing
 	if (room.result)
 		return;
@@ -198,7 +199,10 @@ export function roomEndGame(room: Room, forced = false) {
 
 	//if not force to end then determine winner by score
 	let winner: "left" | "right" | "draw";
-	if (!forced) {
+    if (overrideWinner) {
+        winner = overrideWinner;
+    }
+	else if (!forced) {
 		if (room.gameState.score.left > room.gameState.score.right)
 			winner = "left";
 		else if (room.gameState.score.left < room.gameState.score.right)
@@ -232,15 +236,22 @@ export function roomEndGame(room: Room, forced = false) {
 	room.duration = ms;                    // store raw ms (number)
 
     //braodcast everyone the game is ended
-    broadcast(room, JSON.stringify({
+    broadcast(room, {
         type: "state",
         gameState: {
             ...room.gameState,
             setting: room.setting
         },
+        result: room.result,
         isSpectator: false, //everyone get the result
-    }));
+    });
     console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
+
+	const roomId = room.id;
+	if (rooms.has(roomId)) {
+		console.log(`Deleted room ${roomId} after game end.`);
+		rooms.delete(roomId);
+	}
 
 	// Save match result to database
 	// saveMatchResult(room, room.duration);

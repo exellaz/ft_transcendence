@@ -13,8 +13,10 @@ export function useLiveChatWebSocket(roomId: string) {
     const socketRef = useRef<WebSocket | null>(null);
 
 	// Get current user info from sessionStorage
-	const uid = sessionStorage.getItem("pongClientId") || "0";
-	const username = sessionStorage.getItem("pongUserName") || "Guest";
+    //TODO replace with JWT
+    const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
+	const uid = playerInfo.id;
+	const username = playerInfo.name;
 
     useEffect(() => {
         if (socketRef.current) return; // already connected

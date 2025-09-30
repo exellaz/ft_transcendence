@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ensureClientId, determineSide } from "./requestBackend.api";
+import { ensurePlayerId, determineSide } from "./requestBackend.api";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -27,12 +27,12 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	const socketRef = useRef<WebSocket | null>(null);
 
 	// Ensure client ID is set
-	useEffect(() => { ensureClientId(); }, []);
+	useEffect(() => { ensurePlayerId(); }, []);
 
 	useEffect(() => {
-		// get clientId and playerName from sessionStorage
-		const clientId = sessionStorage.getItem("pongClientId") || ensureClientId();
+        //TODO replace with JWT
 		const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
+        const clientId = playerInfo.id;
 
 		async function connect() {
 			// set room settings
@@ -184,9 +184,10 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	}
 	function onLeave() {
 	  try { socketRef.current?.close(); } catch {}
-	  sessionStorage.removeItem("pongRoomName");
-	  sessionStorage.removeItem("pongRoomId");
-	  sessionStorage.removeItem("pongRoomLeaderId");
+	  sessionStorage.removeItem("RoomName");
+	  sessionStorage.removeItem("RoomId");
+	  sessionStorage.removeItem("RoomLeaderId");
+      sessionStorage.removeItem("RoomType");
 	}
 
 	return {

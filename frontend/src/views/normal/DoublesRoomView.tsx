@@ -30,11 +30,11 @@ const DoublesRoomView: React.FC = () => {
   const navigate = useNavigate();
 
   // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("pongRoomId");
+  const roomId = sessionStorage.getItem("RoomId");
   if (!roomId) return <div>{translate("no_room_id")}</div>;
-  const roomName = sessionStorage.getItem("pongRoomName");
+  const roomName = sessionStorage.getItem("RoomName");
   if (!roomName) return <div>{translate("no_room_name")}</div>;
-  const leaderId = sessionStorage.getItem("pongRoomLeaderId");
+  const leaderId = sessionStorage.getItem("RoomLeaderId");
   if (!leaderId) return <div>{translate("no_leader_id")}</div>;
 
   //-------------------------------- Websockets --------------------------------

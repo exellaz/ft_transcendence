@@ -28,7 +28,9 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
 
 	// Determine if current user is leader or ready
-	const currentId = sessionStorage.getItem("pongClientId");
+    //TODO replace with JWT
+    const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
+	const currentId = playerInfo.id;
 	const currentUser = players.find((p) => p.uid === currentId);
 	const isLeader = currentUser ? currentUser.leader : false;
 	const isReady = currentUser ? currentUser.ready : false;

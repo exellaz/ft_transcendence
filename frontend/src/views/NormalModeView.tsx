@@ -12,7 +12,7 @@ import Status from "../components/Status";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
-import { createRoomAPI, fetchRooms, ensureClientId } from "../lib/requestBackend.api";
+import { createRoomAPI, fetchRooms, ensurePlayerId } from "../lib/requestBackend.api";
 
 /**
  * @brief casual game
@@ -42,7 +42,9 @@ const NormalModeView: React.FC = () => {
 
   //private room - owner create room from API and navigate to the room
   async function handleCreateRoom(teamSize: number, isPrivate: boolean) {
-	const clientId = ensureClientId();
+    //TODO replace with JWT
+    const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
+	const clientId = playerInfo.id || ensurePlayerId();
 	const scale = Math.min(
 	  window.innerWidth / 800,
 	  window.innerHeight / 400,
@@ -58,12 +60,14 @@ const NormalModeView: React.FC = () => {
 	  height,
 	  { leaderId: clientId, isPrivate }
 	);
+    console.log("private room:", room); //// debug
 	if (room) {
 	  // always handle both id and roomId
 	  const roomIdToUse = room.id || room.roomId;
-	  sessionStorage.setItem("pongRoomId", roomIdToUse);
-	  sessionStorage.setItem("pongRoomName", room.name);
-	  sessionStorage.setItem("pongRoomLeaderId", room.leaderId); // consistent key
+	  sessionStorage.setItem("RoomId", roomIdToUse);
+	  sessionStorage.setItem("RoomName", room.name);
+	  sessionStorage.setItem("RoomLeaderId", room.leaderId);
+      sessionStorage.setItem("RoomType", "private");
 	  navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
 	} else {
 	  setStatus({ text: "❌ Failed to create room", color: "red" });
@@ -97,9 +101,10 @@ const NormalModeView: React.FC = () => {
 
 	//if had room, navigate to it
 	const roomIdToUse = room.id || room.roomId;
-	sessionStorage.setItem("pongRoomId", roomIdToUse);
-	sessionStorage.setItem("pongRoomName", room.name);
-	sessionStorage.setItem("pongRoomLeaderId", room.leaderId);
+	sessionStorage.setItem("RoomId", roomIdToUse);
+	sessionStorage.setItem("RoomName", room.name);
+	sessionStorage.setItem("RoomLeaderId", room.leaderId);
+    sessionStorage.setItem("RoomType", "public");
 	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
@@ -120,8 +125,9 @@ const NormalModeView: React.FC = () => {
 	}
 
 	//if found room, navigate to it
-	sessionStorage.setItem("pongRoomId", room.id);
-	sessionStorage.setItem("pongRoomName", room.name);
+	sessionStorage.setItem("RoomId", room.id);
+	sessionStorage.setItem("RoomName", room.name);
+    sessionStorage.setItem("RoomType", "private");
 	navigate(getRoomPath(room.teamSize, room.id), { state: { room } });
   }
 
