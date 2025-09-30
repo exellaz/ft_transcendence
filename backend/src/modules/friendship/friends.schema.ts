@@ -8,13 +8,13 @@ export const getFriendShipsByUserIdSchema = {
 	  },
 	  required: ["userId"]
 	},
-	querystring: {
-		type: "object",
-		properties: {
-		  status: { type: "string", enum: ["pending", "accepted", "blocked"] },
-		},
-		required: ["status"], // or leave this out if optional
-	  },
+	// querystring: {
+	// 	type: "object",
+	// 	properties: {
+	// 	  status: { type: "string", enum: ["pending", "accepted", "blocked"] },
+	// 	},
+	// 	required: ["status"], // or leave this out if optional
+	//   },
 }
 
 // POST /friendships

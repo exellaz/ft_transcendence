@@ -6,13 +6,31 @@ import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friends.
 
 async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
-	// GET /friendships/:userId?status=_____  (get all friendships by userId, filtered by status)
-	fastify.get("/friendships/:userId", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
+	// GET /friendships/:userId/pending (get friends that send friend request to u)
+	fastify.get("/friendships/:userId/pending", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
 		const { userId } = request.params as { userId: string };
-		const { status } = request.query as { status?: "pending" | "accepted" | "blocked" };
 
-		if (!status)
-			throw new ApiError("Missing status query param", 400);
+		const friendships = await fastify.db.friendship.findMany({
+			where: {
+				friendId: Number(userId),
+				status: "pending",
+			},
+			include: {
+				user: { // the sender
+					select: userPublicSelect
+				}
+			},
+		});
+
+		if (!friendships)
+			throw new ApiError("Friendship not found", 404);
+
+		return ok(friendships); // 200 OK
+	});
+
+	// GET /friendships/:userId/accepted
+	fastify.get("/friendships/:userId/accepted", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
+		const { userId } = request.params as { userId: string };
 
 		type FriendshipWithUsers = Prisma.FriendshipGetPayload<{
 			include: { user: true; friend: true };
@@ -21,7 +39,7 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 
 		const friendships: FriendshipWithUsers[] = await fastify.db.friendship.findMany({
 			where: {
-				status,
+				status: "accepted",
 				OR: [
 					{ userId: Number(userId) },
 					{ friendId: Number(userId) },
@@ -92,11 +110,7 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 			status?: FriendshipStatus;
 		};
 
-		// Build update object dynamically
-		const data: any = {};
-		if (status !== undefined) data.status = status;
-
-		if (Object.keys(data).length === 0)
+		if (status === undefined)
 			throw new ApiError("No fields to update", 400);
 
 		try {
