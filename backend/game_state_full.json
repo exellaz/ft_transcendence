@@ -7,7 +7,7 @@
         "y": 0
       }
     },
-    "bgColor": "#000000",
+    "bgColor": "#6D1A1A",
     "gameObjects": [
       {
         "className": "ball",
@@ -557,10 +557,10 @@
           "y": 0
         },
         "scale": {
-          "x": 10,
-          "y": 10
+          "x": 5.392,
+          "y": 5.392
         },
-        "text": "Loading...",
+        "text": "3",
         "font": "75px Impact",
         "color": "#ffffff",
         "zIndex": 100,
@@ -574,24 +574,16 @@
         "id": 27,
         "position": {
           "x": -50,
-          "y": 20
+          "y": 0
         },
         "scale": {
           "x": 10,
           "y": 10
         },
         "text": "0",
-        "font": "75px Georgia",
-        "color": "#47fabf",
-        "zIndex": -10,
-        "glow": {
-          "className": "glow",
-          "Color": "#47fabf",
-          "Blur": 20,
-          "OffsetX": 0,
-          "OffsetY": 0,
-          "blendMode": "source-over"
-        }
+        "font": "67px Impact",
+        "color": "#ffffff",
+        "zIndex": -10
       },
       {
         "name": "label",
@@ -599,24 +591,16 @@
         "id": 28,
         "position": {
           "x": 50,
-          "y": 20
+          "y": 0
         },
         "scale": {
           "x": 10,
           "y": 10
         },
         "text": "0",
-        "font": "75px Georgia",
-        "color": "#47fabf",
-        "zIndex": -10,
-        "glow": {
-          "className": "glow",
-          "Color": "#47fabf",
-          "Blur": 20,
-          "OffsetX": 0,
-          "OffsetY": 0,
-          "blendMode": "source-over"
-        }
+        "font": "67px Impact",
+        "color": "#ffffff",
+        "zIndex": -10
       },
       {
         "id": 29,
@@ -624,7 +608,7 @@
         "sprite": {
           "id": 31,
           "name": "sprite",
-          "imagePath": "assets/maps/map2/goal.png",
+          "imagePath": "assets/maps/map1/goalpost.png",
           "flippedHorizontal": true,
           "opacity": 1,
           "blendMode": "source-over"
@@ -656,7 +640,7 @@
         "sprite": {
           "id": 33,
           "name": "sprite",
-          "imagePath": "assets/maps/map2/goal.png",
+          "imagePath": "assets/maps/map1/goalpost.png",
           "flippedHorizontal": false,
           "opacity": 1,
           "blendMode": "source-over"
@@ -688,7 +672,7 @@
         "sprite": {
           "id": 35,
           "name": "sprite",
-          "imagePath": "assets/maps/map2/background.png",
+          "imagePath": "assets/maps/map1/floor3.png",
           "flippedHorizontal": false,
           "opacity": 1,
           "blendMode": "source-over"
@@ -720,15 +704,15 @@
         "sprite": {
           "id": 37,
           "name": "sprite",
-          "imagePath": "assets/maps/map2/foreground.png",
+          "imagePath": "assets/maps/map1/shadow.png",
           "flippedHorizontal": false,
           "opacity": 1,
-          "blendMode": "source-over"
+          "blendMode": "multiply"
         },
-        "zIndex": 50,
+        "zIndex": 20,
         "position": {
           "x": 0,
-          "y": 180
+          "y": -180
         },
         "scaleFactor": {
           "x": 0.55,
@@ -745,6 +729,42 @@
           },
           "slowness": 2
         }
+      },
+      {
+        "name": "",
+        "id": 33,
+        "position": {
+          "x": 0,
+          "y": -230
+        },
+        "scale": {
+          "x": 2100,
+          "y": 59
+        },
+        "rotation": 0,
+        "zIndex": -20,
+        "components": [
+          39
+        ],
+        "cUpdate": "moveCrowd"
+      },
+      {
+        "name": "",
+        "id": 34,
+        "position": {
+          "x": 0,
+          "y": -230
+        },
+        "scale": {
+          "x": 2100,
+          "y": 59
+        },
+        "rotation": 0,
+        "zIndex": -20,
+        "components": [
+          40
+        ],
+        "cUpdate": "moveCrowd"
       }
     ],
     "components": [
@@ -879,13 +899,29 @@
         "flippedHorizontal": false,
         "opacity": 1,
         "blendMode": "source-over"
+      },
+      {
+        "id": 39,
+        "name": "sprite",
+        "imagePath": "assets/maps/map1/crowd.png",
+        "flippedHorizontal": false,
+        "opacity": 1,
+        "blendMode": "source-over"
+      },
+      {
+        "id": 40,
+        "name": "sprite",
+        "imagePath": "assets/maps/map1/crowd2.png",
+        "flippedHorizontal": false,
+        "opacity": 1,
+        "blendMode": "source-over"
       }
     ],
     "type": "full"
   },
   "metadata": {
-    "timestamp": 1759197006831,
-    "delta": 0.016871628999999985,
+    "timestamp": 1759220751576,
+    "delta": 0.017915238000000045,
     "fps": 0
   }
 }

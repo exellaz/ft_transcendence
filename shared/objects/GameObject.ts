@@ -236,8 +236,8 @@ export class GameObject {
 			try {
 				if (component instanceof Sprite)
 					(component as Sprite).draw(viewport);
-				// else if (component instanceof HitBox) 
-				// 	(component as HitBox).draw(viewport);
+				else if (component instanceof HitBox) 
+					(component as HitBox).draw(viewport);
 			}
 			catch (error: unknown) {
 				console.log("cannot draw: ", error);
@@ -269,3 +269,24 @@ export class GameObject {
 		return exportCleanup(json, exportStatic);
 	}
 }
+
+
+// export class ClientObject extends GameObject {
+
+// 	constructor(params: Partial<ClientObject>) {
+// 		super({});
+// 		Object.assign(this, params);
+// 	}
+
+// 	updateComponents(componentRegistry) {
+// 		for (const id of this.component_list) {
+// 			if (typeof id !== "number")
+// 				continue;
+// 			const compObj = componentRegistry.get(id);
+// 			if (!compObj) continue;
+
+// 			compObj.host = this;
+// 			this.addComponent(compObj);
+// 		}
+// 	}
+// }

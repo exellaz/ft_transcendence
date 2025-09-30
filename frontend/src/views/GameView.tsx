@@ -24,10 +24,6 @@ function isArrowKey(e: KeyboardEvent): boolean {
 }
 
 
-
-
-
-
 const componentMap: Record<string, new (params: any) => any> = {
 	"Point2D": function (params: any) { return new Point2D(params.x, params.y); } as any,
 	"Vector2D": function (params: any) { return new Vector2D(params.x, params.y); } as any,
@@ -45,8 +41,6 @@ const gameObjectMap: Record<string, new (params: any) => any> = {
 	"arrow": Arrow,
 	"player": Player
 }
-
-
 
 
 function revive(obj: any): any {
@@ -120,8 +114,15 @@ function genericUpdate(
 
 
 class GameClient {
-	
+
 	private websocketRef: WebSocket | null = null;
+	private data: Record<string, any> = {};
+	private gameObjectRegistry = (new Map<number, GameObject>());
+	private componentRegistry = (new Map<number, Component>());
+	private game: PongGame = new PongGame(null, true, []);
+	private viewport: Viewport | null = null;
+	private canvas: HTMLCanvasElement | null = null;
+	private ctx: CanvasRenderingContext2D | null = null;
 
 	handleKey(e: KeyboardEvent) {
 		console.log("test");
@@ -129,7 +130,7 @@ class GameClient {
 			this.sendData("input", { key: e.key, action: e.type });
 	}
 
-	sendData (type: string, payload: Record<string, any> = {}) {
+	sendData(type: string, payload: Record<string, any> = {}) {
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			this.websocketRef.send(JSON.stringify({ type, payload }));
 		}
@@ -141,176 +142,166 @@ class GameClient {
 		window.removeEventListener("keyup", this.handleKey);
 	}
 
-	constructor(canvasRef) {
-		let game = (new PongGame(null, true, []));
-		let data: Record<string, any> = {};
-		let gameObjectRegistry = (new Map<number, GameObject>());
-		let componentRegistry = (new Map<number, Component>());
+	constructor(canvasRef: HTMLCanvasElement | null) {
 
 		this.websocketRef = new WebSocket("ws://localhost:3000/ws");
-
 
 		// -- WEBSOCKET --
 
 		this.websocketRef.onopen = () => {
-			console.log("initiating handshake");
 			this.websocketRef?.send(JSON.stringify({ type: "ready" }));
-		} 
+		}
 
 		this.websocketRef.onmessage = (event) => {
-			data = JSON.parse(event.data);
-			console.log(data);
+			this.data = JSON.parse(event.data);
+			console.log(this.data);
 
-			if (data["type"] === "ready") {
-				console.log("fetching world...");
+			if (this.data["type"] === "ready") {
 				this.sendData("fetch_world");
-			} 
+			}
 
-			if (!data["state"]) return;
-			if (data["state"]["type"] === "full") this.sendData("received_full_state");
+			if (!this.data["state"]) 
+				return;
+			if (this.data["state"]["type"] === "full") 
+				this.sendData("received_full_state");
 		};
 
 		this.websocketRef.onclose = () => console.log("❌ Disconnected");
 
 
-  this.handleKey = this.handleKey.bind(this);
+		this.handleKey = this.handleKey.bind(this);
 		// -- KEYBOARD --
 
 
 		window.addEventListener("keydown", this.handleKey);
 		window.addEventListener("keyup", this.handleKey);
 
+		this.canvas = canvasRef;
+		if (!this.canvas) return; // exit effect if canvas not ready
 
+		this.ctx = this.canvas.getContext("2d");
+		if (!this.ctx) return;
 
-		// -- WORLD UPDATE --
-
-		function loop() {
-
-			if (data["state"] === undefined) {
-				requestAnimationFrame(loop);
-				return;
-			}
-
-			if (data["bgColor"])
-				game.world.bgColor = data["bgColor"];
-
-			// -- sync server components with components
-			for (const stateComponent of data["state"]["components"] ?? []) {
-				const component = componentRegistry.get(stateComponent.id);
-
-				if (component !== undefined)
-					Object.assign(component, revive(stateComponent));
-				else if (componentMap[stateComponent.name])
-					componentRegistry.set(stateComponent.id, new componentMap[stateComponent.name](stateComponent));
-			}
-
-
-			// -- instantiate objects --
-			for (const stateObject of data["state"]["gameObjects"] ?? []) {
-				const id = stateObject["id"];
-				let obj = getObject(id);
-
-				if (!obj) {
-					// hydrate only once
-					const revivedObject = revive(stateObject);
-					obj = createNewInstance(revivedObject);
-				}
-
-				else {
-					// update from raw JSON
-					genericUpdate(obj, stateObject);
-					if (stateObject.className === "camera") {
-						viewport.camera = (obj as Camera);
-					}
-				}
-			}
-
-
-			// Replace any numeric IDs with object references
-			for (const [id, object] of gameObjectRegistry) {
-
-				object.children = object.children.map((child: any) => {
-					if (typeof child !== "number")
-						return child;
-
-					const childObj = gameObjectRegistry.get(child);
-
-					if (childObj) {
-						childObj.parent = object;
-						return childObj; // replace number with actual object
-					}
-					else
-						return child; // cannot link yet
-				});
-				object.clientUpdate();
-			}
-
-
-			// link components
-			for (const [id, object] of gameObjectRegistry) {
-				if (object.component_list === undefined)
-					continue;
-
-				for (const id of object.component_list) {
-					if (typeof id !== "number") 
-						continue;
-					const compObj = componentRegistry.get(id);
-					if (!compObj) continue;
-
-					compObj.host = object;
-					object.addComponent(compObj);
-				}
-			}
-			draw();
-			requestAnimationFrame(loop);
-		}
-
-		function createNewInstance(object: any) {
-			const params = { ...object, components: [], isClient: true };
-			const objectInstance = gameObjectMap[object.className] ? 
-				new gameObjectMap[object.className](params) : 
-				new GameObject(params);
-				
-			setObject(object["id"], objectInstance);
-			// console.log(`${objectInstance.constructor.name} created ${objectInstance.id} | ${object["id"]} | children : ${objectInstance.children}`);
-
-			objectInstance.component_list = object.components;
-
-			return objectInstance;
-		}
-
-
-		const canvas = canvasRef;
-		if (!canvas) return; // exit effect if canvas not ready
-		
-		const ctx = canvas.getContext("2d");
-		if (!ctx) return ;
-
-		const viewport = new Viewport({
-			ctx: ctx,
-			width: canvas.width,
-			height: canvas.height
+		this.viewport = new Viewport({
+			ctx: this.ctx,
+			width: this.canvas.width,
+			height: this.canvas.height
 		});
 
-		function draw() {
-			const renderList = Array.from(gameObjectRegistry.values())
-				.sort((a, b) => a.zIndex - b.zIndex);
+		this.loop = this.loop.bind(this);
+	}
 
-			// -- CLEAR CANVAS --
-			ctx!.clearRect(0, 0, canvas!.width, canvas!.height);
-			ctx!.fillStyle = game.world.bgColor;
-			ctx!.fillRect(0, 0, canvas!.width, canvas!.height);
+	start() {
+		this.loop();
+	}
 
-			// -- RENDER OBJECTS --
-			for (const clientObj of renderList)
-				clientObj.draw(viewport);
+	loop() {
+		if (this.data === undefined || this.data["state"] === undefined) {
+			requestAnimationFrame(this.loop);
+			return;
 		}
 
-		function getObject(id: number) { return gameObjectRegistry.get(id); }
-		function setObject(id: number, object: any) { gameObjectRegistry.set(id, object); }
+		if (this.data["bgColor"])
+			this.game.world.bgColor = this.data["bgColor"];
 
-		loop();
+		// -- sync server components with components
+		for (const stateComponent of this.data["state"]["components"] ?? []) {
+			const component = this.componentRegistry.get(stateComponent.id);
+
+			if (component !== undefined)
+				Object.assign(component, revive(stateComponent));
+			else if (componentMap[stateComponent.name])
+				this.componentRegistry.set(stateComponent.id, new componentMap[stateComponent.name](stateComponent));
+		}
+
+
+		// -- instantiate objects --
+		for (const stateObject of this.data["state"]["gameObjects"] ?? []) {
+			const id = stateObject["id"];
+			let obj = this.getObject(id);
+
+			if (!obj) {
+				// hydrate only once
+				const revivedObject = revive(stateObject);
+				this.createNewInstance(revivedObject);
+			}
+
+			else {
+				// update from raw JSON
+				genericUpdate(obj, stateObject);
+				if (stateObject.className === "camera")
+					this.viewport!.camera = (obj as Camera);
+			}
+		}
+
+
+		// Replace any numeric IDs with object references
+		for (const [id, object] of this.gameObjectRegistry) {
+
+			object.children = object.children.map((child: any) => {
+				if (typeof child !== "number")
+					return child;
+
+				const childObj = this.gameObjectRegistry.get(child);
+
+				if (childObj) {
+					childObj.parent = object;
+					return childObj; // replace number with actual object
+				}
+				else
+					return child; // cannot link yet
+			});
+			object.clientUpdate();
+		}
+
+
+		// link components
+		for (const [id, object] of this.gameObjectRegistry) {
+			for (const id of object.component_list) {
+				if (typeof id !== "number")
+					continue;
+				const compObj = this.componentRegistry.get(id);
+				if (!compObj) continue;
+
+				compObj.host = object;
+				object.addComponent(compObj);
+			}
+		}
+		this.draw();
+		requestAnimationFrame(this.loop);
 	}
+
+	createNewInstance(object: any) {
+		const params = { 
+			...object, 
+			components: [], 
+			isClient: true,
+			component_list: object.components ?? []
+		};
+		const objectInstance = gameObjectMap[object.className] ?
+			new gameObjectMap[object.className](params) :
+			new GameObject(params);
+		this.setObject(object["id"], objectInstance);
+
+		return objectInstance;
+	}
+
+	draw() {
+		const renderList = Array.from(this.gameObjectRegistry.values())
+			.sort((a, b) => a.zIndex - b.zIndex);
+
+		// -- CLEAR CANVAS --
+		this.ctx!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
+		this.ctx!.fillStyle = this.game.world.bgColor;
+		this.ctx!.fillRect(0, 0, this.canvas!.width, this.canvas!.height);
+
+		// -- RENDER OBJECTS --
+		for (const clientObj of renderList)
+			clientObj.draw(this.viewport!);
+	}
+
+	getObject(id: number) { return this.gameObjectRegistry.get(id); }
+	setObject(id: number, object: any) { this.gameObjectRegistry.set(id, object); }
 }
 
 const GameView: React.FC = () => {
@@ -320,13 +311,10 @@ const GameView: React.FC = () => {
 	const translate = (key: string) => t(`GameView.${key}`);
 	const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
 
-
-
-
-
 	useEffect(() => {
 		let gameClient = new GameClient(canvasRef.current);
 
+		gameClient.start();
 		return () => {
 			gameClient.destroy(); // ✅ cleanup
 		};

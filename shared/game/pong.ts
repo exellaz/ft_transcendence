@@ -470,7 +470,7 @@ export class PongGame {
 		this.world.game = this;
 
 
-		this.loadMap(Maps.Mansion);
+		this.loadMap(Maps.Stadium);
 	}
 }
 
