@@ -10,20 +10,12 @@ export interface Renderable {
 	draw(ctx: CanvasRenderingContext2D): void;
 }
 
-export enum Tags {
-	Renderable = "Renderable",
-	Updatable = "Updatable",
-	Collidable = "Collidable",
-}
-
-
-
 export class Outline {
 
 	static CIRCLE = 0;
 	static RECTANGLE = 1;
 
-	thickness: number;
+	thickness: number = 0;
 	type: number = Outline.RECTANGLE;
 
 	constructor(params: Partial<Outline>) {
@@ -32,13 +24,11 @@ export class Outline {
 }
 
 export class Sprite extends Component {
-	[Tags.Renderable] = true;
 	// className: string = "sprite";
 
-	image: HTMLImageElement;
+	image: HTMLImageElement | null = null;
 	imagePath: string | HTMLImageElement | null = null;
 	flippedHorizontal: boolean = false;
-	crop: boolean = false;
 	outline: Outline | null = null;
 	opacity: number = 1.0;
 	blendMode: GlobalCompositeOperation = "source-over";
@@ -48,7 +38,7 @@ export class Sprite extends Component {
 	width: number = -1;
 	height: number = -1;
 
-	onLoad: () => void;
+	onLoad: () => void = () => {};
 
 	config(params: Partial<Sprite>): Sprite {
 		Object.assign(this, params);
@@ -62,7 +52,6 @@ export class Sprite extends Component {
 			name: this.name, // Add this line
 			imagePath: this.imagePath,
 			STATIC_flippedHorizontal: this.flippedHorizontal,
-			STATIC_crop: this.crop,
 			STATIC_outline: this.outline,
 			STATIC_opacity: this.opacity,
 			STATIC_blendMode: this.blendMode,
@@ -80,13 +69,13 @@ export class Sprite extends Component {
 		Object.assign(this, params);
 	}
 
-	init() {
-		if (this.image) return this; // ✅ don't re-init if already has an image
-		const diameter = Math.max(this.host.scale.x, this.host.scale.y);
+	init(): Component {
+		if (this.image) return this;
+		const diameter = Math.max(this.host!.scale.x, this.host!.scale.y);
 
-		if (typeof document === "undefined") {
-			return;
-		}
+		if (typeof document === "undefined") 
+			return this;
+		
 		const canvas = document.createElement('canvas');
 		canvas.width = diameter;
 		canvas.height = diameter;
@@ -98,55 +87,40 @@ export class Sprite extends Component {
 
 		else if (ctx) {
 			ctx.save();
-			if (this.crop) {
-				ctx.beginPath();
-				ctx.arc(diameter / 2, diameter / 2, diameter / 2, 0, Math.PI * 2);
-				ctx.closePath();
-				ctx.clip();
-			}
 			let img = new Image();
 			if (this.imagePath)
 				img.src = this.imagePath;
-
 			else
 				img.src = "#ffffff";
-
-			if (this.crop) {
-				img.onload = () => {
-					ctx.drawImage(img, 0, 0, diameter, diameter);
-					this.image.src = canvas.toDataURL();
-				};
-				this.image.src = canvas.toDataURL();
-			}
 			this.image.src = img.src
 		}
 
 		this.opacity = this.opacity;
-		if (this.host.scale.x === 0 && this.host.scale.y === 0) {
-			this.host.scale = new Vector2D(this.image.width, this.image.height);
+		if (this.host!.scale.x === 0 && this.host!.scale.y === 0) {
+			this.host!.scale = new Vector2D(this.image.width, this.image.height);
 		}
 
 		// this.width = this.image.width;
 		// this.height = this.image.height;
 		this.image.onload = () => {
-			this.width = this.image.width;
-			this.height = this.image.height;
+			this.width = this.image!.width;
+			this.height = this.image!.height;
 			this.imageLoaded = true;
 			if (this.onLoad)
 				this.onLoad();
-			console.log(`successfully loaded ${this.image.src}`);
+			console.log(`successfully loaded ${this.image!.src}`);
 		}
 
 		this.image.onerror = (e) => {
-			console.error(`❌ Failed to load image: ${this.image.src}`, e);
+			console.error(`❌ Failed to load image: ${this.image?.src}`, e);
 		};
 
 		return this;
 	}
 
-	draw(viewport: Viewport, camera = null): void {
+	draw(viewport: Viewport, camera: Camera | null = null): void {
 		if (this.imagePath !== null)
-			drawImg(viewport, this, camera);
+			drawImg(viewport, this);
 	}
 }
 
@@ -177,17 +151,19 @@ export function drawImg(
 	viewport: Viewport,
 	sprite: Sprite,
 	params: Partial<Sprite> = {},
-	camera: Camera = null
 ) {
 	const merged = Object.assign({}, sprite, params);
 	const { opacity, blendMode, glow, flippedHorizontal, outline, image } = merged;
 
-	// World position of host
-	const worldPos = sprite.host.getWorldPosition();
-	const rotation = sprite.host?.rotation || 0;
-	const scale = sprite.host?.scale || { x: 1, y: 1 };
+	if (!image)
+		return ;
 
-	const position = sprite.host.toScreenPosition(viewport);
+	// World position of host
+	const worldPos = sprite.host!.getWorldPosition();
+	const rotation = sprite.host!.rotation || 0;
+	const scale = sprite.host!.scale || { x: 1, y: 1 };
+
+	const position = sprite.host!.toScreenPosition(viewport);
 
 	viewport.ctx.save();
 	viewport.ctx.globalAlpha = opacity;

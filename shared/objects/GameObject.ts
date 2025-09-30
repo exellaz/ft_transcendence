@@ -1,7 +1,7 @@
 import { Point2D, Vector2D } from './Coordinates.js';
 import { type Renderable, Sprite } from './Sprite.js';
 import type { PongGame } from '../game/pong.js';
-import type { Viewport } from './Viewport.js'; 
+import type { Viewport } from './Viewport.js';
 import { Component } from './Component.js';
 import { HitBox } from './HitBox.js';
 import { clientScripts } from '../game/clientScripts.js';
@@ -9,22 +9,22 @@ import { clientScripts } from '../game/clientScripts.js';
 const RenderableMarker = Symbol("Renderable");
 
 function ownsProperty(obj: object, key: PropertyKey): boolean {
-  return Object.prototype.hasOwnProperty.call(obj, key);
+	return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
 export function exportCleanup<T extends Record<string, any>>(
 	obj: T,
 	exportStatic: boolean = false
 ): T {
-  const result: any = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value === undefined || value === null) 
+	const result: any = {};
+	for (const [key, value] of Object.entries(obj)) {
+		if (value === undefined || value === null)
 			continue;
-    
-		if (Array.isArray(value) && value.length === 0) 
+
+		if (Array.isArray(value) && value.length === 0)
 			continue;
-    
-		if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) 
+
+		if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0)
 			continue;
 
 		if (key.startsWith("STATIC_")) {
@@ -32,18 +32,18 @@ export function exportCleanup<T extends Record<string, any>>(
 
 			if (exportStatic) {
 				result[keyName] = value;
-			} 
+			}
 		}
 		else {
 			result[key] = value;
 		}
-  }
-  return result;
+	}
+	return result;
 }
 
 export class GameObject {
 
-	public game: PongGame;
+	public game: PongGame | null = null;
 
 
 	// identification
@@ -74,28 +74,26 @@ export class GameObject {
 	// order
 	public zIndex: number = 0;
 
-	public variables: {};
-
 	// --webserver stuff--
 	cache: any = {};
 	isStatic: boolean = false;
-	component_list: any[];
+	component_list: number[] | Component[] = [];
 
-  // /** Each subclass can declare extra fields here */
-  // protected staticFields(): Record<string, any> {
-  //   return {};
-  // }
+	// /** Each subclass can declare extra fields here */
+	// protected staticFields(): Record<string, any> {
+	//   return {};
+	// }
 
-  // /** override if needed to stream live (non-static) properties */
-  // protected dynamicFields(): Record<string, any> {
-  //   return { position: this.position.export() };
-  // }
+	// /** override if needed to stream live (non-static) properties */
+	// protected dynamicFields(): Record<string, any> {
+	//   return { position: this.position.export() };
+	// }
 
 	init() {
 	}
-	
-	public components: Map<number, Component> = new Map<number, Component>() ;
-  toScreenPosition: (viewport: Viewport) => Point2D;
+
+	public components: Map<number, Component> = new Map<number, Component>();
+	toScreenPosition: (viewport: Viewport) => Point2D;
 
 	constructor(params: Partial<GameObject>) {
 
@@ -122,7 +120,7 @@ export class GameObject {
 
 	addComponent(component: Component) {
 		if (this.components instanceof Array) {
-			this.components = new Map<number, Component>() ;
+			this.components = new Map<number, Component>();
 		}
 		(this.components as Map<number, Component>).set(component.id, component);
 		component.host = this;
@@ -131,18 +129,18 @@ export class GameObject {
 	}
 
 	getComponents(): Component[] {
-		const components = [];
+		const components: Component[] = [];
 
 		this.components.forEach((x) => {
 			components.push(x);
 		})
-		
+
 		return components;
 	}
 
 	addChild(object: GameObject, overrideClient: boolean = false) {
 		if (this.isClient && !overrideClient) {
-			return ;
+			return;
 		}
 		this.children.push(object);
 		object.parent = this;
@@ -150,7 +148,7 @@ export class GameObject {
 	}
 
 	update() {
-		this.velocity = this.velocity.add(this.acceleration.multiply(this.game.delta))
+		this.velocity = this.velocity.add(this.acceleration.multiply(this.game!.delta))
 
 		if (this.maximumVelocity) {
 			this.velocity.x = Math.max(
@@ -163,7 +161,7 @@ export class GameObject {
 			);
 		}
 
-		this.position = this.position.add(this.velocity.multiply(this.game.delta))
+		this.position = this.position.add(this.velocity.multiply(this.game!.delta))
 
 		if (this.onUpdate)
 			this.onUpdate();
@@ -186,14 +184,14 @@ export class GameObject {
 		}
 	}
 
-	getWorldPosition(added:Vector2D = new Vector2D(0,0)): Point2D {
+	getWorldPosition(added: Vector2D = new Vector2D(0, 0)): Point2D {
 		if (!this.parent) {
 			return new Point2D(
 				this.position.x,
 				this.position.y
 			).add(added);
 		}
-		const parentPos = this.parent.getWorldPosition(new Vector2D(0,0));
+		const parentPos = this.parent.getWorldPosition(new Vector2D(0, 0));
 		return new Point2D(
 			parentPos.x + this.position.x,
 			parentPos.y + this.position.y
@@ -236,7 +234,7 @@ export class GameObject {
 			}
 
 			try {
-				if (component instanceof Sprite) 
+				if (component instanceof Sprite)
 					(component as Sprite).draw(viewport);
 				// else if (component instanceof HitBox) 
 				// 	(component as HitBox).draw(viewport);
@@ -251,7 +249,7 @@ export class GameObject {
 		// Recursively draw children
 		for (const child of this.children) {
 			if (child instanceof GameObject)
-			child.draw(viewport);
+				child.draw(viewport);
 		}
 	}
 

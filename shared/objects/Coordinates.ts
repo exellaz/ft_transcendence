@@ -1,10 +1,13 @@
 export class Point2D {
   public className: string = "Point2D";
 
-  constructor(
-    public x: number,
-    public y: number,
-  ) { }
+  public x: number = 0;
+  public y: number = 0;
+
+  constructor( x: number, y: number) { 
+    this.x = x;
+    this.y = y;
+  }
 
   add(other: Vector2D) { return new Point2D(this.x + other.x, this.y + other.y); }
   subtract(other: Vector2D) { return new Point2D(this.x - other.x, this.y - other.y); }

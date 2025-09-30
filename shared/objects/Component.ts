@@ -10,7 +10,7 @@ export class Component {
     name: string = "";
     renderable: boolean = false;
     enabled: boolean = true;
-    host: GameObject | null;
+    host: GameObject | null = null;
 
     public onUpdate?: () => void;
 

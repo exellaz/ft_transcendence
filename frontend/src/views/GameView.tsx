@@ -46,6 +46,9 @@ const gameObjectMap: Record<string, new (params: any) => any> = {
 	"player": Player
 }
 
+
+
+
 function revive(obj: any): any {
 	// -- handle arrays --
 	if (Array.isArray(obj))
@@ -112,6 +115,87 @@ function genericUpdate(
 		else {
 			obj[key] = value;
 		}
+	}
+}
+
+
+export class GameClient {
+	private ws: WebSocket | null = null;
+	private url: string;
+	private game: PongGame;
+	private viewport: Viewport | null = null;
+
+	private gameObjectRegistry = new Map<number, GameObject>();
+	private componentRegistry = new Map<number, Component>();
+	private animationFrameId: number | null = null;
+
+	constructor(url: string) {
+		this.url = url;
+		this.game = new PongGame(null, true, []);
+	}
+
+	connect() {
+		this.ws = new WebSocket(this.url);
+
+		this.ws.onopen = () => {
+			console.log("Connected");
+			this.send("ready");
+		};
+
+		this.ws.onmessage = (e) => this.handleMessage(JSON.parse(e.data));
+		this.ws.onclose = () => console.log("Disconnected");
+	}
+
+	disconnect() {
+		this.stop();
+		this.ws?.close();
+		this.ws = null;
+	}
+
+	attachCanvas(canvas: HTMLCanvasElement) {
+		const ctx = canvas.getContext("2d");
+		if (!ctx) throw new Error("Canvas 2D context not available");
+		this.viewport = new Viewport({ ctx, width: canvas.width, height: canvas.height });
+	}
+
+	start() {
+		const loop = () => {
+			this.updateWorld();
+			this.draw();
+			this.animationFrameId = requestAnimationFrame(loop);
+		};
+		loop();
+	}
+
+	stop() {
+		if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+		this.animationFrameId = null;
+	}
+
+	send(type: string, payload: any = {}) {
+		if (this.ws?.readyState === WebSocket.OPEN)
+			this.ws.send(JSON.stringify({ type, payload }));
+	}
+
+	sendInput(key: string, action: string) {
+		this.send("input", { key, action });
+	}
+
+	private handleMessage(data: any) {
+		// TODO: hydrate / update registries like in your current loop
+	}
+
+	private updateWorld() {
+		// TODO: sync server data into game object registry
+	}
+
+	private draw() {
+		if (!this.viewport) return;
+		const ctx = this.viewport.ctx;
+		ctx.clearRect(0, 0, this.viewport.width, this.viewport.height);
+
+		for (const obj of this.gameObjectRegistry.values())
+			obj.draw(this.viewport);
 	}
 }
 
@@ -247,6 +331,8 @@ const GameView: React.FC = () => {
 					continue;
 
 				for (const id of object.component_list) {
+					if (typeof id !== "number") 
+						continue;
 					const compObj = componentRegistry.current.get(id);
 					if (!compObj) continue;
 
@@ -259,15 +345,13 @@ const GameView: React.FC = () => {
 		}
 
 		function createNewInstance(object: any) {
-			let objectInstance;
-
 			const params = { ...object, components: [], isClient: true };
-			if (gameObjectMap[object.className])
-				objectInstance = new gameObjectMap[object.className](params);
-			else
-				objectInstance = new GameObject(params);
+			const objectInstance = gameObjectMap[object.className] ? 
+				new gameObjectMap[object.className](params) : 
+				new GameObject(params);
+				
 			setObject(object["id"], objectInstance);
-			// console.log(`vowow ${objectInstance.constructor.name} created ${objectInstance.id} | ${object["id"]} | children : ${objectInstance.children}`);
+			// console.log(`${objectInstance.constructor.name} created ${objectInstance.id} | ${object["id"]} | children : ${objectInstance.children}`);
 
 			objectInstance.component_list = object.components;
 

@@ -1,4 +1,6 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
+
+import { WebSocket, RawData } from "ws";  // 👈 use ws types
 
 import { writeFileSync } from "fs";
 import { PongGame } from "./game/pong";
@@ -68,15 +70,15 @@ function compile(includeStaticObjects: boolean) {
 
 class Client {
   keysPressed = new Map();
-  game: PongGame;
-  socket: WebSocket;
+  game: PongGame | null = null;
+  socket: WebSocket | null = null;
   handshakeComplete: boolean = false;
   outputQueue: string[] = []; // <-- each client has its own queue
   receivedFullState = false;
 
   constructor() { }
 
-  update(input) {
+  update(input: Record<string, any>) {
     if (!input.payload) return;
 
     if (input.type === "input") {
@@ -119,12 +121,10 @@ function updateGameObjects() {
   pongGame.update();
 }
 
-
-
 async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
 
-  fastify.get("/ws", { websocket: true }, (socket, req) => {
+  fastify.get("/ws", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     if (!socket)
       return req.log.info("Received normal HTTP request to /ws — ignoring");
 
@@ -139,12 +139,13 @@ async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       console.log("open");
     })
 
-    socket.on("message", (msg) => {
+    socket.on("message", (msg: Record<string, any>) => {
       const data = JSON.parse(msg.toString());
       if (data["type"] === "ready") {
         console.log("✅ Client handshake complete");
         player.handshakeComplete = true; // mark ready
-        player.socket.send(JSON.stringify({
+        
+        player.socket!.send(JSON.stringify({
           type: "ready",
           payload: {}
         }));
@@ -152,16 +153,12 @@ async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOption
       if (data["type"] === "received_full_state") {
         player.receivedFullState = true;
       }
-
       player.update(data); // update this player's state only
-
     });
 
     socket.on("close", () => {
       clients.delete(player);
     });
-
-
   });
 }
 

@@ -2,9 +2,9 @@
   "state": {
     "camera": {
       "position": {
+        "className": "Point2D",
         "x": 0,
-        "y": 0,
-        "className": "Point2D"
+        "y": 0
       }
     },
     "bgColor": "#000000",
@@ -102,7 +102,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/eyes.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -135,7 +134,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/iris.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -234,7 +232,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/eyes.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -267,7 +264,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/iris.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -366,7 +362,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/eyes.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -399,7 +394,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/iris.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -498,7 +492,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/eyes.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -531,7 +524,6 @@
           "name": "sprite",
           "imagePath": "./assets/skins/components/iris.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -565,8 +557,8 @@
           "y": 0
         },
         "scale": {
-          "x": 9.683340651200513,
-          "y": 9.683340651200513
+          "x": 9.0336323584,
+          "y": 9.0336323584
         },
         "text": "2",
         "font": "75px Impact",
@@ -634,7 +626,6 @@
           "name": "sprite",
           "imagePath": "assets/maps/map2/goal.png",
           "flippedHorizontal": true,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -667,7 +658,6 @@
           "name": "sprite",
           "imagePath": "assets/maps/map2/goal.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -700,7 +690,6 @@
           "name": "sprite",
           "imagePath": "assets/maps/map2/background.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -733,7 +722,6 @@
           "name": "sprite",
           "imagePath": "assets/maps/map2/foreground.png",
           "flippedHorizontal": false,
-          "crop": false,
           "opacity": 1,
           "blendMode": "source-over"
         },
@@ -769,7 +757,6 @@
         "name": "sprite",
         "imagePath": "assets/ball.png",
         "flippedHorizontal": false,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over",
         "glow": {
@@ -790,7 +777,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/ghost_dark.png",
         "flippedHorizontal": true,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over",
         "glow": {
@@ -807,7 +793,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_yellow.png",
         "flippedHorizontal": true,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over"
       },
@@ -820,7 +805,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/ghost_green.png",
         "flippedHorizontal": false,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over",
         "glow": {
@@ -837,7 +821,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_green.png",
         "flippedHorizontal": false,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over"
       },
@@ -850,7 +833,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/ghost_blue.png",
         "flippedHorizontal": true,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over",
         "glow": {
@@ -867,7 +849,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_blue.png",
         "flippedHorizontal": true,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over"
       },
@@ -880,7 +861,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/ghost_red.png",
         "flippedHorizontal": false,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over",
         "glow": {
@@ -897,7 +877,6 @@
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_red.png",
         "flippedHorizontal": false,
-        "crop": false,
         "opacity": 1,
         "blendMode": "source-over"
       }
@@ -905,8 +884,8 @@
     "type": "full"
   },
   "metadata": {
-    "timestamp": 1758854207552,
-    "delta": 0.018320264999999836,
+    "timestamp": 1759192005754,
+    "delta": 0.018327718000000003,
     "fps": 0
   }
 }
