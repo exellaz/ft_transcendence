@@ -11,9 +11,9 @@ import Subheader from "../components/Subheader";
 
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
-const NormalModeView: React.FC = () => {
+const CustomModeView: React.FC = () => {
   const { t } = useTranslation();
-  const translate = (key: string) => t(`NormalModeView.${key}`);
+  const translate = (key: string) => t(`CustomModeView.${key}`);
   const navigate = useNavigate();
   const [menuStep, setMenuStep] = useState("action");
   const [roomId, setRoomId] = useState("");
@@ -174,4 +174,4 @@ const NormalModeView: React.FC = () => {
   );
 };
 
-export default NormalModeView;
+export default CustomModeView;

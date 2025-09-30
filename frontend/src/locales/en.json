@@ -23,7 +23,7 @@
     "leave_confirmation": "Are you sure you want to leave the room?"
   },
   "LoginView": {
-    "username": "Username",
+    "username_or_email": "Username / Email",
     "password": "Password",
     "login": "LOGIN",
     "loading": "Loading...",
@@ -32,7 +32,7 @@
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",
-    "normal_mode": "NORMAL MODE",
+    "custom_mode": "CUSTOM MODE",
     "settings": "SETTINGS",
     "join_tournament": "Join a tournament?"
   },
@@ -44,7 +44,7 @@
     "semifinals": "Semifinals",
     "finals": "Finals"
   },
-  "NormalModeView": {
+  "CustomModeView": {
     "choose_action": "CHOOSE AN ACTION",
     "create_room": "CREATE ROOM",
     "join_room": "JOIN ROOM",

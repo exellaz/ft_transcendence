@@ -5,14 +5,14 @@ import BouncingSprites from "./components/BouncingSprites";
 
 import AdvanceView from "./views/tournament/AdvanceView";
 import ChooseSpriteView from "./views/ChooseSpriteView";
-import DoublesRoomView from "./views/normal/DoublesRoomView";
+import DoublesRoomView from "./views/custom/DoublesRoomView";
 import GameView from "./views/GameView";
 import LoginView from "./views/LoginView";
 import MainMenuView from "./views/MainMenuView";
 import MatchView from "./views/tournament/MatchView";
-import NormalModeView from "./views/NormalModeView";
+import CustomModeView from "./views/CustomModeView";
 import ResultsView from "./views/tournament/ResultsView";
-import SinglesRoomView from "./views/normal/SinglesRoomView";
+import SinglesRoomView from "./views/custom/SinglesRoomView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
@@ -48,7 +48,7 @@ const App: React.FC = () => {
             <Route path="/signup" element={<SignUpView />} />
             <Route path="/signup-success" element={<SignUpSuccessView />} />
             <Route path="/main-menu" element={<MainMenuView />} />
-            <Route path="/normal" element={<NormalModeView />} />
+            <Route path="/custom" element={<CustomModeView />} />
             <Route path="/choose-sprite" element={<ChooseSpriteView />} />
             <Route path="/tournament" element={<TournamentLobbyView />} />
             <Route path="/match" element={<MatchView />} />

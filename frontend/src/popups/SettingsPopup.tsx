@@ -26,26 +26,24 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
 
   // prefix - i18n naming; value - database schema naming
   const languageOptions = [
-    { prefix: "en", value: "english", label: translate("english") },
+    { value: "english", label: translate("english") },
     {
-      prefix: "zhs",
       value: "simplified_chinese",
       label: translate("simplified_chinese"),
     },
     {
-      prefix: "zht",
       value: "traditional_chinese",
       label: translate("traditional_chinese"),
     },
   ];
 
-  const handleLanguageChange = async (option: (typeof languageOptions)[0]) => {
-    if (option.prefix === language) return;
-    setLanguage(option.prefix);
+  const handleLanguageChange = async (option: string) => {
+    if (option === language) return;
+    setLanguage(option);
 
     const result = await mutate({
       id: userId,
-      language: option.value,
+      language: option,
     });
 
     if (!result.success) {
@@ -62,12 +60,12 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
         <Subheader>{translate("language")}</Subheader>
         {languageOptions.map((option) => (
           <button
-            key={option.prefix}
+            key={option.value}
             type="button"
-            onClick={() => handleLanguageChange(option)}
+            onClick={() => handleLanguageChange(option.value)}
             className={`w-[80%] h-20 rounded text-2xl font-bold cursor-pointer
           ${
-            language === option.prefix
+            language === option.value
               ? "bg-yellow-400 text-black"
               : "bg-brown text-white"
           }

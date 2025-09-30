@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
+import { useLanguage } from "../context/LanguageProvider";
+import { login, getUserSettingsById } from "../lib/apiClient";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -11,13 +13,12 @@ import Logo from "../components/Logo";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import TextButton from "../components/TextButton";
 
-import { login } from "../lib/apiClient";
-
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`LoginView.${key}`);
   const navigate = useNavigate();
   const { setUser } = useUser();
+  const { setLanguage } = useLanguage();
 
   const [formData, setFormData] = React.useState({
     identifier: "",
@@ -27,14 +28,15 @@ const LoginView: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
+  const handleInputChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: e.target.value,
+      }));
 
-    if (error) setError(null);
-  };
+      if (error) setError(null);
+    };
 
   const validateForm = (): string | null => {
     if (!formData.identifier.trim()) return "Username or email is required";
@@ -52,18 +54,27 @@ const LoginView: React.FC = () => {
     setError(null);
 
     try {
-      const response = await login({
+      const loginResponse = await login({
         identifier: formData.identifier,
         password: formData.password,
       });
 
-      if (!response.success || !response.data) {
-        throw new Error(response.error || "Login failed");
+      if (!loginResponse.success || !loginResponse.data) {
+        throw new Error(loginResponse.error || "Login failed");
       }
 
       // Success: Store token and user data, then redirect
-      localStorage.setItem("authToken", response.data.token);
-      setUser(response.data.user);
+      localStorage.setItem("authToken", loginResponse.data.token);
+      setUser(loginResponse.data.user);
+
+      // Raw API query for user's preferred language
+      const settingsResponse = await getUserSettingsById({
+        id: Number(loginResponse.data.user.id),
+      });
+      if (settingsResponse.success && settingsResponse.data?.language) {
+        setLanguage(settingsResponse.data.language);
+      }
+
       navigate("/main-menu");
     } catch (err) {
       setError((err as Error).message);
@@ -83,7 +94,7 @@ const LoginView: React.FC = () => {
       <Card>
         <Logo />
         <Input
-          placeholder={translate("username")} // TODO: change to "username or email"
+          placeholder={translate("username_or_email")}
           value={formData.identifier}
           onChange={handleInputChange("identifier")}
           onKeyDown={handleKeyPress}
@@ -98,18 +109,11 @@ const LoginView: React.FC = () => {
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
         />
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        {/* <Button variant="longYellow" onClick={() => navigate("/main-menu")}>{translate("login")}</Button> */}
-        <Button
-          variant="longYellow"
-          onClick={handleLogin}
-        >
+        <Button variant="longYellow" onClick={handleLogin}>
           {isLoading ? translate("loading") : translate("login")}
         </Button>
         <Divider />
-        <Button
-          variant="longWhite"
-          className="flex-row-center gap-2"
-        >
+        <Button variant="longWhite" className="flex-row-center gap-2">
           <div>
             <img src="/assets/google.png" alt="google.png" className="w-5" />
           </div>

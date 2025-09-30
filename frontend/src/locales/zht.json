@@ -23,7 +23,7 @@
     "leave_confirmation": "你確定要離開房間嗎？"
   },
   "LoginView": {
-    "username": "用戶名",
+    "username_or_email": "用戶名 / 電子郵件",
     "password": "密碼",
     "login": "登入",
     "loading": "載入中...",
@@ -32,7 +32,7 @@
   },
   "MainMenuView": {
     "tournament_mode": "錦標賽模式",
-    "normal_mode": "普通模式",
+    "custom_mode": "自訂模式",
     "settings": "設定",
     "join_tournament": "參加錦標賽？"
   },
@@ -44,7 +44,7 @@
     "semifinals": "準決賽",
     "finals": "決賽"
   },
-  "NormalModeView": {
+  "CustomModeView": {
     "choose_action": "選擇操作",
     "create_room": "建立房間",
     "join_room": "加入房間",

@@ -110,7 +110,7 @@ export interface MatchPlayer {
   ready: boolean;
 }
 
-// Normal Mode Room API interfaces
+// Custom Mode Room API interfaces
 export interface WaitingRoomPlayer {
   leader: boolean;
   id: string;

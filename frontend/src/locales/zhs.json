@@ -23,7 +23,7 @@
     "leave_confirmation": "你确定要离开房间吗？"
   },
   "LoginView": {
-    "username": "用户名",
+    "username_or_email": "用户名 / 电子邮件",
     "password": "密码",
     "login": "登录",
     "loading": "加载中...",
@@ -32,7 +32,7 @@
   },
   "MainMenuView": {
     "tournament_mode": "锦标赛模式",
-    "normal_mode": "普通模式",
+    "custom_mode": "自定义模式",
     "settings": "设置",
     "join_tournament": "参加锦标赛？"
   },
@@ -44,7 +44,7 @@
     "semifinals": "半决赛",
     "finals": "决赛"
   },
-  "NormalModeView": {
+  "CustomModeView": {
     "choose_action": "选择操作",
     "create_room": "创建房间",
     "join_room": "加入房间",
