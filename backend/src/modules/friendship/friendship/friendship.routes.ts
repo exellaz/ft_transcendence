@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { ok, ApiError } from "../../utils/response";
+import { ok, ApiError } from "../../../utils/response";
 import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
-import { userPublicSelect } from "../users/users.select";
-import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friends.schema";
+import { userPublicSelect } from "../../users/users.select";
+import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friendship.schema";
 
-async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
+async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
 	// GET /friendships/:userId/pending (get friends that send friend request to u)
 	fastify.get("/friendships/:userId/pending", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
@@ -194,4 +194,4 @@ async function friendsRoutes(fastify: FastifyInstance, options: FastifyPluginOpt
 	});
 }
 
-export default friendsRoutes;
+export default friendshipRoutes;
