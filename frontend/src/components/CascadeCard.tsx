@@ -91,7 +91,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   ) {
     children = (
       <div className="w-full h-full flex-col-between p-10">
-        <ProfileContents userId={selectedUser.uid} />
+        <ProfileContents userId={selectedUser.id} />
         {activeTab === "friends" && (
           <div className="flex-row-center gap-6">
             <Button onClick={() => setShowProfile(false)}>
@@ -120,7 +120,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
     children = (
       <Messaging
         friendBasic={selectedUser as FriendBasic}
-        friendUid={selectedUser.uid}
+        friendId={selectedUser.id}
         onProfileClick={() => setShowProfile(true)}
       />
     );
