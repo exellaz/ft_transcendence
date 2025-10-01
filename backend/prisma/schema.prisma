@@ -90,7 +90,7 @@ model BlockedFriendship {
   blocker   User @relation("Blocks", fields: [blockerId], references: [id], onDelete: Cascade)
   blocked   User @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
 
-  @@unique([blockerId, blockedId], name: "uq_blocked_users")
+  @@unique([blockerId, blockedId], name: "uq_blocked_friendship")
 
   @@map("blocked_user")
 }

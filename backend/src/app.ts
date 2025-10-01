@@ -4,8 +4,8 @@ import dbConnector from "./plugins/db"
 import userRoutes from "./modules/users/users.routes"
 import authRoutes from "./modules/auth/auth.routes";
 import { fail, ApiError } from "./utils/response";
-import friendshipRoutes from "./modules/friendship/friendship/friendship.routes";
-import blockedFriendshipRoutes from "./modules/friendship/blockedFriendship/blockedFriendship.routes";
+import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
+import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 
 const app = Fastify({
   logger: true

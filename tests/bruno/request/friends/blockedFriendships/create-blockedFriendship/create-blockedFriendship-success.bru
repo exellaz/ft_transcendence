@@ -1,0 +1,22 @@
+meta {
+  name: create-blockedFriendship-success
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/blockedFriendships
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "blockerId": 1,
+    "blockedId": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}

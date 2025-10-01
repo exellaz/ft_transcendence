@@ -1,0 +1,22 @@
+meta {
+  name: create-blockedFriendship-self-friendship
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/blockedFriendships
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": 1,
+    "friendId": 2
+  }
+}
+
+settings {
+  encodeUrl: true
+}
