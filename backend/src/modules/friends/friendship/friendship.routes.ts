@@ -117,6 +117,7 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 					throw new ApiError("Friendship already exists", 400);
 				if (err.code === "P2003")
 					throw new ApiError("User not found", 404);
+				throw err;
 		}
 
 	});
@@ -181,7 +182,6 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 			// update by friendship ID
 			const deletedFriendship = await fastify.db.friendship.delete({
 				where: { id: friendship.id },
-				// select: {} // ! not done
 			});
 
 			return ok(deletedFriendship);

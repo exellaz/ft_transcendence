@@ -1,6 +1,5 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
-import { userPublicSelect } from "../../users/users.select";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
@@ -16,6 +15,23 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance, options: Fastif
 		}
 
 		try {
+
+			// TODO: check if friendship exist
+			// ! no response at all when i add this code secton
+			const friendship = await fastify.db.friendship.findFirst({
+				where: {
+					OR: [
+						{ userId: Number(blockerId), friendId: Number(blockedId) },
+						{ userId: Number(blockedId), friendId: Number(blockerId) },
+					],
+				},
+			});
+
+			if (!friendship) {
+				console.log("TESTT", friendship);
+				throw new ApiError("Friendship not found", 404);
+			}
+
 			const blockedFriendship = await fastify.db.blockedFriendship.create({
 				data: { blockerId, blockedId }
 			})
@@ -26,6 +42,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance, options: Fastif
 				throw new ApiError("blocked Friendship already exists", 400);
 			if (err.code === "P2003")
 				throw new ApiError("User not found", 404);
+			throw err;
 		}
 	});
 
