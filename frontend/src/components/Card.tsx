@@ -20,7 +20,7 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      className={`bg-card-blue p-10 rounded-3xl flex-col-between ${sizeClasses[size]} ${className}`}
+      className={`bg-card-blue p-10 rounded-3xl flex-col-between z-10 ${sizeClasses[size]} ${className}`}
     >
       {children}
     </div>

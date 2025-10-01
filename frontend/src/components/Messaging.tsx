@@ -10,13 +10,13 @@ import Button from "./Button";
 
 interface MessagingProps {
   friendBasic: FriendBasic;
-  friendUid: string;
+  friendId: string;
   onProfileClick?: () => void;
 }
 
 const Messaging: React.FC<MessagingProps> = ({
   friendBasic,
-  friendUid,
+  friendId,
   onProfileClick,
 }) => {
   const { t } = useTranslation();
@@ -24,25 +24,27 @@ const Messaging: React.FC<MessagingProps> = ({
   const [friend, setFriend] = useState<FriendMessaging | null>(null);
   const [input, setInput] = useState("");
 
-  // TODO: Fetch real data based on userUid
-  const userUid = useUser().user?.id;
+  // TODO: Fetch real data based on userId
   // useEffect(() => {
-  //   // Fetch messages between user and friend
-  //   fetch(`/api/messages?userUid=${userUid}&friendUid=${friendUid}`)
-  //     .then((res) => res.json())
-  //     .then(setFriend);
-  // }, [friendUid, userUid]);
+    //   // Fetch messages between user and friend
+    //   fetch(`/api/messages?userId=${userId}&friendId=${friendId}`)
+    //     .then((res) => res.json())
+    //     .then(setFriend);
+    // }, [friendId, userId]);
 
+  // const userId = useUser().user?.id;
+    
   // TODO: Delete when API is integrated
-  function getFriendMessagingByUid(
-    friendUid: string,
+  const userId = "0";
+  function getFriendMessagingById(
+    friendId: string,
     data: FriendMessaging[]
   ): FriendMessaging | undefined {
-    return data.find((friend) => friend.uid === friendUid);
+    return data.find((friend) => friend.id === friendId);
   }
   useEffect(() => {
-    setFriend(getFriendMessagingByUid(friendUid, mockMessages) || null);
-  }, [friendUid]);
+    setFriend(getFriendMessagingById(friendId, mockMessages) || null);
+  }, [friendId]);
 
   if (!friend) return <div>{translate("loading")}</div>;
 
@@ -75,13 +77,13 @@ const Messaging: React.FC<MessagingProps> = ({
             <div
               key={idx}
               className={`flex ${
-                msg.senderUid === userUid ? "justify-end" : "justify-start"
+                msg.senderId === userId ? "justify-end" : "justify-start"
               }`}
             >
               <div
                 className={`max-w-[70%] rounded-2xl px-4 py-2 
                   ${
-                    msg.senderUid === userUid
+                    msg.senderId === userId
                       ? "bg-yellow-400 text-black"
                       : "bg-white text-gray-900"
                   }`}

@@ -11,7 +11,7 @@ const PreLoginLayout: React.FC<PreLoginLayoutProps> = ({ children }) => {
   return (
     <Background>
       {children}
-      <div className="fixed bottom-0 flex-row-center z-50">
+      <div className="absolute bottom-0 flex-row-center">
         <LanguageSwitcher />
       </div>
     </Background>

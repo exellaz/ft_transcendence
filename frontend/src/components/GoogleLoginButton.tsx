@@ -47,7 +47,7 @@ export default function GoogleLoginButton({ onSuccess }: Props) {
         console.log("Server response", data);
 
         if (data.ok) {
-          localStorage.setItem("token", data.token); // temporary storage
+          localStorage.setItem("authToken", data.token); // temporary storage
         }
 
         onSuccess(idToken); // keep calling the parent handler

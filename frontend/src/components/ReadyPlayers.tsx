@@ -12,7 +12,7 @@ interface ReadyPlayersProps {
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyPlayers.${key}`);
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <>
@@ -23,7 +23,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
       >
         {players.map((player) => (
           <div
-            key={player.uid}
+            key={player.id}
             className={`flex-col-center gap-4 font-bold ${
               players.length > 2 ? "text-lg" : "text-3xl"
             }`}
@@ -39,24 +39,29 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
             {/* Avatar & Username */}
             <div
               className="flex-col-center gap-2 cursor-pointer"
-              onClick={() => setSelectedUid(player.uid)}
+              onClick={() => setSelectedId(player.id)}
             >
               <Avatar
                 src={player.spriteUrl}
                 size={players.length > 2 ? 60 : 120}
               />
-              <span className={`${getUserColor(player.uid)}`}>
-                {player.username}
+              <span
+                className={`${getUserColor(player.id)}`}
+                title={player.username}
+              >
+                {player.username.length > 7
+                  ? player.username.slice(0, 7) + "…"
+                  : player.username}
               </span>
             </div>
           </div>
         ))}
       </div>
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userId={selectedId}
           variant="other"
         />
       )}

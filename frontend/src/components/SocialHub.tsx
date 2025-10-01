@@ -37,25 +37,25 @@ const SocialHub: React.FC<SocialHubProps> = ({
 
   // Add Friend state
   const [showAddFriendView, setShowAddFriendView] = useState(false);
-  const [friendUID, setFriendUID] = useState("");
+  const [friendId, setFriendId] = useState("");
   const [addFriendStatus, setAddFriendStatus] = useState<
     null | "success" | "error"
   >(null);
 
-  // TODO: Fetch real data based on userUid
-  // const userUID = useUser().user?.id;
+  // TODO: Fetch real data based on userId
+  // const userId = useUser().user?.id;
   // React.useEffect(() => {
   //   // Replace with real API calls
-  //   fetch(`/api/friends?uid=${userUid}`)
+  //   fetch(`/api/friends?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setFriends);
-  //   fetch(`/api/requests?uid=${userUid}`)
+  //   fetch(`/api/requests?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setRequests);
-  //   fetch(`/api/blocked?uid=${userUid}`)
+  //   fetch(`/api/blocked?id=${userId}`)
   //     .then((res) => res.json())
   //     .then(setBlocked);
-  // }, [userUid]);
+  // }, [userId]);
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
@@ -65,11 +65,11 @@ const SocialHub: React.FC<SocialHubProps> = ({
   }, []);
 
   function handleAddFriend() {
-    // Simulate UID check
-    const exists = friends.some((f) => f.uid === friendUID);
+    // Simulate ID check
+    const exists = friends.some((f) => f.id === friendId);
     if (exists) {
       setAddFriendStatus("success");
-      setFriendUID("");
+      setFriendId("");
     } else {
       setAddFriendStatus("error");
     }
@@ -112,8 +112,8 @@ const SocialHub: React.FC<SocialHubProps> = ({
                         {translate("enter_friend_username")}
                       </p>
                       <Input
-                        value={friendUID}
-                        onChange={(e) => setFriendUID(e.target.value)}
+                        value={friendId}
+                        onChange={(e) => setFriendId(e.target.value)}
                       />
                       {addFriendStatus === "success" && (
                         <p className="text-green-400">
@@ -172,18 +172,18 @@ const SocialHub: React.FC<SocialHubProps> = ({
                     <div className="flex-col-center gap-4 p-1">
                       {friends.map((user) => (
                         <FriendTile
-                          key={user.uid}
+                          key={user.id}
                           username={user.username}
                           avatarUrl={user.avatarUrl}
                           lastMessage={user.lastMessage}
                           timestamp={user.lastMessageTimestamp}
                           online={user.online}
                           onClick={() =>
-                            selectedUser?.uid === user.uid
+                            selectedUser?.id === user.id
                               ? setSelectedUser(null)
                               : setSelectedUser(user)
                           }
-                          active={selectedUser?.uid === user.uid}
+                          active={selectedUser?.id === user.id}
                         />
                       ))}
                     </div>
@@ -196,17 +196,17 @@ const SocialHub: React.FC<SocialHubProps> = ({
                 <div className="flex-col-center gap-4 p-1">
                   {requests.map((user) => (
                     <FriendRequestTile
-                      key={user.uid}
+                      key={user.id}
                       username={user.username}
                       avatarUrl={user.avatarUrl}
                       onAccept={() => alert("Friend request accepted!")}
                       onReject={() => alert("Friend request rejected!")}
                       onClick={() =>
-                        selectedUser?.uid === user.uid
+                        selectedUser?.id === user.id
                           ? setSelectedUser(null)
                           : setSelectedUser(user)
                       }
-                      active={selectedUser?.uid === user.uid}
+                      active={selectedUser?.id === user.id}
                     />
                   ))}
                 </div>
@@ -217,15 +217,15 @@ const SocialHub: React.FC<SocialHubProps> = ({
                 <div className="grid grid-cols-3 gap-4 p-1">
                   {blocked.map((user) => (
                     <BlockedTile
-                      key={user.uid}
+                      key={user.id}
                       username={user.username}
                       avatarUrl={user.avatarUrl}
                       onClick={() =>
-                        selectedUser?.uid === user.uid
+                        selectedUser?.id === user.id
                           ? setSelectedUser(null)
                           : setSelectedUser(user)
                       }
-                      active={selectedUser?.uid === user.uid}
+                      active={selectedUser?.id === user.id}
                     />
                   ))}
                 </div>

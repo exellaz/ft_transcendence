@@ -19,7 +19,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const leftTeamPlayers = players.filter((player) => player.team === "left");
   const rightTeamPlayers = players.filter((player) => player.team === "right");
@@ -37,7 +37,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   }> = ({ player }) => (
     <div
       className={`${basicCellStyling} gap-4 cursor-pointer`}
-      onClick={() => setSelectedUid(player.uid)}
+      onClick={() => setSelectedId(player.id)}
     >
       <div className="relative">
         <img
@@ -60,8 +60,13 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           }
         />
       </div>
-      <p className={`text-lg font-bold ${getUserColor(player.uid)}`}>
-        {player.username}
+      <p
+        className={`text-lg font-bold ${getUserColor(player.id)}`}
+        title={player.username}
+      >
+        {player.username.length > 10
+          ? player.username.slice(0, 10) + "…"
+          : player.username}
       </p>
     </div>
   );
@@ -84,7 +89,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
       <p className="text-yellow-400 text-xl font-bold">{title}</p>
       <div className="w-full flex-col-center gap-2">
         {teamPlayers.map((player) => (
-          <PlayerCell key={player.uid} player={player} />
+          <PlayerCell key={player.id} player={player} />
         ))}
         {/* Fill empty slots */}
         {Array.from(
@@ -123,11 +128,11 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         />
       </div>
 
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userId={selectedId}
           variant="other"
         />
       )}

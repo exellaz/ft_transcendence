@@ -36,11 +36,11 @@ const LiveChat: React.FC<{
         className="h-[400px] overflow-y-auto scrollbar-hide"
       >
         {chatMessages.map((msg, idx) => {
-          const player = players.find((p) => p.uid === msg.uid);
+          const player = players.find((p) => p.id === msg.id);
           return (
             <div key={idx} className="mb-2">
               <div className="flex items-baseline justify-between flex-wrap">
-                <span className={`font-bold ${getUserColor(msg.uid)}`}>
+                <span className={`font-bold ${getUserColor(msg.id)}`}>
                   {player ? player.username : "Unknown"}:
                 </span>{" "}
                 <span className="text-gray-400 text-xs">{msg.timestamp}</span>

@@ -1,6 +1,6 @@
-// Generates colors based on the user's unique identifier (uid) using a hash function
+// Generates colors based on the user's unique identifier (id) using a hash function
 // Same user always gets same color
-export const getUserColor = (uid: string): string => {
+export const getUserColor = (id: string): string => {
   const colors = [
     "text-red-400",
     "text-blue-400", 
@@ -13,8 +13,8 @@ export const getUserColor = (uid: string): string => {
   ];
   
   let hash = 0;
-  for (let i = 0; i < uid.length; i++) {
-    hash = ((hash << 5) - hash) + uid.charCodeAt(i);
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash) + id.charCodeAt(i);
     hash = hash & hash;
   }
   

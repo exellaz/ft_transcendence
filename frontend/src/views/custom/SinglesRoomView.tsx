@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  mockWaitingDoublesRoomPlayers,
-  mockDoublesRoomLiveChat,
+  mockWaitingSinglesRoomPlayers,
+  mockSinglesRoomLiveChat,
 } from "../../data/mockUsers";
 import type {
   WaitingRoomPlayer,
@@ -20,9 +20,9 @@ import RoomLayout from "../../layout/RoomLayout";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
-const DoublesRoomView: React.FC = () => {
+const SinglesRoomView: React.FC = () => {
   const { t } = useTranslation();
-  const translate = (key: string) => t(`DoublesRoomView.${key}`);
+  const translate = (key: string) => t(`SinglesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
@@ -44,8 +44,8 @@ const DoublesRoomView: React.FC = () => {
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockWaitingDoublesRoomPlayers["t1"]);
-    setChatMessages(mockDoublesRoomLiveChat["t1"]);
+    setPlayers(mockWaitingSinglesRoomPlayers["t1"]);
+    setChatMessages(mockSinglesRoomLiveChat["t1"]);
   }, []);
 
   // todo: Replace 1 with current user id
@@ -53,7 +53,7 @@ const DoublesRoomView: React.FC = () => {
     if (message.trim()) {
       setChatMessages([
         ...chatMessages,
-        { uid: "0", text: message, timestamp: formatTimestamp(new Date()) },
+        { id: "0", text: message, timestamp: formatTimestamp(new Date()) },
       ]);
       setMessage("");
     }
@@ -66,7 +66,7 @@ const DoublesRoomView: React.FC = () => {
           <div className="w-[50%] h-full flex-col-between gap-6">
             <TournamentHeader>
               <div className="flex-row-center gap-2">
-                <p>{translate("doubles_room")}</p>
+                <p>{translate("singles_room")}</p>
                 <img
                   src="/assets/link.png"
                   className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
@@ -76,7 +76,7 @@ const DoublesRoomView: React.FC = () => {
                 ({translate("room_id")}: {roomId})
               </p>
             </TournamentHeader>
-            <ReadyRoomPlayers variant="doubles" players={players} />
+            <ReadyRoomPlayers variant="singles" players={players} />
             <div className="flex-row-center gap-6">
               <Button variant="green">{translate("ready")}</Button>
               <Button variant="red" onClick={() => setShowLeaveRoom(true)}>
@@ -103,4 +103,4 @@ const DoublesRoomView: React.FC = () => {
   );
 };
 
-export default DoublesRoomView;
+export default SinglesRoomView;
