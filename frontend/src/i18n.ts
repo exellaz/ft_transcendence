@@ -7,12 +7,12 @@ import zht from "./locales/zht.json";
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { translation: en },
-    zhs: { translation: zhs },
-    zht: { translation: zht },
+    english: { translation: en },
+    simplified_chinese: { translation: zhs },
+    traditional_chinese: { translation: zht },
   },
-  lng: sessionStorage.getItem("lang") || "en",
-  fallbackLng: "en",
+  lng: localStorage.getItem("lang") || "english",
+  fallbackLng: "english",
   interpolation: { escapeValue: false },
 });
 

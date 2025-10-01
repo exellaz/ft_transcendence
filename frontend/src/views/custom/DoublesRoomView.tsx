@@ -126,7 +126,7 @@ const DoublesRoomView: React.FC = () => {
 	{!roomId ? (
 		<h1>no room id</h1>
 	) : (
-    <RoomLayout>
+    <RoomLayout isLeader={isLeader}>
 		<div className="relative w-full flex justify-center">
 			{/* show countdown */}
 	        {countdown !== null && (

@@ -1,4 +1,10 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "username_required": "Username is required",
+    "username_length": "Username must be 2-15 characters",
+    "username_characters": "Only letters, numbers, and underscores allowed"
+  },
   "AdvanceView": {
     "advancement": "Advancement",
     "congratulations": "Congratulations!",
@@ -8,6 +14,25 @@
   "ChooseSpriteView": {
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
+  },
+  "CustomModeView": {
+    "choose_action": "CHOOSE AN ACTION",
+    "play_locally": "PLAY LOCALLY",
+    "create_room": "CREATE ROOM",
+    "join_room": "JOIN ROOM",
+    "back": "BACK",
+    "choose_type": "CHOOSE GAME TYPE",
+    "singles": "SINGLES",
+    "doubles": "DOUBLES",
+    "choose_join": "CHOOSE HOW TO JOIN",
+    "quick_join": "QUICK JOIN",
+    "join_private": "JOIN PRIVATE ROOM",
+    "enter_room_id": "Enter room ID",
+    "create_local_game": "Create a local game?",
+    "create_singles_game": "Create a singles game?",
+    "create_doubles_game": "Create a doubles game?",
+    "join_singles_game": "Join a singles game?",
+    "join_doubles_game": "Join a doubles game?"
   },
   "DoublesRoomView": {
     "doubles_room": "Doubles Room",
@@ -19,16 +44,20 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?"
   },
+  "LocalGameView": {
+
+  },
   "LoginView": {
-    "username": "Username",
+    "username_or_email": "Username / Email",
     "password": "Password",
     "login": "LOGIN",
+    "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
     "signup_prompt": "Don’t have an account? Sign up"
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",
-    "normal_mode": "NORMAL MODE",
+    "custom_mode": "CUSTOM MODE",
     "settings": "SETTINGS",
     "join_tournament": "Join a tournament?"
   },
@@ -39,23 +68,6 @@
     "quarterfinals": "Quarterfinals",
     "semifinals": "Semifinals",
     "finals": "Finals"
-  },
-  "NormalModeView": {
-    "choose_action": "CHOOSE AN ACTION",
-    "create_room": "CREATE ROOM",
-    "join_room": "JOIN ROOM",
-    "back": "BACK",
-    "choose_type": "CHOOSE GAME TYPE",
-    "singles": "SINGLES",
-    "doubles": "DOUBLES",
-    "choose_join": "CHOOSE HOW TO JOIN",
-    "quick_join": "QUICK JOIN",
-    "join_private": "JOIN PRIVATE ROOM",
-    "enter_room_id": "Enter room ID",
-    "create_singles_game": "Create a singles game?",
-    "create_doubles_game": "Create a doubles game?",
-    "join_singles_game": "Join a singles game?",
-    "join_doubles_game": "Join a doubles game?"
   },
   "ResultsView": {
     "results": "Results",
@@ -170,6 +182,12 @@
     "finals": "Finals",
     "won": "Won",
     "lost": "Lost"
+  },
+  "ApiState": {
+    "loading": "Loading...",
+    "error": "Error",
+    "try_again": "Try Again",
+    "not_found": "Record not found."
   },
   "CascadeCard": {
     "confirm_block": "Are you sure you want to block {{username}}?",

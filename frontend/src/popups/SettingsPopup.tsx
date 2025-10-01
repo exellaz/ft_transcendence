@@ -1,6 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
+import { useApiMutation } from "../hooks/useApi";
+import { updateUserSettingsById } from "../lib/apiClient";
 
 import Header from "../components/Header";
 import PopupCard from "../components/PopupCard";
@@ -15,12 +18,39 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`SettingsPopup.${key}`);
   const { language, setLanguage } = useLanguage();
+  const { user } = useUser();
+  const userId = user?.id ?? "";
 
+  // API mutation to update settings
+  const { mutate } = useApiMutation(updateUserSettingsById);
+
+  // prefix - i18n naming; value - database schema naming
   const languageOptions = [
-    { value: "en", label: translate("english") },
-    { value: "zhs", label: translate("simplified_chinese") },
-    { value: "zht", label: translate("traditional_chinese") },
+    { value: "english", label: translate("english") },
+    {
+      value: "simplified_chinese",
+      label: translate("simplified_chinese"),
+    },
+    {
+      value: "traditional_chinese",
+      label: translate("traditional_chinese"),
+    },
   ];
+
+  const handleLanguageChange = async (option: string) => {
+    if (option === language) return;
+    setLanguage(option);
+
+    const result = await mutate({
+      id: userId,
+      language: option,
+    });
+
+    if (!result.success) {
+      alert(`${t("ApiState.error")}: ${result.error}`);
+      setLanguage(language); // revert on error
+    }
+  };
 
   return (
     <PopupCard open={open} onClose={onClose}>
@@ -32,7 +62,7 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
           <button
             key={option.value}
             type="button"
-            onClick={() => setLanguage(option.value)}
+            onClick={() => handleLanguageChange(option.value)}
             className={`w-[80%] h-20 rounded text-2xl font-bold cursor-pointer
           ${
             language === option.value

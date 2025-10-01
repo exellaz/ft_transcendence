@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useApiQuery } from "../hooks/useApi";
+import { getUserById } from "../lib/apiClient";
+import { useUser } from "../context/UserProvider";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -13,18 +16,20 @@ import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
 import { createRoomAPI, fetchRooms, ensurePlayerId } from "../lib/requestBackend.api";
-
 /**
  * @brief casual game
  * - Create private room
  * - Quick join public room
 */
-const NormalModeView: React.FC = () => {
+const CustomModeView: React.FC = () => {
   const { t } = useTranslation();
-  const translate = (key: string) => t(`NormalModeView.${key}`);
+  const translate = (key: string) => t(`CustomModeView.${key}`);
   const navigate = useNavigate();
+    const { user } = useUser();
+    const userId = user?.id ?? "";
   const [menuStep, setMenuStep] = useState("action");
   const [roomId, setRoomId] = useState("");
+  const [showCreateLocalGame, setShowCreateLocalGame] = useState(false);
   const [showCreateSinglesGame, setShowCreateSinglesGame] = useState(false);
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
@@ -43,8 +48,18 @@ const NormalModeView: React.FC = () => {
   //private room - owner create room from API and navigate to the room
   async function handleCreateRoom(teamSize: number, isPrivate: boolean) {
     //TODO replace with JWT
-    const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
-	const clientId = playerInfo.id || ensurePlayerId();
+      const userResponse = await getUserById({ id: Number(userId) });
+    //  let playerInfo = {id: "", name: "unknown", avatar: ""};
+    let userInfo;
+    //  console.log ("user data: "   , userResponse); //// debug
+    if (userResponse.success && userResponse.data) {
+        userInfo = userResponse.data;
+        //playerInfo = {id: userInfo.id, name: userInfo.username, avatar: userInfo.avatarUrl ?? ""};
+        //console.log ("player info: "   , playerInfo); //// debug
+    }
+    //TODO handle user info
+    if (!userInfo) return;
+    //const clientId = String(playerInfo.id);
 	const scale = Math.min(
 	  window.innerWidth / 800,
 	  window.innerHeight / 400,
@@ -58,7 +73,7 @@ const NormalModeView: React.FC = () => {
 	  teamSize === 1 ? "Singles Room" : "Doubles Room",
 	  width,
 	  height,
-	  { leaderId: clientId, isPrivate }
+	  { leaderId: userInfo.id, isPrivate }
 	);
     console.log("private room:", room); //// debug
 	if (room) {
@@ -154,104 +169,110 @@ const NormalModeView: React.FC = () => {
   // ---------------------------------------- Render Menu ---------------------------------------------
   // Render buttons/content based on menuStep
   const renderMenu = () => {
-	switch (menuStep) {
-	  case "action":
-		return (
-		  <>
-			<Subheader>{translate("choose_action")}</Subheader>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => {
-				setStatus(null); // reset the error to null to prevent show old error
-				setMenuStep("createRoom")
-			}}
-			>
-			  {translate("create_room")}
-			</Button>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setMenuStep("joinOptions")}
-			>
-			  {translate("join_room")}
-			</Button>
-			<Button onClick={handleBack}>{translate("back")}</Button>
-		  </>
-		);
-	  case "createRoom":
-		return (
-		  <>
-			<Subheader>{translate("choose_type")}</Subheader>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setShowCreateSinglesGame(true)}
-			>
-			  {translate("singles")}
-			</Button>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setShowCreateDoublesGame(true)}
-			>
-			  {translate("doubles")}
-			</Button>
-			<Button onClick={handleBack}>{translate("back")}</Button>
-		  </>
-		);
-	  case "joinOptions":
-		return (
-		  <>
-			<Subheader>{translate("choose_join")}</Subheader>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setMenuStep("quickJoin")}
-			>
-			  {translate("quick_join")}
-			</Button>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setMenuStep("privateJoin")}
-			>
-			  {translate("join_private")}
-			</Button>
-			<Button onClick={handleBack}>{translate("back")}</Button>
-		  </>
-		);
-	  case "quickJoin":
-		return (
-		  <>
-			<Subheader>{translate("choose_type")}</Subheader>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setShowJoinSinglesGame(true)}
-			>
-			  {translate("singles")}
-			</Button>
-			<Button
-			  variant="bigYellow"
-			  onClick={() => setShowJoinDoublesGame(true)}
-			>
-			  {translate("doubles")}
-			</Button>
-			<Button onClick={handleBack}>{translate("back")}</Button>
-		  </>
-		);
-	  case "privateJoin":
-		return (
-		  <>
-			<div className="w-full h-full flex-col-around">
-			  <div className="w-full h-[300px] flex-col-around rounded-3xl border-gray-300 border-3 p-10">
-				<p className="text-white text-xl font-bold">
-				  {translate("enter_room_id")}
-				</p>
-				<Input
-				  placeholder={translate("enter_room_id")}
-				  value={roomId}
-				  onChange={(e) => setRoomId(e.target.value)}
-				/>
-				{status && <Status text={status.text} color={status.color} className="mb-4" />} {/* show error status */}
-				<Button onClick={handleJoinPrivateRoom}>
-					{translate("join_room")}
-				</Button>
-			  </div>
+    switch (menuStep) {
+      case "action":
+        return (
+          <>
+            <Subheader>{translate("choose_action")}</Subheader>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowCreateLocalGame(true)}
+            >
+              {translate("play_locally")}
+            </Button>
+            <Button
+              variant="bigYellow"
+              onClick={() => {
+                setStatus(null);
+                setMenuStep("createRoom")
+            }}
+            >
+              {translate("create_room")}
+            </Button>
+            <Button
+              variant="bigYellow"
+              onClick={() => setMenuStep("joinOptions")}
+            >
+              {translate("join_room")}
+            </Button>
+            <Button onClick={handleBack}>{translate("back")}</Button>
+          </>
+        );
+      case "createRoom":
+        return (
+          <>
+            <Subheader>{translate("choose_type")}</Subheader>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowCreateSinglesGame(true)}
+            >
+              {translate("singles")}
+            </Button>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowCreateDoublesGame(true)}
+            >
+              {translate("doubles")}
+            </Button>
+            <Button onClick={handleBack}>{translate("back")}</Button>
+          </>
+        );
+      case "joinOptions":
+        return (
+          <>
+            <Subheader>{translate("choose_join")}</Subheader>
+            <Button
+              variant="bigYellow"
+              onClick={() => setMenuStep("quickJoin")}
+            >
+              {translate("quick_join")}
+            </Button>
+            <Button
+              variant="bigYellow"
+              onClick={() => setMenuStep("privateJoin")}
+            >
+              {translate("join_private")}
+            </Button>
+            <Button onClick={handleBack}>{translate("back")}</Button>
+          </>
+        );
+      case "quickJoin":
+        return (
+          <>
+            <Subheader>{translate("choose_type")}</Subheader>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowJoinSinglesGame(true)}
+            >
+              {translate("singles")}
+            </Button>
+            <Button
+              variant="bigYellow"
+              onClick={() => setShowJoinDoublesGame(true)}
+            >
+              {translate("doubles")}
+            </Button>
+            <Button onClick={handleBack}>{translate("back")}</Button>
+          </>
+        );
+      case "privateJoin":
+        return (
+          <>
+            <div className="w-full h-full flex-col-around">
+              <div className="w-full h-[300px] flex-col-around rounded-3xl border-gray-300 border-3 p-10">
+                <p className="text-white text-xl font-bold">
+                  {translate("enter_room_id")}
+                </p>
+                <Input
+                  placeholder={translate("enter_room_id")}
+                  value={roomId}
+                  onChange={(e) => setRoomId(e.target.value)}
+                />
+                {status && <Status text={status.text} color={status.color} className="mb-4"/>}
+                <Button onClick={handleJoinPrivateRoom}>
+                    {translate("join_room")}
+                </Button>
+              </div>
 
 			  <Button onClick={handleBack}>{translate("back")}</Button>
 			</div>
@@ -264,39 +285,39 @@ const NormalModeView: React.FC = () => {
 
   // ---------------------------------------- Render the Normal Mode Menu ---------------------------------------------
   return (
-	<MainLayout>
-	  <Card>
-		<Logo />
-		{renderMenu()}
-	  </Card>
-
-	  {/* confirm to navigate to the place you request */}
-	  <ConfirmationPopup
-		text={translate("create_singles_game")}
-		open={showCreateSinglesGame}
-		onClose={() => setShowCreateSinglesGame(false)}
-		onConfirm={() => handleCreateRoom(1, true)}
-	  />
-	  <ConfirmationPopup
-		text={translate("create_doubles_game")}
-		open={showCreateDoublesGame}
-		onClose={() => setShowCreateDoublesGame(false)}
-		onConfirm={() => handleCreateRoom(2, true)}
-	  />
-	  <ConfirmationPopup
-		text={translate("join_singles_game")}
-		open={showJoinSinglesGame}
-		onClose={() => setShowJoinSinglesGame(false)}
-		onConfirm={() => handleQuickJoin(1)}
-	  />
-	  <ConfirmationPopup
-		text={translate("join_doubles_game")}
-		open={showJoinDoublesGame}
-		onClose={() => setShowJoinDoublesGame(false)}
-		onConfirm={() => handleQuickJoin(2)}
-	  />
-	</MainLayout>
+    <MainLayout>
+      <Card className="gap-6">
+        <Logo />
+        {renderMenu()}
+      </Card>
+      <ConfirmationPopup
+        text={translate("create_local_game")}
+        open={showCreateLocalGame}
+        onClose={() => setShowCreateLocalGame(false)}
+        redirectPath="/local-game"
+      />
+      <ConfirmationPopup
+        text={translate("create_singles_game")}
+        open={showCreateSinglesGame}
+        onClose={() => handleCreateRoom(1, true)}
+      />
+      <ConfirmationPopup
+        text={translate("create_doubles_game")}
+        open={showCreateDoublesGame}
+        onClose={() => handleCreateRoom(2, true)}
+      />
+      <ConfirmationPopup
+        text={translate("join_singles_game")}
+        open={showJoinSinglesGame}
+        onClose={() => handleQuickJoin(1)}
+      />
+      <ConfirmationPopup
+        text={translate("join_doubles_game")}
+        open={showJoinDoublesGame}
+        onClose={() => handleQuickJoin(2)}
+      />
+    </MainLayout>
   );
 };
 
-export default NormalModeView;
+export default CustomModeView;

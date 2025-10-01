@@ -22,14 +22,13 @@ export enum CameraTracking {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
-  avatarUrl?: string;
-  usercode: string;
+  avatarUrl?: string | null;
   status: UserStatus;
-  joinedAt: Date;
-  updatedAt: Date;
+  joinedAt: string;
+  updatedAt: string;
 }
 
 export interface UserSettings {
@@ -39,6 +38,11 @@ export interface UserSettings {
 	inGameCameraTracking: CameraTracking;
 }
 
+export interface LoginData {
+  token: string;
+  user: User;
+}
+
 export interface ApiResponse<T> {
 	success: boolean;
 	data?: T;
@@ -46,25 +50,6 @@ export interface ApiResponse<T> {
 }
 
 // ----------------------- API ENDPOINTS -------------------------
-
-// POST /auth/login
-export interface LoginRequest {
-	username: string;
-	password: string;
-}
-
-export interface LoginResponse extends ApiResponse<User> {}
-
-
-// POST /users (signup)
-export interface CreateUserRequest {
-	username: string;
-	email: string;
-	password: string;
-}
-
-export interface CreateUserResponse extends ApiResponse<User> {}
-
 
 // GET /users/:id
 export interface GetUserRequest {
@@ -101,3 +86,24 @@ export interface UpdateUserSettingsRequest {
 }
 
 export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}
+
+// POST /auth/login
+export interface LoginRequest {
+  identifier: string;
+  password: string;
+}
+
+export interface LoginResponse extends ApiResponse<LoginData> {
+  data: LoginData;
+}
+
+// POST /auth/register
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse extends ApiResponse<LoginData> {
+  data: LoginData;
+}
