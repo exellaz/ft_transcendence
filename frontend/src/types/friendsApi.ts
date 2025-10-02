@@ -30,14 +30,14 @@ export interface GetPendingFriendshipsRequest {
 	userId: number;
 }
 
-export interface GetPendingFriendshipsResponse extends ApiResponse<Friendship> {}
+export interface GetPendingFriendshipsResponse extends ApiResponse<User[]> {}
 
 // GET /friendships/:userId/accepted
 export interface GetAcceptedFriendshipsRequest {
 	userId: number;
 }
 
-export interface GetAcceptedFriendshipsResponse extends ApiResponse<Friendship> {}
+export interface GetAcceptedFriendshipsResponse extends ApiResponse<User[]> {}
 
 // POST /friendships
 export interface CreateFriendshipRequest {

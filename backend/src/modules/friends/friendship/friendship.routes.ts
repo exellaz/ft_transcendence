@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
-import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
+import { BlockedFriendship, FriendshipStatus, Prisma, User } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friendship.schema";
 
@@ -10,85 +10,57 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 	fastify.get("/friendships/:userId/pending", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
 		const { userId } = request.params as { userId: string };
 
-		const friendships = await fastify.db.friendship.findMany({
+		const requesters = await fastify.db.user.findMany({
 			where: {
-				accepterId: Number(userId),
-				status: "pending",
+				sentFriendships: {
+					some: {
+						accepterId: Number(userId),
+						status: "pending",
+					},
+				},
 			},
-			include: {
-				requester: { // the sender
-					select: userPublicSelect
-				}
-			},
+			select: userPublicSelect,
 		});
 
-		if (!friendships)
-			throw new ApiError("Friendship not found", 404);
-
-		return ok(friendships); // 200 OK
+		return ok(requesters);
 	});
 
 	// GET /friendships/:userId/accepted
 	fastify.get("/friendships/:userId/accepted", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
 		const { userId } = request.params as { userId: string };
+		const uid = Number(userId);
 
-		type FriendshipWithUsers = Prisma.FriendshipGetPayload<{
-			include: { requester: true; accepter: true };
-		}>;
-
-		// Get all accepted friendships
-		const accepted: FriendshipWithUsers[] = await fastify.db.friendship.findMany({
+		// Get all users who are in accepted friendships with me
+		const friends: User[] = await fastify.db.user.findMany({
 			where: {
-				status: "accepted",
 				OR: [
-					{ requesterId: Number(userId) },
-					{ accepterId: Number(userId) },
+					{
+						sentFriendships: {
+							some: { accepterId: uid, status: "accepted" },
+						},
+					},
+					{
+						receivedFriendships: {
+							some: { requesterId: uid, status: "accepted" },
+						},
+					},
 				],
 			},
-			include: {
-				requester: {
-					select: userPublicSelect
-				},
-				accepter: {
-					select: userPublicSelect
-				}
+			select: userPublicSelect,
+		});
+
+		const blocked: BlockedFriendship[] = await fastify.db.blockedFriendship.findMany({
+			where: {
+				OR: [{ blockerId: uid }, { blockedId: uid }],
 			},
 		});
 
-		if (!accepted)
-			throw new ApiError("Friendship not found", 404);
+		// compile all 'otherUser' ids from the blockedFriendships
+		const blockedIds = new Set(blocked.map(b => b.blockerId === uid ? b.blockedId : b.blockerId));
+		// Remove users who are blocked (either direction)
+		const nonBlocked = friends.filter(u => !blockedIds.has(u.id));
 
-		// Get all blocked frienships
-		const blocked: BlockedFriendship[] = await fastify.db.BlockedFriendship.findMany({
-			where: {
-				OR: [
-					{ blockerId: Number(userId) },
-					{ blockedId: Number(userId) }
-				]
-			}
-		});
-
-		// Filter out Blocked friendships from accepted Friendships
-				// convert to string eg. ("1-2", "3-5") for easy lookup
-		const blockedPairs = new Set(blocked.map(b => `${b.blockerId}-${b.blockedId}`));
-		const nonBlocked = accepted.filter(f =>
-			!blockedPairs.has(`${userId}-${f.accepterId}`) &&
-			!blockedPairs.has(`${f.accepterId}-${userId}`)
-		);
-
-		// map to always return "the other user"
-		const result = nonBlocked.map(f => {
-			const otherUser = f.requesterId === Number(userId) ? f.accepter : f.requester;
-			return {
-				id: f.id,
-				status: f.status,
-				createdAt: f.createdAt,
-				updatedAt: f.updatedAt,
-				user: otherUser, // TODO: change 'user' to other name?
-			};
-		});
-
-		return ok(result); // 200 OK
+		return ok(nonBlocked); // just array of UserPublic
 	});
 
 	// POST /friendships
