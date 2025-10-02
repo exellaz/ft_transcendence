@@ -11,7 +11,7 @@ import type {
 	UpdateUserSettingsResponse,
 	LoginRequest,
 	LoginResponse
-} from "../types/api";
+} from "../types/usersApi";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
 

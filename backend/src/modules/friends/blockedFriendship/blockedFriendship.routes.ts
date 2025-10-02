@@ -1,9 +1,31 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
+import { userPublicSelect } from "../../users/users.select";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
-	// POST /blockedFriendship
+	// GET /blockedFriendships/:userId  (get all blocked friends by user)
+	fastify.get("/blockedFriendships/:userId", async (request, reply) => {
+		const { userId } = request.params as { userId: string };
+
+		const blockedFriendships = await fastify.db.blockedFriendship.findMany({
+			where: {
+				blockerId: Number(userId),
+			},
+			include: {
+				blocked: { // the sender
+					select: userPublicSelect
+				}
+			},
+		});
+
+		if (!blockedFriendships)
+			throw new ApiError("Blocked Friendships not found", 404);
+
+		return ok(blockedFriendships); // 200 OK
+	});
+
+	// POST /blockedFriendships
 	fastify.post("/blockedFriendships", async (request, reply) => {
 		const { blockerId, blockedId } = request.body as {
 			blockerId: number;
@@ -46,7 +68,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance, options: Fastif
 		}
 	});
 
-	// DELETE /blockedFriendship/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
+	// DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
 	fastify.delete("/blockedFriendships/:blockerId/:blockedId", async (request, reply) => {
 		const { blockerId, blockedId } = request.params as { blockerId: string, blockedId: string };
 

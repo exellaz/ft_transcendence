@@ -22,7 +22,7 @@ async function main() {
   }
 
   num = 9; // make sure this is divisible by 3 for equal distribution
-  const statuses: FriendshipStatus[] = ["accepted", "pending", "blocked"];
+  const statuses: FriendshipStatus[] = ["accepted", "pending"];
 
   for (let i = 1; i <= num; i++) {
     const status = statuses[(i - 1) % statuses.length]; // rotate statuses
