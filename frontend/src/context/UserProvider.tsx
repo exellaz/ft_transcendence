@@ -1,15 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl?: string | null;
-  status: string;
-  joinedAt: string;
-  updatedAt: string;
-}
+import type { User } from "../types/api";
 
 interface UserContextType {
   user: User | null;
@@ -43,7 +34,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // TODO: Validate token in backend
       const payload = decodeJWT(token);
       if (payload?.userId) {
-        setUser({ id: payload.userId });
+        setUser({ id: Number(payload.userId) } as User);
       }
     }
   }, []);

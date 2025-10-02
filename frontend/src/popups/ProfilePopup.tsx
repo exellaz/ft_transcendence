@@ -9,7 +9,7 @@ import ProfileContents from "../components/ProfileContents";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
+  userId: number;
   variant?: "self" | "other";
 }
 

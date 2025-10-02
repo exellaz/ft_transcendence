@@ -22,13 +22,13 @@ export enum CameraTracking {
 }
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
-  avatarUrl?: string | null;
+  avatarUrl: string;
   status: UserStatus;
-  joinedAt: string;
-  updatedAt: string;
+  joinedAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserSettings {
@@ -61,7 +61,7 @@ export interface GetUserResponse extends ApiResponse<User> {}
 
 // PATCH /users/:id
 export interface UpdateUserRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   username?: string;       // optional
   avatarUrl?: string;      // optional
 }
@@ -79,7 +79,7 @@ export interface GetUserSettingsResponse extends ApiResponse<UserSettings> {}
 
 // PATCH /users/:id/settings
 export interface UpdateUserSettingsRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   language?: string;       // optional
   textSize?: string;          // optional
   inGameCameraTracking?: string;      // optional

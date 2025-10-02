@@ -22,7 +22,7 @@ import Status from "../components/Status";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
+  userId: number;
 }
 
 const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
@@ -58,7 +58,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<BasicInfo | null>(null);
   // function getBasicInfoById(
-  //   userId: string,
+  //   userId: number,
   //   data: BasicInfo[]
   // ): BasicInfo | undefined {
   //   return data.find((user) => user.id === userId);

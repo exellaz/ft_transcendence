@@ -20,7 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showFriends, setShowFriends] = useState(false);
 
   const { user } = useUser();
-  const userId = user?.id ?? "";
+  const userId = user?.id ?? 0;
 
   return (
     <Background>
@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfilePopup
         open={showProfile}
         onClose={() => setShowProfile(false)}
-        userId={"0"}
+        userId={0}
       />
       <BasicInfoPopup
         open={showBasicInfo}

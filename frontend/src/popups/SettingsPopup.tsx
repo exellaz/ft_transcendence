@@ -19,7 +19,7 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const translate = (key: string) => t(`SettingsPopup.${key}`);
   const { language, setLanguage } = useLanguage();
   const { user } = useUser();
-  const userId = user?.id ?? "";
+  const userId = user?.id ?? 0;
 
   // API mutation to update settings
   const { mutate } = useApiMutation(updateUserSettingsById);

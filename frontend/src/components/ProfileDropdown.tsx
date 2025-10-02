@@ -15,7 +15,7 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
-  userId: string;
+  userId: number;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -90,7 +90,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
   // function getProfileDropdownById(
-  //   userId: string,
+  //   userId: number,
   //   data: ProfileDropdownInfo[]
   // ): ProfileDropdownInfo | undefined {
   //   return data.find((user) => user.id === userId);
@@ -109,9 +109,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         <div>
           <Avatar src={user?.avatarUrl} size={80} />
         </div>
-        {user ? (user.username.length > 8
-          ? user.username.slice(0, 8) + "..."
-          : user.username) : t("common.loading")}
+        {user
+          ? user.username.length > 8
+            ? user.username.slice(0, 8) + "..."
+            : user.username
+          : t("common.loading")}
       </Button>
 
       {open && (
