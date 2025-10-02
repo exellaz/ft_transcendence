@@ -6,7 +6,7 @@ import { createFriendshipSchema, getFriendShipsByUserIdSchema } from "./friendsh
 
 async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
-	// GET /friendships/:userId/pending (get friends that send friend request to u)
+	// GET /friendships/:3/pending (get friends that send friend request to u)
 	fastify.get("/friendships/:userId/pending", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
 		const { userId } = request.params as { userId: string };
 
@@ -94,7 +94,7 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 	// POST /friendships
 	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
 		const {  requesterId, accepterId } = request.body as {
-			 requesterId: number;
+			requesterId: number;
 			accepterId: number;
 		};
 
@@ -103,9 +103,21 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 		}
 
 		try {
+			// check if inverse direction exist
+			const inverseFriendship = await fastify.db.friendship.findFirst({
+				where: {
+					OR: [
+						{ requesterId: requesterId, accepterId: accepterId },
+						{ requesterId: accepterId, accepterId: requesterId },
+					]
+				}
+			});
+			if (inverseFriendship)
+				throw new ApiError("Friendship already exists", 400);
+
 			const friendship = await fastify.db.friendship.create({
 				data: {
-           requesterId,
+          requesterId,
           accepterId,
           status: "pending",
         }
