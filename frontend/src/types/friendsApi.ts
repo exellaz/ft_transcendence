@@ -63,3 +63,24 @@ export interface DeleteFriendshipRequest {
 }
 
 export interface DeleteFriendshipResponse extends ApiResponse<Friendship> {}
+
+// GET /blockedFriendships/:userId  (get all blocked friends by user)
+export interface GetBlockedFriendshipsRequest {
+	userId: number;
+}
+
+export interface GetBlockedFriendshipsResponse extends ApiResponse<BlockedFriendship[]> {}
+
+// POST /blockedFriendships
+export interface CreateBlockedFriendshipRequest {
+	userId: number;
+}
+
+export interface CreateBlockedFriendshipResponse extends ApiResponse<BlockedFriendship> {}
+
+// DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
+export interface DeleteBlockedFriendshipRequest {
+	userId: number;
+}
+
+export interface DeleteBlockedFriendshipResponse extends ApiResponse<BlockedFriendship> {}
