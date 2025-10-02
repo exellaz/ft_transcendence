@@ -1,22 +1,14 @@
 import type { ApiResponse } from "./apiResponse";
 
-export enum UserStatus {
-  ONLINE = "online",
-  OFFLINE = "offline",
-	INGAME = "ingame",
-}
+export type UserStatus = "online" | "offline" | "ingame";
 
-export enum Language {
-	ENGLISH = "english",
-	CHINESE = "chinese",
-	MALAY = "malay",
-}
+export type Language = "english" | "simplified_chinese" | "traditional_chinese";
 
 export interface User {
   id: number;
   username: string;
   email: string;
-  avatarUrl?: string;
+  avatarUrl: string;
   status: UserStatus;
   joinedAt: Date;
   updatedAt: Date;
@@ -58,7 +50,7 @@ export interface GetUserResponse extends ApiResponse<User> {}
 
 // PATCH /users/:id
 export interface UpdateUserRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   username?: string;       // optional
   avatarUrl?: string;      // optional
 }
@@ -76,7 +68,7 @@ export interface GetUserSettingsResponse extends ApiResponse<UserSettings> {}
 
 // PATCH /users/:id/settings
 export interface UpdateUserSettingsRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   language?: string;       // optional
 }
 
