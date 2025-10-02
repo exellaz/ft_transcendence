@@ -1,10 +1,7 @@
 import type { ApiResponse } from "./apiResponse";
 import type { User } from "./usersApi";
 
-export enum FriendshipStatus {
-  PENDING = "pending",
-  ACCEPTED = "accepted"
-}
+export type FriendshipStatus = "pending" | "accepted";
 
 export interface Friendship {
 	id: number;
@@ -73,14 +70,16 @@ export interface GetBlockedFriendshipsResponse extends ApiResponse<BlockedFriend
 
 // POST /blockedFriendships
 export interface CreateBlockedFriendshipRequest {
-	userId: number;
+	blockerId: number;
+	blockedId: number;
 }
 
 export interface CreateBlockedFriendshipResponse extends ApiResponse<BlockedFriendship> {}
 
 // DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
 export interface DeleteBlockedFriendshipRequest {
-	userId: number;
+	blockerId: number;
+	blockedId: number;
 }
 
 export interface DeleteBlockedFriendshipResponse extends ApiResponse<BlockedFriendship> {}
