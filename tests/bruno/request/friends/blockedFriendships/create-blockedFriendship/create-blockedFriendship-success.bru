@@ -13,8 +13,13 @@ post {
 body:json {
   {
     "blockerId": 1,
-    "blockedId": 2
+    "blockedId": 8 // amount of blocked friendships seeded + 1
   }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
 }
 
 settings {

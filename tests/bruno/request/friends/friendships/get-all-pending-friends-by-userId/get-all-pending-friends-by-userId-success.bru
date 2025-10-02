@@ -1,11 +1,11 @@
 meta {
-  name: get-all-accepted-friends-by-userId
+  name: get-all-pending-friends-by-userId-success
   type: http
-  seq: 2
+  seq: 1
 }
 
 get {
-  url: {{baseUrl}}/friendships/1/accepted
+  url: {{baseUrl}}/friendships/1/pending
   body: none
   auth: inherit
 }

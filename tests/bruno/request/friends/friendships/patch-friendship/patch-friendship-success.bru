@@ -12,8 +12,13 @@ patch {
 
 body:json {
   {
-    "status": "blocked"
+    "status": "accepted"
   }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
 }
 
 settings {

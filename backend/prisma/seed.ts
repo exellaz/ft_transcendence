@@ -20,8 +20,10 @@ async function main() {
       },
     });
   }
+  console.log(`✅ Seeded ${num} users`);
 
-  num = 9; // make sure this is divisible by 3 for equal distribution
+
+  num = 7;
   const statuses: FriendshipStatus[] = ["accepted", "pending"];
 
   for (let i = 1; i <= num; i++) {
@@ -35,8 +37,23 @@ async function main() {
     });
   }
 
-  console.log(`✅ Seeded ${num} friendships equally across accepted, pending, and blocked`);
+  console.log(`✅ Seeded ${num} friendships equally across accepted and pending`);
+
+  num = 6;
+
+  for (let i = 1; i <= num; i++) {
+    await prisma.blockedFriendship.create({
+      data: {
+        blockerId: 1,
+        blockedId: i + 1,
+      },
+    });
+  }
+
+  console.log(`✅ Seeded ${num} friendships equally across accepted and pending`);
 }
+
+
 
 main()
   .catch((e) => {

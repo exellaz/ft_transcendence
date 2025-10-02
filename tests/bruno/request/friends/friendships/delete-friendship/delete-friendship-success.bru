@@ -5,11 +5,20 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/friendships/1/2
+  url: {{baseUrl}}/friendships/1/9
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+docs {
+  - requesterId = amount of friendships seeded + 1
 }

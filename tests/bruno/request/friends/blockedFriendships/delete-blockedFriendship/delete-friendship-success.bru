@@ -5,11 +5,20 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/blockedFriendships/2/1
+  url: {{baseUrl}}/blockedFriendships/1/8
   body: none
   auth: inherit
 }
 
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
 settings {
   encodeUrl: true
+}
+
+docs {
+  -  blockedId = amount of blocked friendships seeded + 1
 }

@@ -13,8 +13,13 @@ post {
 body:json {
   {
     "requesterId": 1,
-    "accepterId": 2
+    "accepterId": 9 // amount of friendships seeded + 1
   }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
 }
 
 settings {
