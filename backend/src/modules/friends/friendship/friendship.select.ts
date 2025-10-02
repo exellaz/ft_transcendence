@@ -1,8 +1,8 @@
 
 export const friendshipPublicSelect = {
 	id: true,
-	userId: true,
-	friendId: true,
+	requesterId: true,
+	accepterId: true,
 	status: true,
 	createdAt: true,
 	updatedAt: true,

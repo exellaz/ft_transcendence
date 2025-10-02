@@ -28,8 +28,8 @@ async function main() {
     const status = statuses[(i - 1) % statuses.length]; // rotate statuses
     await prisma.friendship.create({
       data: {
-        userId: 1,
-        friendId: i + 1,
+        requesterId: 1,
+        accepterId: i + 1,
         status,
       },
     });

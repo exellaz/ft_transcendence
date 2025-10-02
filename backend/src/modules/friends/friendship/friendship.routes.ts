@@ -12,11 +12,11 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 
 		const friendships = await fastify.db.friendship.findMany({
 			where: {
-				friendId: Number(userId),
+				accepterId: Number(userId),
 				status: "pending",
 			},
 			include: {
-				user: { // the sender
+				requester: { // the sender
 					select: userPublicSelect
 				}
 			},
@@ -33,7 +33,7 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 		const { userId } = request.params as { userId: string };
 
 		type FriendshipWithUsers = Prisma.FriendshipGetPayload<{
-			include: { user: true; friend: true };
+			include: { requester: true; accepter: true };
 		}>;
 
 		// Get all accepted friendships
@@ -41,15 +41,15 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 			where: {
 				status: "accepted",
 				OR: [
-					{ userId: Number(userId) },
-					{ friendId: Number(userId) },
+					{ requesterId: Number(userId) },
+					{ accepterId: Number(userId) },
 				],
 			},
 			include: {
-				user: {
+				requester: {
 					select: userPublicSelect
 				},
-				friend: {
+				accepter: {
 					select: userPublicSelect
 				}
 			},
@@ -68,23 +68,23 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 			}
 		});
 
-		// Filter out Blocked friendships
+		// Filter out Blocked friendships from accepted Friendships
 				// convert to string eg. ("1-2", "3-5") for easy lookup
 		const blockedPairs = new Set(blocked.map(b => `${b.blockerId}-${b.blockedId}`));
 		const nonBlocked = accepted.filter(f =>
-			!blockedPairs.has(`${userId}-${f.friendId}`) &&
-			!blockedPairs.has(`${f.friendId}-${userId}`)
+			!blockedPairs.has(`${userId}-${f.accepterId}`) &&
+			!blockedPairs.has(`${f.accepterId}-${userId}`)
 		);
 
 		// map to always return "the other user"
 		const result = nonBlocked.map(f => {
-			const otherUser = f.userId === Number(userId) ? f.friend : f.user;
+			const otherUser = f.requesterId === Number(userId) ? f.accepter : f.requester;
 			return {
 				id: f.id,
 				status: f.status,
 				createdAt: f.createdAt,
 				updatedAt: f.updatedAt,
-				user: otherUser,
+				user: otherUser, // TODO: change 'user' to other name?
 			};
 		});
 
@@ -93,20 +93,20 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 
 	// POST /friendships
 	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
-		const { userId, friendId } = request.body as {
-			userId: number;
-			friendId: number;
+		const {  requesterId, accepterId } = request.body as {
+			 requesterId: number;
+			accepterId: number;
 		};
 
-		if (userId === friendId) {
+		if ( requesterId === accepterId) {
 			throw new ApiError("User cannot friend themselves", 400);
 		}
 
 		try {
 			const friendship = await fastify.db.friendship.create({
 				data: {
-          userId,
-          friendId,
+           requesterId,
+          accepterId,
           status: "pending",
         }
 			});
@@ -122,9 +122,9 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 
 	});
 
-	// PATCH /friendships/:userId/:friendId
-	fastify.patch("/friendships/:userId/:friendId", async (request, reply) => {
-		const { userId, friendId } = request.params as { userId: string, friendId: string };
+	// PATCH /friendships/:requesterId/:accepterId
+	fastify.patch("/friendships/:requesterId/:accepterId", async (request, reply) => {
+		const { requesterId, accepterId } = request.params as { requesterId: string, accepterId: string };
 		const { status } = request.body as {
 			status?: FriendshipStatus;
 		};
@@ -137,8 +137,8 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 			const friendship = await fastify.db.friendship.findFirst({
 				where: {
 					OR: [
-						{ userId: Number(userId), friendId: Number(friendId) },
-						{ userId: Number(friendId), friendId: Number(userId) },
+						{ requesterId: Number(requesterId), accepterId: Number(accepterId) },
+						{ requesterId: Number(accepterId), accepterId: Number(requesterId) },
 					],
 				},
 			});
@@ -161,17 +161,17 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 		}
 	});
 
-	// DELETE /friendships/:userId/:friendId
-	fastify.delete("/friendships/:userId/:friendId", async (request, reply) => {
-		const { userId, friendId } = request.params as { userId: string, friendId: string };
+	// DELETE /friendships/:requesterId/:accepterId
+	fastify.delete("/friendships/:requesterId/:accepterId", async (request, reply) => {
+		const { requesterId, accepterId } = request.params as { requesterId: string, accepterId: string };
 
 		try {
 			// find the friendship in either direction
 			const friendship = await fastify.db.friendship.findFirst({
 				where: {
 					OR: [
-						{ userId: Number(userId), friendId: Number(friendId) },
-						{ userId: Number(friendId), friendId: Number(userId) },
+						{ requesterId: Number(requesterId), accepterId: Number(accepterId) },
+						{ requesterId: Number(accepterId), accepterId: Number(requesterId) },
 					],
 				},
 			});

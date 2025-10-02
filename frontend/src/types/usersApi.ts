@@ -1,3 +1,5 @@
+import type { ApiResponse } from "./apiResponse";
+
 export enum UserStatus {
   ONLINE = "online",
   OFFLINE = "offline",
@@ -23,12 +25,6 @@ export interface User {
 export interface UserSettings {
 	userId: number;
 	language: Language;
-}
-
-export interface ApiResponse<T> {
-	success: boolean;
-	data?: T;
-	error?: string;
 }
 
 // ----------------------- API ENDPOINTS -------------------------

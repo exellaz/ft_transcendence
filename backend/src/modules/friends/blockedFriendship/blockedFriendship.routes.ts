@@ -43,8 +43,8 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance, options: Fastif
 			const friendship = await fastify.db.friendship.findFirst({
 				where: {
 					OR: [
-						{ userId: Number(blockerId), friendId: Number(blockedId) },
-						{ userId: Number(blockedId), friendId: Number(blockerId) },
+						{ requesterId: Number(blockerId), accepterId: Number(blockedId) },
+						{ requesterId: Number(blockedId), accepterId: Number(blockerId) },
 					],
 				},
 			});

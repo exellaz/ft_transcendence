@@ -43,8 +43,8 @@ model User {
   // Relations
   settings   UserSettings?
 
-  friendshipsUser   Friendship[] @relation("UserFriends")
-  friendshipsFriend Friendship[] @relation("FriendUsers")
+  sentFriendships     Friendship[] @relation("FriendshipRequester")
+  receivedFriendships Friendship[] @relation("FriendshipAccepter")
 
   blockedUsers       BlockedFriendship[] @relation("Blocks")   // people I blocked
   blockedBy          BlockedFriendship[] @relation("BlockedBy") // people who blocked me
@@ -64,20 +64,20 @@ model UserSettings {
 
 model Friendship {
   id        Int               @id @default(autoincrement())
-  userId    Int               @map("user_id")
-  friendId  Int               @map("friend_id")
+  requesterId    Int               @map("user_id")
+  accepterId  Int               @map("friend_id")
   status    FriendshipStatus  @default(pending)
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @default(now()) @map("updated_at")
 
   // Relations
-  user      User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
-  friend    User @relation("FriendUsers", fields: [friendId], references: [id], onDelete: Cascade)
+  requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  accepter    User @relation("FriendshipAccepter", fields: [accepterId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, friendId], name: "uq_friendship")
+  @@unique([requesterId, accepterId], name: "uq_friendship")
   @@map("friendships")
-  @@index([userId], name: "idx_friendships_user")
-  @@index([friendId], name: "idx_friendships_friend")
+  @@index([requesterId], name: "idx_friendships_requester")
+  @@index([accepterId], name: "idx_friendships_accepter")
 }
 
 model BlockedFriendship {

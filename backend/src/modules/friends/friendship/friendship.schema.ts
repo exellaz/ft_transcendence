@@ -22,15 +22,15 @@ export const createFriendshipSchema = {
 	body: {
 		type: "object",
 		properties: {
-			userId: { type: "integer", minimum: 1 },
-		  friendId: { type: "integer", minimum: 1 },
+			requesterId: { type: "integer", minimum: 1 },
+		  accepterId: { type: "integer", minimum: 1 },
 		  status: {
 				type: "string",
 				enum: ["pending", "accepted", "blocked"], // Prisma enum
 				default: "pending"
 		  }
 		},
-		required: ["userId", "friendId"],
+		required: ["requesterId", "accepterId"],
 		additionalProperties: false // disallow extra fields
 	}
 }
