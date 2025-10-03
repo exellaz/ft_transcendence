@@ -2,7 +2,7 @@
   "compilerOptions": {
     // File Layout
 
-    "rootDir": "./src",
+    "rootDir": "../",
     "outDir": "./dist",
 
     // Environment
@@ -24,7 +24,10 @@
 
     // Module interop
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   },
-  "include": ["src", "../shared/utils", "../shared/client.ts", "../shared/entry_test.ts", "../shared/game.routes.ts", "../shared/server.ts", "../shared/objects", "../shared/game"]
+  "include": ["../shared/**/*","src", "../shared/utils", "../shared/client.ts", "../shared/entry_test.ts", "../shared/game.routes.ts", "../shared/server.ts", "../shared/objects", "../shared/game"]
 }

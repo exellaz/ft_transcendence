@@ -1,0 +1,27 @@
+meta {
+  name: create-friendship-success
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/friendships
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "requesterId": 1,
+    "accepterId": 9 // amount of friendships seeded + 1
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
+}

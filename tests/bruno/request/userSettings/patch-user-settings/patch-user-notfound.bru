@@ -12,14 +12,12 @@ patch {
 
 body:json {
   {
-    "language": "chinese",
-    "textSize": "large",
-    "inGameCameraTracking": "dynamic"
+    "language": "simplified_chinese"
   }
 }
 
 assert {
-	res.status: eq 404
-	res.body.success: eq false
-	res.body.error: contains "User not found"
+  res.status: eq 404
+  res.body.success: eq false
+  res.body.error: contains "User not found"
 }

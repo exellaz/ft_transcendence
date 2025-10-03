@@ -1,16 +1,20 @@
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
-import dbConnector from "./plugins/db";
-import userRoutes from "./modules/users/users.routes";
-import authRoutes from "./modules/auth/auth.routes";
-import gameRoutes from "../../shared/game.routes";
 import websocketPlugin from "@fastify/websocket";
-import fastifyStatic from "@fastify/static";
-
+import dbConnector from "./plugins/db"
+import userRoutes from "./modules/users/users.routes"
+import authRoutes from "./modules/auth/auth.routes";
+import gameWsRoute from "./modules/game/game.ws";
+import roomWsRoutes from "./modules/room/room.ws";
+import liveChatRoutes from "./modules/chat/liveChat.ws";
+import roomRoutes from "./modules/room/room.routes";
 import { fail, ApiError } from "./utils/response";
+import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
+import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
+import gameRoutes from "../../shared/game.routes";
 
 const app = Fastify({
-  logger: true
+//  logger: true
 });
 await app.register(websocketPlugin);
 
@@ -22,7 +26,13 @@ app.register(fastifyCors, {
 app.register(dbConnector);
 app.register(userRoutes);
 app.register(authRoutes);
-app.register(gameRoutes);
+app.register(friendshipRoutes);
+app.register(blockedFriendshipRoutes);
+app.register(gameWsRoute);
+// app.register(gameRoutes);
+app.register(roomWsRoutes);
+app.register(liveChatRoutes);
+app.register(roomRoutes);
 
 // Global error handler (call after all routes/plugins)
 app.setErrorHandler((error, request, reply) => {

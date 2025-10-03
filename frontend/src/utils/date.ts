@@ -1,4 +1,4 @@
-export function formatTimestamp(date: Date) {
+export function formatTimestamp(date: Date | string) {
   const d = new Date(date);
   const pad = (n: number) => n.toString().padStart(2, '0');
   const year = d.getFullYear();
@@ -19,4 +19,14 @@ export function formatTimestamp(date: Date) {
   } else {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   }
+}
+
+export function formatDate(date: Date | string) {
+  const d = new Date(date);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const year = d.getFullYear();
+  // JavaScript's getMonth() is zero-indexed
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  return `${year}-${month}-${day}`;
 }

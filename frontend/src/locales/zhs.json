@@ -1,44 +1,23 @@
 {
+  "common": {
+    "loading": "加载中...",
+    "username_required": "用户名是必填项",
+    "username_length": "用户名必须为2-15个字符",
+    "username_characters": "只允许字母、数字和下划线"
+  },
   "AdvanceView": {
     "advancement": "晋级",
     "congratulations": "恭喜！",
     "next_round": "你已晋级到下一轮！",
     "continue": "继续"
   },
-  "ChooseSpriteView": {
+  "ChooseSpriteContents": {
     "choose_sprite": "选择一个角色",
     "confirm": "确认"
   },
-  "DoublesRoomView": {
-    "doubles_room": "双人房间",
-    "room_id": "房间ID",
-    "ready": "准备",
-    "leave_room": "离开房间",
-    "leave_confirmation": "你确定要离开房间吗？"
-  },
-  "LoginView": {
-    "username": "用户名",
-    "password": "密码",
-    "login": "登录",
-    "continue_with_google": "使用谷歌继续",
-    "signup_prompt": "还没有账号？注册"
-  },
-  "MainMenuView": {
-    "tournament_mode": "锦标赛模式",
-    "normal_mode": "普通模式",
-    "settings": "设置",
-    "join_tournament": "参加锦标赛？"
-  },
-  "MatchView": {
-    "loading": "加载中...",
-    "ready": "准备",
-    "pending": "等待中",
-    "quarterfinals": "四分之一决赛",
-    "semifinals": "半决赛",
-    "finals": "决赛"
-  },
-  "NormalModeView": {
+  "CustomModeView": {
     "choose_action": "选择操作",
+    "play_locally": "本地游玩",
     "create_room": "创建房间",
     "join_room": "加入房间",
     "back": "返回",
@@ -49,10 +28,43 @@
     "quick_join": "快速加入",
     "join_private": "加入私人房间",
     "enter_room_id": "输入房间ID",
+    "create_local_game": "创建本地游戏？",
     "create_singles_game": "创建单人游戏？",
     "create_doubles_game": "创建双人游戏？",
     "join_singles_game": "加入单人游戏？",
     "join_doubles_game": "加入双人游戏？"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "双人房间",
+    "room_id": "房间ID",
+    "ready": "准备",
+	"unready": "取消准备",
+	"start": "开始游戏",
+	"game_start": "游戏开始!",
+    "leave_room": "离开房间",
+    "leave_confirmation": "你确定要离开房间吗？"
+  },
+  "LoginView": {
+    "username_or_email": "用户名 / 电子邮件",
+    "password": "密码",
+    "login": "登录",
+    "loading": "加载中...",
+    "continue_with_google": "使用谷歌继续",
+    "signup_prompt": "还没有账号？注册"
+  },
+  "MainMenuView": {
+    "tournament_mode": "锦标赛模式",
+    "custom_mode": "自定义模式",
+    "settings": "设置",
+    "join_tournament": "参加锦标赛？"
+  },
+  "MatchView": {
+    "loading": "加载中...",
+    "ready": "准备",
+    "pending": "等待中",
+    "quarterfinals": "四分之一决赛",
+    "semifinals": "半决赛",
+    "finals": "决赛"
   },
   "ResultsView": {
     "results": "结果",
@@ -80,6 +92,9 @@
     "singles_room": "单人房间",
     "room_id": "房间ID",
     "ready": "准备",
+    "unready": "取消准备",
+    "start": "开始游戏",
+	"game_start": "游戏开始!",
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？"
   },
@@ -164,6 +179,12 @@
     "finals": "决赛",
     "won": "胜利",
     "lost": "失败"
+  },
+  "ApiState": {
+    "loading": "加载中...",
+    "error": "错误",
+    "try_again": "重试",
+    "not_found": "未找到记录。"
   },
   "CascadeCard": {
     "confirm_block": "确定要屏蔽 {{username}} 吗？",

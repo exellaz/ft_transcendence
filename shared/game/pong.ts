@@ -470,6 +470,9 @@ export class PongGame {
 		players: any[],
 		settings: GameSettings,
 	) {
+
+		console.log("INITIALIZED");
+
 		this.gameSettings = settings;
 
 		this.players = [];

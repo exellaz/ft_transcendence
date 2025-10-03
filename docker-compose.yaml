@@ -10,8 +10,9 @@ services:
       - appnet
     volumes:
       - ./frontend:/app # bind mount
-      - /app/node_modules   # anonymous volume for container's node_modules
-      - ./shared:/shared        # 👈 mount the shared folder
+      - frontend_node_modules:/app/node_modules
+      - ./shared:/shared 
+
   backend:
     build: ./backend
     ports:
@@ -21,9 +22,14 @@ services:
       - appnet
     volumes:
       - ./backend:/app # bind mount
-      - /app/node_modules  # anonymous volume for container's node_modules
-      - ./backend/prisma/database:/app/prisma/database
-      - ./shared:/shared        # 👈 mount the shared folder
+      - backend_node_modules:/app/node_modules
+      - ./shared:/shared 
+      - ./backend/prisma/database:/app/prisma/database # bind mount
+
+volumes:
+  frontend_node_modules:
+  backend_node_modules:
+
 
 networks:
   appnet:

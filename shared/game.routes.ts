@@ -49,6 +49,9 @@ let DEBUG_playerIndex = 0;
 const settings = new GameSettings();
 // settings.ballSpeed = 1000;
 
+
+console.log("!!!started game");
+
 const pongGame = new PongGame(
   clients, 
   false, 

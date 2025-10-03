@@ -1,5 +1,7 @@
 // schemas/userSchemas.ts
 
+import { prototype } from "events";
+
 export const getUserByIdSchema = {
 	params: {
 	  type: "object",
@@ -21,7 +23,6 @@ export const getUserByIdSchema = {
 						username: { type: "string" },
 						email: { type: "string" },
 						avatarUrl: { type: ["string", "null"] },
-						usercode: { type: "string" },
 						status: { type: "string" }, // could refine with enum if you want
 						joinedAt: { type: "string", format: "date-time" },
 						updatedAt: { type: "string", format: "date-time" }
@@ -31,7 +32,6 @@ export const getUserByIdSchema = {
 						"username",
 						"email",
 						"avatarUrl",
-						"usercode",
 						"status",
 						"joinedAt",
 						"updatedAt"
@@ -101,3 +101,112 @@ export const patchUserSettingsByIdSchema = {
 		required: ["id"]
 	}
 }
+
+// POST /auth/register
+export const postUserRegisterSchema = {
+  body: {
+    type: "object",
+    properties: {
+      username: { type: "string", minLength: 2, maxLength: 15 },
+      email: { type: "string", format: "email" },
+      password: { type: "string", minLength: 8, maxLength: 100 }
+    },
+    required: ["username", "email", "password"],
+    additionalProperties: false
+  },
+  response: {
+    201: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        data: {
+          type: "object",
+          properties: {
+            token: { type: "string" },
+            user: {
+              type: "object",
+              properties: {
+                id: { type: "integer" },
+                username: { type: "string" },
+                email: { type: "string" },
+                avatarUrl: { type: ["string", "null"] },
+                status: { type: "string" },
+                joinedAt: { type: "string", format: "date-time" },
+                updatedAt: { type: "string", format: "date-time" }
+              },
+              required: ["id", "username", "email", "status"]
+            }
+          },
+          required: ["token", "user"]
+        }
+      },
+      required: ["success", "data"]
+    },
+    400: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        error: { type: "string" }
+      },
+      required: ["success", "error"]
+    }
+  }
+};
+
+// POST /auth/login
+export const postUserLoginSchema = {
+  body: {
+    type: "object",
+    properties: {
+      identifier: { type: "string", minLength: 1 },
+      password: { type: "string", minLength: 1 }
+    },
+    required: ["identifier", "password"],
+    additionalProperties: false
+  },
+  response: {
+    200: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        data: {
+          type: "object",
+          properties: {
+            token: { type: "string" },
+            user: {
+              type: "object",
+              properties: {
+                id: { type: "integer" },
+                username: { type: "string" },
+                email: { type: "string" },
+                avatarUrl: { type: ["string", "null"] },
+                status: { type: "string" },
+                joinedAt: { type: "string", format: "date-time" },
+                updatedAt: { type: "string", format: "date-time" }
+              },
+              required: ["id", "username", "email", "status"]
+            }
+          },
+          required: ["token", "user"]
+        }
+      },
+      required: ["success", "data"]
+    },
+    400: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        error: { type: "string" }
+      },
+      required: ["success", "error"]
+    },
+    404: {
+      type: "object",
+      properties: {
+        success: { type: "boolean" },
+        error: { type: "string" }
+      },
+      required: ["success", "error"]
+    }
+  }
+};
