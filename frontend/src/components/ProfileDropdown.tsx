@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery } from "../hooks/useApi";
-import { getUserById } from "../lib/apiClient";
+import { getUserById } from "../lib/usersApiClient";
 import { useNavigate } from "react-router-dom";
 // TODO: Remove mock data import when integrating real API
 // import type { ProfileDropdownInfo } from "../types/apiInterfaces";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
+import type { User } from "../types/usersApi";
 
 interface ProfileDropdownProps {
   setShowProfile: (open: boolean) => void;
@@ -29,7 +30,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
 
   // API query for user data
-  const { data: user, refetch } = useApiQuery(
+  const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: Number(userId) }),
     [userId]
   );

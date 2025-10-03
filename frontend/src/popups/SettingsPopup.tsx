@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
 import { useApiMutation } from "../hooks/useApi";
-import { updateUserSettingsById } from "../lib/apiClient";
+import { updateUserSettingsById } from "../lib/usersApiClient";
 
 import Header from "../components/Header";
 import PopupCard from "../components/PopupCard";

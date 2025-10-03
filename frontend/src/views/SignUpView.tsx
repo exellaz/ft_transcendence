@@ -8,7 +8,7 @@ import Logo from "../components/Logo";
 import Input from "../components/Input";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
-import { register } from "../lib/apiClient";
+import { register } from "../lib/usersApiClient";
 
 const SignUpView: React.FC = () => {
   const { t } = useTranslation();

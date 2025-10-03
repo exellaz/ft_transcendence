@@ -12,7 +12,7 @@ interface ReadyPlayersProps {
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyPlayers.${key}`);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   return (
     <>

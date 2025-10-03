@@ -5,7 +5,6 @@ export const userPublicSelect = {
 	username: true,
 	email: true,
 	avatarUrl: true,
-	// usercode: true,
 	status: true,
 	joinedAt: true,
 	updatedAt: true,
@@ -15,6 +14,4 @@ export const userPublicSelect = {
 export const userSettingsPublicSelect = {
 	userId: true,
 	language: true,
-	textSize: true,
-	inGameCameraTracking: true,
 }

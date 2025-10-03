@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
-import { login, getUserSettingsById } from "../lib/apiClient";
+import { login, getUserSettingsById } from "../lib/usersApiClient";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
