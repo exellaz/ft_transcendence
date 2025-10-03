@@ -27,7 +27,7 @@ export interface TournamentStats {
 }
 
 interface TournamentHistoryEntry {
-  tournamentId: string;
+  tournamentId: number;
   date: string; // ISO date string
   ranking: number;
   matches: MatchDetail[];
@@ -98,7 +98,7 @@ export interface WaitingTournamentPlayer {
 
 // Chat message in tournament lobby
 export interface LiveChatMessage {
-  uid: number;
+  id: number;
   from: string;
   text: string;
   timestamp: string; // ISO string or formatted

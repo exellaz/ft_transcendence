@@ -1,5 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL as string;
-//const API_URL = `/api`;
+const API_URL = import.meta.env.API_BASE as string;
 
 /**
  * @brief generate a random player ID and store it in session storage if not already present

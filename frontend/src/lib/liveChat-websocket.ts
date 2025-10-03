@@ -56,8 +56,8 @@ export function useLiveChatWebSocket(roomId: number, user: { id: number; name: s
                     setMessages((prev) => [
 						...prev,
 						{
-							uid: data.uid || -1,
-							from: data.from || "System",
+							id: data.id || -1,
+							from: data.from || "unknown",
 							text: data.text,
 							timestamp: formatTimestamp(new Date(data.time || Date.now())),
 						}]);

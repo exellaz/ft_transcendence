@@ -8,7 +8,7 @@ import Medals from "./Medals";
 import StatsBadge from "./StatsBadge";
 
 interface ProfileContentsProps {
-  userId: string;
+  userId: number;
 }
 
 const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
@@ -26,7 +26,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
 
   // TODO: Delete when API is integrated
   function getProfileById(
-    userId: string,
+    userId: number,
     data: Profile[]
   ): Profile | undefined {
     return data.find((user) => user.id === userId);

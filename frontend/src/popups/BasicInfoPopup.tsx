@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
-import { getUserById, updateUserById } from "../lib/apiClient";
+import { getUserById, updateUserById } from "../lib/usersApiClient";
 import { formatDate } from "../utils/date";
 // TODO: Remove mock data import when integrating real API
 // import type { BasicInfo } from "../types/apiInterfaces";
@@ -18,11 +18,12 @@ import Header from "../components/Header";
 import Input from "../components/Input";
 import PopupCard from "../components/PopupCard";
 import Status from "../components/Status";
+import type { User } from "../types/usersApi";
 
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
+  userId: number;
 }
 
 const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
@@ -35,7 +36,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading,
     error,
     refetch,
-  } = useApiQuery(() => getUserById({ id: Number(userId) }), [open]);
+  } = useApiQuery<User>(() => getUserById({ id: Number(userId) }), [open]);
 
   // API mutation to update user data
   const { mutate } = useApiMutation(updateUserById);
@@ -58,7 +59,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<BasicInfo | null>(null);
   // function getBasicInfoById(
-  //   userId: string,
+  //   userId: number,
   //   data: BasicInfo[]
   // ): BasicInfo | undefined {
   //   return data.find((user) => user.id === userId);
@@ -75,7 +76,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     setSaveError(null);
 
     const result = await mutate({
-      id: user.id.toString(),
+      id: user.id,
       username: username.trim(),
     });
 

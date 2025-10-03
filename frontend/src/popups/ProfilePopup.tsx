@@ -9,7 +9,7 @@ import ProfileContents from "../components/ProfileContents";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
+  userId: number;
   variant?: "self" | "other";
 }
 
@@ -21,7 +21,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfilePopup.${key}`);
-  let header =
+  const header =
     variant === "self" ? translate("header") : translate("header_other");
 
   return (

@@ -15,24 +15,12 @@ datasource db {
 enum FriendshipStatus {
   pending
   accepted
-  blocked
-}
-
-enum CameraTracking {
-  static
-  dynamic
 }
 
 enum Language {
   english
   simplified_chinese
   traditional_chinese
-}
-
-enum TextSize {
-  small
-  medium
-  large
 }
 
 enum userStatus {
@@ -47,16 +35,19 @@ model User {
   username   String         @unique
   password   String
   email      String         @unique
-  avatarUrl  String?        @map("avatar_url")
-  // usercode   String         @unique      // 6-digit code (Prisma can enforce unique, but not "must be 6 digits")
+  avatarUrl  String         @default("/assets/default_avatar") @map("avatar_url")
   status     userStatus     @default(offline) @map("status")
   joinedAt   DateTime       @default(now()) @map("joined_at")
   updatedAt  DateTime       @default(now()) @map("updated_at")
 
   // Relations
   settings   UserSettings?
-  friendshipsUser   Friendship[] @relation("UserFriends")
-  friendshipsFriend Friendship[] @relation("FriendUsers")
+
+  sentFriendships     Friendship[] @relation("FriendshipRequester")
+  receivedFriendships Friendship[] @relation("FriendshipAccepter")
+
+  blockedUsers       BlockedFriendship[] @relation("Blocks")   // people I blocked
+  blockedBy          BlockedFriendship[] @relation("BlockedBy") // people who blocked me
 
   @@map("users")
 }
@@ -64,8 +55,6 @@ model User {
 model UserSettings {
   userId    Int                       @id @map("user_id")
   language  Language                  @default(english)
-  textSize  TextSize                  @default(medium) @map("text_size")
-  inGameCameraTracking CameraTracking @default(static) @map("in_game_camera_tracking")
 
   // Relation
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -75,18 +64,33 @@ model UserSettings {
 
 model Friendship {
   id        Int               @id @default(autoincrement())
-  userId    Int               @map("user_id")
-  friendId  Int               @map("friend_id")
+  requesterId    Int               @map("user_id")
+  accepterId  Int               @map("friend_id")
   status    FriendshipStatus  @default(pending)
   createdAt DateTime          @default(now()) @map("created_at")
   updatedAt DateTime          @default(now()) @map("updated_at")
 
   // Relations
-  user      User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
-  friend    User @relation("FriendUsers", fields: [friendId], references: [id], onDelete: Cascade)
+  requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  accepter    User @relation("FriendshipAccepter", fields: [accepterId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, friendId], name: "uq_friendship")
+  @@unique([requesterId, accepterId], name: "uq_friendship")
   @@map("friendships")
-  @@index([userId], name: "idx_friendships_user")
-  @@index([friendId], name: "idx_friendships_friend")
+  @@index([requesterId], name: "idx_friendships_requester")
+  @@index([accepterId], name: "idx_friendships_accepter")
 }
+
+model BlockedFriendship {
+  id        Int               @id @default(autoincrement())
+  blockerId    Int               @map("blocker_id")
+  blockedId  Int               @map("blocked_id")
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  blocker   User @relation("Blocks", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId], name: "uq_blocked_friendship")
+
+  @@map("blocked_user")
+}
+

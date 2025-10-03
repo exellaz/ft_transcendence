@@ -60,7 +60,7 @@ export default async function liveChatRoutes(fastify: any) {
 					}
 					const chatMsg = {
 						type: "chat",
-						uid: msg.uid, //client id from client
+						id: msg.uid, //client id from client
 						from: msg.from, //client id from client
 						text: msg.text, //text from client
 						time: Date.now(),
@@ -78,7 +78,7 @@ export default async function liveChatRoutes(fastify: any) {
 					}
 					const systemMsg = {
 						type: "chat",
-						uid: "system", //client id from client
+						id: "system", //client id from client
 						from: "System",
 						text: msg.text, //text from client
 						time: Date.now(),

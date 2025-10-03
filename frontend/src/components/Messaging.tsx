@@ -10,7 +10,7 @@ import Button from "./Button";
 
 interface MessagingProps {
   friendBasic: FriendBasic;
-  friendId: string;
+  friendId: number;
   onProfileClick?: () => void;
 }
 
@@ -35,9 +35,9 @@ const Messaging: React.FC<MessagingProps> = ({
   // const userId = useUser().user?.id;
     
   // TODO: Delete when API is integrated
-  const userId = "0";
+  const userId = 0;
   function getFriendMessagingById(
-    friendId: string,
+    friendId: number,
     data: FriendMessaging[]
   ): FriendMessaging | undefined {
     return data.find((friend) => friend.id === friendId);

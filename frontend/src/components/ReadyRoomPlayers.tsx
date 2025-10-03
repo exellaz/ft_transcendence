@@ -22,7 +22,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // Separate players into left and right teams
   const leftTeamPlayers = players.filter((player: WaitingRoomPlayer) => player.team === "left");

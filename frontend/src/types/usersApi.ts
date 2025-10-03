@@ -1,6 +1,8 @@
+import type { ApiResponse } from "./apiResponse";
+
 export type UserStatus = "online" | "offline" | "ingame";
 
-export type Language = "english" | "chinese" | "malay";
+export type Language = "english" | "simplified_chinese" | "traditional_chinese";
 
 export interface User {
   id: number;
@@ -20,12 +22,6 @@ export interface UserSettings {
 export interface LoginData {
   token: string;
   user: User;
-}
-
-export interface ApiResponse<T> {
-	success: boolean;
-	data?: T;
-	error?: string;
 }
 
 // ----------------------- API ENDPOINTS -------------------------
@@ -58,10 +54,8 @@ export interface GetUserSettingsResponse extends ApiResponse<UserSettings> {}
 
 // PATCH /users/:id/settings
 export interface UpdateUserSettingsRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   language?: string;       // optional
-  textSize?: string;          // optional
-  inGameCameraTracking?: string;      // optional
 }
 
 export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}

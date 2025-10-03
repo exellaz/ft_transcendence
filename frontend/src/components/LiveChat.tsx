@@ -39,8 +39,8 @@ const LiveChat: React.FC<{
 
   // Helper function to get display name for a message
   const getDisplayName = (msg: LiveChatMessage) => {
-    if (msg.uid === "system") return "System"; // System messages
-    const player = players.find((p: any) => p.id === msg.uid); // Find player by uid
+    if (msg.id === -1) return "System"; // System messages
+    const player = players.find((p: WaitingTournamentPlayer) => p.id === msg.id); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };
 
@@ -56,7 +56,7 @@ const LiveChat: React.FC<{
         {chatMessages.map((msg, idx) => (
           <div key={idx} className="mb-2">
             <div className="flex items-baseline justify-between flex-wrap">
-              <span className={`font-bold ${getUserColor(msg.uid)}`}>
+              <span className={`font-bold ${getUserColor(msg.id)}`}>
                 {getDisplayName(msg)}:
               </span>{" "}
               <span className="text-gray-400 text-xs">{msg.timestamp}</span>

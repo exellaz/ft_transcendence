@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useUser } from "../../context/UserProvider";
-import { getUserById } from "../../lib/apiClient"; // Import the function
+import { getUserById } from "../../lib/usersApiClient"; // Import the function
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
-import type { User } from "../../types/api"; // Import the User type
+import type { User } from "../../types/usersApi"; // Import the User type
 
 // components
 import Button from "../../components/Button";
