@@ -5,8 +5,8 @@ import { useUser } from "../context/UserProvider";
 import Background from "../components/Background";
 import Button from "../components/Button";
 
+import FriendsPopup from "../popups/FriendsPopup";
 import GameSettingsPopup, { type GameSettings } from "../popups/GameSettingsPopup";
-import InviteFriendsPopup from "../popups/InviteFriendsPopup";
 
 interface RoomLayoutProps {
   gameSettings: GameSettings;
@@ -40,9 +40,10 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ gameSettings, onGameSettingsCha
         settings={gameSettings}
         onChange={onGameSettingsChange}
       />
-      <InviteFriendsPopup
+      <FriendsPopup
         open={showInviteFriends}
         onClose={() => setShowInviteFriends(false)}
+        userId={userId}
       />
     </Background>
   );

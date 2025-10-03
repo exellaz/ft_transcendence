@@ -22,7 +22,7 @@ interface PopupProps {
   userId: number;
 }
 
-const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
+const OldFriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // TODO: Replace with real data from context or props
   const [selectedUser, setSelectedUser] = useState<
     FriendBasic | BlockedUser | FriendRequest | null
@@ -240,4 +240,4 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   );
 };
 
-export default FriendsPopup;
+export default OldFriendsPopup;

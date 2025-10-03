@@ -47,7 +47,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         onClose={() => setShowTournamentStats(false)}
         userId={userId}
       />
-      <FriendsPopup open={showFriends} onClose={() => setShowFriends(false)} />
+      <FriendsPopup
+        open={showFriends}
+        onClose={() => setShowFriends(false)}
+        userId={userId}
+      />
     </Background>
   );
 };

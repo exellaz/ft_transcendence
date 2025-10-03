@@ -247,7 +247,7 @@
     "game_settings": "Game Settings",
     "invite_friends": "Invite Friends"
   },
-  "SocialHub": {
+  "FriendsPopup": {
     "tabs": {
       "friends": "Friends",
       "requests": "Requests",
