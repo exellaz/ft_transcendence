@@ -3,7 +3,7 @@
     "camera": {
       "position": {
         "className": "Point2D",
-        "x": 67.59385250232262,
+        "x": 0,
         "y": 0
       }
     },
@@ -13,96 +13,90 @@
         "className": "ball",
         "id": 0,
         "position": {
-          "x": -63.15,
+          "x": 0,
           "y": 0
         }
       },
       {
+        "id": 1,
         "position": {
-          "x": 67.59,
+          "x": 0,
           "y": 0
         },
         "className": "camera"
       },
       {
-        "id": 2,
-        "position": {
-          "x": -250,
-          "y": 198
-        }
-      },
-      {
-        "id": 8,
-        "position": {
-          "x": 250,
-          "y": 198
-        }
-      },
-      {
-        "id": 14,
-        "position": {
-          "x": -650,
-          "y": 198
-        }
-      },
-      {
-        "id": 20,
-        "position": {
-          "x": 650,
-          "y": 198
-        }
-      },
-      {
         "className": "OnScreenLabel",
-        "id": 26,
+        "id": 2,
         "position": {
           "x": 0,
           "y": 0
         },
         "scale": {
-          "x": 9.999999999999996,
-          "y": 9.999999999999996
+          "x": 9.87029633073173,
+          "y": 9.87029633073173
         },
-        "text": ""
+        "text": "LOADING..."
       },
       {
         "className": "label",
-        "id": 27,
+        "id": 3,
         "position": {
           "x": -50,
           "y": 0
         },
-        "text": "2"
+        "text": "0"
       },
       {
         "className": "label",
-        "id": 28,
+        "id": 4,
         "position": {
           "x": 50,
           "y": 0
         },
-        "text": "1"
+        "text": "0"
       },
       {
-        "id": 33,
+        "id": 9,
         "position": {
           "x": 0,
           "y": -230
         }
       },
       {
-        "id": 34,
+        "id": 10,
         "position": {
           "x": 0,
           "y": -230
+        }
+      },
+      {
+        "id": 11,
+        "position": {
+          "x": -250,
+          "y": 0
+        }
+      },
+      {
+        "id": 17,
+        "position": {
+          "x": 250,
+          "y": 0
+        }
+      },
+      {
+        "id": 23,
+        "position": {
+          "x": -650,
+          "y": 0
         }
       }
     ],
     "type": "partial"
   },
   "metadata": {
-    "timestamp": 1759468680474,
-    "delta": 0.018152377000002162,
+    "timestamp": 1759486654360,
+    "delta": 0.01741903100000036,
     "fps": 0
   }
 }

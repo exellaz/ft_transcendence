@@ -22,6 +22,7 @@
         ]
       },
       {
+        "id": 1,
         "position": {
           "x": 0,
           "y": 0
@@ -29,538 +30,18 @@
         "className": "camera"
       },
       {
-        "name": "",
-        "id": 2,
-        "position": {
-          "x": -250,
-          "y": 0
-        },
-        "scale": {
-          "x": 60,
-          "y": 60
-        },
-        "rotation": 0,
-        "zIndex": 10,
-        "children": [
-          3,
-          4,
-          6,
-          7
-        ],
-        "components": [
-          3,
-          4
-        ],
-        "player": {
-          "className": "player",
-          "name": "test",
-          "profileImage": "",
-          "skin": 0,
-          "id": 0
-        }
-      },
-      {
-        "id": 3,
-        "name": "label",
-        "className": "label",
-        "position": {
-          "x": 0,
-          "y": -40
-        },
-        "scale": {
-          "x": 10,
-          "y": 10
-        },
-        "rotation": 0,
-        "text": "test",
-        "font": "bold 15px Century Gothic",
-        "color": "#ffffff",
-        "outline": {
-          "strokeStyle": "black"
-        }
-      },
-      {
-        "className": "arrow",
-        "team": 0,
-        "id": 4,
-        "scale": {
-          "x": 27,
-          "y": 32
-        },
-        "components": [
-          5
-        ],
-        "text": "test",
-        "skin": 0,
-        "zIndex": 100
-      },
-      {
-        "id": 6,
-        "className": "imageObject",
-        "sprite": {
-          "id": 6,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/eyes.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": 3,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 1.7
-        }
-      },
-      {
-        "id": 7,
-        "className": "imageObject",
-        "sprite": {
-          "id": 8,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/iris.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": 6,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 2.5
-        }
-      },
-      {
-        "name": "",
-        "id": 8,
-        "position": {
-          "x": 250,
-          "y": 30
-        },
-        "scale": {
-          "x": 60,
-          "y": 60
-        },
-        "rotation": 0,
-        "zIndex": 10,
-        "children": [
-          9,
-          10,
-          12,
-          13
-        ],
-        "components": [
-          10,
-          11
-        ],
-        "player": {
-          "className": "player",
-          "name": "player2",
-          "profileImage": "",
-          "skin": 1,
-          "id": 1
-        }
-      },
-      {
-        "id": 9,
-        "name": "label",
-        "className": "label",
-        "position": {
-          "x": 0,
-          "y": -40
-        },
-        "scale": {
-          "x": 10,
-          "y": 10
-        },
-        "rotation": 0,
-        "text": "player2",
-        "font": "bold 15px Century Gothic",
-        "color": "#ffffff",
-        "outline": {
-          "strokeStyle": "black"
-        }
-      },
-      {
-        "className": "arrow",
-        "team": 1,
-        "id": 10,
-        "scale": {
-          "x": 27,
-          "y": 32
-        },
-        "components": [
-          12
-        ],
-        "text": "player2",
-        "skin": 1,
-        "zIndex": 100
-      },
-      {
-        "id": 12,
-        "className": "imageObject",
-        "sprite": {
-          "id": 13,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/eyes.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": -3,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 1.7
-        }
-      },
-      {
-        "id": 13,
-        "className": "imageObject",
-        "sprite": {
-          "id": 15,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/iris.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": -6,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 2.5
-        }
-      },
-      {
-        "name": "",
-        "id": 14,
-        "position": {
-          "x": -650,
-          "y": 60
-        },
-        "scale": {
-          "x": 60,
-          "y": 60
-        },
-        "rotation": 0,
-        "zIndex": 10,
-        "children": [
-          15,
-          16,
-          18,
-          19
-        ],
-        "components": [
-          17,
-          18
-        ],
-        "player": {
-          "className": "player",
-          "name": "player3",
-          "profileImage": "",
-          "skin": 2,
-          "id": 2
-        }
-      },
-      {
-        "id": 15,
-        "name": "label",
-        "className": "label",
-        "position": {
-          "x": 0,
-          "y": -40
-        },
-        "scale": {
-          "x": 10,
-          "y": 10
-        },
-        "rotation": 0,
-        "text": "player3",
-        "font": "bold 15px Century Gothic",
-        "color": "#ffffff",
-        "outline": {
-          "strokeStyle": "black"
-        }
-      },
-      {
-        "className": "arrow",
-        "team": 0,
-        "id": 16,
-        "scale": {
-          "x": 27,
-          "y": 32
-        },
-        "components": [
-          19
-        ],
-        "text": "player3",
-        "skin": 2,
-        "zIndex": 100
-      },
-      {
-        "id": 18,
-        "className": "imageObject",
-        "sprite": {
-          "id": 20,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/eyes.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": 3,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 1.7
-        }
-      },
-      {
-        "id": 19,
-        "className": "imageObject",
-        "sprite": {
-          "id": 22,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/iris.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": 6,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 2.5
-        }
-      },
-      {
-        "name": "",
-        "id": 20,
-        "position": {
-          "x": 650,
-          "y": 0
-        },
-        "scale": {
-          "x": 60,
-          "y": 60
-        },
-        "rotation": 0,
-        "zIndex": 10,
-        "children": [
-          21,
-          22,
-          24,
-          25
-        ],
-        "components": [
-          24,
-          25
-        ],
-        "player": {
-          "className": "player",
-          "name": "player4",
-          "profileImage": "",
-          "skin": 3,
-          "id": 3
-        }
-      },
-      {
-        "id": 21,
-        "name": "label",
-        "className": "label",
-        "position": {
-          "x": 0,
-          "y": -40
-        },
-        "scale": {
-          "x": 10,
-          "y": 10
-        },
-        "rotation": 0,
-        "text": "player4",
-        "font": "bold 15px Century Gothic",
-        "color": "#ffffff",
-        "outline": {
-          "strokeStyle": "black"
-        }
-      },
-      {
-        "className": "arrow",
-        "team": 1,
-        "id": 22,
-        "scale": {
-          "x": 27,
-          "y": 32
-        },
-        "components": [
-          26
-        ],
-        "text": "player4",
-        "skin": 3,
-        "zIndex": 100
-      },
-      {
-        "id": 24,
-        "className": "imageObject",
-        "sprite": {
-          "id": 27,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/eyes.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": -3,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 1.7
-        }
-      },
-      {
-        "id": 25,
-        "className": "imageObject",
-        "sprite": {
-          "id": 29,
-          "name": "sprite",
-          "imagePath": "./assets/skins/components/iris.png",
-          "flippedHorizontal": false,
-          "opacity": 1,
-          "blendMode": "source-over"
-        },
-        "zIndex": 0,
-        "position": {
-          "x": 0,
-          "y": 0
-        },
-        "scaleFactor": {
-          "x": 0.48,
-          "y": 0.48
-        },
-        "interpolate": {
-          "targetOffset": {
-            "x": -6,
-            "y": -3
-          },
-          "clamp": {
-            "x": 7,
-            "y": 7
-          },
-          "slowness": 2.5
-        }
-      },
-      {
         "name": "label",
         "className": "OnScreenLabel",
-        "id": 26,
+        "id": 2,
         "position": {
           "x": 0,
           "y": 0
         },
         "scale": {
-          "x": 10,
-          "y": 10
+          "x": 9.381524709376,
+          "y": 9.381524709376
         },
-        "text": "Loading...",
+        "text": "LOADING.",
         "font": "75px Impact",
         "color": "#ffffff",
         "zIndex": 100,
@@ -571,7 +52,7 @@
       {
         "name": "label",
         "className": "label",
-        "id": 27,
+        "id": 3,
         "position": {
           "x": -50,
           "y": 0
@@ -588,7 +69,7 @@
       {
         "name": "label",
         "className": "label",
-        "id": 28,
+        "id": 4,
         "position": {
           "x": 50,
           "y": 0
@@ -603,10 +84,10 @@
         "zIndex": -10
       },
       {
-        "id": 29,
+        "id": 5,
         "className": "imageObject",
         "sprite": {
-          "id": 31,
+          "id": 3,
           "name": "sprite",
           "imagePath": "assets/maps/map1/goalpost.png",
           "flippedHorizontal": true,
@@ -615,7 +96,7 @@
         },
         "zIndex": 0,
         "position": {
-          "x": -850,
+          "x": -1650,
           "y": 0
         },
         "scaleFactor": {
@@ -635,10 +116,10 @@
         }
       },
       {
-        "id": 30,
+        "id": 6,
         "className": "imageObject",
         "sprite": {
-          "id": 33,
+          "id": 5,
           "name": "sprite",
           "imagePath": "assets/maps/map1/goalpost.png",
           "flippedHorizontal": false,
@@ -647,7 +128,7 @@
         },
         "zIndex": 0,
         "position": {
-          "x": 850,
+          "x": 1650,
           "y": 0
         },
         "scaleFactor": {
@@ -667,10 +148,10 @@
         }
       },
       {
-        "id": 31,
+        "id": 7,
         "className": "imageObject",
         "sprite": {
-          "id": 35,
+          "id": 7,
           "name": "sprite",
           "imagePath": "assets/maps/map1/floor3.png",
           "flippedHorizontal": false,
@@ -699,10 +180,10 @@
         }
       },
       {
-        "id": 32,
+        "id": 8,
         "className": "imageObject",
         "sprite": {
-          "id": 37,
+          "id": 9,
           "name": "sprite",
           "imagePath": "assets/maps/map1/shadow.png",
           "flippedHorizontal": false,
@@ -732,7 +213,7 @@
       },
       {
         "name": "",
-        "id": 33,
+        "id": 9,
         "position": {
           "x": 0,
           "y": -230
@@ -744,13 +225,13 @@
         "rotation": 0,
         "zIndex": -20,
         "components": [
-          39
+          11
         ],
         "cUpdate": "moveCrowd"
       },
       {
         "name": "",
-        "id": 34,
+        "id": 10,
         "position": {
           "x": 0,
           "y": -230
@@ -762,9 +243,399 @@
         "rotation": 0,
         "zIndex": -20,
         "components": [
-          40
+          12
         ],
         "cUpdate": "moveCrowd"
+      },
+      {
+        "name": "",
+        "id": 11,
+        "position": {
+          "x": -250,
+          "y": 0
+        },
+        "scale": {
+          "x": 60,
+          "y": 60
+        },
+        "rotation": 0,
+        "zIndex": 10,
+        "children": [
+          12,
+          13,
+          15,
+          16
+        ],
+        "components": [
+          13,
+          14
+        ],
+        "player": {
+          "className": "player",
+          "name": "test",
+          "profileImage": "",
+          "skin": 0,
+          "id": 4
+        }
+      },
+      {
+        "id": 12,
+        "name": "label",
+        "className": "label",
+        "position": {
+          "x": 0,
+          "y": -40
+        },
+        "scale": {
+          "x": 10,
+          "y": 10
+        },
+        "rotation": 0,
+        "text": "test",
+        "font": "bold 15px Century Gothic",
+        "color": "#ffffff",
+        "outline": {
+          "strokeStyle": "black"
+        }
+      },
+      {
+        "className": "arrow",
+        "team": 0,
+        "id": 13,
+        "scale": {
+          "x": 27,
+          "y": 32
+        },
+        "components": [
+          15
+        ],
+        "text": "test",
+        "skin": 0,
+        "zIndex": 100
+      },
+      {
+        "id": 15,
+        "className": "imageObject",
+        "sprite": {
+          "id": 16,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/eyes.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": 3,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 1.7
+        }
+      },
+      {
+        "id": 16,
+        "className": "imageObject",
+        "sprite": {
+          "id": 18,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/iris.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": 6,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 2.5
+        }
+      },
+      {
+        "name": "",
+        "id": 17,
+        "position": {
+          "x": 250,
+          "y": 0
+        },
+        "scale": {
+          "x": 60,
+          "y": 60
+        },
+        "rotation": 0,
+        "zIndex": 10,
+        "children": [
+          18,
+          19,
+          21,
+          22
+        ],
+        "components": [
+          20,
+          21
+        ],
+        "player": {
+          "className": "player",
+          "name": "player2",
+          "profileImage": "",
+          "skin": 1,
+          "id": 5
+        }
+      },
+      {
+        "id": 18,
+        "name": "label",
+        "className": "label",
+        "position": {
+          "x": 0,
+          "y": -40
+        },
+        "scale": {
+          "x": 10,
+          "y": 10
+        },
+        "rotation": 0,
+        "text": "player2",
+        "font": "bold 15px Century Gothic",
+        "color": "#ffffff",
+        "outline": {
+          "strokeStyle": "black"
+        }
+      },
+      {
+        "className": "arrow",
+        "team": 1,
+        "id": 19,
+        "scale": {
+          "x": 27,
+          "y": 32
+        },
+        "components": [
+          22
+        ],
+        "text": "player2",
+        "skin": 1,
+        "zIndex": 100
+      },
+      {
+        "id": 21,
+        "className": "imageObject",
+        "sprite": {
+          "id": 23,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/eyes.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": -3,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 1.7
+        }
+      },
+      {
+        "id": 22,
+        "className": "imageObject",
+        "sprite": {
+          "id": 25,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/iris.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": -6,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 2.5
+        }
+      },
+      {
+        "name": "",
+        "id": 23,
+        "position": {
+          "x": -650,
+          "y": 0
+        },
+        "scale": {
+          "x": 60,
+          "y": 60
+        },
+        "rotation": 0,
+        "zIndex": 10,
+        "children": [
+          24,
+          25,
+          27,
+          28
+        ],
+        "components": [
+          27,
+          28
+        ],
+        "player": {
+          "className": "player",
+          "name": "player3",
+          "profileImage": "",
+          "skin": 2,
+          "id": 6
+        }
+      },
+      {
+        "id": 24,
+        "name": "label",
+        "className": "label",
+        "position": {
+          "x": 0,
+          "y": -40
+        },
+        "scale": {
+          "x": 10,
+          "y": 10
+        },
+        "rotation": 0,
+        "text": "player3",
+        "font": "bold 15px Century Gothic",
+        "color": "#ffffff",
+        "outline": {
+          "strokeStyle": "black"
+        }
+      },
+      {
+        "className": "arrow",
+        "team": 0,
+        "id": 25,
+        "scale": {
+          "x": 27,
+          "y": 32
+        },
+        "components": [
+          29
+        ],
+        "text": "player3",
+        "skin": 2,
+        "zIndex": 100
+      },
+      {
+        "id": 27,
+        "className": "imageObject",
+        "sprite": {
+          "id": 30,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/eyes.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": 3,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 1.7
+        }
+      },
+      {
+        "id": 28,
+        "className": "imageObject",
+        "sprite": {
+          "id": 32,
+          "name": "sprite",
+          "imagePath": "./assets/skins/components/iris.png",
+          "flippedHorizontal": false,
+          "opacity": 1,
+          "blendMode": "source-over"
+        },
+        "zIndex": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scaleFactor": {
+          "x": 0.48,
+          "y": 0.48
+        },
+        "interpolate": {
+          "targetOffset": {
+            "x": 6,
+            "y": -3
+          },
+          "clamp": {
+            "x": 7,
+            "y": 7
+          },
+          "slowness": 2.5
+        }
       }
     ],
     "components": [
@@ -789,11 +660,27 @@
         }
       },
       {
-        "id": 3,
+        "id": 11,
+        "name": "sprite",
+        "imagePath": "assets/maps/map1/crowd.png",
+        "flippedHorizontal": false,
+        "opacity": 1,
+        "blendMode": "source-over"
+      },
+      {
+        "id": 12,
+        "name": "sprite",
+        "imagePath": "assets/maps/map1/crowd2.png",
+        "flippedHorizontal": false,
+        "opacity": 1,
+        "blendMode": "source-over"
+      },
+      {
+        "id": 13,
         "name": "hitbox"
       },
       {
-        "id": 4,
+        "id": 14,
         "name": "sprite",
         "imagePath": "assets/skins/ghost_dark.png",
         "flippedHorizontal": true,
@@ -809,7 +696,7 @@
         }
       },
       {
-        "id": 5,
+        "id": 15,
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_yellow.png",
         "flippedHorizontal": true,
@@ -817,11 +704,11 @@
         "blendMode": "source-over"
       },
       {
-        "id": 10,
+        "id": 20,
         "name": "hitbox"
       },
       {
-        "id": 11,
+        "id": 21,
         "name": "sprite",
         "imagePath": "assets/skins/ghost_green.png",
         "flippedHorizontal": false,
@@ -837,7 +724,7 @@
         }
       },
       {
-        "id": 12,
+        "id": 22,
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_green.png",
         "flippedHorizontal": false,
@@ -845,11 +732,11 @@
         "blendMode": "source-over"
       },
       {
-        "id": 17,
+        "id": 27,
         "name": "hitbox"
       },
       {
-        "id": 18,
+        "id": 28,
         "name": "sprite",
         "imagePath": "assets/skins/ghost_blue.png",
         "flippedHorizontal": true,
@@ -865,54 +752,10 @@
         }
       },
       {
-        "id": 19,
+        "id": 29,
         "name": "sprite",
         "imagePath": "assets/skins/arrows/arrow_blue.png",
         "flippedHorizontal": true,
-        "opacity": 1,
-        "blendMode": "source-over"
-      },
-      {
-        "id": 24,
-        "name": "hitbox"
-      },
-      {
-        "id": 25,
-        "name": "sprite",
-        "imagePath": "assets/skins/ghost_red.png",
-        "flippedHorizontal": false,
-        "opacity": 1,
-        "blendMode": "source-over",
-        "glow": {
-          "className": "glow",
-          "Color": "#6881a8",
-          "Blur": 10,
-          "OffsetX": 0,
-          "OffsetY": 5,
-          "blendMode": "multiply"
-        }
-      },
-      {
-        "id": 26,
-        "name": "sprite",
-        "imagePath": "assets/skins/arrows/arrow_red.png",
-        "flippedHorizontal": false,
-        "opacity": 1,
-        "blendMode": "source-over"
-      },
-      {
-        "id": 39,
-        "name": "sprite",
-        "imagePath": "assets/maps/map1/crowd.png",
-        "flippedHorizontal": false,
-        "opacity": 1,
-        "blendMode": "source-over"
-      },
-      {
-        "id": 40,
-        "name": "sprite",
-        "imagePath": "assets/maps/map1/crowd2.png",
-        "flippedHorizontal": false,
         "opacity": 1,
         "blendMode": "source-over"
       }
@@ -920,8 +763,8 @@
     "type": "full"
   },
   "metadata": {
-    "timestamp": 1759468665148,
-    "delta": 0.018995983999999907,
+    "timestamp": 1759486652196,
+    "delta": 0.018639987000000476,
     "fps": 0
   }
 }

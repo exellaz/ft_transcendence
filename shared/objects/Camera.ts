@@ -36,6 +36,7 @@ export class Camera extends GameObject {
 
     export() {
         return {
+            id: this.id,
             position: this.position.export(),
             className: this.className
         }

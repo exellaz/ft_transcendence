@@ -4,6 +4,7 @@ import { WebSocket, RawData } from "ws";  // 👈 use ws types
 
 import { writeFileSync } from "fs";
 import { GameSettings, PongGame } from "./game/pong";
+import { Player } from "./game/Player";
 
 const clients = new Set<Client>();
 
@@ -42,10 +43,18 @@ const players: Player[] = [
   },
 ]
 
+let DEBUG_playerIndex = 0;
 
 
+const settings = new GameSettings();
+// settings.ballSpeed = 1000;
 
-const pongGame = new PongGame(clients, false, players, new GameSettings());
+const pongGame = new PongGame(
+  clients, 
+  false, 
+  players, 
+  settings
+);
 
 function compile(includeStaticObjects: boolean) {
   const state = pongGame.exportState(includeStaticObjects);
@@ -105,10 +114,10 @@ function updateGameObjects() {
     if (client.socket && client.socket.readyState === 1) {
       try {
         if (client.handshakeComplete && client.receivedFullState) {
-          console.log("message sent");
           client.socket.send(output);
         }
         while (client.outputQueue.length > 0) {
+          console.log("sent full state");
           client.socket.send(client.outputQueue.shift()!);
         }
       } catch (e) {
@@ -124,9 +133,46 @@ function updateGameObjects() {
 async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
 
+
   fastify.get("/ws", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     if (!socket)
       return req.log.info("Received normal HTTP request to /ws — ignoring");
+
+
+    function onMessage(msg: Record<string, any>) {
+      const data = JSON.parse(msg.toString());
+
+      if (data["type"] === "ready") {
+        console.log("✅ Client handshake complete");
+        player.handshakeComplete = true; // mark ready
+
+        console.log(JSON.stringify(data, null, 2));
+
+        player.socket!.send(JSON.stringify({
+          type: "ready",
+          payload: {}
+        }));
+
+        const newPlayer = new Player(players[DEBUG_playerIndex++]);
+        pongGame.addPlayer(newPlayer);
+        for (const client of clients) {
+          client.outputQueue.push(compile(true));
+        }
+      }
+
+      else if (data["type"] === "received_full_state") {
+        player.receivedFullState = true;
+      }
+
+      else {
+        console.log(JSON.stringify(data, null, 2));
+      }
+
+
+      
+
+      player.update(data); // update this player's state only
+    }
 
     const player = new Client();
     player.game = pongGame;
@@ -135,41 +181,16 @@ async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     clients.add(player);
     console.log("!!! Client connected");
 
-    socket.on("open", () => {
-      console.log("open");
-    })
-
-    socket.on("message", (msg: Record<string, any>) => {
-      const data = JSON.parse(msg.toString());
-      
-      if (data["type"] === "ready") {
-        console.log("✅ Client handshake complete");
-        player.handshakeComplete = true; // mark ready
-        
-        console.log(JSON.stringify(data, null, 2));
-
-        player.socket!.send(JSON.stringify({
-          type: "ready",
-          payload: {}
-        }));
-      }
-      if (data["type"] === "received_full_state") {
-        player.receivedFullState = true;
-      }
-      player.update(data); // update this player's state only
-    });
-
-    socket.on("close", () => {
-      clients.delete(player);
-    });
+    socket.on("open", () => { console.log("started"); })
+    socket.on("message", onMessage);
+    socket.on("close", () => { clients.delete(player); });
   });
 }
-
 
 const TICK_RATE = 1000 / 55; // 60 FPS
 setInterval(updateGameObjects, TICK_RATE);
 
-pongGame.startGame();
+// pongGame.startGame();
 
 
 export default gameRoutes;

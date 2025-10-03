@@ -13,7 +13,7 @@ import { GameObject } from "@shared/objects/GameObject";
 import { Arrow } from "@shared/game/Padel";
 import { Player } from "@shared/game/Player";
 import { Point2D, Vector2D } from "@shared/objects/Coordinates";
-import { PongGame, Team } from "@shared/game/pong";
+import { GameSettings, PongGame, Team } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
@@ -22,6 +22,10 @@ import type { Camera } from "@shared/objects/Camera";
 function isArrowKey(e: KeyboardEvent): boolean {
 	return e.key === "ArrowUp" || e.key === "ArrowDown";
 }
+
+
+
+// TODO not populating data beyond the initial handshake
 
 
 const componentMap: Record<string, new (params: any) => any> = {
@@ -107,6 +111,9 @@ function genericUpdate(
 
 		// -- assign primitive or different value --
 		else {
+			if (key === "id"){
+				continue;
+			}
 			obj[key] = value;
 		}
 	}
@@ -119,15 +126,18 @@ class GameClient {
 	private data: Record<string, any> = {};
 	private gameObjectRegistry = (new Map<number, GameObject>());
 	private componentRegistry = (new Map<number, Component>());
-	private game: PongGame = new PongGame(null, true, []);
+	private game: PongGame = new PongGame(null, true, [], new GameSettings);
 	private viewport: Viewport | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private ctx: CanvasRenderingContext2D | null = null;
 
+	private needToProcessFullState:boolean = false;
+
 	handleKey(e: KeyboardEvent) {
-		console.log("test");
-		if (isArrowKey(e) && this.websocketRef?.readyState === WebSocket.OPEN)
+		if (isArrowKey(e) && this.websocketRef?.readyState === WebSocket.OPEN) {
 			this.sendData("input", { key: e.key, action: e.type });
+			console.log("sent input");
+		}
 	}
 
 	sendData(type: string, payload: Record<string, any> = {}) {
@@ -168,8 +178,13 @@ class GameClient {
 		}
 
 		this.websocketRef.onmessage = (event) => {
-			this.data = JSON.parse(event.data);
-			console.log(this.data);
+
+			let data = JSON.parse(event.data);
+
+			if (!this.needToProcessFullState)
+				this.data = data;
+
+
 
 			if (this.data["type"] === "ready") {
 				this.sendData("fetch_world");
@@ -177,8 +192,26 @@ class GameClient {
 
 			if (!this.data["state"]) 
 				return;
-			if (this.data["state"]["type"] === "full") 
+			if (this.data["state"]["type"] === "full") {
+				console.log("---- received full state ---- ");
+				let incomingData = (this.data["state"]["gameObjects"].map( (elem) => {
+					return elem.id;
+				}));
+				let currentData = Array.from(this.gameObjectRegistry.keys());
+				let incomingLen = incomingData.length;
+
+				console.log(`incoming objects length :${incomingLen} / current objects length ${this.gameObjectRegistry.size}`);
+				console.log(`incoming ids :${incomingData}`);
+				console.log(`current ids :${currentData}`);
+				console.log("object ids", this.gameObjectRegistry.keys());
+
+				for (const id of incomingData) {
+					console.log(this.getObject(id) === undefined);
+				}
+
+				this.needToProcessFullState = true;
 				this.sendData("received_full_state");
+			}
 		};
 
 		this.websocketRef.onclose = () => console.log("❌ Disconnected");
@@ -235,10 +268,11 @@ class GameClient {
 			const id = stateObject["id"];
 			let obj = this.getObject(id);
 
-			if (!obj) {
+			if (obj === undefined) {
 				// hydrate only once
+				console.log("creating new instance");
 				const revivedObject = revive(stateObject);
-				this.createNewInstance(revivedObject);
+				this.setObject(stateObject["id"], this.createNewInstance(revivedObject));
 			}
 
 			else {
@@ -249,6 +283,7 @@ class GameClient {
 			}
 		}
 
+		this.needToProcessFullState = false;
 
 		// Replace any numeric IDs with object references
 		for (const [id, object] of this.gameObjectRegistry) {
@@ -296,8 +331,6 @@ class GameClient {
 		const objectInstance = gameObjectMap[object.className] ?
 			new gameObjectMap[object.className](params) :
 			new GameObject(params);
-		this.setObject(object["id"], objectInstance);
-
 		return objectInstance;
 	}
 
@@ -315,8 +348,12 @@ class GameClient {
 			clientObj.draw(this.viewport!);
 	}
 
-	getObject(id: number) { return this.gameObjectRegistry.get(id); }
-	setObject(id: number, object: any) { this.gameObjectRegistry.set(id, object); }
+getObject(id: number) { 
+	return this.gameObjectRegistry.get(id); 
+}
+setObject(id: number, object: any) { 
+	this.gameObjectRegistry.set(id, object); 
+}
 }
 
 const GameView: React.FC = () => {

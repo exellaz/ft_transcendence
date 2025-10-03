@@ -74,7 +74,7 @@ export class Padel extends GameObject {
 		}));
 
 		this.maximumVelocity = new Vector2D(
-			this.game.gameSettings.playerAcceleration
+			this.game!.gameSettings!.playerAcceleration
 		).multiply(10);
 
 		// add shadow	
@@ -89,7 +89,7 @@ export class Padel extends GameObject {
 		if (this.team === Team.TEAM_LEFT)
 			this.sprite.flippedHorizontal = true;
 
-		this.maximumVelocity = new Vector2D(this.game.gameSettings.playerAcceleration * 10);
+		this.maximumVelocity = new Vector2D(this.game!.gameSettings!.playerAcceleration * 10);
 
 		this.onUpdate = () => {
 			this.velocity.y *= 0.9;
@@ -97,19 +97,18 @@ export class Padel extends GameObject {
 
 			this.position = clampPosition(this.position, new Vector2D(0, 0), new Vector2D(
 				-1,
-				(this.game.world.viewport.height / 2)
+				(this.game!.world.viewport.height / 2)
 			));
 
-			for (const client of this.game.clients) {
+			this.acceleration.y = 0;
+			for (const client of this.game!.clients) {
 				if (client.keysPressed.has("ArrowUp")) {
-					this.acceleration.y = -this.game.gameSettings.playerAcceleration;
+					this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
 				}
 				else if (client.keysPressed.has("ArrowDown")) {
-					this.acceleration.y = this.game.gameSettings.playerAcceleration;
+					this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
 				}
-
-				else
-					this.acceleration.y = 0;
+					
 			}
 			// let copied = this.sprite.clone();
 			// copied.opacity = 0.1;
