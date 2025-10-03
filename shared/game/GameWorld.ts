@@ -115,7 +115,6 @@ export class GameWorld {
       components.push(...componentJson);
 
       if ("children" in exportedObject) {
-        console.log("<<<", exportedObject);
         if (obj.children && obj.children.length > 0) {
           for (const child of obj.children)
             flatten(child);

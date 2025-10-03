@@ -236,8 +236,8 @@ export class GameObject {
 			try {
 				if (component instanceof Sprite)
 					(component as Sprite).draw(viewport);
-				else if (component instanceof HitBox) 
-					(component as HitBox).draw(viewport);
+				// else if (component instanceof HitBox) 
+				// 	(component as HitBox).draw(viewport);
 			}
 			catch (error: unknown) {
 				console.log("cannot draw: ", error);

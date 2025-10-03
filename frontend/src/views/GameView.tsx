@@ -13,7 +13,7 @@ import { GameObject } from "@shared/objects/GameObject";
 import { Arrow } from "@shared/game/Padel";
 import { Player } from "@shared/game/Player";
 import { Point2D, Vector2D } from "@shared/objects/Coordinates";
-import { PongGame } from "@shared/game/pong";
+import { PongGame, Team } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
@@ -142,14 +142,29 @@ class GameClient {
 		window.removeEventListener("keyup", this.handleKey);
 	}
 
-	constructor(canvasRef: HTMLCanvasElement | null) {
+	constructor(
+		canvasRef: HTMLCanvasElement | null, 
+		socketUrl: string,
+		player: any = {
+			clientId: 1,
+			name: "test",
+			sprite: 1,
+			team: 0
+		}
+	) {
 
-		this.websocketRef = new WebSocket("ws://localhost:3000/ws");
+		this.websocketRef = new WebSocket(socketUrl);
 
 		// -- WEBSOCKET --
 
+		// send initial handshake
 		this.websocketRef.onopen = () => {
-			this.websocketRef?.send(JSON.stringify({ type: "ready" }));
+			this.sendData("ready", {
+				clientId: player.clientId,
+				playerName: player.name,
+				playerSprite: player.sprite,
+				Team: player.team
+			});
 		}
 
 		this.websocketRef.onmessage = (event) => {
@@ -172,13 +187,12 @@ class GameClient {
 		this.handleKey = this.handleKey.bind(this);
 		// -- KEYBOARD --
 
-
 		window.addEventListener("keydown", this.handleKey);
 		window.addEventListener("keyup", this.handleKey);
 
 		this.canvas = canvasRef;
-		if (!this.canvas) return; // exit effect if canvas not ready
-
+		if (!this.canvas) return; 
+		
 		this.ctx = this.canvas.getContext("2d");
 		if (!this.ctx) return;
 
@@ -196,6 +210,7 @@ class GameClient {
 	}
 
 	loop() {
+
 		if (this.data === undefined || this.data["state"] === undefined) {
 			requestAnimationFrame(this.loop);
 			return;
@@ -312,7 +327,7 @@ const GameView: React.FC = () => {
 	const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
 
 	useEffect(() => {
-		let gameClient = new GameClient(canvasRef.current);
+		let gameClient = new GameClient(canvasRef.current, "ws://localhost:3000/ws");
 
 		gameClient.start();
 		return () => {

@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
 import { WebSocket, RawData } from "ws";  // 👈 use ws types
 
 import { writeFileSync } from "fs";
-import { PongGame } from "./game/pong";
+import { GameSettings, PongGame } from "./game/pong";
 
 const clients = new Set<Client>();
 
@@ -45,7 +45,7 @@ const players: Player[] = [
 
 
 
-const pongGame = new PongGame(clients, false, players);
+const pongGame = new PongGame(clients, false, players, new GameSettings());
 
 function compile(includeStaticObjects: boolean) {
   const state = pongGame.exportState(includeStaticObjects);
@@ -141,10 +141,13 @@ async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 
     socket.on("message", (msg: Record<string, any>) => {
       const data = JSON.parse(msg.toString());
+      
       if (data["type"] === "ready") {
         console.log("✅ Client handshake complete");
         player.handshakeComplete = true; // mark ready
         
+        console.log(JSON.stringify(data, null, 2));
+
         player.socket!.send(JSON.stringify({
           type: "ready",
           payload: {}

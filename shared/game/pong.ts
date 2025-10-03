@@ -27,7 +27,7 @@ export class GameTeam {
 	score: number = 0;
 	players: Padel[] = [];
 	goalPostEnd: number = 0;
-	label: Label;
+	label: Label | null = null;
 
 	constructor(
 		public game: PongGame,
@@ -38,8 +38,8 @@ export class GameTeam {
 	
 	win() {
 		this.score++;
-		this.label.text = String(this.score);
-		if (this.score >= this.game.gameSettings.winningScore) {
+		this.label!.text = String(this.score);
+		if (this.score >= this.game.gameSettings!.winningScore) {
 			this.game.teamWins(this);
 		}
 	}
@@ -101,7 +101,7 @@ class GameTitle extends OnScreenLabel {
 	}
 }
 
-class GameSettings {
+export class GameSettings {
 	playerAcceleration: number = 4300;
 	playerCount: number = 2;
 	ballSpeed: number = 500;
@@ -137,13 +137,13 @@ export class PongGame {
 	clients: any[];
 
 	public world: GameWorld = new GameWorld();
-	public gameSettings: GameSettings = new GameSettings();
+	public gameSettings: GameSettings | null = null;
 	public team1: GameTeam = new GameTeam(this, Team.TEAM_LEFT);
 	public team2: GameTeam = new GameTeam(this, Team.TEAM_RIGHT);
 	public fps: number = 0;
 	public delta: number = 0;
-	public onScreenTitle: GameTitle;
-	public ball: Ball;
+	public onScreenTitle: GameTitle | null = null;
+	public ball: Ball | null = null;
 
 	private lastFrameTime: number = performance.now();
 	private ballSpawnCooldown = 0.5;
@@ -151,7 +151,7 @@ export class PongGame {
 	public is2v2: boolean = false;
 
 	state: GameState = GameState.LOADING;
-	winningTeam: GameTeam = null;
+	winningTeam: GameTeam | null = null;
 
 	// -- client-side only --
 	public isClient: boolean = false;
@@ -447,9 +447,10 @@ export class PongGame {
 	players: Player[];
 
 	constructor(
-		clientData,
+		clientData: any,
 		isClient: boolean,
-		players: any[]
+		players: any[],
+		settings: GameSettings,
 	) {
 
 		this.players = [];
