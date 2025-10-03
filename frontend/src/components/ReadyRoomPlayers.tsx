@@ -116,7 +116,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           onClick={onSwitchTeam}
         >
           <img
-            className="h-10 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+            className="h-10 icon-btn"
             src="/assets/switch.png"
             alt="Switch Teams"
             title={translate("switch_teams")}

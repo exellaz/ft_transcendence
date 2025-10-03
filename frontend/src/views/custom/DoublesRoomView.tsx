@@ -19,6 +19,7 @@ import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
 
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
+import type { GameSettings } from "../../popups/GameSettingsPopup";
 
 const DoublesRoomView: React.FC = () => {
   const { t } = useTranslation();
@@ -27,6 +28,12 @@ const DoublesRoomView: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
+  const [gameSettings, setGameSettings] = useState<GameSettings>({
+    map: "stadium",
+    ballSpeed: 2,
+    ballSize: 2,
+    paddleSpeed: 2,
+  });
 
   // TODO: Replace with actual room ID from route or context
   const roomId = "t1";
@@ -60,17 +67,17 @@ const DoublesRoomView: React.FC = () => {
   }
 
   return (
-    <RoomLayout>
+    <RoomLayout
+      gameSettings={gameSettings}
+      onGameSettingsChange={setGameSettings}
+    >
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-10">
           <div className="w-[50%] h-full flex-col-between gap-6">
             <TournamentHeader>
               <div className="flex-row-center gap-2">
                 <p>{translate("doubles_room")}</p>
-                <img
-                  src="/assets/link.png"
-                  className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
-                />
+                <img src="/assets/link.png" className="w-6 h-6 icon-btn" />
               </div>
               <p>
                 ({translate("room_id")}: {roomId})

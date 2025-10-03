@@ -8,8 +8,9 @@ import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
 
 import ChooseSpritePopup from "../../popups/ChooseSpritePopup";
-import GameSettingsPopup from "../../popups/GameSettingsPopup";
-import type { GameSettings } from "../../popups/GameSettingsPopup";
+import GameSettingsPopup, {
+  type GameSettings,
+} from "../../popups/GameSettingsPopup";
 
 interface Player {
   name: string;
@@ -49,7 +50,7 @@ const LocalGameView: React.FC = () => {
     player: Player;
     onClick: () => void;
   }> = ({ player, onClick }) => (
-    <div className="flex-col-center gap-2 cursor-pointer">
+    <div className="flex-col-center gap-2">
       <div className="relative">
         <Avatar src={player.spriteUrl} size={120} />
         <img
@@ -57,7 +58,7 @@ const LocalGameView: React.FC = () => {
           alt="Edit"
           onClick={onClick}
           title={translate("change_sprite")}
-          className="absolute bottom-0 right-0 translate-x-4 translate-y-2 w-6 h-6 mb-2"
+          className="absolute bottom-0 right-0 translate-x-4 translate-y-2 w-8 h-8 icon-btn"
         />
       </div>
       <p>{player.name}</p>

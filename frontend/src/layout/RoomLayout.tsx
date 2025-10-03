@@ -5,14 +5,16 @@ import { useUser } from "../context/UserProvider";
 import Background from "../components/Background";
 import Button from "../components/Button";
 
-import GameSettingsPopup from "../popups/GameSettingsPopup";
+import GameSettingsPopup, { type GameSettings } from "../popups/GameSettingsPopup";
 import InviteFriendsPopup from "../popups/InviteFriendsPopup";
 
 interface RoomLayoutProps {
+  gameSettings: GameSettings;
+  onGameSettingsChange: (settings: GameSettings) => void;
   children: React.ReactNode;
 }
 
-const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
+const RoomLayout: React.FC<RoomLayoutProps> = ({ gameSettings, onGameSettingsChange, children }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`RoomLayout.${key}`);
   const [showGameSettings, setShowGameSettings] = useState(false);
@@ -35,6 +37,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children }) => {
       <GameSettingsPopup
         open={showGameSettings}
         onClose={() => setShowGameSettings(false)}
+        settings={gameSettings}
+        onChange={onGameSettingsChange}
       />
       <InviteFriendsPopup
         open={showInviteFriends}
