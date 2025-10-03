@@ -12,7 +12,7 @@ patch {
 
 body:json {
   {
-    "language": "chinese"
+    "language": "simplified_chinese"
   }
 }
 
@@ -20,7 +20,7 @@ assert {
   res.status: eq 200
   res.body.success: eq true
   res.body.data.userId: isNumber
-  res.body.data.language: eq "chinese"
+  res.body.data.language: eq "simplified_chinese"
 }
 
 settings {

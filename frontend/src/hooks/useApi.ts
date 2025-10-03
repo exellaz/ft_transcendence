@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { ApiResponse } from "../types/api";
+import type { ApiResponse } from "../types/apiResponse";
 
 // ========================= API QUERY HOOK =========================
 // For GET requests (fetching data)
