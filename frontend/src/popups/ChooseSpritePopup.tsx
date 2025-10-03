@@ -19,7 +19,6 @@ const ChooseSpritePopup: React.FC<PopupProps> = ({
   return (
     <PopupCard size="wide" open={open} onClose={onClose}>
       <ChooseSpriteContents
-        variant="popup"
         selected={selected}
         onSelectSprite={onSelectSprite}
         onConfirm={onClose}

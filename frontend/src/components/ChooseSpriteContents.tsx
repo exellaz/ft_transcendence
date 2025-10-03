@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 
 import Button from "../components/Button";
 import TournamentHeader from "../components/TournamentHeader";
@@ -17,21 +16,18 @@ const ghostSprites = [
 ];
 
 interface ChooseSpriteContentsProps {
-  variant: "tournament" | "popup";
   selected: string;
   onSelectSprite: (sprite: string) => void;
   onConfirm: () => void;
 }
 
 const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
-  variant,
   selected,
   onSelectSprite,
-  onConfirm
+  onConfirm,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ChooseSpriteContents.${key}`);
-  const navigate = useNavigate();
 
   return (
     <>
@@ -40,38 +36,22 @@ const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
         {ghostSprites.map((sprite) => (
           <button
             key={sprite.name}
-            className={`rounded-2xl border-4 p-2 cursor-pointer ${
+            className={`w-25 h-25 rounded-2xl border-4 flex-col-center cursor-pointer ${
               selected === sprite.src
                 ? "border-yellow-400 bg-yellow-100"
                 : "border-transparent bg-input-gray"
             }`}
-            onClick={() => onSelectSprite(sprite.src)}
+            onClick={() => {
+              onSelectSprite(sprite.src);
+            }}
           >
             <img src={sprite.src} alt={sprite.name} className="w-20 h-20" />
           </button>
         ))}
       </div>
-      {variant === "tournament" && (
-        <Button
-          variant="green"
-          disabled={!selected}
-          onClick={() => {
-            // TODO: handle confirm logic here
-            alert(`Sprite selected: ${selected}`);
-            navigate("/tournament");
-          }}
-        >
-          {translate("confirm")}
-        </Button>
-      )}
-      {variant === "popup" && (
-        <Button
-          variant="green"
-          onClick={onConfirm}
-        >
-          {translate("confirm")}
-        </Button>
-      )}
+      <Button variant="green" disabled={!selected} onClick={onConfirm}>
+        {translate("confirm")}
+      </Button>
     </>
   );
 };
