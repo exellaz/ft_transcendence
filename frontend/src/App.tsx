@@ -57,8 +57,8 @@ const App: React.FC = () => {
             <Route path="/game" element={<GameView />} />
             <Route path="/advance" element={<AdvanceView />} />
             <Route path="/results" element={<ResultsView />} />
-            <Route path="/singles-room" element={<SinglesRoomView />} />
-            <Route path="/doubles-room" element={<DoublesRoomView />} />
+            <Route path="/singles-room/:roomId" element={<SinglesRoomView />} />
+            <Route path="/doubles-room/:roomId" element={<DoublesRoomView />} />
             <Route path="/test" element={<TestView />} />
           </Routes>
         </PreLoginWrapper>

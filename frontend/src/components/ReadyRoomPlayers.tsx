@@ -10,21 +10,33 @@ interface ReadyRoomPlayersProps {
   players: WaitingRoomPlayer[];
   variant: "singles" | "doubles";
   onSwitchTeam?: () => void;
+  userId: number;
 }
 
+// Component to display players in ready room with team switch functionality
 const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   players,
   variant,
   onSwitchTeam,
+  userId,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const leftTeamPlayers = players.filter((player) => player.team === "left");
-  const rightTeamPlayers = players.filter((player) => player.team === "right");
+  // Separate players into left and right teams
+  const leftTeamPlayers = players.filter((player: WaitingRoomPlayer) => player.team === "left");
+  const rightTeamPlayers = players.filter((player: WaitingRoomPlayer) => player.team === "right");
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
 
+	// Determine if current user is leader or ready
+    //TODO replace with JWT
+	const currentId = userId
+	const currentUser = players.find((p: WaitingRoomPlayer) => p.id === currentId); //! WaitingRoomPLayer change id to number
+	const isLeader = currentUser ? currentUser.leader : false;
+	const isReady = currentUser ? currentUser.ready : false;
+
+	// Basic styling for player and empty cells
   const basicCellStyling = `w-full bg-input-gray rounded-xl ${
     variant === "doubles"
       ? "h-[70px] flex-row-center"
@@ -52,16 +64,20 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
               : "hidden"
           }
         />
+        {/* player not ready is red, ready is green. if the player is leader ring is yellow */}
         <Avatar
           src={player.spriteUrl}
           size={variant === "doubles" ? 30 : 50}
           className={
-            player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"
+            `${player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`
           }
         />
       </div>
       <p
-        className={`text-lg font-bold ${getUserColor(player.id)}`}
+        className={
+            //TODO id issue here
+            `text-lg font-bold ${getUserColor(String(player.id))}`
+        }
         title={player.username}
       >
         {player.username.length > 10
@@ -106,22 +122,34 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
     <>
       {/* Two-column team layout */}
       <div className="relative w-full h-full flex-row-start gap-6">
-        <TeamColumn
+        {/* Left Team Column */}
+		<TeamColumn
           title={translate("left_team")}
           teamPlayers={leftTeamPlayers}
         />
         {/* Switch Team Button */}
         <div
-          className="bg-yellow-400 rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2 cursor-pointer"
-          onClick={onSwitchTeam}
+          className={`
+            rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2
+            ${(isReady && !isLeader) ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
+          `}
+          onClick={() => {
+            if (!isReady || isLeader) {
+              onSwitchTeam?.();
+            }
+          }}
         >
           <img
-            className="h-10 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+            className={`
+              h-10 transition-all duration-200
+              ${(isReady && !isLeader) ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
+            `}
             src="/assets/switch.png"
             alt="Switch Teams"
             title={translate("switch_teams")}
           />
         </div>
+        {/* Right Team Column */}
         <TeamColumn
           title={translate("right_team")}
           teamPlayers={rightTeamPlayers}

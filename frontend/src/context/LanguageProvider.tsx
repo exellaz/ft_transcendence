@@ -20,7 +20,7 @@ export const LanguageProvider = ({
   const setLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
     setLanguageState(lang);
-    localStorage.setItem("lang", lang);
+    sessionStorage.setItem("lang", lang);
   };
 
   return (
