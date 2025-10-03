@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery } from "../hooks/useApi";
-import { getUserById } from "../lib/apiClient";
+import { getUserById } from "../lib/usersApiClient";
 import { useNavigate } from "react-router-dom";
 // TODO: Remove mock data import when integrating real API
 // import type { ProfileDropdownInfo } from "../types/apiInterfaces";
@@ -9,13 +9,14 @@ import { useNavigate } from "react-router-dom";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
+import type { User } from "../types/usersApi";
 
 interface ProfileDropdownProps {
   setShowProfile: (open: boolean) => void;
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
-  userId: string;
+  userId: number;
 }
 
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
@@ -29,7 +30,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
 
   // API query for user data
-  const { data: user, refetch } = useApiQuery(
+  const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: Number(userId) }),
     [userId]
   );
@@ -90,7 +91,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   // TODO: Delete when API is integrated
   // const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
   // function getProfileDropdownById(
-  //   userId: string,
+  //   userId: number,
   //   data: ProfileDropdownInfo[]
   // ): ProfileDropdownInfo | undefined {
   //   return data.find((user) => user.id === userId);
@@ -109,9 +110,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
         <div>
           <Avatar src={user?.avatarUrl} size={80} />
         </div>
-        {user ? (user.username.length > 8
-          ? user.username.slice(0, 8) + "..."
-          : user.username) : t("common.loading")}
+        {user
+          ? user.username.length > 8
+            ? user.username.slice(0, 8) + "..."
+            : user.username
+          : t("common.loading")}
       </Button>
 
       {open && (

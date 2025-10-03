@@ -16,12 +16,12 @@ const MatchView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`MatchView.${key}`);
   const { user } = useUser();
-  const userId = user?.id ?? "";
+  const userId = user?.id ?? 0;
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
     "quarterfinals"
   );
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // TODO: Fetch real data based on tournamentId
   // React.useEffect(() => {
@@ -33,7 +33,7 @@ const MatchView: React.FC = () => {
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockMatchPlayers["t1"]);
+    setPlayers(mockMatchPlayers[1]);
   }, []);
 
   if (players.length < 2) {
@@ -45,7 +45,7 @@ const MatchView: React.FC = () => {
 
   const MatchPlayerCard: React.FC<{
     player: MatchPlayer;
-    onClick: (id: string) => void;
+    onClick: (id: number) => void;
   }> = ({ player, onClick }) => (
     <div key={player.id} className="flex-col-center gap-4">
       {/* player status */}

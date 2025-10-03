@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { generateUniqueUserCode } from "./users.service";
 import { ok, ApiError } from "../../utils/response"
 import { deleteUserByIdSchema, getUserByIdSchema, getUserSettingsByIdSchema, patchUserByIdSchema, patchUserSettingsByIdSchema } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
@@ -29,17 +28,13 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
-    const { language, textSize, inGameCameraTracking } = request.body as {
+    const { language } = request.body as {
       language?: string;
-      textSize?: string;
-      inGameCameraTracking?: string;
     };
 
     // Build update object dynamically
     const data: any = {};
     if (language !== undefined) data.language = language;
-    if (textSize !== undefined) data.textSize = textSize;
-    if (inGameCameraTracking !== undefined) data.inGameCameraTracking = inGameCameraTracking;
 
     if (Object.keys(data).length === 0)
       throw new ApiError("No fields to update", 400);
@@ -80,14 +75,11 @@ async function userRoutes(fastify: FastifyInstance, options: FastifyPluginOption
 	  password: string;
 	};
     try {
-	  	const usercode = await generateUniqueUserCode(fastify, username);
-      console.log(usercode);
 			const user = await fastify.db.user.create({
         data: {
           username,
           email,
           password,
-          usercode,
           settings: { create: {} }, // use all @default values
         },
       });

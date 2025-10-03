@@ -13,7 +13,7 @@ import Subheader from "../components/Subheader";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userId: string;
+  userId: number;
 }
 
 const TournamentStatsPopup: React.FC<PopupProps> = ({
@@ -33,11 +33,11 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   //     .then((res) => res.json())
   //     .then(setUser);
   // }, [userId]);
-  
+
   // TODO: Delete when API is integrated
-  userId = "0";
+  userId = 0;
   function getTournamentStatsById(
-    userId: string,
+    userId: number,
     data: TournamentStats[]
   ): TournamentStats | undefined {
     return data.find((user) => user.id === userId);

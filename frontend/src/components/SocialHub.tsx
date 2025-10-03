@@ -66,7 +66,7 @@ const SocialHub: React.FC<SocialHubProps> = ({
 
   function handleAddFriend() {
     // Simulate ID check
-    const exists = friends.some((f) => f.id === friendId);
+    const exists = friends.some((f) => f.id.toString() === friendId);
     if (exists) {
       setAddFriendStatus("success");
       setFriendId("");

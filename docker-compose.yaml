@@ -10,7 +10,8 @@ services:
       - appnet
     volumes:
       - ./frontend:/app # bind mount
-      - /app/node_modules   # anonymous volume for container's node_modules
+      - frontend_node_modules:/app/node_modules
+
   backend:
     build: ./backend
     ports:
@@ -20,8 +21,13 @@ services:
       - appnet
     volumes:
       - ./backend:/app # bind mount
-      - /app/node_modules  # anonymous volume for container's node_modules
-      - ./backend/prisma/database:/app/prisma/database
+      - backend_node_modules:/app/node_modules
+      - ./backend/prisma/database:/app/prisma/database # bind mount
+
+volumes:
+  frontend_node_modules:
+  backend_node_modules:
+
 
 networks:
   appnet:

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
 import { useApiMutation } from "../hooks/useApi";
-import { updateUserSettingsById } from "../lib/apiClient";
+import { updateUserSettingsById } from "../lib/usersApiClient";
 
 import Header from "../components/Header";
 import PopupCard from "../components/PopupCard";
@@ -19,7 +19,7 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
   const translate = (key: string) => t(`SettingsPopup.${key}`);
   const { language, setLanguage } = useLanguage();
   const { user } = useUser();
-  const userId = user?.id ?? "";
+  const userId = user?.id ?? 0;
 
   // API mutation to update settings
   const { mutate } = useApiMutation(updateUserSettingsById);
