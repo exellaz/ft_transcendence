@@ -8,32 +8,32 @@ import Medals from "./Medals";
 import StatsBadge from "./StatsBadge";
 
 interface ProfileContentsProps {
-  userUid: string;
+  userId: number;
 }
 
-const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
+const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileContents.${key}`);
   const [user, setUser] = useState<Profile | null>(null);
 
-  // TODO: Fetch real data based on userUID
+  // TODO: Fetch real data based on userId
   // useEffect(() => {
   //   // Fetch profile
-  //   fetch(`/api/profile?userUid=${userUID}`)
+  //   fetch(`/api/profile?userId=${userId}`)
   //     .then((res) => res.json())
   //     .then(setUser);
-  // }, [userUID]);
+  // }, [userId]);
 
   // TODO: Delete when API is integrated
-  function getProfileByUid(
-    userUID: string,
+  function getProfileById(
+    userId: number,
     data: Profile[]
   ): Profile | undefined {
-    return data.find((user) => user.uid === userUID);
+    return data.find((user) => user.id === userId);
   }
   useEffect(() => {
-    setUser(getProfileByUid(userUid, mockProfiles) || null);
-  }, [userUid]);
+    setUser(getProfileById(userId, mockProfiles) || null);
+  }, [userId]);
 
   if (!user) return <div>{translate("loading")}</div>;
 
@@ -49,7 +49,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userUid }) => {
               ? user.username.slice(0, 10) + "…"
               : user.username}
           </p>
-          <p>ID: {user.uid}</p>
+          <p>ID: {user.id}</p>
           <p>
             {translate("joined")}: {user.joinDate}
           </p>

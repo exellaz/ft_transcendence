@@ -9,14 +9,14 @@ import ProfileContents from "../components/ProfileContents";
 interface PopupProps {
   open: boolean;
   onClose: () => void;
-  userUid: string;
+  userId: number;
   variant?: "self" | "other";
 }
 
 const ProfilePopup: React.FC<PopupProps> = ({
   open,
   onClose,
-  userUid,
+  userId,
   variant = "self",
 }) => {
   const { t } = useTranslation();
@@ -27,7 +27,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
   return (
     <PopupCard open={open} onClose={onClose}>
       <Header>{header}</Header>
-      <ProfileContents userUid={userUid} />
+      <ProfileContents userId={userId} />
       {variant === "other" && (
         <div className="flex-row-center gap-6">
           <Button

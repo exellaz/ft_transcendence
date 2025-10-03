@@ -16,22 +16,24 @@ const MatchView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`MatchView.${key}`);
   const { user } = useUser();
-  const userUid = user?.id ?? "";
+  const userId = user?.id ?? 0;
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
+    "quarterfinals"
+  );
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // TODO: Fetch real data based on tournamentId
   // React.useEffect(() => {
   //   // Replace with real API calls
-  // fetch(`/api/tournament/${tournamentId}/match/${stage}/player/${uid}`)
+  // fetch(`/api/tournament/${tournamentId}/match/${stage}/player/${id}`)
   //   .then((res) => res.json())
   //   .then(setPlayers);
-  // }, [tournamentId, stage, uid]);
+  // }, [tournamentId, stage, id]);
 
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
-    setPlayers(mockMatchPlayers["t1"]);
+    setPlayers(mockMatchPlayers[1]);
   }, []);
 
   if (players.length < 2) {
@@ -43,9 +45,9 @@ const MatchView: React.FC = () => {
 
   const MatchPlayerCard: React.FC<{
     player: MatchPlayer;
-    onClick: (uid: string) => void;
+    onClick: (id: number) => void;
   }> = ({ player, onClick }) => (
-    <div key={player.uid} className="flex-col-center gap-4">
+    <div key={player.id} className="flex-col-center gap-4">
       {/* player status */}
       <span
         className={`rounded-full px-3 py-2 ${
@@ -57,10 +59,14 @@ const MatchView: React.FC = () => {
       {/* player avatar and username */}
       <div
         className="flex-col-center gap-2 cursor-pointer"
-        onClick={() => onClick(player.uid)}
+        onClick={() => onClick(player.id)}
       >
         <Avatar src={player.spriteUrl} size={120} />
-        <span>{player.username}</span>
+        <span title={player.username}>
+          {player.username.length > 10
+            ? player.username.slice(0, 10) + "…"
+            : player.username}
+        </span>
       </div>
     </div>
   );
@@ -73,24 +79,22 @@ const MatchView: React.FC = () => {
   return (
     <Background>
       <Card size="wide">
-        <TournamentHeader>
-          {stageHeader}
-        </TournamentHeader>
+        <TournamentHeader>{stageHeader}</TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
-          <MatchPlayerCard player={userDetails} onClick={setSelectedUid} />
+          <MatchPlayerCard player={userDetails} onClick={setSelectedId} />
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
-          <MatchPlayerCard player={opponentDetails} onClick={setSelectedUid} />
+          <MatchPlayerCard player={opponentDetails} onClick={setSelectedId} />
         </div>
 
         <Button variant="green">{translate("ready")}</Button>
       </Card>
-      {selectedUid && (
+      {selectedId && (
         <ProfilePopup
           open={true}
-          onClose={() => setSelectedUid(null)}
-          userUid={selectedUid}
+          onClose={() => setSelectedId(null)}
+          userId={selectedId}
           variant="other"
         />
       )}

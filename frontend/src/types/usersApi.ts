@@ -19,26 +19,12 @@ export interface UserSettings {
 	language: Language;
 }
 
+export interface LoginData {
+  token: string;
+  user: User;
+}
+
 // ----------------------- API ENDPOINTS -------------------------
-
-// POST /auth/login
-export interface LoginRequest {
-	username: string;
-	password: string;
-}
-
-export interface LoginResponse extends ApiResponse<User> {}
-
-
-// POST /users (signup)
-export interface CreateUserRequest {
-	username: string;
-	email: string;
-	password: string;
-}
-
-export interface CreateUserResponse extends ApiResponse<User> {}
-
 
 // GET /users/:id
 export interface GetUserRequest {
@@ -73,3 +59,24 @@ export interface UpdateUserSettingsRequest {
 }
 
 export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}
+
+// POST /auth/login
+export interface LoginRequest {
+  identifier: string;
+  password: string;
+}
+
+export interface LoginResponse extends ApiResponse<LoginData> {
+  data: LoginData;
+}
+
+// POST /auth/register
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse extends ApiResponse<LoginData> {
+  data: LoginData;
+}

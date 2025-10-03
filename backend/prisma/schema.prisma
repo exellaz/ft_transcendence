@@ -19,8 +19,8 @@ enum FriendshipStatus {
 
 enum Language {
   english
-  chinese
-  malay
+  simplified_chinese
+  traditional_chinese
 }
 
 enum userStatus {
