@@ -8,17 +8,12 @@ import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
 
 import ChooseSpritePopup from "../../popups/ChooseSpritePopup";
+import GameSettingsPopup from "../../popups/GameSettingsPopup";
+import type { GameSettings } from "../../popups/GameSettingsPopup";
 
 interface Player {
   name: string;
   spriteUrl: string;
-}
-
-interface GameSettings {
-  map: string;
-  ballSpeed: number;
-  ballSize: number;
-  paddleSpeed: number;
 }
 
 interface GameDetails {
@@ -48,17 +43,23 @@ const LocalGameView: React.FC = () => {
     paddleSpeed: 2,
   });
   const [choosingPlayer, setChoosingPlayer] = useState<1 | 2 | null>(null);
+  const [showGameSettings, setShowGameSettings] = useState(false);
 
   const SpriteCard: React.FC<{
     player: Player;
     onClick: () => void;
   }> = ({ player, onClick }) => (
-    <div
-      className="flex-col-center gap-2 cursor-pointer"
-      onClick={onClick}
-      title="Change Sprite"
-    >
-      <Avatar src={player.spriteUrl} size={120} />
+    <div className="flex-col-center gap-2 cursor-pointer">
+      <div className="relative">
+        <Avatar src={player.spriteUrl} size={120} />
+        <img
+          src="/assets/edit.png"
+          alt="Edit"
+          onClick={onClick}
+          title={translate("change_sprite")}
+          className="absolute bottom-0 right-0 translate-x-4 translate-y-2 w-6 h-6 mb-2"
+        />
+      </div>
       <p>{player.name}</p>
     </div>
   );
@@ -74,8 +75,10 @@ const LocalGameView: React.FC = () => {
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
           <SpriteCard player={player2} onClick={() => setChoosingPlayer(2)} />
         </div>
-
-        <Button variant="green">{translate("ready")}</Button>
+        <Button onClick={() => setShowGameSettings(true)}>
+          {translate("game_settings")}
+        </Button>
+        <Button variant="green">{translate("start")}</Button>
       </Card>
       <ChooseSpritePopup
         open={choosingPlayer !== null}
@@ -88,6 +91,12 @@ const LocalGameView: React.FC = () => {
             setPlayer2((prev) => ({ ...prev, spriteUrl: sprite }));
           }
         }}
+      />
+      <GameSettingsPopup
+        open={showGameSettings}
+        onClose={() => setShowGameSettings(false)}
+        settings={gameSettings}
+        onChange={setGameSettings}
       />
     </Background>
   );

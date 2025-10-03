@@ -75,7 +75,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     setSaveError(null);
 
     const result = await mutate({
-      id: user.id.toString(),
+      id: user.id,
       username: username.trim(),
     });
 

@@ -7,30 +7,33 @@ import MapSelector from "../components/MapSelector";
 import PopupCard from "../components/PopupCard";
 import Slider from "../components/Slider";
 
+export interface GameSettings {
+  map: string;
+  ballSpeed: number;
+  ballSize: number;
+  paddleSpeed: number;
+}
+
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  settings: GameSettings;
+  onChange: (settings: GameSettings) => void;
 }
 
-const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const GameSettingsPopup: React.FC<PopupProps> = ({
+  open,
+  onClose,
+  settings,
+  onChange,
+}) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameSettingsPopup.${key}`);
-
-  // Game settings state
-  const [ballSpeed, setBallSpeed] = useState(2);
-  const [ballSize, setBallSize] = useState(2);
-  const [paddleSpeed, setPaddleSpeed] = useState(2);
-  const [selectedMap, setSelectedMap] = useState("stadium");
-  const [resetToDefault, setResetToDefault] = useState(false);
 
   const maps = ["stadium", "mansion", "arcade"];
 
   const handleReset = () => {
-    setBallSpeed(2);
-    setBallSize(2);
-    setPaddleSpeed(2);
-    setSelectedMap("stadium");
-    setResetToDefault(!resetToDefault);
+    onChange({ map: "stadium", ballSpeed: 2, ballSize: 2, paddleSpeed: 2 });
   };
 
   return (
@@ -41,37 +44,46 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
         <div className="h-full flex-1 flex-col-center gap-6">
           <Slider
             label={translate("ball_speed")}
-            value={ballSpeed}
-            options={[translate("slow"), translate("normal"), translate("fast")]}
-            onChange={setBallSpeed}
+            value={settings.ballSpeed}
+            options={[
+              translate("slow"),
+              translate("normal"),
+              translate("fast"),
+            ]}
+            onChange={(val) => onChange({ ...settings, ballSpeed: val })}
           />
           <Slider
             label={translate("ball_size")}
-            value={ballSize}
-            options={[translate("small"), translate("normal"), translate("big")]}
-            onChange={setBallSize}
+            value={settings.ballSize}
+            options={[
+              translate("small"),
+              translate("normal"),
+              translate("big"),
+            ]}
+            onChange={(val) => onChange({ ...settings, ballSize: val })}
           />
           <Slider
             label={translate("paddle_speed")}
-            value={paddleSpeed}
-            options={[translate("slow"), translate("normal"), translate("fast")]}
-            onChange={setPaddleSpeed}
+            value={settings.paddleSpeed}
+            options={[
+              translate("slow"),
+              translate("normal"),
+              translate("fast"),
+            ]}
+            onChange={(val) => onChange({ ...settings, paddleSpeed: val })}
           />
         </div>
         {/* Right side - Map Selection */}
         <div className="h-full flex-1 flex-col-center gap-6">
           <MapSelector
-            selectedMap={selectedMap}
+            selectedMap={settings.map}
             maps={maps}
-            onMapChange={setSelectedMap}
+            onMapChange={(map) => onChange({ ...settings, map })}
             label={translate("choose_map")}
           />
         </div>
       </div>
-      <div className="flex-row-center gap-6">
-        <Button onClick={handleReset}>{translate("restore_default")}</Button>
-        <Button variant="green">{translate("save_changes")}</Button>
-      </div>
+      <Button onClick={handleReset}>{translate("restore_default")}</Button>
     </PopupCard>
   );
 };

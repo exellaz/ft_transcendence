@@ -38,8 +38,10 @@
     "leave_confirmation": "Are you sure you want to leave the room?"
   },
   "LocalGameView": {
+    "change_sprite": "Change Sprite",
     "local_game": "Local Game",
-    "ready": "Ready"
+    "game_settings": "Game Settings",
+    "start": "Start"
   },
   "LoginView": {
     "username_or_email": "Username / Email",

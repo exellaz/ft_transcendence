@@ -41,6 +41,12 @@
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？"
   },
+  "LocalGameView": {
+    "change_sprite": "更换角色",
+    "local_game": "本地游戏",
+    "game_settings": "游戏设置",
+    "start": "开始"
+  },
   "LoginView": {
     "username_or_email": "用户名 / 电子邮件",
     "password": "密码",
