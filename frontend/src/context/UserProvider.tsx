@@ -33,6 +33,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       // TODO: Validate token in backend
       const payload = decodeJWT(token);
+      // Number() conversion necessary because JWT payload is string
       if (payload?.userId) {
         setUser({ id: Number(payload.userId) } as User);
       }

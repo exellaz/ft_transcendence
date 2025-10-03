@@ -117,7 +117,7 @@ const OldFriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                         )}
                         {addFriendStatus === "error" && (
                           <p className="text-red-400">
-                            {translate("username_not_exist")}
+                            {translate("user_not_exist")}
                           </p>
                         )}
                         <Button onClick={handleAddFriend}>

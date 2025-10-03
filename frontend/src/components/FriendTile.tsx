@@ -6,7 +6,7 @@ interface FriendTileProps {
   avatarUrl: string;
   lastMessage?: string;
   timestamp?: string;
-  online?: boolean;
+  online: boolean;
   onClick?: () => void;
   active?: boolean;
 }

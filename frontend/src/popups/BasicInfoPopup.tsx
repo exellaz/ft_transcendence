@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import { getUserById, updateUserById } from "../lib/usersApiClient";
+import type { User } from "../types/usersApi";
 import { formatDate } from "../utils/date";
 // TODO: Remove mock data import when integrating real API
 // import type { BasicInfo } from "../types/apiInterfaces";
@@ -18,7 +19,6 @@ import Header from "../components/Header";
 import Input from "../components/Input";
 import PopupCard from "../components/PopupCard";
 import Status from "../components/Status";
-import type { User } from "../types/usersApi";
 
 interface PopupProps {
   open: boolean;
@@ -36,7 +36,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading,
     error,
     refetch,
-  } = useApiQuery<User>(() => getUserById({ id: Number(userId) }), [open]);
+  } = useApiQuery<User>(() => getUserById({ id: userId }), [open]);
 
   // API mutation to update user data
   const { mutate } = useApiMutation(updateUserById);
@@ -48,6 +48,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const [username, setUsername] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // When user data is fetched, populate the form fields
   useEffect(() => {
     if (user) setUsername(user.username);
   }, [user]);

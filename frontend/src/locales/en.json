@@ -257,7 +257,7 @@
     "search_friend": "Search friend",
     "enter_friend_username": "Enter friend's username",
     "friend_added": "Friend has been added.",
-    "username_not_exist": "Username does not exist.",
+    "user_not_exist": "User does not exist.",
     "back": "Back"
   }
 }

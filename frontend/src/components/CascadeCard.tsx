@@ -11,12 +11,12 @@ import ProfileContents from "./ProfileContents";
 import Messaging from "./Messaging";
 
 interface CascadeCardProps {
-  selectedUser: FriendBasic | FriendRequest | BlockedUser;
+  selectedUserId: number;
   activeTab: string;
 }
 
 const CascadeCard: React.FC<CascadeCardProps> = ({
-  selectedUser,
+  selectedUserId,
   activeTab,
 }) => {
   const { t } = useTranslation();

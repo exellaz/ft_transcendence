@@ -257,7 +257,7 @@
     "search_friend": "搜索好友",
     "enter_friend_username": "输入好友用户名",
     "friend_added": "好友已添加。",
-    "username_not_exist": "用户名不存在。",
+    "user_not_exist": "用户不存在。",
     "back": "返回"
   }
 }
