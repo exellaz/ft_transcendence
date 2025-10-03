@@ -258,6 +258,8 @@
     "enter_friend_username": "輸入好友用戶名",
     "friend_added": "好友已新增。",
     "user_not_exist": "用戶不存在。",
-    "back": "返回"
+    "back": "返回",
+    "no_friends_yet": "還沒有朋友。",
+    "no_new_requests": "沒有新的請求。"
   }
 }

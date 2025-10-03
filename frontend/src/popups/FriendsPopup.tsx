@@ -4,6 +4,8 @@ import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import {
   createFriendship,
   getAcceptedFriendshipsByUserId,
+  getPendingFriendshipsByUserId,
+  updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
 
@@ -48,16 +50,30 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // API query for friends list
   const {
     data: friends,
-    loading,
-    error,
+    loading: friendsLoading,
+    error: friendsError,
     refetch: refetchFriends,
   } = useApiQuery<User[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open]
   );
 
-  // API mutation to update user data
+  // API query for friend requests list
+  const {
+    data: requests,
+    loading: requestsLoading,
+    error: requestsError,
+    refetch: refetchRequests,
+  } = useApiQuery<User[]>(
+    () => getPendingFriendshipsByUserId({ userId: userId }),
+    [open]
+  );
+
+  // API mutation to add a friend
   const { mutate: addFriend } = useApiMutation(createFriendship);
+
+  // API mutation to accept a friend request
+  const { mutate: acceptRequest } = useApiMutation(updateFriendship);
 
   function handleClose() {
     onClose();
@@ -100,11 +116,25 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     }
   };
 
+  const handleAcceptRequest = async (friendId: number): Promise<void> => {
+    const result = await acceptRequest({
+      requesterId: friendId,
+      accepterId: userId,
+      status: "accepted",
+    });
+    if (result.success) {
+      refetchRequests();
+    }
+    alert("Friend request accepted!");
+  };
+
   let children: React.ReactNode;
-  if (loading) children = <LoadingState />;
-  else if (error)
-    children = <ErrorState error={error} onRetry={refetchFriends} />;
-  else if (!friends) children = <NotFoundState />;
+  if (friendsLoading || requestsLoading) children = <LoadingState />;
+  else if (friendsError)
+    children = <ErrorState error={friendsError} onRetry={refetchFriends} />;
+  else if (requestsError)
+    children = <ErrorState error={requestsError} onRetry={refetchRequests} />;
+  else if (!friends || !requests) children = <NotFoundState />;
   else
     children = (
       <div className="w-full h-full flex flex-row gap-6">
@@ -125,6 +155,14 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                   setShowAddFriendView(false);
                   setAddFriendSuccess(false);
                   setAddFriendError(null);
+                  // trigger refetch based on tab
+                  if (tab === "friends") {
+                    refetchFriends();
+                  } else if (tab === "requests") {
+                    refetchRequests();
+                  } else if (tab === "blocked") {
+                    // refetchBlocked();
+                  }
                 }}
               >
                 {translate(`tabs.${tab}`)}
@@ -202,84 +240,104 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                           {translate("add_friend")}
                         </Button>
                       </div>
-                      <div className="flex-col-center gap-4 p-1">
-                        {friends
-                          // filters friends list based on search term
-                          .filter((friend) =>
-                            friend.username
-                              .toLowerCase()
-                              .includes(searchTerm.toLowerCase())
-                          )
-                          .map((friend) => (
-                            <FriendTile
-                              key={friend.id}
-                              username={friend.username}
-                              avatarUrl={friend.avatarUrl}
-                              lastMessage={"friend.lastMessage"}
-                              timestamp={"friend.lastMessageTimestamp"}
-                              online={friend.status === "online"}
-                              onClick={() =>
-                                selectedUserId === friend.id
-                                  ? setSelectedUserId(null)
-                                  : setSelectedUserId(friend.id)
-                              }
-                              active={selectedUserId === friend.id}
-                            />
-                          ))}
-                      </div>
+                      {friends.length === 0 ? (
+                        <div className="h-full flex-col-center">
+                          <p className="text-gray-400 text-lg font-semibold">
+                            {translate("no_friends_yet")}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex-col-center gap-4 p-1">
+                          {friends
+                            // filters friends list based on search term
+                            .filter((friend) =>
+                              friend.username
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase())
+                            )
+                            .map((friend) => (
+                              <FriendTile
+                                key={friend.id}
+                                username={friend.username}
+                                avatarUrl={friend.avatarUrl}
+                                lastMessage={"friend.lastMessage"}
+                                timestamp={"friend.lastMessageTimestamp"}
+                                online={friend.status === "online"}
+                                onClick={() =>
+                                  selectedUserId === friend.id
+                                    ? setSelectedUserId(null)
+                                    : setSelectedUserId(friend.id)
+                                }
+                                active={selectedUserId === friend.id}
+                              />
+                            ))}
+                        </div>
+                      )}
                     </>
                   );
                 }
-                // } else if (activeTab === "requests") {
-                //   return (
-                //     // Friend Requests List View
-                //     <div className="flex-col-center gap-4 p-1">
-                //       {requests.map((user) => (
-                //         <FriendRequestTile
-                //           key={user.id}
-                //           username={user.username}
-                //           avatarUrl={user.avatarUrl}
-                //           onAccept={() => alert("Friend request accepted!")}
-                //           onReject={() => alert("Friend request rejected!")}
-                //           onClick={() =>
-                //             selectedUser?.id === user.id
-                //               ? setSelectedUser(null)
-                //               : setSelectedUser(user)
-                //           }
-                //           active={selectedUser?.id === user.id}
-                //         />
-                //       ))}
-                //     </div>
-                //   );
-                // } else if (activeTab === "blocked") {
-                //   return (
-                //     // Blocked Users List View
-                //     <div className="grid grid-cols-3 gap-4 p-1">
-                //       {blocked.map((user) => (
-                //         <BlockedTile
-                //           key={user.id}
-                //           username={user.username}
-                //           avatarUrl={user.avatarUrl}
-                //           onClick={() =>
-                //             selectedUser?.id === user.id
-                //               ? setSelectedUser(null)
-                //               : setSelectedUser(user)
-                //           }
-                //           active={selectedUser?.id === user.id}
-                //         />
-                //       ))}
-                //     </div>
-                //   );
-              } else {
+              } else if (activeTab === "requests") {
+                return (
+                  // Friend Requests List View
+                  <>
+                    {requests.length === 0 ? (
+                      <div className="h-full flex-col-center">
+                        <p className="text-gray-400 text-lg font-semibold">
+                          {translate("no_new_requests")}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex-col-center gap-4 p-1">
+                        {requests.map((user) => (
+                          <FriendRequestTile
+                            key={user.id}
+                            username={user.username}
+                            avatarUrl={user.avatarUrl}
+                            onAccept={() => handleAcceptRequest(user.id)}
+                            onReject={() => alert("Friend request rejected!")}
+                            onClick={() =>
+                              selectedUserId === user.id
+                                ? setSelectedUserId(null)
+                                : setSelectedUserId(user.id)
+                            }
+                            active={selectedUserId === user.id}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                );
+              }
+              // else if (activeTab === "blocked") {
+              //   return (
+              //     // Blocked Users List View
+              //     <div className="grid grid-cols-3 gap-4 p-1">
+              //       {blocked.map((user) => (
+              //         <BlockedTile
+              //           key={user.id}
+              //           username={user.username}
+              //           avatarUrl={user.avatarUrl}
+              //           onClick={() =>
+              //             selectedUser?.id === user.id
+              //               ? setSelectedUser(null)
+              //               : setSelectedUser(user)
+              //           }
+              //           active={selectedUser?.id === user.id}
+              //         />
+              //       ))}
+              //     </div>
+              //   );
+              // }
+              else {
                 return null;
               }
             })()}
           </div>
         </div>
-        {/* Extended View: Cascade Card */}
+        {/* Extended View: Cascade Card
         {selectedUserId && (
           <CascadeCard selectedUserId={selectedUserId} activeTab={activeTab} />
-        )}
+        )} */}
       </div>
     );
 

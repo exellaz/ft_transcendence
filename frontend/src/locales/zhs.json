@@ -258,6 +258,8 @@
     "enter_friend_username": "输入好友用户名",
     "friend_added": "好友已添加。",
     "user_not_exist": "用户不存在。",
-    "back": "返回"
+    "back": "返回",
+    "no_friends_yet": "还没有朋友。",
+    "no_new_requests": "没有新的请求。"
   }
 }
