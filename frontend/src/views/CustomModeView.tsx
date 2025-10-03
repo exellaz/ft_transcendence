@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useApiQuery } from "../hooks/useApi";
-import { getUserById } from "../lib/apiClient";
 import { useUser } from "../context/UserProvider";
 
 import Button from "../components/Button";
@@ -15,7 +13,7 @@ import Status from "../components/Status";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
-import { createRoomAPI, fetchRooms, ensurePlayerId } from "../lib/requestBackend.api";
+import { createRoomAPI, fetchRooms } from "../lib/requestBackend.api";
 /**
  * @brief casual game
  * - Create private room
@@ -25,8 +23,8 @@ const CustomModeView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`CustomModeView.${key}`);
   const navigate = useNavigate();
-    const { user } = useUser();
-    const userId = user?.id ?? "";
+  const { user } = useUser();
+  //  const userId = user?.id ?? "";
   const [menuStep, setMenuStep] = useState("action");
   const [roomId, setRoomId] = useState("");
   const [showCreateLocalGame, setShowCreateLocalGame] = useState(false);
@@ -48,18 +46,14 @@ const CustomModeView: React.FC = () => {
   //private room - owner create room from API and navigate to the room
   async function handleCreateRoom(teamSize: number, isPrivate: boolean) {
     //TODO replace with JWT
-      const userResponse = await getUserById({ id: Number(userId) });
-    //  let playerInfo = {id: "", name: "unknown", avatar: ""};
-    let userInfo;
-    //  console.log ("user data: "   , userResponse); //// debug
-    if (userResponse.success && userResponse.data) {
-        userInfo = userResponse.data;
-        //playerInfo = {id: userInfo.id, name: userInfo.username, avatar: userInfo.avatarUrl ?? ""};
-        //console.log ("player info: "   , playerInfo); //// debug
-    }
+    //const userResponse = await getUserById({ id: Number(userId) });
+    //let userInfo;
+    //if (userResponse.success && userResponse.data) {
+    //    userInfo = userResponse.data;
+    //}
+    //if (!userInfo) return;
+    if (!user) return;
     //TODO handle user info
-    if (!userInfo) return;
-    //const clientId = String(playerInfo.id);
 	const scale = Math.min(
 	  window.innerWidth / 800,
 	  window.innerHeight / 400,
@@ -73,16 +67,13 @@ const CustomModeView: React.FC = () => {
 	  teamSize === 1 ? "Singles Room" : "Doubles Room",
 	  width,
 	  height,
-	  { leaderId: userInfo.id, isPrivate }
+	  { leaderId: user.id, isPrivate }
 	);
+    console.log("user id: ", typeof user?.id); ////debug
     console.log("private room:", room); //// debug
 	if (room) {
 	  // always handle both id and roomId
 	  const roomIdToUse = room.id || room.roomId;
-	//   sessionStorage.setItem("RoomId", roomIdToUse);
-	//   sessionStorage.setItem("RoomName", room.name);
-	//   sessionStorage.setItem("RoomLeaderId", room.leaderId);
-    //   sessionStorage.setItem("RoomType", "private");
 	  navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
 	} else {
 	  setStatus({ text: "❌ Failed to create room", color: "red" });
@@ -299,22 +290,26 @@ const CustomModeView: React.FC = () => {
       <ConfirmationPopup
         text={translate("create_singles_game")}
         open={showCreateSinglesGame}
-        onClose={() => handleCreateRoom(1, true)}
+        onClose={() => setShowCreateSinglesGame(false)}
+        onConfirm={() => handleCreateRoom(1, true)}
       />
       <ConfirmationPopup
         text={translate("create_doubles_game")}
         open={showCreateDoublesGame}
-        onClose={() => handleCreateRoom(2, true)}
+        onClose={() => setShowCreateDoublesGame(false)}
+        onConfirm={() => handleCreateRoom(2, true)}
       />
       <ConfirmationPopup
         text={translate("join_singles_game")}
         open={showJoinSinglesGame}
-        onClose={() => handleQuickJoin(1)}
+        onClose={() => setShowJoinSinglesGame(false)}
+        onConfirm={() => handleQuickJoin(1)}
       />
       <ConfirmationPopup
         text={translate("join_doubles_game")}
         open={showJoinDoublesGame}
-        onClose={() => handleQuickJoin(2)}
+        onClose={() => setShowJoinDoublesGame(false)}
+        onConfirm={() => handleQuickJoin(2)}
       />
     </MainLayout>
   );

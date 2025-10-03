@@ -136,13 +136,14 @@ export class Game implements IGame {
 			const paddleY = room.gameState.paddles[clientId];
             if (!paddleY) continue;
             //check left is belong this player or not
-			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientId) && ball.x - ballSize <= paddleWidth) {
+            const clientIdNum = parseInt(clientId, 10);
+			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientIdNum) && ball.x - ballSize <= paddleWidth) {
 				if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
 					ball.dx *= -1;
 					ball.x = paddleWidth + ballSize;
 				}
 			}
-			if (room.gameState.teams.right.some((p: playerInfo) => p.clientId === clientId) &&
+			if (room.gameState.teams.right.some((p: playerInfo) => p.clientId === clientIdNum) &&
 			    ball.x + ballSize >= room.width - paddleWidth) {
 			    if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
 			        ball.dx *= -1;

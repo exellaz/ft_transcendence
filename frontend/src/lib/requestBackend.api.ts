@@ -70,7 +70,7 @@ export async function createRoomAPI(
   roomName: string,
   width: number,
   height: number,
-  options?: { leaderId?: string; isPrivate?: boolean }
+  options?: { leaderId?: number; isPrivate?: boolean }
 ) {
   try {
     const res = await fetch(`${API_URL}/create-room`, {
@@ -81,7 +81,7 @@ export async function createRoomAPI(
         name: roomName,
         width,
         height,
-        leaderId: options?.isPrivate ? options?.leaderId : undefined,
+        leaderId: options?.isPrivate ? options?.leaderId : -1,
         isPrivate: options?.isPrivate ?? false,
       }),
     });
@@ -101,7 +101,7 @@ export async function createRoomAPI(
  * @return "left" or "right" side to client in Promise format
  * @note it fetches the room details from the backend to make the decision
 */
-export async function determineSide(roomId: string): Promise<"left" | "right"> {
+export async function determineSide(roomId: number): Promise<"left" | "right"> {
   const rooms = await fetchRooms();
   const room = rooms.find((r: any) => r.id === roomId);
   if (!room) return "left";

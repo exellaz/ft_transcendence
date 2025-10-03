@@ -5,7 +5,7 @@ import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 import { broadcast } from "../../utils/utils";
 
 export interface playerInfo {
-    clientId: string; // client id
+    clientId: number; // client id
     playerName: string; // player username
     role: string; // "left" or "right"
 	team: "left" | "right"; // team side
@@ -18,7 +18,7 @@ export interface playerInfo {
  * @brief Room interface ( is like a room information structure)
 */
 export interface Room {
-	id: string; // room id
+	id: number; // room id
 	name: string; // room name
 	teamSize: number; // team size (1vs1 or 2vs2)
 	width: number; // game width
@@ -34,15 +34,15 @@ export interface Room {
 	};
 	gameState: {
         ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
-		paddles: { [key: string]: number }; //[key] => client id, [value] => paddle position
+		paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
 		teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
 		score: { left: number; right: number }; //[key] => team side, [value] => score
         gameStarted: boolean; // flag for start game
         gameEnded?: boolean; // flag for end game
 	};
 	clients: Set<WebSocket>; // Set of WebSocket connections
-	clientRoles: Map<string, playerInfo>; //[key] => client id, [value] => playerInfo
-	sockets: Map<WebSocket, string>; //[key] => socket, [value] => client id
+	clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
+	sockets: Map<WebSocket, number>; //[key] => socket, [value] => client id
 	chatHistory: liveChatMessage[]; // Array to store chat messages
 	startTime?: Date; //start game time
 	endTime?: Date; //end game time
@@ -51,16 +51,16 @@ export interface Room {
 		scoreLeft: number;
 		scoreRight: number;
 	};
-    disconnectPlayers: Set<string>; // client id who disconnected during the game
+    disconnectPlayers: Set<number>; // client id who disconnected during the game
 	game: Game; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
     // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
     //startRequestedBy?: string; // clientId of who requested to start game
-	leaderId: string; // clientId of the room leader
+	leaderId: number; // clientId of the room leader
     private: boolean; // Flag to indicate if the room is private
-    disconnectTimers?: Map<string, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle for reconnection grace period
+    disconnectTimers?: Map<number, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle for reconnection grace period
 	countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
 	countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
@@ -81,17 +81,15 @@ export const DEFAULT_SETTING = {
  * @key room id
  * @value Room object (info about the room)
 */
-export const rooms: Map<string, Room> = new Map();
+export const rooms: Map<number, Room> = new Map();
 
 /**
  * @brief generate random 6 digit room id
  * @param length length of the room id (default: 6)
  * @returns room id as string
  */
-export function generateRoomId(length = 6): string {
-	return Math.floor(Math.random() * Math.pow(10, length))
-		.toString()
-		.padStart(length, "0");
+export function generateRoomId(length = 6): number {
+	return Math.floor(Math.random() * Math.pow(10, length));
 }
 
 /**
@@ -106,7 +104,7 @@ export function generateRoomId(length = 6): string {
  * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
 */
-export function createRoom(id: string, name: string, teamSize = 1, leaderId: string = "", width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
 	const room: Room = {
 		id,
 		name,
@@ -136,7 +134,6 @@ export function createRoom(id: string, name: string, teamSize = 1, leaderId: str
 		leaderId: leaderId,
 		private: isPrivate,
 	};
-	console.log(`width: ${width}, height: ${height}`);
 	return room;
 }
 

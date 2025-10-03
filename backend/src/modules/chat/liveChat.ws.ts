@@ -4,6 +4,7 @@ export default async function liveChatRoutes(fastify: any) {
 	fastify.get("/ws-chat", { websocket: true }, (socket: any, req: any) => {
 		// Step 1: get client query param
 		const { room } = req.query as { room?: string };
+        console.log("Chat WebSocket connection request for room:", room); //// debug
 
 		//if no room then close socket
 		if (!room) {

@@ -7,16 +7,16 @@ import { formatTimestamp } from "../utils/date";
  * @param roomId The chat room ID
  * @returns An object containing the list of messages and a send function
  */
-export function useLiveChatWebSocket(roomId: string) {
+export function useLiveChatWebSocket(roomId: number, user: { id: number; name: string; } ) {
     const [messages, setMessages] = useState<LiveChatMessage[]>([]);
 	const [message, setMessage] = useState("");
     const socketRef = useRef<WebSocket | null>(null);
 
+    //! need to fix later
 	// Get current user info from sessionStorage
     //TODO replace with JWT
-    const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
-	const uid = playerInfo.id;
-	const username = playerInfo.name;
+	const uid = user.id;
+	const username = user.name;
 
     useEffect(() => {
         if (socketRef.current) return; // already connected
@@ -56,7 +56,7 @@ export function useLiveChatWebSocket(roomId: string) {
                     setMessages((prev) => [
 						...prev,
 						{
-							uid: data.uid || "system",
+							uid: data.uid || -1,
 							from: data.from || "System",
 							text: data.text,
 							timestamp: formatTimestamp(new Date(data.time || Date.now())),

@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { ensurePlayerId, determineSide } from "./requestBackend.api";
+import type { playerInfo } from "../../../backend/src/modules/room/room"
 
 // room structure
 export interface UseRoomWebSocketParams {
-	roomId: string;
+	roomId: number;
 	roomName: string;
-	leaderId: string;
+	leaderId: number;
+    player: {
+        id: number;
+        name: string;
+        avatar: string;
+    }
 }
 
 /**
@@ -14,7 +20,7 @@ export interface UseRoomWebSocketParams {
  * @param roomName The name of the room.
  * @param leaderId The client ID of the room leader.
 */
-export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocketParams) {
+export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoomWebSocketParams) {
 	const [statusText, setStatusText] = useState("Connecting to room..."); // e.g., "Room MyRoom [id: 1234]"
 	const [playerText, setPlayerText] = useState("Waiting for players..."); // e.g., "You are: Player1 [id: abc123] (left_player1)"
 	const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team..."); // HTML content for left team
@@ -27,29 +33,24 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 
-	// Ensure client ID is set
-	useEffect(() => { ensurePlayerId(); }, []);
-
 	useEffect(() => {
         //TODO replace with JWT
-		const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
-        const clientId = playerInfo.id;
 
 		async function connect() {
 			// set room settings
 			//await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
 
 			// pick role (leader gets left_player1)
-			let roleLocal = clientId === leaderId ? "left_player1" : "spectator";
+			let roleLocal = player.id === leaderId ? "left_player1" : "spectator";
 			setRole(roleLocal);
-			setIsLeader(clientId === leaderId);
+			setIsLeader(player.id === leaderId);
 
 			// create websocket connection with player id, room id, side and player name
 			const chooseSide = await determineSide(roomId);
 			console.log("ws side:", chooseSide);
-			console.log("ws player name:", playerInfo.name);
-			console.log("ws player sprite:", playerInfo.sprite);
-			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(playerInfo.name)}&sprite=${encodeURIComponent(playerInfo.sprite)}`);
+			console.log("ws player name:", player.name);
+			console.log("ws player sprite:", player.avatar);
+			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
 			socketRef.current = ws;
 
 			// open connection
@@ -94,38 +95,48 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 							return;
 						}
 						// update role base in clientId
-						const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
-						const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
-						const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
+                        //console.log("Left Team info:", data.gameState.teams.left);
+                        //console.log("Right Team info:", data.gameState.teams.right);
+						const leftPlayer = data.gameState.teams.left.find((p: playerInfo)=> {
+                            console.log("Left Player info:", p.clientId, typeof p.clientId, player.id, typeof player.id);
+                            return p.clientId === player.id;
+                        });
+                        console.log("Left Player found:", leftPlayer);
+						const rightPlayer = data.gameState.teams.right.find((p: playerInfo)=> {
+                            console.log("Right Player info:", p.clientId, typeof p.clientId, player.id, typeof player.id);
+                            return p.clientId === player.id;
+                        });
+                        const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
 						setRole(newRole);
-						setPlayerText(`You are: ${playerInfo.name} [${clientId}] (${newRole})`);
+						setPlayerText(`You are: ${player.name} [${player.id}] (${newRole})`);
 						// update team lists on left
 						setLeftTeamHtml(
-							data.gameState.teams.left.map((p:any)=> ({
-								leader: p.clientId === data.leaderId,
+							data.gameState.teams.left.map((p: playerInfo)=> ({
+								id: p.clientId,
 								username: p.playerName,
-								uid: p.clientId,
 								role: p.role,
+								team: p.role.startsWith("left") ? "left" : "right",
+								leader: p.clientId === data.leaderId,
 								spriteUrl: p.spriteUrl,
 								ready: p.ready,
-								team: p.role.startsWith("left") ? "left" : "right"
 							}))
 						);
 						// update team lists on right
 						setRightTeamHtml(
-							data.gameState.teams.right.map((p:any)=> ({
-								leader: p.clientId === data.leaderId,
+							data.gameState.teams.right.map((p: playerInfo)=> ({
+								id: p.clientId,
 								username: p.playerName,
-								uid: p.clientId,
 								role: p.role,
+								team: p.role.startsWith("left") ? "left" : "right",
+								leader: p.clientId === data.leaderId,
 								spriteUrl: p.spriteUrl,
 								ready: p.ready,
-								team: p.role.startsWith("left") ? "left" : "right"
 							}))
 						);
 						// update player leader
 						if (data.leaderId) {
-							setIsLeader(clientId === data.leaderId);
+                            console.log("Updating leader status:", typeof player.id, typeof data.leaderId);
+							setIsLeader(player.id === data.leaderId);
 						}
 						// update can start status
 						setCanStart(data.canStart ?? false);
@@ -167,14 +178,14 @@ export function useRoomWebSocket({ roomId, roomName, leaderId }: UseRoomWebSocke
 				ws.close();
 			};
 
+
 			// clean up on unmount
 			return () => {
-				try { ws.close(); } catch {}
+                if (ws) ws.close();
 			};
 		}
-
-		connect();
-	}, [roomId, roomName, leaderId]);
+        connect();
+	}, [roomId, roomName, leaderId, player.id, player.name, player.avatar]);
 
 	function onSwitch() {
 		if (!socketRef.current) return;

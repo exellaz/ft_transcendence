@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import type { playerInfo } from "../../../backend/src/modules/room/room";
 
 // game structure
 interface UseGameWebSocketParams {
-  roomId: string;
+  roomId: number;
   roomName: string;
-  clientId: string;
+  clientId: number;
   initialRole: string;
   playerName: string;
   playerSprite: string;
@@ -211,9 +212,10 @@ export function draw_container(
 	for (const clientId in state.paddles) {
 		const y = state.paddles[clientId];
 		let x: number;
-		if (state.teams.left.some((p:any)=>p.clientId === clientId)) {
+        const clientIdNum = parseInt(clientId, 10);
+		if (state.teams.left.some((p: playerInfo)=>p.clientId === clientIdNum)) {
 			x = 1;
-		} else if (state.teams.right.some((p:any)=>p.clientId === clientId)) {
+		} else if (state.teams.right.some((p: playerInfo)=>p.clientId === clientIdNum)) {
 			x = 800 - paddleWidth - 1;
 		} else continue;
 		ctx.fillStyle = "black";

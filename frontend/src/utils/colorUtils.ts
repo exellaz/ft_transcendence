@@ -3,7 +3,7 @@
 export const getUserColor = (id: string): string => {
   const colors = [
     "text-red-400",
-    "text-blue-400", 
+    "text-blue-400",
     "text-green-400",
     "text-yellow-400",
     "text-purple-400",
@@ -11,12 +11,13 @@ export const getUserColor = (id: string): string => {
     "text-orange-400",
     "text-teal-400",
   ];
-  
+
+  //TODO need to hadle here the case id is out of range
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = ((hash << 5) - hash) + id.charCodeAt(i);
     hash = hash & hash;
   }
-  
+
   return colors[Math.abs(hash) % colors.length];
 };

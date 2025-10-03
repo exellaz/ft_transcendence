@@ -17,7 +17,7 @@ export default async function roomWsRoutes(fastify: any) {
 		// step 2: handle incoming messages from clients
 		socket.on("message", (raw: any) => {
 			// console.log("WebSocket msg received:", raw.toString()); //// debug
-			wsHandler.handleMsgOrEvent(socket, room, player, raw.toString());
+			wsHandler.handleMsgOrEvent(socket, room, { id: player.id || -1, role: player.role }, raw.toString());
 			// console.log("WebSocket msg sent:", raw.toString()); //// debug
 		});
 

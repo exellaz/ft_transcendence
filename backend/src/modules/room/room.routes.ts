@@ -1,5 +1,9 @@
-import { FastifyInstance } from "fastify";
-import { rooms, createRoom, generateRoomId, DEFAULT_SETTING } from "./room";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { rooms, createRoom, generateRoomId, DEFAULT_SETTING, Room } from "./room";
+
+interface RoomParams {
+    roomId: number;
+}
 
 export default async function roomRoutes(app: FastifyInstance) {
     // ----------------------- LIST ROOMS -----------------------
@@ -38,7 +42,21 @@ export default async function roomRoutes(app: FastifyInstance) {
     		paddleSpeed,
     		scorePoint,
     		map
-    	} = body;
+    	} = body as {
+            name: string;
+            teamSize: number;
+            leaderId?: number;
+            width: number;
+            height: number;
+            isPrivate?: boolean;
+            ballSpeed?: number;
+            paddleHeight?: number;
+            paddleWidth?: number;
+            ballSize?: number;
+            paddleSpeed?: number;
+            scorePoint?: number;
+            map?: string;
+        };
 
     	// Validate required fields
     	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
@@ -47,7 +65,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     	if (typeof width !== "number" || typeof height !== "number") {
     		return reply.code(400).send({ error: "Width and height are required" });
     	}
-    	if (isPrivate && (!leaderId || typeof leaderId !== "string")) {
+    	if (isPrivate && (!leaderId || typeof leaderId !== "number")) {
     	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
     	}
 
@@ -69,7 +87,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     		roomId,
     		name,
     		teamSize,
-    		isPrivate ? leaderId : "",
+    		isPrivate ? leaderId : -1,
     		width,
     		height,
     		!!isPrivate,
@@ -97,9 +115,8 @@ export default async function roomRoutes(app: FastifyInstance) {
     });
 
     // ----------------------- UPDATE ROOM SETTING -----------------------
-    app.post("/room/:roomId/setting", async (req, reply) => {
-        // console.log("request /room/setting:", req.body); ////debug
-        const { roomId } = req.params as { roomId: string };
+    app.post("/room/:roomId/setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
+        const roomId = Number(req.params.roomId);
         const room = rooms.get(roomId);
         if (!room) {
             return reply.code(404).send({ error: "Room not found" });
@@ -140,10 +157,10 @@ export default async function roomRoutes(app: FastifyInstance) {
     });
 
     // ----------------------- GET ROOM BY ID -----------------------
-    app.get("/room/:roomId", async (req, reply) => {
-        const { roomId } = req.params as { roomId: string };
+    app.get("/room/:roomId", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
+        const roomId = Number(req.params.roomId);
         const room = rooms.get(roomId);
-        if (!room) {
+        if (room === undefined) {
             return reply.code(404).send({ error: "Room not found" });
         }
 

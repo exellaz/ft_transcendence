@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useUser } from "../../context/UserProvider";
+import { getUserById } from "../../lib/apiClient"; // Import the function
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
+import type { User } from "../../types/api"; // Import the User type
 
 // components
 import Button from "../../components/Button";
@@ -31,10 +34,33 @@ const DoublesRoomView: React.FC = () => {
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: string; type: string; id: string } | null>(null);
+  const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: number; type: string; id: number } | null>(null);
   const { roomId: paramRoomId } = useParams();
   const joinType = (location.state as any)?.joinType || "private";
   const roomId = sessionStorage.getItem("RoomId") || "";
+  const { user } = useUser();
+  const [userInfo, setUserinfo] = useState<User | null>(null);
+
+  // Fetch user info when the component mounts
+  React.useEffect(() => {
+    if (!user) return; // Ensure `user` is available
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getUserById({ id: Number(user.id) }); // Call the API
+        if (response.success && response.data) {
+            setUserinfo(response.data); // Store the user info
+            } else {
+          console.log("Failed to fetch user info"); // Handle API error
+        }
+      } catch (err) {
+        console.error("Error fetching user info:", err);
+        console.error("An error occurred while fetching user info"); // Handle fetch error
+      }
+    };
+
+    fetchUserInfo();
+  }, [user]);
 
   //update session storage when paramRoomId change
   React.useEffect(() => {
@@ -49,19 +75,23 @@ const DoublesRoomView: React.FC = () => {
 	fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`)
 	.then(res => res.json())
 	.then(data => {
-		if (joinType === "private" && !data.private) {
-			sessionStorage.removeItem("RoomId");
-			alert("⚠️ this is a public room");
-			navigate("/main-menu");
-			return;
-		}
+		//if (joinType === "private" && !data.private) {
+		//	sessionStorage.removeItem("RoomId");
+		//	alert("⚠️ this is a public room");
+		//	navigate("/main-menu");
+		//	return;
+		//}
 		setRoomInfo({
 			id: data.id,
 			name: data.name,
 			leaderId: data.leader,
 			type: data.private ? "private" : "public",
 		});
-	});
+	}).catch(err => {
+        console.error("Failed to fetch room info:", err);
+        // If fetching room info fails, navigate back to main menu
+        navigate("/main-menu");
+      });
   }, [roomId, joinType, navigate]);
 
   //-------------------------------- Websockets --------------------------------
@@ -71,7 +101,7 @@ const DoublesRoomView: React.FC = () => {
     message,
     setMessage,
     handleSendMsg
-  } = useLiveChatWebSocket(roomId);
+  } = useLiveChatWebSocket(roomInfo?.id || -1, { id: userInfo?.id || -1, name: userInfo?.username ?? "" });
 
   //room websocket
   const {
@@ -86,7 +116,16 @@ const DoublesRoomView: React.FC = () => {
     onLeave,
     role,
 	countdown,
-  } = useRoomWebSocket({roomId: roomInfo?.id || "", roomName: roomInfo?.name || "", leaderId: roomInfo?.leaderId || ""});
+   } = useRoomWebSocket({
+     roomId: roomInfo?.id || -1,
+     roomName: roomInfo?.name || "",
+     leaderId: roomInfo?.leaderId || -1,
+     player: {
+         id: userInfo?.id || -1,
+         name: userInfo?.username ?? "",
+         avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
+     },
+   });
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
@@ -109,17 +148,6 @@ const DoublesRoomView: React.FC = () => {
     console.log("rightTeam:", rightTeam); //// debug
     setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
-
-  // TODO: Fetch real data based on roomId
-  // React.useEffect(() => {
-  //   // Replace with real API calls
-  //   fetch(`/api/players?roomId=${roomId}`)
-  //     .then((res) => res.json())
-  //     .then(setPlayers);
-  //   fetch(`/api/messages?roomId=${roomId}`)
-  //     .then((res) => res.json())
-  //     .then(setChatMessages);
-  // }, [roomId]);
 
   return (
 	<>
@@ -152,7 +180,7 @@ const DoublesRoomView: React.FC = () => {
 					</p>
 					</TournamentHeader>
 					{/* player team block: check ready and switch button */}
-					<ReadyRoomPlayers variant="doubles" players={players} onSwitchTeam={onSwitch} />
+					<ReadyRoomPlayers variant="doubles" userId={userInfo?.id || -1} players={players} onSwitchTeam={onSwitch} />
 					<div className="flex-row-center gap-6">
 					{/* Ready button (not for leader) */}
 					{!isLeader && (

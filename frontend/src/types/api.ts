@@ -1,41 +1,20 @@
-export enum UserStatus {
-  ONLINE = "online",
-  OFFLINE = "offline",
-	INGAME = "ingame",
-}
+export type UserStatus = "online" | "offline" | "ingame";
 
-export enum Language {
-	ENGLISH = "english",
-	CHINESE = "chinese",
-	MALAY = "malay",
-}
-
-export enum TextSize {
-	SMALL = "small",
-	MEDIUM = "medium",
-	LARGE = "large",
-}
-
-export enum CameraTracking {
-	STATIC = "static",
-	DYNAMIC = "dynamic",
-}
+export type Language = "english" | "chinese" | "malay";
 
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
-  avatarUrl?: string | null;
+  avatarUrl: string;
   status: UserStatus;
-  joinedAt: string;
-  updatedAt: string;
+  joinedAt: Date;
+  updatedAt: Date;
 }
 
 export interface UserSettings {
 	userId: number;
 	language: Language;
-	textSize: TextSize;
-	inGameCameraTracking: CameraTracking;
 }
 
 export interface LoginData {
@@ -61,7 +40,7 @@ export interface GetUserResponse extends ApiResponse<User> {}
 
 // PATCH /users/:id
 export interface UpdateUserRequest {
-  id: string;              // user ID to update
+  id: number;              // user ID to update
   username?: string;       // optional
   avatarUrl?: string;      // optional
 }

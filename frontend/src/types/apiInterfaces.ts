@@ -1,7 +1,7 @@
 // Profile dropdown API interface
 // - ProfileDropdown.tsx
 export interface ProfileDropdownInfo {
-  id: string;
+  id: number;
   avatarUrl: string;
   username: string;
 }
@@ -9,7 +9,7 @@ export interface ProfileDropdownInfo {
 // Basic info API interface
 // - BasicInfoPopup.tsx
 export interface BasicInfo {
-  id: string;
+  id: number;
   joinDate: string;
   avatarUrl: string;
   username: string;
@@ -19,7 +19,7 @@ export interface BasicInfo {
 // Tournament stats API interface
 // - TournamentStatsPopup.tsx
 export interface TournamentStats {
-  id: string;
+  id: number;
   medals: { gold: number; silver: number; bronze: number };
   tournamentsPlayed: number;
   averageRanking: number;
@@ -43,7 +43,7 @@ interface MatchDetail {
 // Social features API interfaces
 // - SocialHub.tsx, Messaging.tsx, ProfileContents.tsx
 export interface FriendBasic {
-  id: string;
+  id: number;
   avatarUrl: string;
   username: string;
   online: boolean;
@@ -52,30 +52,30 @@ export interface FriendBasic {
 }
 
 export interface FriendRequest {
-  id: string;
+  id: number;
   avatarUrl: string;
   username: string;
 }
 
 export interface BlockedUser {
-  id: string;
+  id: number;
   avatarUrl: string;
   username: string;
 }
 
 export interface FriendMessaging {
-  id: string;
+  id: number;
   messages: Message[];
 }
 
 interface Message {
-  senderId: string;
+  senderId: number;
   text: string;
   timestamp: string;
 }
 
 export interface Profile {
-  id: string;
+  id: number;
   avatarUrl: string;
   username: string;
   joinDate: string;
@@ -90,7 +90,7 @@ export interface Profile {
 // - TournamentLobbyView.tsx
 // Player in tournament lobby
 export interface WaitingTournamentPlayer {
-  id: string;
+  id: number;
   username: string;
   spriteUrl: string;
   ready: boolean;
@@ -98,14 +98,14 @@ export interface WaitingTournamentPlayer {
 
 // Chat message in tournament lobby
 export interface LiveChatMessage {
-  uid: string;
+  uid: number;
   from: string;
   text: string;
   timestamp: string; // ISO string or formatted
 }
 
 export interface MatchPlayer {
-  id: string;
+  id: number;
   username: string;
   spriteUrl: string;
   ready: boolean;
@@ -114,7 +114,7 @@ export interface MatchPlayer {
 // Custom Mode Room API interfaces
 export interface WaitingRoomPlayer {
   leader: boolean;
-  id: string;
+  id: number;
   username: string;
   spriteUrl: string;
   ready: boolean;

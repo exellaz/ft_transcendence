@@ -40,7 +40,7 @@ const LiveChat: React.FC<{
   // Helper function to get display name for a message
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.uid === "system") return "System"; // System messages
-    const player = players.find((p) => p.uid === msg.uid); // Find player by uid
+    const player = players.find((p: any) => p.id === msg.uid); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };
 

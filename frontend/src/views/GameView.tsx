@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
 
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
-
 import { useBlockLeave } from "../utils/blockRefresh";
 
 const GameView: React.FC = () => {
@@ -17,12 +17,13 @@ const GameView: React.FC = () => {
   const navigate = useNavigate();
 
   // TODO: Replace with actual JWT
-  const roomId = sessionStorage.getItem("RoomId") || "t1";
+  const { user } = useUser();
+  if (!user) return;
+  const roomId = Number(sessionStorage.getItem("RoomId") || "1");
   const roomName = sessionStorage.getItem("RoomName") || "Room 1";
-  const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || '{}');
-  const clientId = playerInfo.id;
-  const playerName = playerInfo.name;
-  const playerSprite = playerInfo.sprite;
+  const clientId = user.id;
+  const playerName = user.username;
+  const playerSprite = user.avatarUrl || "default.png";
   const initialRole = sessionStorage.getItem("playerSide") || "";
 
   // -------------------------------- Websockets --------------------------------

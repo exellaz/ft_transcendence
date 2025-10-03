@@ -1,12 +1,12 @@
 import { chatRooms } from "../modules/chat/liveChat.ws";
-import { rooms, roomEndGame, type Room } from "../modules/room/room";
+import { rooms, roomEndGame, type Room, playerInfo } from "../modules/room/room";
 import { Game } from "../modules/game/game";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 
 export interface WSContext {
-	clientId: string;
-	roomId: string;
+	clientId: number;
+	roomId: number;
 	room: any;
 	side?: "left" | "right";
     playerName: string;
@@ -22,46 +22,52 @@ export interface WSContext {
 */
 export function validateConnection(socket: any, req:any): WSContext | null {
     const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-    const clientId = url.searchParams.get("id");
-    const roomId = url.searchParams.get("room");
+    const clientId = Number(url.searchParams.get("id"));
+    const roomId = Number(url.searchParams.get("room"));
     const side = url.searchParams.get("side") as "left" | "right" | null;
     const playerName = url.searchParams.get("name");
 	const playerSprite = url.searchParams.get("sprite");
 
-    if (!clientId) {
+    if (isNaN(clientId)) {
+        console.log("Invalid clientId:", clientId);
 		socket.close(1008, "Client id is required");
         return null;
     }
 
-	if (!roomId) {
+	if (isNaN(roomId)) {
+        console.log("Invalid roomId:", roomId);
 		socket.close(1008, "Room id is required");
 		return null;
 	}
 
 	if (!side || (side && side !== "left" && side !== "right")) {
+        console.log("Invalid side:", side);
 		socket.close(1008, "Side is required");
 		return null;
 	}
 
     if (!playerName) {
+        console.log("Invalid playerName:", playerName);
         socket.close(1008, "Player name is required");
         return null;
     }
 
 	if (!playerSprite) {
+        console.log("Invalid playerSprite:", playerSprite);
 		socket.close(1008, "Player sprite is required");
 		return null;
 	}
 
 	const room = rooms.get(roomId);
 	if (!room) {
+        console.log("Room not found:", roomId);
 		socket.close(1008, "Room not found");
 		return null;
 	}
 
     return {
-        clientId,
-        roomId,
+        clientId: Number(clientId),
+        roomId: Number(roomId),
         room,
         side: side ?? undefined,
         playerName,
@@ -187,8 +193,8 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
             const newRole = `${side}_player${i + 1}`;
             // preserve readiness from gameState if available
             const oldReady =
-                room.gameState.teams.left.find((pl: any) => pl.clientId === p.clientId)?.ready ??
-                room.gameState.teams.right.find((pl: any) => pl.clientId === p.clientId)?.ready ??
+                room.gameState.teams.left.find((pl: playerInfo) => pl.clientId === p.clientId)?.ready ??
+                room.gameState.teams.right.find((pl: playerInfo) => pl.clientId === p.clientId)?.ready ??
                 p.ready ?? false;
 
             const updated = { ...p, role: newRole, ready: oldReady };
@@ -208,7 +214,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     // 4. broadcast to all players about the switch
     const newPlayer = room.clientRoles.get(clientId);
 	if (!newPlayer) return;
-    broadcast(room, createLiveChatMessage("system", "system", `${newPlayer.playerName} switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side.`));
+    broadcast(room, createLiveChatMessage(-1, "system", `${newPlayer.playerName} switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side.`));
     console.log(`Player ${newPlayer.playerName} (${oldRole}) [ ${clientId} ] switched to ${newPlayer.role.startsWith("left") ? "left" : "right"} side in room ${room.name} (${room.id})`);
     //console.log ("After switch, teams:", room.gameState.teams); ////debug
 
@@ -238,7 +244,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     return newPlayer.role;
 }
 
-export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod: number, isDuringGame: boolean) {
+export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number, isDuringGame: boolean) {
     const player = room.clientRoles.get(clientId);
     if (!player) return;
 
@@ -248,7 +254,7 @@ export function handlePlayerDisconnect(room: Room, clientId: string, gracePeriod
 
     // notify everyone
 	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds.`);
-    broadcast(room, createLiveChatMessage("system", "system", `${player.playerName} disconnected.`));
+    broadcast(room, createLiveChatMessage(-1, "system", `${player.playerName} disconnected.`));
     broadcast(room, {
         type: "roleUpdate",
         gameState: room.gameState,
