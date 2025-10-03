@@ -35,7 +35,7 @@ model User {
   username   String         @unique
   password   String
   email      String         @unique
-  avatarUrl  String         @default("/assets/default_avatar") @map("avatar_url")
+  avatarUrl  String         @default("/assets/yellow-ghost.png") @map("avatar_url")
   status     userStatus     @default(offline) @map("status")
   joinedAt   DateTime       @default(now()) @map("joined_at")
   updatedAt  DateTime       @default(now()) @map("updated_at")
