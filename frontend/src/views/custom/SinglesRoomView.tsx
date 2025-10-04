@@ -5,7 +5,6 @@ import { useUser } from "../../context/UserProvider";
 import { getUserById } from "../../lib/usersApiClient"; // Import the function
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 import type { User } from "../../types/usersApi"; // Import the User type
-import { toggleRoomPrivacy } from "../../lib/requestBackend.api";
 
 // components
 import Button from "../../components/Button";
@@ -40,22 +39,20 @@ const SinglesRoomView: React.FC = () => {
   const [userInfo, setUserinfo] = useState<User | null>(null);
 
   //function to toggle private and public room
-  const handleTogglePrivacy = async () => {
-    if (!roomInfo) return;
-    try {
-      const updated = await toggleRoomPrivacy(
-        roomInfo.id,
-        roomInfo.type === "public" // if current is public, make it private
-      );
+  const handleTogglePrivacy = () => {
+    if (!roomInfo || !isLeader || !socket) return;
 
-      // Update UI with new type from API response
-      setRoomInfo((prev) =>
-        prev ? { ...prev, type: updated.private ? "private" : "public" } : prev
-      );
-    } catch (err) {
-      console.error("Failed to toggle room privacy:", err);
-      alert("Could not update room privacy");
-    }
+    // Determine the new privacy status
+    const newPrivate = roomInfo.type === "public"; // true → make private
+
+    // Send WebSocket message to backend
+    socket?.send(JSON.stringify({
+      type: "togglePrivacy",
+      private: newPrivate,
+    }));
+
+    // Optimistically update the UI
+    setRoomInfo(prev => prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev);
   };
 
 
@@ -119,6 +116,7 @@ const SinglesRoomView: React.FC = () => {
 
   //room websocket
   const {
+	socket,
 	leftTeamHtml,
 	rightTeamHtml,
 	isLeader,
@@ -139,6 +137,7 @@ const SinglesRoomView: React.FC = () => {
         name: userInfo?.username ?? "",
         avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
     },
+	setRoomInfo,
   });
 
 //  if (!roomInfo || !userInfo) {
@@ -173,16 +172,16 @@ const SinglesRoomView: React.FC = () => {
 		<h1>no room id</h1>
 	) : (
     <RoomLayout isLeader={isLeader}>
-	    {/* show countdown */}
-	    {countdown !== null && (
-          <p className="absolute -top-8 text-6xl font-bold text-white">
-           {countdown > 0
-             ? countdown
-             : translate("game_start")}
-          </p>
-        )}
 		<div className="relative w-full flex justify-center">
           <Card size="large" className="w-full max-w-4xl">
+	        {/* show countdown */}
+	        {countdown !== null && (
+              <p className="absolute -top-8 text-6xl font-bold text-white">
+               {countdown > 0
+                 ? countdown
+                 : translate("game_start")}
+              </p>
+            )}
             <div className="w-full h-full flex-row-center gap-10">
               <div className="w-[50%] h-full flex-col-between gap-6">
                 <TournamentHeader>

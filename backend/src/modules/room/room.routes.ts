@@ -26,7 +26,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     app.post("/create-room", async (req, reply) => {
     	// console.log("request /Create-room:", req.body); ////debug
     	const body: any = req.body;
-        console.log("body:", body); ////debug
+        // console.log("body:", body); ////debug
 
     	//assign body parameters to variables
     	const {
@@ -81,8 +81,8 @@ export default async function roomRoutes(app: FastifyInstance) {
     	rooms.set(roomId, room);
 
     	console.log(
-    	  ` ${name} (${roomId}) [${isPrivate ? "Private" : "Public"}] created with team size ${teamSize}`
-    	); ////debug
+    	  `Player id: ${leaderId} => ${name} (${roomId}) [${isPrivate ? "Private" : "Public"}] created with team size ${teamSize}`
+    	);
 
     	// Respond with room details to client
     	const response = {
@@ -96,26 +96,6 @@ export default async function roomRoutes(app: FastifyInstance) {
     		setting: room.setting // 👈 important for frontend
     	};
     	return response;
-    });
-
-    // ----------------------- UPDATE ROOM SETTING -----------------------
-    app.patch("/room/:roomId/room-setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
-        const roomId = Number(req.params.roomId);
-        const room = rooms.get(roomId);
-
-        if (!room) {
-            return reply.code(404).send({ error: "Room not found" });
-        }
-
-        const body = req.body as { isPrivate?: boolean };
-        if (typeof body.isPrivate !== "boolean") {
-            return reply.code(400).send({ error: "isPrivate must be a true or false" });
-        }
-
-        room.private = body.isPrivate;
-
-		console.log(`${room.name} (${roomId}) change to [${room.private ? "Private" : "Public"}]`);
-        return { success: true, roomId, private: room.private };
     });
 
     // ----------------------- UPDATE GAME SETTING -----------------------

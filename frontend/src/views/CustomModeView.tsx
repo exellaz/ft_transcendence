@@ -92,11 +92,7 @@ const CustomModeView: React.FC = () => {
 
 	//if had room, navigate to it
 	const roomIdToUse = room.id || room.roomId;
-	// sessionStorage.setItem("RoomId", roomIdToUse);
-	// sessionStorage.setItem("RoomName", room.name);
-	// sessionStorage.setItem("RoomLeaderId", room.leaderId);
-    // sessionStorage.setItem("RoomType", "public");
-	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room, joinType: "public" } });
+	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
   //join private room - fetch rooms from API, find the room by ID, then navigate to the room
@@ -121,10 +117,7 @@ const CustomModeView: React.FC = () => {
 	}
 
 	//if found room, navigate to it
-	// sessionStorage.setItem("RoomId", room.id);
-	// sessionStorage.setItem("RoomName", room.name);
-    // sessionStorage.setItem("RoomType", "private");
-	navigate(getRoomPath(room.teamSize, room.id), { state: { room, joinType: "private" } });
+	navigate(getRoomPath(room.teamSize, room.id), { state: { room } });
   }
 
   // Helper to go back one step

@@ -7,7 +7,7 @@ import { URL } from "url";
 export interface WSContext {
 	clientId: number;
 	roomId: number;
-	room: any;
+	room: Room;
 	side?: "left" | "right";
     playerName: string;
 	playerSprite: string;
@@ -29,38 +29,38 @@ export function validateConnection(socket: any, req:any): WSContext | null {
 	const playerSprite = url.searchParams.get("sprite");
 
     if (isNaN(clientId)) {
-        console.log("Invalid clientId:", clientId);
+        // console.log("Invalid clientId:", clientId); ////debug
 		socket.close(1008, "Client id is required");
         return null;
     }
 
 	if (isNaN(roomId)) {
-        console.log("Invalid roomId:", roomId);
+        // console.log("Invalid roomId:", roomId); ////debug
 		socket.close(1008, "Room id is required");
 		return null;
 	}
 
 	if (!side || (side && side !== "left" && side !== "right")) {
-        console.log("Invalid side:", side);
+        // console.log("Invalid side:", side); ////debug
 		socket.close(1008, "Side is required");
 		return null;
 	}
 
     if (!playerName) {
-        console.log("Invalid playerName:", playerName);
+        // console.log("Invalid playerName:", playerName); ////debug
         socket.close(1008, "Player name is required");
         return null;
     }
 
 	if (!playerSprite) {
-        console.log("Invalid playerSprite:", playerSprite);
+        // console.log("Invalid playerSprite:", playerSprite); ////debug
 		socket.close(1008, "Player sprite is required");
 		return null;
 	}
 
 	const room = rooms.get(roomId);
 	if (!room) {
-        console.log("Room not found:", roomId);
+        // console.log("Room not found:", roomId); ////debug
 		socket.close(1008, "Room not found");
 		return null;
 	}

@@ -130,26 +130,3 @@ export async function gameSetting(roomId:string, ballSpeed: number, paddleHeight
     return null;
   }
 }
-
-export async function toggleRoomPrivacy(roomId: number, isPrivate: boolean) {
-  try {
-    const res = await fetch(`${API_URL}/room/${roomId}/room-setting`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isPrivate })
-    });
-
-    if (!res.ok) {
-        throw new Error(`Failed to update room privacy: ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    console.log("Room privacy updated:", data);
-    return data;
-  } catch (err) {
-    console.error("Error updating room privacy:", err);
-    throw err;
-  }
-}

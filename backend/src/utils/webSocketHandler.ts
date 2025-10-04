@@ -1,9 +1,8 @@
 import { Game } from "../modules/game/game";
 import type { playerInfo, Room } from "../modules/room/room";
-import { rooms, startRoomLoop, roomStartGame} from "../modules/room/room";
+import { rooms } from "../modules/room/room";
 import { createLiveChatMessage, } from "../modules/chat/liveChat";
-import { broadcast, handleSwitchSide, updateCanStart, handlePlayerDisconnect, startCountdown, cancelCountdown } from "./utils";
-import { start } from "repl";
+import { broadcast, handlePlayerDisconnect, cancelCountdown } from "./utils";
 
 const game = new Game(); //create game object
 
@@ -12,7 +11,7 @@ const game = new Game(); //create game object
 */
 interface IWebSocketHandler {
 	assignRole(room: Room, clientId: number, socket: any, roomId: number, preferredSide: string, playerName: string, playerSprite: string): { id: number, role: string, playerName: string, team: string, leader: boolean, spriteUrl: string, ready: boolean };
-	handleDisconnect(socket: any, room: Room, clientId: number, roomId: string): void;
+	handleDisconnect(socket: any, room: Room, clientId: number, roomId: number): void;
 }
 
 export class WebSocketHandler implements IWebSocketHandler {
@@ -119,7 +118,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 	 * @param role The role of the client (player, spectator, etc.)
 	 * @param roomId The ID of the room
 	*/
-	handleDisconnect(socket: any, room: Room, clientId: number, roomId: string) {
+	handleDisconnect(socket: any, room: Room, clientId: number, roomId: number) {
 		// ---- guard check ----
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;

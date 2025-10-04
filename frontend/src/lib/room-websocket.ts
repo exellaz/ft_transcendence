@@ -11,7 +11,8 @@ export interface UseRoomWebSocketParams {
         id: number;
         name: string;
         avatar: string;
-    }
+    };
+	setRoomInfo: React.Dispatch<React.SetStateAction<{ name: string; leaderId: number; type: string; id: number } | null>>;
 }
 
 /**
@@ -20,7 +21,7 @@ export interface UseRoomWebSocketParams {
  * @param roomName The name of the room.
  * @param leaderId The client ID of the room leader.
 */
-export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoomWebSocketParams) {
+export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomInfo }: UseRoomWebSocketParams) {
 	const [statusText, setStatusText] = useState("Connecting to room..."); // e.g., "Room MyRoom [id: 1234]"
 	const [playerText, setPlayerText] = useState("Waiting for players..."); // e.g., "You are: Player1 [id: abc123] (left_player1)"
 	const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team..."); // HTML content for left team
@@ -31,15 +32,12 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 	const [gameStarted, setGameStarted] = useState(false); // Whether the game has started
 	const [canStart, setCanStart] = useState(false); // Whether the game can be started (all players ready)
 	const [countdown, setCountdown] = useState<number | null>(null);
-	const [roomInfo, setRoomInfo] = useState<{ type: string } | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
         //TODO replace with JWT
 
 		async function connect() {
-			// set room settings
-			//await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
 
 			// pick role (leader gets left_player1)
 			let roleLocal = player.id === leaderId ? "left_player1" : "spectator";
@@ -52,6 +50,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 			console.log("ws player name:", player.name);
 			console.log("ws player sprite:", player.avatar);
 			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
+			console.log("Connecting to room ws:", import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
 			socketRef.current = ws;
 
 			// open connection
@@ -167,6 +166,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 					}
 					if (data.type === "roomPrivacyUpdate") {
 						setRoomInfo(prev => prev ? { ...prev, ...data.data } : data.data);
+						console.log("Room privacy updated:", data.data);
 					}
 				} catch (err) {
 					console.error("Invalid room message:", err);

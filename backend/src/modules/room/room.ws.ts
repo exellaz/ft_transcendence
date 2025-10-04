@@ -40,7 +40,7 @@ export default async function roomWsRoutes(fastify: any) {
 						}
 
 						// --- allow type ---
-						const allowedTypes = ["switchSide", "ready", "start"];
+						const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy"];
 						if (!allowedTypes.includes(msg.type)) {
 							socket.close(1003, `unsupported message type ${msg.type}`);
 							return;
@@ -167,7 +167,28 @@ export default async function roomWsRoutes(fastify: any) {
 								return;
 							}
 						}
+						if (msg.type === "togglePrivacy") {
+						    // only leader can toggle
+						    if (clientId !== room.leaderId) return;
 
+						    // validate boolean
+						    if (typeof msg.private !== "boolean") {
+						        socket.close(1003, "Invalid boolean: [private]");
+						        return;
+						    }
+
+						    // update room type
+						    room.private = msg.private;
+
+						    // broadcast to all players in room
+							console.log(`${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.id}]`);
+						    broadcast(room, {
+						        type: "roomPrivacyUpdate",
+						        data: {
+						            type: room.private ? "private" : "public",
+						        },
+						    });
+						}
 					} catch (err) {
 						console.error("unexpected error in room wsmessage handling:", err);
 						socket.close(1011, "server error");
