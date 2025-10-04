@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ensurePlayerId, determineSide } from "./requestBackend.api";
+import { determineSide } from "./requestBackend.api";
 import type { playerInfo } from "../../../backend/src/modules/room/room"
 
 // room structure
@@ -31,6 +31,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 	const [gameStarted, setGameStarted] = useState(false); // Whether the game has started
 	const [canStart, setCanStart] = useState(false); // Whether the game can be started (all players ready)
 	const [countdown, setCountdown] = useState<number | null>(null);
+	const [roomInfo, setRoomInfo] = useState<{ type: string } | null>(null);
 	const socketRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
@@ -80,7 +81,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 						console.error("Invalid message: missing type:", data);
 						return;
 					}
-					const allowedTypes = ["roleUpdate", "state", "countdown", "countdownCancel"];
+					const allowedTypes = ["roleUpdate", "state", "countdown", "countdownCancel", "roomPrivacyUpdate"];
 					if (!allowedTypes.includes(data.type)) {
 						if (data.type === "chat") return;
 						console.error(`unsupported message type ${data.type}`);
@@ -164,6 +165,9 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 						//cancel the countdown
 						setCountdown(null);
 					}
+					if (data.type === "roomPrivacyUpdate") {
+						setRoomInfo(prev => prev ? { ...prev, ...data.data } : data.data);
+					}
 				} catch (err) {
 					console.error("Invalid room message:", err);
 					ws.close(1000, "server error");
@@ -200,10 +204,12 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 	  setReady(newReady);
 	  socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
 	}
+
 	function onStartBtn() {
 	  if (!isLeader || !socketRef.current) return;
 	  socketRef.current.send(JSON.stringify({ type: "start", start: true }));
 	}
+
 	function onLeave() {
 	  try { socketRef.current?.close(); } catch {}
 	  sessionStorage.removeItem("RoomName");

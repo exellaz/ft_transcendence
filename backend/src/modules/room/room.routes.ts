@@ -81,7 +81,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     	rooms.set(roomId, room);
 
     	console.log(
-    	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
+    	  ` ${name} (${roomId}) [${isPrivate ? "Private" : "Public"}] created with team size ${teamSize}`
     	); ////debug
 
     	// Respond with room details to client
@@ -114,6 +114,7 @@ export default async function roomRoutes(app: FastifyInstance) {
 
         room.private = body.isPrivate;
 
+		console.log(`${room.name} (${roomId}) change to [${room.private ? "Private" : "Public"}]`);
         return { success: true, roomId, private: room.private };
     });
 

@@ -39,6 +39,7 @@ const SinglesRoomView: React.FC = () => {
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
 
+  //function to toggle private and public room
   const handleTogglePrivacy = async () => {
     if (!roomInfo) return;
     try {
@@ -172,15 +173,15 @@ const SinglesRoomView: React.FC = () => {
 		<h1>no room id</h1>
 	) : (
     <RoomLayout isLeader={isLeader}>
+	    {/* show countdown */}
+	    {countdown !== null && (
+          <p className="absolute -top-8 text-6xl font-bold text-white">
+           {countdown > 0
+             ? countdown
+             : translate("game_start")}
+          </p>
+        )}
 		<div className="relative w-full flex justify-center">
-	       {/* show countdown */}
-	       {countdown !== null && (
-             <p className="absolute -top-8 text-6xl font-bold text-white">
-              {countdown > 0
-                ? countdown
-                : translate("game_start")}
-             </p>
-           )}
           <Card size="large" className="w-full max-w-4xl">
             <div className="w-full h-full flex-row-center gap-10">
               <div className="w-[50%] h-full flex-col-between gap-6">
@@ -205,24 +206,28 @@ const SinglesRoomView: React.FC = () => {
                   <p>
                     ({translate("room_id")}: {roomInfo?.id})
                   </p>
-                  {/* Show room type */}
-                  <p className="text-sm text-gray-400">
-                    {translate("room_type")}:{" "}
-                    <span
-                      className={
-                        roomInfo?.type === "private"
-                          ? "text-red-400 font-semibold"
-                          : "text-green-400 font-semibold"
-                      }
-                    >
-                      {roomInfo?.type}
-                    </span>
-                  </p>
-                  {isLeader && (
-                    <Button variant="brown" onClick={handleTogglePrivacy} className="text-sm">
-                      {roomInfo?.type === "private" ? "Make Public" : "Make Private"}
-                    </Button>
-                  )}
+                  {/* toggle private or public */}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={roomInfo?.type === "private"}
+                      onChange={handleTogglePrivacy}
+					  disabled={!isLeader}
+                    />
+                    {/* Track with both words */}
+                    <div className="w-30 h-8 rounded-full bg-card-blue flex text-xs font-bold text-white overflow-hidden">
+                      <span className="w-1/2 flex items-center justify-center">Private</span>
+                      <span className="w-1/2 flex items-center justify-center">Public</span>
+                    </div>
+                    {/* Cover the inactive side instead of active */}
+                    <div
+                      className={`absolute top-1 left-1 w-[calc(50%-0.25rem)] h-6 rounded-full transition-transform duration-300 bg-yellow-400`}
+                      style={{
+                        transform: roomInfo?.type === "private" ? "translateX(100%)" : "translateX(0)",
+                      }}
+                    ></div>
+                  </label>
                 </TournamentHeader>
 	    		{/* player team block: check ready and switch button */}
                 <ReadyRoomPlayers variant="singles" userId={userInfo?.id || -1} players={players} onSwitchTeam={onSwitch} />
