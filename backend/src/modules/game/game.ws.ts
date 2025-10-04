@@ -72,6 +72,7 @@ export default async function gameWsRoute(fastify: any) {
 
 		// Step 3: handle client disconnect
 		socket.on("close", () => {
+			if (room.gameState.gameStarted) return;
 			wsHandler.handleDisconnect(socket, room, clientId, room.id);
 		});
 	});

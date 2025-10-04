@@ -244,36 +244,21 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     return newPlayer.role;
 }
 
-export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number, isDuringGame: boolean) {
+export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number) {
     const player = room.clientRoles.get(clientId);
     if (!player) return;
 
-    // mark as disconnected
-    room.disconnectPlayers.add(clientId);
-	// console.log("room.disconnectPlayers:", room.disconnectPlayers); ////debug
-
     // notify everyone
-	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds.`);
-    broadcast(room, createLiveChatMessage(-1, "system", `${player.playerName} disconnected.`));
+	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds to end game.`);
+    // broadcast(room, createLiveChatMessage(-1, "system", `${player.playerName} disconnected.`));
     broadcast(room, {
         type: "roleUpdate",
         gameState: room.gameState,
         leaderId: room.leaderId,
     });
 
-    // cancel any existing timer
-    if (!room.disconnectTimers) room.disconnectTimers = new Map();
-    if (room.disconnectTimers.has(clientId)) {
-        clearTimeout(room.disconnectTimers.get(clientId)!);
-        room.disconnectTimers.delete(clientId);
-    }
-
-    // start timer
-    const timer = setTimeout(() => {
-        console.log(`${player.playerName} fail to reconnect.`);
-
-        // remove from disconnects
-        room.disconnectPlayers.delete(clientId);
+    // start time for end game
+    setTimeout(() => {
 
         // remove from teams and paddles
         room.gameState.teams.left = room.gameState.teams.left.filter(p => p.clientId !== clientId);
@@ -281,17 +266,15 @@ export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod
         delete room.gameState.paddles[clientId];
         room.clientRoles.delete(clientId);
 
-        // if during game, determine winner if only one team left
-        if (isDuringGame) {
-            const leftRemaining = room.gameState.teams.left.length;
-            const rightRemaining = room.gameState.teams.right.length;
-            let winner: "left" | "right" | null = null;
-            if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
-            else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
-            if (winner && !room.gameState.gameEnded) {
-                roomEndGame(room, true, winner);
-                return;
-            }
+        //determine winner if only one team left
+        const leftRemaining = room.gameState.teams.left.length;
+        const rightRemaining = room.gameState.teams.right.length;
+        let winner: "left" | "right" | null = null;
+        if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
+        else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
+        if (winner && !room.gameState.gameEnded) {
+            roomEndGame(room, true, winner);
+            return;
         }
 
         // notify updated state
@@ -300,15 +283,7 @@ export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod
             gameState: room.gameState,
             leaderId: room.leaderId,
         });
-
-        if (room.disconnectTimers) {
-            room.disconnectTimers.delete(clientId);
-        }
     }, gracePeriod);
-
-    if (room.disconnectTimers) {
-        room.disconnectTimers.set(clientId, timer);
-    }
 }
 
 /**
