@@ -3,6 +3,7 @@ import { Game } from "../game/game"; // import game loop
 import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
+import { GameSettings, PongGame } from "../../../shared/game/pong.ts";
 
 export interface playerInfo {
     clientId: number; // client id
@@ -128,7 +129,12 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		sockets: new Map(),
 		chatHistory: [] as any [],
 		disconnectPlayers: new Set(),
-		game: new Game(),
+		game: new PongGame(
+			null,
+			null,
+			[],
+			new GameSettings
+		),
 		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,
@@ -156,7 +162,7 @@ export function startRoomLoop(room: Room) {
 			console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
 			return;
 		}
-		room.game.gameLoop(room);
+		room.game.update(room);
 
 	}, 1000 / 60);
 }

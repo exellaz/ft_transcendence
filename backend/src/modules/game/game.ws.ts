@@ -4,12 +4,12 @@ import { validateConnection } from "../../utils/utils";
 // import { PongGame } from "@shared/game/pong";
 const wsHandler = new WebSocketHandler();
 
-import { PongGame } from "../../../shared/game/pong.ts";
+import { PongGame, GameSettings } from "../../../shared/game/pong.ts";
 const game = new PongGame(
 	null,
 	false,
 	[],
-	null
+	new GameSettings()
 );
 
 /**

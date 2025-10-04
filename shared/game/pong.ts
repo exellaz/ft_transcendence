@@ -172,6 +172,14 @@ export class PongGame {
 	// -- client-side only --
 	public isClient: boolean = false;
 
+
+
+	resetBall() {
+		console.log(">>> RESET BALL");
+		this.ball.position = new Point2D(0, 0);
+	}
+
+
 	startGame() {
 		this.state = GameState.STARTING;
 	}
@@ -181,11 +189,35 @@ export class PongGame {
 		this.winningTeam = team;
 	}
 
-	update() {
+	update(room: any) {
+		
+		// console.log(`>>> update called [${room.clients}]`);
+		this.clients = room.clients;
+
 		const now = performance.now();
 		this.delta = (now - this.lastFrameTime) / 1000; // delta in seconds
 		this.lastFrameTime = now;
 		this.world.update();
+
+
+		const output = this.exportState(false);
+		
+		for (const client of this.clients) {
+			console.log("socket state:", client.readyState);
+			// console.log("socket state:", client._socket.readyState);
+			if (client && client._readyState === 1) {
+
+
+				try {
+					if (client.handshakeComplete && client.receivedFullState) {
+						console.log("successfully sent");
+						client.send(output);
+					}
+				} catch (e) {
+					console.error("Error sending to client:", e);
+				}
+			}
+		}
 	}
 
 	exportState(includeStaticObjects: boolean = false) {
