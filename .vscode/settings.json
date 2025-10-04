@@ -6,15 +6,17 @@
         "folderRegexColor.custom4": "#3a393b",
         "terminal.background": "#00000000",
         "terminal.ansiRed": "#ff6969",
-        "commandCenter.border": "#15202b99",
-        "sash.hoverBorder": "#69c585",
-        "statusBarItem.hoverBackground": "#389153",
-        "statusBarItem.remoteBackground": "#46b668",
-        "statusBarItem.remoteForeground": "#15202b",
-        "titleBar.activeBackground": "#46b668",
-        "titleBar.activeForeground": "#15202b",
-        "titleBar.inactiveBackground": "#46b66899",
-        "titleBar.inactiveForeground": "#15202b99"
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#528e7f",
+        "statusBarItem.hoverBackground": "#528e7f",
+        "statusBarItem.remoteBackground": "#3f6e62",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#3f6e62",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#3f6e6299",
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "statusBar.background": "#3f6e62",
+        "statusBar.foreground": "#e7e7e7"
     },
-    "peacock.remoteColor": "#46b668"
+    "peacock.remoteColor": "#3f6e62"
 }

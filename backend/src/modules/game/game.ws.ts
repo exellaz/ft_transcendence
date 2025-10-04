@@ -21,7 +21,7 @@ function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 
 
 
-// todo this is the game.routes.ts
+// todo this is the game.routes.ts (server)
 
 
 

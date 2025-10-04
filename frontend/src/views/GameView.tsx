@@ -9,10 +9,6 @@ import TournamentHeader from "../components/TournamentHeader";
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 
-
-// todo this is the client
-
-
 const GameView: React.FC = () => {
   useBlockLeave();
   const { t } = useTranslation();
@@ -30,27 +26,27 @@ const GameView: React.FC = () => {
   const playerSprite = user.avatarUrl || "default.png";
   const initialRole = sessionStorage.getItem("playerSide") || "";
 
-
+  
   // -------------------------------- Websockets --------------------------------
   const {
     socket,
-    role,
-    gameOver,
-    winner,
-    playerResult,
-    isSpectator,
-    gameState,
-    setting,
-    scoreText,
-    statusText,
-    settingView,
-  } = useGameWebSocket({
-    roomId,
-    roomName,
-    clientId,
-    initialRole,
-    playerName,
-    playerSprite
+	  role,
+	  gameOver,
+      winner,
+	  playerResult,
+	  isSpectator,
+	  gameState,
+      setting,
+	  scoreText,
+	  statusText,
+	  settingView,
+   } = useGameWebSocket({
+      roomId,
+      roomName,
+      clientId,
+      initialRole,
+      playerName,
+      playerSprite
   });
 
   // -------------------------------- Effect --------------------------------
@@ -70,14 +66,8 @@ const GameView: React.FC = () => {
     const handler = (e: KeyboardEvent) => {
       if (gameOver || role === "spectator") return;
       if (e.type === "keydown") {
-        if (e.key === "ArrowUp") {
-          keysRef.current.up = true;
-          console.log("arrow up pressed");
-        }
-        if (e.key === "ArrowDown") {
-          keysRef.current.down = true;
-          console.log("arrow down pressed");
-        }
+        if (e.key === "ArrowUp") keysRef.current.up = true;
+        if (e.key === "ArrowDown") keysRef.current.down = true;
       }
       if (e.type === "keyup") {
         if (e.key === "ArrowUp") keysRef.current.up = false;
@@ -96,24 +86,13 @@ const GameView: React.FC = () => {
   useEffect(() => {
     let animationFrame: number;
 
-    //requestAnimationFrame: is a api for create smooth animations
+	//requestAnimationFrame: is a api for create smooth animations
     const loop = () => {
-      // console.log(role);
-      console.log(WebSocket.OPEN, gameOver);
-      // console.log(socket.readyState);
       if (socket && socket.readyState === WebSocket.OPEN && !gameOver && role !== "spectator") {
-        console.log("sending")
-        
         const speed = setting?.paddleSpeed;
-        if (keysRef.current.up)
-          socket.send(JSON.stringify({ type: "move", role, dy: -speed }));
-        if (keysRef.current.down) {
-          console.log(socket.readyState, WebSocket.OPEN);
-          socket.send(JSON.stringify({ type: "move", role, dy: speed }));
-        }
+        if (keysRef.current.up) socket.send(JSON.stringify({ type: "move", role, dy: -speed }));
+        if (keysRef.current.down) socket.send(JSON.stringify({ type: "move", role, dy: speed }));
       }
-
-      // todo the moment arrow key is pressed, client disconnects
       animationFrame = requestAnimationFrame(loop);
     };
 
@@ -132,13 +111,13 @@ const GameView: React.FC = () => {
           <p className="text-xs">{settingView}</p>
         </TournamentHeader>
         <div
-          className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1]"
-          style={{
-            backgroundImage: `url('/assets/${setting?.map}.png')`,
-            backgroundSize: "cover",
-            backgroundPosition: "center"
-          }}
-        >
+		  className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1]"
+		    style={{
+              backgroundImage: `url('/assets/${setting?.map}.png')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            }}
+		  >
           {/* game image */}
           <canvas
             ref={canvasRef}
@@ -147,22 +126,22 @@ const GameView: React.FC = () => {
             className="mx-auto block w-full h-auto max-w-[800px] max-h-[400px] border-4 border-black aspect-[2/1]"
           />
         </div>
-        {/* button to exit game */}
-        {(isSpectator || gameOver) && (
-          <button
-            onClick={() => {
-              navigate("/main-menu");
-              sessionStorage.removeItem("playerSide");
-              sessionStorage.removeItem("RoomId");
-              sessionStorage.removeItem("RoomLeaderId");
-              sessionStorage.removeItem("RoomName");
-              sessionStorage.removeItem("RoomType");
-            }}
-            className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
-          >
-            Back to Lobby
-          </button>
-        )}
+          {/* button to exit game */}
+          {(isSpectator || gameOver) && (
+            <button
+              onClick={() => {
+                navigate("/main-menu");
+                sessionStorage.removeItem("playerSide");
+                sessionStorage.removeItem("RoomId");
+                sessionStorage.removeItem("RoomLeaderId");
+                sessionStorage.removeItem("RoomName");
+                sessionStorage.removeItem("RoomType");
+              }}
+              className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
+            >
+              Back to Lobby
+            </button>
+          )}
       </div>
     </Background>
   );

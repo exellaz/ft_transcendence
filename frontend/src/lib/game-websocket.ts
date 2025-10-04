@@ -71,27 +71,22 @@ export function useGameWebSocket({
 				console.log("🍹 received message: ", data);
 
 				// validate message structure
-				if (typeof data !== "object" || data === null) {
-					console.error("Invalid message format");
-					return;
-				}
-				if (typeof data.type !== "string") {
-					console.error("Invalid message: missing type: ", data);
-					return;
-				}
+				if (typeof data !== "object" || data === null) 
+					return console.error("Invalid message format");
+				
+				if (typeof data.type !== "string") 
+					return console.error("Invalid message: missing type: ", data);
+				
 				const allowedTypes = ["roleUpdate", "state"];
-				if (!allowedTypes.includes(data.type)) {
-					console.error(`unsupported message type ${data.type}`);
-					return;
-				}
+				if (!allowedTypes.includes(data.type)) 
+					return console.error(`unsupported message type ${data.type}`);
 
 				// handle different message types
 				if (data.type === "roleUpdate") {
 					//validata the game state
-					if (typeof data.gameState !== "object" || data.gameState === null) {
-						console.error("Invalid game state");
-						return;
-					}
+					if (typeof data.gameState !== "object" || data.gameState === null) 
+						return console.error("Invalid game state");
+					
 					//update role based on clientId
 					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
 					const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
@@ -101,10 +96,9 @@ export function useGameWebSocket({
 				}
 				if (data.type === "state") {
 					//validate the game state
-					if (typeof data.gameState !== "object" || data.gameState === null) {
-						console.error("Invalid game state");
-						return;
-					}
+					if (typeof data.gameState !== "object" || data.gameState === null) 
+						return console.error("Invalid game state");
+					
 					//update game state
 					setGameState(data.gameState);
                     if (data.gameState.setting) {
