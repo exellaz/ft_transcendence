@@ -37,6 +37,18 @@ export class WebSocketHandler implements IWebSocketHandler {
 			let roleStr: string;
 
 			// assign player side according preferred side
+			const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
+			if (totalPlayers >= room.teamSize * 2) {
+                console.log(`Room ${room.name} [${room.id}] is full. Rejecting player ${playerName} [${clientId}]`);
+                if (socket) {
+                    socket.send(JSON.stringify({
+                        type: "error",
+                        message: "Room is full"
+                    }));
+                    socket.close(1000, "Room full");
+                }
+                return { id: clientId, role: "spectator", playerName, team: "spectator", leader: false, spriteUrl: playerSprite, ready: false };
+            }
 			if (preferredSide === "left" && room.gameState.teams.left.length < room.teamSize) {
 				roleStr = `left_player${room.gameState.teams.left.length + 1}`;
 				room.gameState.teams.left.push({

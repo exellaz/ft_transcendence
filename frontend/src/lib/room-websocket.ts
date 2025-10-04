@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { determineSide } from "./requestBackend.api";
 import type { playerInfo } from "../../../backend/src/modules/room/room"
+import { useNavigate } from "react-router-dom";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -32,7 +33,9 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 	const [gameStarted, setGameStarted] = useState(false); // Whether the game has started
 	const [canStart, setCanStart] = useState(false); // Whether the game can be started (all players ready)
 	const [countdown, setCountdown] = useState<number | null>(null);
+	const [roomError, setRoomError] = useState<string | null>(null); // Error message if room cannot be joined
 	const socketRef = useRef<WebSocket | null>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
         //TODO replace with JWT
@@ -68,6 +71,13 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 						data = JSON.parse(ev.data);
 					} catch {
 						console.error("Invalid JSON:", ev.data);
+						return;
+					}
+					// handle error message from server
+					if (data.type === "error") {
+						console.warn("Cannot join room:", data.message);
+						setRoomError(data.message); // <-- set state instead of alert
+						ws.close(1000, "error received");
 						return;
 					}
 
@@ -230,6 +240,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 		setReady,
 		canStart,
 		countdown,
+		roomError,
 		onSwitch,
 		onReady,
 		onStartBtn,

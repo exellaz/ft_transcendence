@@ -14,6 +14,7 @@ import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
+import Background from "../../components/Background";
 
 // hooks
 import { useRoomWebSocket } from "../../lib/room-websocket";
@@ -37,6 +38,7 @@ const SinglesRoomView: React.FC = () => {
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
+
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -128,6 +130,7 @@ const SinglesRoomView: React.FC = () => {
 	onLeave,
 	role,
 	countdown,
+	roomError,
   } = useRoomWebSocket({
     roomId: roomInfo?.id ?? -1,
     roomName: roomInfo?.name ?? "",
@@ -144,6 +147,7 @@ const SinglesRoomView: React.FC = () => {
 //    return <div>Loading...</div>; // or a spinner
 //  }
   // -------------------------------- Effect --------------------------------
+
   //navigate to game view if game started
   React.useEffect(() => {
 	//when count down finish delay 1 sec to start game
@@ -264,6 +268,33 @@ const SinglesRoomView: React.FC = () => {
             </div>
           </Card>
 	  </div>
+
+	  {/* error for if room is full */}
+      {roomError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Background image using your Background component */}
+          <Background variant="grass">
+            {/* Optional dark overlay on top of the background */}
+            <div className="absolute inset-0 bg-black opacity-70"></div>
+            {/* Popup content */}
+            <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+              <p className="text-center text-white text-2xl px-4">
+                {roomError}
+              </p>
+              <Button
+                variant="red"
+                onClick={() => {
+                  onLeave();
+                  navigate("/main-menu");
+                }}
+              >
+                OK
+              </Button>
+            </div>
+          </Background>
+        </div>
+      )}
+
 	  {/* confirm to leave room */}
       <ConfirmationPopup
         text={translate("leave_confirmation")}
