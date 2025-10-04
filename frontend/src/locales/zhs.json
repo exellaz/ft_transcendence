@@ -260,6 +260,7 @@
     "user_not_exist": "用户不存在。",
     "back": "返回",
     "no_friends_yet": "还没有朋友。",
-    "no_new_requests": "没有新的请求。"
+    "no_new_requests": "没有新的请求。",
+    "no_blocked_users": "没有被屏蔽的用户。"
   }
 }

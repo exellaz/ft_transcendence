@@ -1,47 +1,80 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type {
-  FriendBasic,
-  FriendRequest,
-  BlockedUser,
-} from "../types/apiInterfaces";
+import { useApiMutation } from "../hooks/useApi";
+import {
+  createBlockedFriendship,
+  deleteBlockedFriendship,
+} from "../lib/friendsApiClient";
+import type { User } from "../types/usersApi";
 
 import Button from "./Button";
 import ProfileContents from "./ProfileContents";
 import Messaging from "./Messaging";
-import type { User } from "../types/usersApi";
 
 interface CascadeCardProps {
+  userId: number;
   selectedUser: User;
   activeTab: string;
+  onActionSuccess: () => void;
 }
 
 const CascadeCard: React.FC<CascadeCardProps> = ({
+  userId,
   selectedUser,
   activeTab,
+  onActionSuccess,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`CascadeCard.${key}`);
   const [showProfile, setShowProfile] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [actionType, setActionType] = useState("");
-  const [actionDone, setActionDone] = useState(false);
+
+  // API mutation to block a user
+  const { mutate: blockUser } = useApiMutation(createBlockedFriendship);
+
+  // API mutation to unblock a user
+  const { mutate: unblockUser } = useApiMutation(deleteBlockedFriendship);
 
   // Handler for block/unblock button click
   const handleActionClick = (type: "block" | "unblock") => {
     setActionType(type);
     setShowConfirm(true);
-    setActionDone(false);
   };
 
-  // Handler for confirmation
-  const handleConfirm = (yes: boolean) => {
-    if (yes) {
-      setActionDone(true);
-    } else {
+  // Handler for action confirmation
+  const handleConfirm = async (confirmed: boolean) => {
+    if (!confirmed) {
       setShowConfirm(false);
       setActionType("");
-      setActionDone(false);
+      return;
+    }
+    if (actionType === "block") {
+      const block = await blockUser({
+        blockerId: userId,
+        blockedId: selectedUser.id,
+      });
+      if (block.success) {
+        alert(
+          t("CascadeCard.blocked", {
+            username: selectedUser.username,
+          })
+        );
+        onActionSuccess();
+      }
+    } else if (actionType === "unblock") {
+      const unblock = await unblockUser({
+        blockerId: userId,
+        blockedId: selectedUser.id,
+      });
+      if (unblock.success) {
+        alert(
+          t("CascadeCard.unblocked", {
+            username: selectedUser.username,
+          })
+        );
+        onActionSuccess();
+      }
     }
   };
 
@@ -50,39 +83,27 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
 
   // Confirmation dialog (all tabs)
   if (showConfirm) {
-    if (!actionDone) {
-      children = (
-        <div className="w-full h-full flex-col-center p-10 gap-6">
-          <div className={textStyle}>
-            {actionType === "block"
-              ? t("CascadeCard.confirm_block", {
-                  username: selectedUser.username,
-                })
-              : t("CascadeCard.confirm_unblock", {
-                  username: selectedUser.username,
-                })}
-          </div>
-          <div className="flex-row-center gap-6">
-            <Button variant="green" onClick={() => handleConfirm(true)}>
-              {translate("yes")}
-            </Button>
-            <Button variant="red" onClick={() => handleConfirm(false)}>
-              {translate("no")}
-            </Button>
-          </div>
+    children = (
+      <div className="w-full h-full flex-col-center p-10 gap-6">
+        <div className={textStyle}>
+          {actionType === "block"
+            ? t("CascadeCard.confirm_block", {
+                username: selectedUser.username,
+              })
+            : t("CascadeCard.confirm_unblock", {
+                username: selectedUser.username,
+              })}
         </div>
-      );
-    } else {
-      children = (
-        <div className="w-full h-full flex-col-center p-10 gap-6">
-          <div className={textStyle}>
-            {actionType === "block"
-              ? t("CascadeCard.blocked", { username: selectedUser.username })
-              : t("CascadeCard.unblocked", { username: selectedUser.username })}
-          </div>
+        <div className="flex-row-center gap-6">
+          <Button variant="green" onClick={() => handleConfirm(true)}>
+            {translate("yes")}
+          </Button>
+          <Button variant="red" onClick={() => handleConfirm(false)}>
+            {translate("no")}
+          </Button>
         </div>
-      );
-    }
+      </div>
+    );
   }
   // Profile view (Friends tab if showProfile, Requests, Blocked)
   else if (
@@ -128,7 +149,9 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="flex-1 border-gray-300 border-3 rounded-3xl">{children}</div>
+    <div className="flex-1 border-gray-300 border-3 rounded-3xl">
+      {children}
+    </div>
   );
 };
 

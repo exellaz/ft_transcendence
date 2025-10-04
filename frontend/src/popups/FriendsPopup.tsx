@@ -98,6 +98,17 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     setAddFriendError(null);
   }
 
+  function handleCloseCascadeCard() {
+    setSelectedUser(null);
+    if (activeTab === "friends") {
+      refetchFriends();
+    } else if (activeTab === "requests") {
+      refetchRequests();
+    } else if (activeTab === "blocked") {
+      refetchBlocked();
+    }
+  }
+
   const handleFriendIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFriendId(e.target.value);
     if (addFriendError) setAddFriendError(null);
@@ -408,7 +419,12 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         </div>
         {/* Extended View: Cascade Card */}
         {selectedUser && (
-          <CascadeCard selectedUser={selectedUser} activeTab={activeTab} />
+          <CascadeCard
+            userId={userId}
+            selectedUser={selectedUser}
+            activeTab={activeTab}
+            onActionSuccess={handleCloseCascadeCard}
+          />
         )}
       </div>
     </PopupCard>
