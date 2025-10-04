@@ -1,9 +1,9 @@
-import { degToRadians } from '../utils/calculations.js';
-import { Point2D } from './Coordinates.js';
-import { GameObject, exportCleanup } from './GameObject.js';
-import { Glow } from './Glow.js';
-import type { Outline } from './Outline.js';
-import { Viewport } from './Viewport.js';
+import { degToRadians } from '../utils/calculations.ts';
+import { Point2D } from './Coordinates.ts';
+import { GameObject, exportCleanup } from './GameObject.ts';
+import { Glow } from './Glow.ts';
+import type { Outline } from './Outline.ts';
+import { Viewport } from './Viewport.ts';
 
 export enum HorizontalAlign {
     Left = "left",

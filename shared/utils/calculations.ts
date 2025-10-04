@@ -1,4 +1,4 @@
-import { Point2D, Vector2D } from "../objects/Coordinates.js";
+import { Point2D, Vector2D } from "../objects/Coordinates.ts";
 
 export function oscillateValue(
 	baseValue: number,

@@ -1,5 +1,5 @@
-import type { Camera } from "./Camera.js";
-import { Vector2D, Point2D } from "./Coordinates.js";
+import type { Camera } from "./Camera.ts";
+import { Vector2D, Point2D } from "./Coordinates.ts";
 
 export class Viewport {
 	

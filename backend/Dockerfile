@@ -15,5 +15,4 @@ EXPOSE 3000
 # Applies the migration to the database('app.db')
 # Create 'app.db' file if doesn't exist
 # Runs prisma generate (so your Prisma Client is updated).
-CMD ["sh", "-c", "npx prisma migrate dev && npm run dev"]
-
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run dev"]

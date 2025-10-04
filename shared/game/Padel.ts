@@ -1,17 +1,17 @@
-import { BlendMode } from '../objects/Blendmodes.js';
-import { Vector2D, Point2D } from '../objects/Coordinates.js';
-import { GameObject, exportCleanup } from '../objects/GameObject.js';
-import { Glow } from '../objects/Glow.js';
-import { HitBox } from '../objects/HitBox.js';
-import { ImageObject, Interpolate } from '../objects/ImageObject.js';
-import { HorizontalAlign, Label } from '../objects/Label.js';
-import { Outline } from '../objects/Outline.js';
-import { Sprite } from '../objects/Sprite.js';
-import { Viewport } from '../objects/Viewport.js';
-import { clampPosition } from '../utils/calculations.js';
-import type { Player } from './Player.js';
-import { Team } from './pong.js';
-import { SKIN_PATHS, Skin } from './Skins.js';
+import { BlendMode } from '../objects/Blendmodes.ts';
+import { Vector2D, Point2D } from '../objects/Coordinates.ts';
+import { GameObject, exportCleanup } from '../objects/GameObject.ts';
+import { Glow } from '../objects/Glow.ts';
+import { HitBox } from '../objects/HitBox.ts';
+import { ImageObject, Interpolate } from '../objects/ImageObject.ts';
+import { HorizontalAlign, Label } from '../objects/Label.ts';
+import { Outline } from '../objects/Outline.ts';
+import { Sprite } from '../objects/Sprite.ts';
+import { Viewport } from '../objects/Viewport.ts';
+import { clampPosition } from '../utils/calculations.ts';
+import type { Player } from './Player.ts';
+import { Team } from './pong.ts';
+import { SKIN_PATHS, Skin } from './Skins.ts';
 
 
 export class Padel extends GameObject {

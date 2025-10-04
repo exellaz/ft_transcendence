@@ -1,9 +1,9 @@
-import { Point2D, Vector2D } from './Coordinates.js';
-import { Glow } from './Glow.js';
-import { Component } from './Component.js';
-import { Viewport } from './Viewport.js';
-import type { Camera } from './Camera.js';
-import { exportCleanup } from './GameObject.js';
+import { Point2D, Vector2D } from './Coordinates.ts';
+import { Glow } from './Glow.ts';
+import { Component } from './Component.ts';
+import { Viewport } from './Viewport.ts';
+import type { Camera } from './Camera.ts';
+import { exportCleanup } from './GameObject.ts';
 
 
 export interface Renderable {

@@ -1,11 +1,11 @@
-import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.js';
-import { exportCleanup, GameObject } from '../objects/GameObject.js';
-import { Sprite } from '../objects/Sprite.js';
-import { HitBox } from '../objects/HitBox.js';
-import { Glow } from '../objects/Glow.js';
-import { BlendMode } from '../objects/Blendmodes.js';
-import { Padel } from './Padel.js';
-import { Team } from './pong.js'; 
+import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.ts';
+import { exportCleanup, GameObject } from '../objects/GameObject.ts';
+import { Sprite } from '../objects/Sprite.ts';
+import { HitBox } from '../objects/HitBox.ts';
+import { Glow } from '../objects/Glow.ts';
+import { BlendMode } from '../objects/Blendmodes.ts';
+import { Padel } from './Padel.ts';
+import { Team } from './pong.ts'; 
 
 export class Ball extends GameObject {
 	lastPadelHit: Padel | null = null;

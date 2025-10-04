@@ -23,7 +23,7 @@ services:
     volumes:
       - ./backend:/app # bind mount
       - backend_node_modules:/app/node_modules
-      - ./shared:/shared 
+      - ./shared:/app/shared
       - ./backend/prisma/database:/app/prisma/database # bind mount
 
 volumes:

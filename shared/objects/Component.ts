@@ -1,4 +1,4 @@
-import type { GameObject } from './GameObject.js';
+import type { GameObject } from './GameObject.ts';
 
 export class Component {
 

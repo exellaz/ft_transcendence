@@ -1,10 +1,10 @@
-import { Point2D, Vector2D } from '../objects/Coordinates.js';
-import { GameObject } from '../objects/GameObject.js';
-import type { Camera } from '../objects/Camera.js';
-import { Viewport } from '../objects/Viewport.js';
-import { HitBox } from '../objects/HitBox.js';
-import { PeriodicTimer, Timer } from '../objects/Timer.js';
-import { Arrow } from './Padel.js';
+import { Point2D, Vector2D } from '../objects/Coordinates.ts';
+import { GameObject } from '../objects/GameObject.ts';
+import type { Camera } from '../objects/Camera.ts';
+import { Viewport } from '../objects/Viewport.ts';
+import { HitBox } from '../objects/HitBox.ts';
+import { PeriodicTimer, Timer } from '../objects/Timer.ts';
+import { Arrow } from './Padel.ts';
 
 export class GameWorld {
   gameObjects: Map<number, GameObject> = new Map();

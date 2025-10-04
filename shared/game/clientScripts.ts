@@ -1,5 +1,5 @@
-import type { GameObject } from "../objects/GameObject.js";
-import { oscillateValue } from "../utils/calculations.js";
+import type { GameObject } from "../objects/GameObject.ts";
+import { oscillateValue } from "../utils/calculations.ts";
 
 export const clientScripts: Record<string, (object) => void> = {
   moveCrowd: (object: GameObject) => {

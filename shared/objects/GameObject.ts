@@ -1,10 +1,10 @@
-import { Point2D, Vector2D } from './Coordinates.js';
-import { type Renderable, Sprite } from './Sprite.js';
-import type { PongGame } from '../game/pong.js';
-import type { Viewport } from './Viewport.js';
-import { Component } from './Component.js';
-import { HitBox } from './HitBox.js';
-import { clientScripts } from '../game/clientScripts.js';
+import { Point2D, Vector2D } from './Coordinates.ts';
+import { type Renderable, Sprite } from './Sprite.ts';
+import type { PongGame } from '../game/pong.ts';
+import type { Viewport } from './Viewport.ts';
+import { Component } from './Component.ts';
+import { HitBox } from './HitBox.ts';
+import { clientScripts } from '../game/clientScripts.ts';
 
 const RenderableMarker = Symbol("Renderable");
 

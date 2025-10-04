@@ -1,4 +1,4 @@
-import { Skin } from './Skins.js';
+import { Skin } from './Skins.ts';
 
 export class Player {
 	name: string = "";

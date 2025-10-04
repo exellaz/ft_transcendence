@@ -1,9 +1,16 @@
 import { WebSocketHandler } from "../../utils/webSocketHandler"
 import { Game } from "./game"
 import { validateConnection } from "../../utils/utils";
-import { GameSettings, PongGame } from "../../../../shared/game/pong";
-
+// import { PongGame } from "@shared/game/pong";
 const wsHandler = new WebSocketHandler();
+
+import { PongGame } from "../../../shared/game/pong.ts";
+const game = new PongGame(
+	null,
+	false,
+	[],
+	null
+);
 
 /**
  * @note websocket error code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
@@ -13,18 +20,15 @@ export default async function gameWsRoute(fastify: any) {
 		const context = validateConnection(socket, req);
 		if (!context) return; // Invalid connection, already closed in validateConnection
 
+		
 		// Step 1: Assign role to client (player, spectator, etc.)
 		const { clientId, roomId, room, side, playerName, playerSprite } = context;
 		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 
 
 		//todo I think each instance has a new pong game in his ver
-		const game = new PongGame(
-			null,
-			false,
-			[],
-			new GameSettings
-		);
+
+
 		socket.on("message", (raw: any) => {
 			// console.log("Game WebSocket received:", raw.toString()); //// debug
 			try {

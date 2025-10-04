@@ -133,7 +133,7 @@ function updateGameObjects() {
   pongGame.update();
 }
 
-async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
+export async function gameRoutes(fastify: FastifyInstance, options: FastifyPluginOptions) {
 
 
 
@@ -195,5 +195,3 @@ setInterval(updateGameObjects, TICK_RATE);
 
 // pongGame.startGame();
 
-
-export default gameRoutes;

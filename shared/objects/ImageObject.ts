@@ -1,9 +1,9 @@
-import { clampPosition } from "../utils/calculations.js";
-import type { Component } from "./Component.js";
-import { interpolate, Point2D, Vector2D } from "./Coordinates.js";
-import { exportCleanup, GameObject } from "./GameObject.js";
-import { Sprite } from "./Sprite.js";
-import type { Viewport } from "./Viewport.js";
+import { clampPosition } from "../utils/calculations.ts";
+import type { Component } from "./Component.ts";
+import { interpolate, Point2D, Vector2D } from "./Coordinates.ts";
+import { exportCleanup, GameObject } from "./GameObject.ts";
+import { Sprite } from "./Sprite.ts";
+import type { Viewport } from "./Viewport.ts";
 
 
 export class Interpolate {

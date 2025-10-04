@@ -1,19 +1,19 @@
 
-import { BlendMode } from '../objects/Blendmodes.js';
-import { Camera } from '../objects/Camera.js';
-import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.js';
-import { exportCleanup, GameObject } from '../objects/GameObject.js';
-import { Glow } from '../objects/Glow.js';
-import { ImageObject } from '../objects/ImageObject.js';
-import { Label, OnScreenLabel } from '../objects/Label.js';
-import { Outline } from '../objects/Outline.js';
-import { Sprite } from '../objects/Sprite.js';
-import { lastElem } from '../utils/indexing.js';
-import { Ball } from './ball.js';
-import { GameWorld } from './GameWorld.js';
-import { Padel } from './Padel.js';
-import { Player } from './Player.js';
-import { Skin } from './Skins.js';
+import { BlendMode } from '../objects/Blendmodes.ts';
+import { Camera } from '../objects/Camera.ts';
+import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.ts';
+import { exportCleanup, GameObject } from '../objects/GameObject.ts';
+import { Glow } from '../objects/Glow.ts';
+import { ImageObject } from '../objects/ImageObject.ts';
+import { Label, OnScreenLabel } from '../objects/Label.ts';
+import { Outline } from '../objects/Outline.ts';
+import { Sprite } from '../objects/Sprite.ts';
+import { lastElem } from '../utils/indexing.ts';
+import { Ball } from './ball.ts';
+import { GameWorld } from './GameWorld.ts';
+import { Padel } from './Padel.ts';
+import { Player } from './Player.ts';
+import { Skin } from './Skins.ts';
 
 export enum Team {
 	TEAM_LEFT = 0,
