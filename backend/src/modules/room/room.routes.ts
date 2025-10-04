@@ -99,7 +99,26 @@ export default async function roomRoutes(app: FastifyInstance) {
     });
 
     // ----------------------- UPDATE ROOM SETTING -----------------------
-    app.post("/room/:roomId/setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
+    app.patch("/room/:roomId/room-setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
+        const roomId = Number(req.params.roomId);
+        const room = rooms.get(roomId);
+
+        if (!room) {
+            return reply.code(404).send({ error: "Room not found" });
+        }
+
+        const body = req.body as { isPrivate?: boolean };
+        if (typeof body.isPrivate !== "boolean") {
+            return reply.code(400).send({ error: "isPrivate must be a true or false" });
+        }
+
+        room.private = body.isPrivate;
+
+        return { success: true, roomId, private: room.private };
+    });
+
+    // ----------------------- UPDATE GAME SETTING -----------------------
+    app.post("/room/:roomId/game-setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
         const roomId = Number(req.params.roomId);
         const room = rooms.get(roomId);
         if (!room) {

@@ -45,28 +45,11 @@ const CustomModeView: React.FC = () => {
 
   //private room - owner create room from API and navigate to the room
   async function handleCreateRoom(teamSize: number, isPrivate: boolean) {
-    //TODO replace with JWT
-    //const userResponse = await getUserById({ id: Number(userId) });
-    //let userInfo;
-    //if (userResponse.success && userResponse.data) {
-    //    userInfo = userResponse.data;
-    //}
-    //if (!userInfo) return;
     if (!user) return;
-    //TODO handle user info
-	const scale = Math.min(
-	  window.innerWidth / 800,
-	  window.innerHeight / 400,
-	  1
-	);
-	const width = 800 * scale;
-	const height = 400 * scale;
 
 	const room = await createRoomAPI(
 	  teamSize,
 	  teamSize === 1 ? "Singles Room" : "Doubles Room",
-	  width,
-	  height,
 	  { leaderId: user.id, isPrivate }
 	);
     console.log("user id: ", typeof user?.id); ////debug
@@ -82,6 +65,7 @@ const CustomModeView: React.FC = () => {
 
   //quick join public room - fetch rooms from API, find a suitable room or create one if none available, then navigate to the room
   async function handleQuickJoin(teamSize: number) {
+    if (!user) return;
 	//find a public room that is not full and not started
 	const rooms = await fetchRooms();
 	let room = rooms.find(
@@ -94,10 +78,11 @@ const CustomModeView: React.FC = () => {
 
 	// if no room, create one
 	if (!room) {
-		const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400, 1);
-		const width = 800 * scale;
-		const height = 400 * scale;
-		room = await createRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height, { isPrivate: false });
+		room = await createRoomAPI(
+            teamSize,
+            teamSize === 1 ? "Singles Room" : "Doubles Room",
+            { leaderId: user.id, isPrivate: false }
+        );
 
 		if (!room) {
 			alert ("Failed to create public room");
@@ -291,13 +276,13 @@ const CustomModeView: React.FC = () => {
         text={translate("create_singles_game")}
         open={showCreateSinglesGame}
         onClose={() => setShowCreateSinglesGame(false)}
-        onConfirm={() => handleCreateRoom(1, true)}
+        onConfirm={() => handleCreateRoom(1, false)}
       />
       <ConfirmationPopup
         text={translate("create_doubles_game")}
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
-        onConfirm={() => handleCreateRoom(2, true)}
+        onConfirm={() => handleCreateRoom(2, false)}
       />
       <ConfirmationPopup
         text={translate("join_singles_game")}

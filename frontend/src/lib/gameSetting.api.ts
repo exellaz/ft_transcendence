@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { roomSetting } from "./requestBackend.api";
+import { gameSetting } from "./requestBackend.api";
 
-export function useRoomSettings(roomId: string) {
+export function useGameSettings(roomId: string) {
   const [settings, setSettings] = useState<{
     ballSpeed: number;
     paddleHeight: number;
@@ -46,7 +46,7 @@ export function useRoomSettings(roomId: string) {
     if (!newSettings) return;
     setSaving(true);
     try {
-      await roomSetting(
+      await gameSetting(
         roomId,
         newSettings.ballSpeed,
         newSettings.paddleHeight,

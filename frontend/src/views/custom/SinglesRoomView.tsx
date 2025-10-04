@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams} from "react-router-dom";
 import { useUser } from "../../context/UserProvider";
 import { getUserById } from "../../lib/usersApiClient"; // Import the function
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 import type { User } from "../../types/usersApi"; // Import the User type
+import { toggleRoomPrivacy } from "../../lib/requestBackend.api";
 
 // components
 import Button from "../../components/Button";
@@ -32,13 +33,30 @@ const SinglesRoomView: React.FC = () => {
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const [roomInfo, setRoomInfo] = useState<{ name: string; leaderId: number; type: string; id: number } | null>(null);
   const { roomId: paramRoomId } = useParams();
-  const joinType = (location.state as any)?.joinType || "private";
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
+
+  const handleTogglePrivacy = async () => {
+    if (!roomInfo) return;
+    try {
+      const updated = await toggleRoomPrivacy(
+        roomInfo.id,
+        roomInfo.type === "public" // if current is public, make it private
+      );
+
+      // Update UI with new type from API response
+      setRoomInfo((prev) =>
+        prev ? { ...prev, type: updated.private ? "private" : "public" } : prev
+      );
+    } catch (err) {
+      console.error("Failed to toggle room privacy:", err);
+      alert("Could not update room privacy");
+    }
+  };
+
 
   // Fetch user info when the component mounts
   React.useEffect(() => {
@@ -86,7 +104,7 @@ const SinglesRoomView: React.FC = () => {
         // If fetching room info fails, navigate back to main menu
         navigate("/main-menu");
       });
-  }, [roomId, joinType, navigate]);
+  }, [roomId, navigate]);
 
   //-------------------------------- Websockets --------------------------------
 
@@ -169,32 +187,42 @@ const SinglesRoomView: React.FC = () => {
                 <TournamentHeader>
                   <div className="flex-row-center gap-2">
                     <p>{translate("singles_room")}</p>
-                    {roomInfo?.type === "private" && (
-                      <>
-                        <img
-                        src="/assets/link.png"
-                        className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
-                        onClick={() => {
-                          if (roomId) {
-                            navigator.clipboard.writeText(roomId).then(() => {
-                            // Optional: show toast or alert
-                            alert("Room ID copied to clipboard!");
-                            }).catch(err => {
-                            console.error("Failed to copy:", err);
-                            });
-                          }
-                        }}
-                        />
-                      </>
-                    )}
+                    <img
+                    src="/assets/link.png"
+                    className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
+                    onClick={() => {
+                      if (roomId) {
+                        navigator.clipboard.writeText(roomId).then(() => {
+                        // Optional: show toast or alert
+                        alert("Room ID copied to clipboard!");
+                        }).catch(err => {
+                        console.error("Failed to copy:", err);
+                        });
+                      }
+                    }}
+                    />
                   </div>
-                    {roomInfo?.type === "private" && (
-                      <>
-                        <p>
-                          ({translate("room_id")}: {roomInfo?.id})
-                        </p>
-                      </>
-                    )}
+                  <p>
+                    ({translate("room_id")}: {roomInfo?.id})
+                  </p>
+                  {/* Show room type */}
+                  <p className="text-sm text-gray-400">
+                    {translate("room_type")}:{" "}
+                    <span
+                      className={
+                        roomInfo?.type === "private"
+                          ? "text-red-400 font-semibold"
+                          : "text-green-400 font-semibold"
+                      }
+                    >
+                      {roomInfo?.type}
+                    </span>
+                  </p>
+                  {isLeader && (
+                    <Button variant="brown" onClick={handleTogglePrivacy} className="text-sm">
+                      {roomInfo?.type === "private" ? "Make Public" : "Make Private"}
+                    </Button>
+                  )}
                 </TournamentHeader>
 	    		{/* player team block: check ready and switch button */}
                 <ReadyRoomPlayers variant="singles" userId={userInfo?.id || -1} players={players} onSwitchTeam={onSwitch} />

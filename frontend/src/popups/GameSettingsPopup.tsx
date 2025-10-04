@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import MapSelector from "../components/MapSelector";
 import PopupCard from "../components/PopupCard";
 import Slider from "../components/Slider";
-import { useRoomSettings } from "../lib/gameSetting.api";
+import { useGameSettings } from "../lib/gameSetting.api";
 
 interface PopupProps {
   open: boolean;
@@ -19,7 +19,7 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 
   // ------------------------------------------ API -----------------------------------------------------
   // fetch settings from API
-  const { settings, setSettings, loading, saving, saveSettings, resetSettings } = useRoomSettings(roomId);
+  const { settings, setSettings, loading, saving, saveSettings, resetSettings } = useGameSettings(roomId);
   // available maps
   const maps = ["stadium", "mansion", "arcade"];
 
