@@ -12,6 +12,20 @@ const game = new PongGame(
 	new GameSettings()
 );
 
+
+function closeSocket(socket: any, statusCode: number, errorMsg: any) {
+	socket.close(1003, errorMsg)
+	console.log(`🅰️ ${errorMsg}`);
+	return null;
+}
+
+
+
+// todo this is the game.routes.ts
+
+
+
+
 /**
  * @note websocket error code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
 */
@@ -26,41 +40,37 @@ export default async function gameWsRoute(fastify: any) {
 		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 
 
-		//todo I think each instance has a new pong game in his ver
-
 
 		socket.on("message", (raw: any) => {
-			// console.log("Game WebSocket received:", raw.toString()); //// debug
+			console.log("Game WebSocket received:", raw.toString()); //// debug
+
 			try {
 				let msg;
 				try {
 					msg = JSON.parse(raw.toString());
 				} catch {
-					socket.close(1003, "Invalid JSON");
-					return;
+					return closeSocket(socket, 1003, "Invalid JSON");
 				}
 
 				// --- validation ---
-				if (typeof msg !== "object" || msg === null) {
-					socket.close(1003, "Invalid message format");
-					return;
-				}
-				if (typeof msg.type !== "string") {
-					socket.close(1003, "Invalid message: missing type");
-					return;
-				}
+				if (typeof msg !== "object" || msg === null) 
+					return closeSocket(socket, 1003, "Invalid message format");
+				
+				if (typeof msg.type !== "string") 
+					return closeSocket(socket, 1003, "Invalid message: missing type");
+				
 
 				// --- allow type ---
 				const allowedTypes = ["move"];
-				if (!allowedTypes.includes(msg.type)) {
-					socket.close(1003, `unsupported message type ${msg.type}`);
-					return;
-				}
+				if (!allowedTypes.includes(msg.type)) 
+					return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
+				
 
+				console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 				// --- handle message ---
 				if (msg.type === "move") {
 					if (typeof msg.dy !== "number" || msg.dy === undefined || msg.dy === null) {
-						socket.close(1003, "Invalid y direction: [dy]");
+						closeSocket(socket, 1003, "Invalid y direction: [dy]");
 						return;
 					}
 					if (player.role !== "spectator") {
@@ -76,7 +86,7 @@ export default async function gameWsRoute(fastify: any) {
 
 			} catch (err) {
 				console.error("unexpected error in game ws message handling:", err);
-				socket.close(1011, "server error");
+				closeSocket(socket, 1011, "server error");
 			}
 			// console.log("Game WebSocket sent:", raw.toString()); //// debug
 		});

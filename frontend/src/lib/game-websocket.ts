@@ -57,6 +57,7 @@ export function useGameWebSocket({
 
 		// handle incoming message / event from server
 		ws.addEventListener("message", (event) => {
+
 			try {
 				// validate JSON
 				let data;
@@ -66,6 +67,8 @@ export function useGameWebSocket({
 					console.error("Invalid JSON");
 					return;
 				}
+
+				console.log("🍹 received message: ", data);
 
 				// validate message structure
 				if (typeof data !== "object" || data === null) {

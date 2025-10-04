@@ -203,7 +203,6 @@ export class PongGame {
 		const output = this.exportState(false);
 		
 		for (const client of this.clients) {
-			console.log("socket state:", client.readyState);
 			// console.log("socket state:", client._socket.readyState);
 			if (client && client._readyState === 1) {
 
