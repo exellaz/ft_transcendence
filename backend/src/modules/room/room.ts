@@ -104,19 +104,19 @@ export function generateRoomId(length = 6): number {
  * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
 */
-export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
 	const room: Room = {
 		id,
 		name,
 		teamSize,
-		width,
-		height,
+		width: 800,
+		height: 400,
 		setting: {
 			...DEFAULT_SETTING, // start with default setting
 			...initialSetting, // override with any valid client-provided settings
 		},
 		gameState: {
-			ball: { x: width / 2, y: height / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
+			ball: { x: 800 / 2, y: 400 / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
 			paddles: {},
 			teams: { left: [], right: [] },
 			score: { left: 0, right: 0 },

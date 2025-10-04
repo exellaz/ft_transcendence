@@ -26,71 +26,55 @@ export default async function roomRoutes(app: FastifyInstance) {
     app.post("/create-room", async (req, reply) => {
     	// console.log("request /Create-room:", req.body); ////debug
     	const body: any = req.body;
+        console.log("body:", body); ////debug
 
     	//assign body parameters to variables
     	const {
     		name,
     		teamSize,
     		leaderId,
-    		width,
-    		height,
     		isPrivate,
-    		ballSpeed,
-    		paddleHeight,
-    		paddleWidth,
-    		ballSize,
-    		paddleSpeed,
-    		scorePoint,
-    		map
     	} = body as {
             name: string;
             teamSize: number;
             leaderId?: number;
-            width: number;
-            height: number;
             isPrivate?: boolean;
-            ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
-            ballSize?: number;
-            paddleSpeed?: number;
-            scorePoint?: number;
-            map?: string;
         };
 
     	// Validate required fields
-    	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
-    		return reply.code(400).send({ error: "Team size and name are required" });
+    	if (typeof teamSize !== "number" && (teamSize < 1 || teamSize > 5)) {
+    		return reply.code(400).send({ error: "Team size must be a number between 1 and 5" });
     	}
-    	if (typeof width !== "number" || typeof height !== "number") {
-    		return reply.code(400).send({ error: "Width and height are required" });
+        if (typeof name !== "string" || name.trim() === "") {
+            return reply.code(400).send({ error: "Room name is required" });
+            }
+    	if (!leaderId || typeof leaderId !== "number") {
+    	  return reply.code(400).send({ error: "Leader ID is required" });
     	}
-    	if (isPrivate && (!leaderId || typeof leaderId !== "number")) {
-    	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
-    	}
+        if (isPrivate === undefined || typeof isPrivate !== "boolean") {
+          return reply.code(400).send({ error: "isPrivate flag is required" });
+        }
 
     	// Generate a unique room ID
     	const roomId = generateRoomId();
 
     	//initialize game setting
     	const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
-    	if (typeof ballSpeed === "number") initialSetting.ballSpeed = ballSpeed; // if client provided a valid setting, use it to override the default
-    	if (typeof paddleHeight === "number") initialSetting.paddleHeight = paddleHeight;
-    	if (typeof paddleWidth === "number") initialSetting.paddleWidth = paddleWidth;
-    	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
-    	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
-    	if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
-		if (typeof map === "string") initialSetting.map = map;
+    	initialSetting.ballSpeed = body.ballSpeed ?? DEFAULT_SETTING.ballSpeed;
+    	initialSetting.paddleHeight = body.paddleHeight ?? DEFAULT_SETTING.paddleHeight;
+    	initialSetting.paddleWidth = body.paddleWidth ?? DEFAULT_SETTING.paddleWidth;
+    	initialSetting.ballSize = body.ballSize ?? DEFAULT_SETTING.ballSize;
+    	initialSetting.paddleSpeed = body.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed;
+    	initialSetting.scorePoint = body.scorePoint ?? DEFAULT_SETTING.scorePoint;
+        initialSetting.map = body.map ?? DEFAULT_SETTING.map;
 
     	// Create and store the new room
     	const room = createRoom(
     		roomId,
     		name,
     		teamSize,
-    		isPrivate ? leaderId : -1,
-    		width,
-    		height,
-    		!!isPrivate,
+            leaderId,
+    		isPrivate,
     		initialSetting // 👈 important for frontend
     	);
 
@@ -98,19 +82,19 @@ export default async function roomRoutes(app: FastifyInstance) {
 
     	console.log(
     	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
-    	);
+    	); ////debug
 
     	// Respond with room details to client
     	const response = {
     		roomId,
     		name,
     		teamSize,
+            leaderId,
     		gameStarted: room.gameState.gameStarted,
     		...(isPrivate ? { leaderId } : {}), // only include leaderId if private
     		private: room.private,
     		setting: room.setting // 👈 important for frontend
     	};
-    	// console.log("responding /create-room:", response); ////debug
     	return response;
     });
 
@@ -132,14 +116,36 @@ export default async function roomRoutes(app: FastifyInstance) {
             scorePoint,
 			map
         } = req.body as {
-            ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
-            ballSize?: number;
-            paddleSpeed?: number;
-            scorePoint?: number;
-			map?: string;
+            ballSpeed: number;
+            paddleHeight: number;
+            paddleWidth: number;
+            ballSize: number;
+            paddleSpeed: number;
+            scorePoint: number;
+			map: string;
         };
+
+        if (ballSpeed === undefined) {
+            return reply.code(400).send({ error: "Ball speed not valid" });
+        }
+        if (paddleHeight === undefined) {
+            return reply.code(400).send({ error: "Paddle height not valid" });
+        }
+        if (paddleWidth === undefined) {
+            return reply.code(400).send({ error: "Paddle width not valid" });
+        }
+        if (ballSize === undefined) {
+            return reply.code(400).send({ error: "Ball size not valid" });
+        }
+        if (paddleSpeed === undefined) {
+            return reply.code(400).send({ error: "Paddle speed not valid" });
+        }
+        if (scorePoint === undefined) {
+            return reply.code(400).send({ error: "Score point not valid" });
+        }
+        if (map === undefined) {
+            return reply.code(400).send({ error: "Map not valid" });
+        }
 
         // change setting if valid
         room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;

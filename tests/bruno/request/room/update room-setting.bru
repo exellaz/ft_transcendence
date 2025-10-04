@@ -1,0 +1,39 @@
+meta {
+    name: update-room-setting
+    type: http
+    seq: 3
+}
+
+post {
+    url: {{baseUrl}}/room/{{roomId}}/setting
+    body: json
+    auth: inherit
+}
+
+headers {
+    Content-Type: application/json
+}
+
+assert {
+    res.status: eq 200
+    res.body.success: eq true
+    res.body.setting.ballSpeed: gte 0
+    res.body.setting.paddleHeight: gte 0
+    res.body.setting.paddleWidth: gte 0
+    res.body.setting.ballSize: gte 0
+    res.body.setting.paddleSpeed: gte 0
+    res.body.setting.scorePoint: gte 0
+    res.body.setting.map: isNotEmpty
+}
+
+body:json {
+    {
+        "ballSpeed": 6,
+        "paddleHeight": 120,
+        "paddleWidth": 25,
+        "ballSize": 12,
+        "paddleSpeed": 18,
+        "scorePoint": 15,
+        "map": "mansion"
+    }
+}
