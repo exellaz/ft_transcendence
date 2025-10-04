@@ -9,14 +9,15 @@ import type {
 import Button from "./Button";
 import ProfileContents from "./ProfileContents";
 import Messaging from "./Messaging";
+import type { User } from "../types/usersApi";
 
 interface CascadeCardProps {
-  selectedUserId: number;
+  selectedUser: User;
   activeTab: string;
 }
 
 const CascadeCard: React.FC<CascadeCardProps> = ({
-  selectedUserId,
+  selectedUser,
   activeTab,
 }) => {
   const { t } = useTranslation();
@@ -119,7 +120,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   else if (activeTab === "friends" && !showProfile) {
     children = (
       <Messaging
-        friendBasic={selectedUser as FriendBasic}
+        friendBasic={selectedUser}
         friendId={selectedUser.id}
         onProfileClick={() => setShowProfile(true)}
       />

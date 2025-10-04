@@ -66,7 +66,7 @@ export interface GetBlockedFriendshipsRequest {
 	userId: number;
 }
 
-export interface GetBlockedFriendshipsResponse extends ApiResponse<BlockedFriendship[]> {}
+export interface GetBlockedFriendshipsResponse extends ApiResponse<User[]> {}
 
 // POST /blockedFriendships
 export interface CreateBlockedFriendshipRequest {
