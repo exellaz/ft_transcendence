@@ -9,6 +9,7 @@ interface UseGameWebSocketParams {
   initialRole: string;
   playerName: string;
   playerSprite: string;
+  callback: (socket: WebSocket) => void;
 }
 
 /**
@@ -26,7 +27,8 @@ export function useGameWebSocket({
     clientId,
     initialRole,
     playerName,
-    playerSprite
+    playerSprite,
+	callback
 }: UseGameWebSocketParams) {
 	const [role, setRole] = useState(initialRole);
 	const [scoreText, setScoreText] = useState("Score: 0 - 0");
@@ -49,6 +51,7 @@ export function useGameWebSocket({
 		//const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
 		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`);
 		socketRef.current = ws;
+		console.log("!created socket: ", socketRef.current);
 
 		// open connection
 		ws.addEventListener("open", () => {
@@ -64,7 +67,7 @@ export function useGameWebSocket({
 				try {
 					data = JSON.parse(event.data);
 				} catch {
-					console.error("Invalid JSON");
+					console.error("❌ Invalid JSON");
 					return;
 				}
 
@@ -72,10 +75,10 @@ export function useGameWebSocket({
 
 				// validate message structure
 				if (typeof data !== "object" || data === null) 
-					return console.error("Invalid message format");
+					return console.error("❌ Invalid message format");
 				
 				if (typeof data.type !== "string") 
-					return console.error("Invalid message: missing type: ", data);
+					return console.error("❌ Invalid message: missing type: ", data);
 				
 				const allowedTypes = ["roleUpdate", "state"];
 				if (!allowedTypes.includes(data.type)) 
@@ -85,7 +88,7 @@ export function useGameWebSocket({
 				if (data.type === "roleUpdate") {
 					//validata the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) 
-						return console.error("Invalid game state");
+						return console.error("❌ Invalid game state");
 					
 					//update role based on clientId
 					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
@@ -97,7 +100,7 @@ export function useGameWebSocket({
 				if (data.type === "state") {
 					//validate the game state
 					if (typeof data.gameState !== "object" || data.gameState === null) 
-						return console.error("Invalid game state");
+						return console.error("❌ Invalid game state");
 					
 					//update game state
 					setGameState(data.gameState);
@@ -132,14 +135,20 @@ export function useGameWebSocket({
 						}
 					}
 				}
+
+
+
 			} catch (err) {
-				console.error("unexpected error in game ws message handling:", err);
+				console.error("❌ unexpected error in game ws message handling:", err);
 				ws.close(1011, "server error");
 			}
 		});
 
 		// close connection
 		ws.addEventListener("close", () => { console.log("Game ws disconnected"); });
+
+		console.log("calling callback");
+		callback(socketRef.current);
 
 		// close socket when component unmount
 		return () => ws.close();

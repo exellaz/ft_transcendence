@@ -61,9 +61,9 @@ export default async function gameWsRoute(fastify: any) {
 				
 
 				// --- allow type ---
-				const allowedTypes = ["move"];
-				if (!allowedTypes.includes(msg.type)) 
-					return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
+				// const allowedTypes = ["move"];
+				// if (!allowedTypes.includes(msg.type)) 
+				// 	return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
 				
 
 				console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )

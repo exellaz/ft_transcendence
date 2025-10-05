@@ -13,6 +13,12 @@ export interface WSContext {
 	playerSprite: string;
 }
 
+function error(socket: WebSocket, code: number, message: string) {
+    console.log("❌ |" + message);
+    socket.close(code, message);
+    return null;
+}
+
 /**
  * @brief Validate WebSocket connection parameters
  * @param socket The WebSocket connection
@@ -28,42 +34,17 @@ export function validateConnection(socket: any, req:any): WSContext | null {
     const playerName = url.searchParams.get("name");
 	const playerSprite = url.searchParams.get("sprite");
 
-    if (isNaN(clientId)) {
-        console.log("Invalid clientId:", clientId);
-		socket.close(1008, "Client id is required");
-        return null;
-    }
+    if (isNaN(clientId)) return error(socket, 1008, `Invalid clientId: ${clientId}`);
+	if (isNaN(roomId)) return error(socket, 1008, `Invalid roomId: ${roomId}`);
 
-	if (isNaN(roomId)) {
-        console.log("Invalid roomId:", roomId);
-		socket.close(1008, "Room id is required");
-		return null;
-	}
+	if (!side || (side && side !== "left" && side !== "right")) 
+		return error(socket, 1008, `Invalid side: ${side}`);
 
-	if (!side || (side && side !== "left" && side !== "right")) {
-        console.log("Invalid side:", side);
-		socket.close(1008, "Side is required");
-		return null;
-	}
-
-    if (!playerName) {
-        console.log("Invalid playerName:", playerName);
-        socket.close(1008, "Player name is required");
-        return null;
-    }
-
-	if (!playerSprite) {
-        console.log("Invalid playerSprite:", playerSprite);
-		socket.close(1008, "Player sprite is required");
-		return null;
-	}
+    if (!playerName)  return error(socket, 1008, `Invalid playerName: "${playerName}"`);
+	if (!playerSprite) return error(socket, 1008, `Invalid playerSprite: ${playerSprite}`);
 
 	const room = rooms.get(roomId);
-	if (!room) {
-        console.log("Room not found:", roomId);
-		socket.close(1008, "Room not found");
-		return null;
-	}
+	if (!room) return error(socket, 1008, `Room not found: ${roomId}`);
 
     return {
         clientId: Number(clientId),
@@ -321,7 +302,7 @@ export function startCountdown(room: Room, onComplete: () => void) {
   if (room.countdownTimer) return; // already running
 
   //set timer for 5 seconds countdown
-  let remaining = 5; //? seconds
+  let remaining = 1; //? seconds
   room.countdownRemaining = remaining;
 
   //broadcast to clients start from 5
