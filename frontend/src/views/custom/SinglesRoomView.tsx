@@ -39,7 +39,6 @@ const SinglesRoomView: React.FC = () => {
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
 
-
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
     if (!roomInfo || !isLeader || !socket) return;
@@ -269,7 +268,7 @@ const SinglesRoomView: React.FC = () => {
           </Card>
 	  </div>
 
-	  {/* error for if room is full */}
+	  {/* error popup for if room is full */}
       {roomError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Background image using your Background component */}
@@ -279,7 +278,7 @@ const SinglesRoomView: React.FC = () => {
             {/* Popup content */}
             <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
               <p className="text-center text-white text-2xl px-4">
-                {roomError}
+                {roomError === "Room is full" ? translate("room_is_full") : roomError}
               </p>
               <Button
                 variant="red"
@@ -288,7 +287,7 @@ const SinglesRoomView: React.FC = () => {
                   navigate("/main-menu");
                 }}
               >
-                OK
+                {translate("close")}
               </Button>
             </div>
           </Background>

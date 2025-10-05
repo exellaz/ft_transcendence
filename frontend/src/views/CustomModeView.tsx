@@ -9,7 +9,7 @@ import Input from "../components/Input";
 import Logo from "../components/Logo";
 import MainLayout from "../layout/MainLayout";
 import Subheader from "../components/Subheader";
-import Status from "../components/Status";
+import Background from "../components/Background";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
@@ -32,7 +32,8 @@ const CustomModeView: React.FC = () => {
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
   const [showJoinDoublesGame, setShowJoinDoublesGame] = useState(false);
-  const [status, setStatus] = useState<{ text: string; color: "green" | "red" } | null>(null);
+  const [roomError, setRoomError] = useState<string | null>(null);
+
 
 
   // ------------------------------- Helper Functions -------------------------------
@@ -59,7 +60,7 @@ const CustomModeView: React.FC = () => {
 	  const roomIdToUse = room.id || room.roomId;
 	  navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
 	} else {
-	  setStatus({ text: "❌ Failed to create room", color: "red" });
+      alert("Failed to create room");
 	}
   }
 
@@ -108,21 +109,21 @@ const CustomModeView: React.FC = () => {
 
 	//if no room, show error
 	if (!room) {
-	  setStatus({ text: "❌ Room not found", color: "red" });
+	  setRoomError(translate("room_not_found"));
 	  return;
 	}
 	if (room.leftPlayers + room.rightPlayers >= room.teamSize * 2) {
-	  setStatus({ text: "❌ Room is full", color: "red" });
+	  setRoomError(translate("room_is_full"));
 	  return;
 	}
 
 	//if found room, navigate to it
-	navigate(getRoomPath(room.teamSize, room.id), { state: { room } });
+    const roomIdToUse = room.id || room.roomId;
+	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
   // Helper to go back one step
   const handleBack = () => {
-	setStatus(null); // reset the error to null to prevent show old error
 	if (menuStep === "action") {
 	  navigate("/main-menu");
 	} else if (menuStep === "createRoom") {
@@ -152,7 +153,6 @@ const CustomModeView: React.FC = () => {
             <Button
               variant="bigYellow"
               onClick={() => {
-                setStatus(null);
                 setMenuStep("createRoom")
             }}
             >
@@ -232,12 +232,30 @@ const CustomModeView: React.FC = () => {
                 <p className="text-white text-xl font-bold">
                   {translate("enter_room_id")}
                 </p>
+                {/* Room ID input */}
                 <Input
                   placeholder={translate("enter_room_id")}
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
                 />
-                {status && <Status text={status.text} color={status.color} className="mb-4"/>}
+                {/* error popup for key in room id */}
+                {roomError && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <Background variant="grass">
+                      <div className="absolute inset-0 bg-black opacity-70"></div>
+                      <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+                        <p className="text-center text-white text-2xl px-4">{roomError}</p>
+                        <Button
+                          variant="red"
+                          onClick={() => setRoomError(null)}
+                        >
+                          {translate("close")}
+                        </Button>
+                      </div>
+                    </Background>
+                  </div>
+                )}
+                {/* button for join room */}
                 <Button onClick={handleJoinPrivateRoom}>
                     {translate("join_room")}
                 </Button>

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { determineSide } from "./requestBackend.api";
 import type { playerInfo } from "../../../backend/src/modules/room/room"
-import { useNavigate } from "react-router-dom";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -35,7 +34,6 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 	const [countdown, setCountdown] = useState<number | null>(null);
 	const [roomError, setRoomError] = useState<string | null>(null); // Error message if room cannot be joined
 	const socketRef = useRef<WebSocket | null>(null);
-	const navigate = useNavigate();
 
 	useEffect(() => {
         //TODO replace with JWT
@@ -49,17 +47,16 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 
 			// create websocket connection with player id, room id, side and player name
 			const chooseSide = await determineSide(roomId);
-			console.log("ws side:", chooseSide);
-			console.log("ws player name:", player.name);
-			console.log("ws player sprite:", player.avatar);
+			console.log("ws side:", chooseSide); ////debug
+			console.log("ws player name:", player.name); ////debug
+			console.log("ws player sprite:", player.avatar); ////debug
 			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
-			console.log("Connecting to room ws:", import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
 			socketRef.current = ws;
 
 			// open connection
 			ws.onopen = () => {
-				console.log("Room ws connected");
-				setStatusText(`Room ${roomName} [id: ${roomId}]`);
+				console.log("Room ws connected"); ////debug
+				setStatusText(`Room ${roomName} [id: ${roomId}]`); //? can be remove
 			};
 
 			// handle incoming message / event from server
@@ -76,7 +73,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 					// handle error message from server
 					if (data.type === "error") {
 						console.warn("Cannot join room:", data.message);
-						setRoomError(data.message); // <-- set state instead of alert
+						setRoomError(data.message);
 						ws.close(1000, "error received");
 						return;
 					}
@@ -175,8 +172,9 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomIn
 						setCountdown(null);
 					}
 					if (data.type === "roomPrivacyUpdate") {
+                        // update room info
 						setRoomInfo(prev => prev ? { ...prev, ...data.data } : data.data);
-						console.log("Room privacy updated:", data.data);
+						console.log("Room privacy updated:", data.data); ////debug
 					}
 				} catch (err) {
 					console.error("Invalid room message:", err);
