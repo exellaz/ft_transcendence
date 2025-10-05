@@ -80,9 +80,9 @@ export function useGameWebSocket({
 				if (typeof data.type !== "string") 
 					return console.error("❌ Invalid message: missing type: ", data);
 				
-				const allowedTypes = ["roleUpdate", "state"];
-				if (!allowedTypes.includes(data.type)) 
-					return console.error(`unsupported message type ${data.type}`);
+				// const allowedTypes = ["roleUpdate", "state"];
+				// if (!allowedTypes.includes(data.type)) 
+				// 	return console.error(`unsupported message type ${data.type}`);
 
 				// handle different message types
 				if (data.type === "roleUpdate") {

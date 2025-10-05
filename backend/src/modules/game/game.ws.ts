@@ -5,13 +5,7 @@ import { validateConnection } from "../../utils/utils";
 const wsHandler = new WebSocketHandler();
 
 import { PongGame, GameSettings } from "../../../shared/game/pong.ts";
-const game = new PongGame(
-	null,
-	false,
-	[],
-	new GameSettings()
-);
-
+import { Player } from "../../../shared/game/Player.ts";
 
 function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 	socket.close(1003, errorMsg)
@@ -67,21 +61,20 @@ export default async function gameWsRoute(fastify: any) {
 				
 
 				console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
-				// --- handle message ---
-				if (msg.type === "move") {
-					if (typeof msg.dy !== "number" || msg.dy === undefined || msg.dy === null) {
-						closeSocket(socket, 1003, "Invalid y direction: [dy]");
-						return;
-					}
-					if (player.role !== "spectator") {
-						room.gameState.paddles[player.id!] = game.updatePaddlePosition(
-							room.gameState.paddles[player.id!] ?? 0,
-							msg.dy,
-							room.height,
-							room.setting.paddleHeight,
-							room.setting.paddleSpeed
-						);
-					}
+
+				if (msg.type === "ready") {
+					console.log("player added");
+					room.game.addPlayer(new Player({
+						"id": clientId,
+						"name": playerName,
+						"skin": 0,
+						"team": side === 'left' ? 0 : 1,
+						"socket": socket
+					}));
+				}
+				if (msg.type === "input") {
+					console.log("received move input", msg.payload);
+					room.game.movePaddle(msg["payload"]["key"]);
 				}
 
 			} catch (err) {

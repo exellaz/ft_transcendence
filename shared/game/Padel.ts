@@ -58,6 +58,13 @@ export class Padel extends GameObject {
 		this.skinPath = SKIN_PATHS[params.player?.skin || Skin.ghost_dark].base;
 	}
 
+	moveUp() {
+		this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
+	}
+
+	moveDown() {
+		this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
+	}
 
 	init() {
 		this.sprite = this.addComponent(new Sprite({
@@ -101,15 +108,15 @@ export class Padel extends GameObject {
 			));
 
 			this.acceleration.y = 0;
-			for (const client of this.game!.clients) {
-				if (client.keysPressed.has("ArrowUp")) {
-					this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
-				}
-				else if (client.keysPressed.has("ArrowDown")) {
-					this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
-				}
+			// for (const client of this.game!.clients) {
+			// 	if (client.keysPressed.has("ArrowUp")) {
+			// 		this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
+			// 	}
+			// 	else if (client.keysPressed.has("ArrowDown")) {
+			// 		this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
+			// 	}
 					
-			}
+			// }
 			// let copied = this.sprite.clone();
 			// copied.opacity = 0.1;
 			// copied.blendMode = BlendMode.ColorDodge;

@@ -161,6 +161,9 @@ export class PongGame {
 	public onScreenTitle!: GameTitle;
 	public ball!: Ball;
 
+	static globalId: number = 0; 
+	public id: number = -1; 
+
 	private lastFrameTime: number = performance.now();
 	private ballSpawnCooldown = 0.5;
 
@@ -180,6 +183,15 @@ export class PongGame {
 	}
 
 
+	movePaddle(direction: string) {
+		console.log("players left", this.teamLeft.padels.length);
+		console.log("players right", this.teamRight.padels.length);
+
+		if (direction === "ArrowUp") this.teamLeft.padels[0].moveUp();
+		if (direction === "ArrowDown") this.teamLeft.padels[0].moveDown();
+		console.log(this.teamLeft.padels[0].position);
+	}
+
 	startGame() {
 		this.state = GameState.STARTING;
 	}
@@ -190,8 +202,6 @@ export class PongGame {
 	}
 
 	update(room: any) {
-		
-		// console.log(`>>> update called [${room.clients}]`);
 		this.clients = room.clients;
 
 		const now = performance.now();
@@ -202,20 +212,22 @@ export class PongGame {
 
 		const output = this.exportState(false);
 		
-		for (const client of this.clients) {
-			// console.log("socket state:", client._socket.readyState);
-			if (client && client._readyState === 1) {
+		for (const paddle of this.teamLeft.getPaddles()) {
+			paddle.player.socket.send(JSON.stringify(output));
+
+			// // console.log("socket state:", client._socket.readyState);
+			// if (client && client._readyState === 1) {
 
 
-				try {
-					if (client.handshakeComplete && client.receivedFullState) {
-						console.log("successfully sent");
-						client.send(output);
-					}
-				} catch (e) {
-					console.error("Error sending to client:", e);
-				}
-			}
+			// 	try {
+			// 		if (client.handshakeComplete && client.receivedFullState) {
+			// 			console.log("successfully sent");
+			// 			client.send(output);
+			// 		}
+			// 	} catch (e) {
+			// 		console.error("Error sending to client:", e);
+			// 	}
+			// }
 		}
 	}
 
@@ -250,10 +262,9 @@ export class PongGame {
 			player: player
 		});
 
-		console.log("created player at :", team.playerPositions[team.padels.length]);
 		team.padels.push(padel);
 
-		this.world.addObject(padel)
+		this.world.addObject(padel);
 	}
 
 	initPongGame(scoreUI: Record<string, any>, goalImgPath) {
@@ -301,8 +312,6 @@ export class PongGame {
 		this.ballSpawnCooldown = (this.players.length === 2) ? 0.5 : 2;
 		// -- calculate goalpost positions --
 
-		console.log(this.teamLeft.playerPositions);
-		console.log(this.teamRight.playerPositions);
 		this.teamLeft.goalPostEnd = lastElem(this.teamLeft.playerPositions).x - goalMargin;
 		this.teamRight.goalPostEnd = lastElem(this.teamRight.playerPositions).x + goalMargin;
 
@@ -502,6 +511,10 @@ export class PongGame {
 		settings: GameSettings,
 	) {
 
+		this.id = PongGame.globalId;
+
+		PongGame.globalId ++;
+		
 		console.log("INITIALIZED");
 
 		this.gameSettings = settings;
