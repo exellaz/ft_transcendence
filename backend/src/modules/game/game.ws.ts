@@ -18,6 +18,20 @@ function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 // todo this is the game.routes.ts (server)
 
 
+function compile(pongGame: PongGame, includeStaticObjects: boolean) {
+  const state = pongGame.exportState(includeStaticObjects);
+
+  const output = JSON.stringify({
+	state: state,
+	metadata: {
+	  timestamp: Date.now(),
+	  delta: pongGame.delta,
+	  fps: pongGame.fps,
+	}
+  }, null, 2);
+
+  return output;
+}
 
 
 /**
@@ -71,7 +85,25 @@ export default async function gameWsRoute(fastify: any) {
 						"team": side === 'left' ? 0 : 1,
 						"socket": socket
 					}));
+
+					console.log("concluding handshake");
+					socket.send(JSON.stringify({
+						type: "ready",
+						payload: {}
+					}));
 				}
+
+				else if (msg.type === "fetch_world") {
+					console.log("requested for full world");
+
+
+					const output = compile(room.game, true);
+
+					console.log("sent full state", output);
+
+					socket.send((output));
+				}
+
 				if (msg.type === "input") {
 					console.log("received move input", msg.payload);
 					room.game.movePaddle(msg["payload"]["key"]);

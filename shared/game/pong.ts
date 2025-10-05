@@ -189,7 +189,6 @@ export class PongGame {
 
 		if (direction === "ArrowUp") this.teamLeft.padels[0].moveUp();
 		if (direction === "ArrowDown") this.teamLeft.padels[0].moveDown();
-		console.log(this.teamLeft.padels[0].position);
 	}
 
 	startGame() {
@@ -213,7 +212,7 @@ export class PongGame {
 		const output = this.exportState(false);
 		
 		for (const paddle of this.teamLeft.getPaddles()) {
-			paddle.player.socket.send(JSON.stringify(output));
+			// paddle.player.socket.send(JSON.stringify(output));
 
 			// // console.log("socket state:", client._socket.readyState);
 			// if (client && client._readyState === 1) {

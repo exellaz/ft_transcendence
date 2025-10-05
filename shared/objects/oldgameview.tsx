@@ -182,15 +182,16 @@ class GameClient {
 
 		this.websocketRef.onmessage = (event) => {
 
-			let data = JSON.parse(event.data);
+			this.data = JSON.parse(event.data);
 
-			if (!this.needToProcessFullState)
-				this.data = data;
+			// if (!this.needToProcessFullState)
+			// 	this.data = data;
 
 
 
 			if (this.data["type"] === "ready") {
 				this.sendData("fetch_world");
+				console.log("requested for full world");
 			}
 
 			if (!this.data["state"]) 
@@ -212,7 +213,7 @@ class GameClient {
 					console.log(this.getObject(id) === undefined);
 				}
 
-				this.needToProcessFullState = true;
+				// this.needToProcessFullState = true;
 				this.sendData("received_full_state");
 			}
 		};

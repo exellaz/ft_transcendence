@@ -74,11 +74,11 @@ export function useGameWebSocket({
 				console.log("🍹 received message: ", data);
 
 				// validate message structure
-				if (typeof data !== "object" || data === null) 
-					return console.error("❌ Invalid message format");
+				// if (typeof data !== "object" || data === null) 
+				// 	return console.error("❌ Invalid message format");
 				
-				if (typeof data.type !== "string") 
-					return console.error("❌ Invalid message: missing type: ", data);
+				// if (typeof data.type !== "string") 
+				// 	return console.error("❌ Invalid message: missing type: ", data);
 				
 				// const allowedTypes = ["roleUpdate", "state"];
 				// if (!allowedTypes.includes(data.type)) 

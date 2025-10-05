@@ -187,18 +187,20 @@ class GameClient {
 		this.websocketRef.onmessage = (event) => {
 
 			let data = JSON.parse(event.data);
+			this.data = data;
 
-			if (!this.needToProcessFullState)
-				this.data = data;
-
-
+			console.log("received MSG: ", data);
+			console.log("received MSG: ", typeof data);
 
 			if (this.data["type"] === "ready") {
 				this.sendData("fetch_world");
+				console.log("requested for full world");
 			}
 
-			if (!this.data["state"])
+			if (!this.data["state"]) {
+				console.log("no state");
 				return;
+			}
 			if (this.data["state"]["type"] === "full") {
 				console.log("---- received full state ---- ");
 				let incomingData = (this.data["state"]["gameObjects"].map((elem) => {
@@ -216,7 +218,7 @@ class GameClient {
 					console.log(this.getObject(id) === undefined);
 				}
 
-				this.needToProcessFullState = true;
+				
 				this.sendData("received_full_state");
 			}
 		};
@@ -407,7 +409,7 @@ const GameView: React.FC = () => {
 
 		}
 	};
-	console.log("params", params);
+	// console.log("params", params);
 
 	const {
 		socket,
@@ -424,19 +426,19 @@ const GameView: React.FC = () => {
 	} = useGameWebSocket(params);
 
 
-	console.log("3️⃣ starting with", {
-		socket,
-		role,
-		gameOver,
-		winner,
-		playerResult,
-		isSpectator,
-		gameState,
-		setting,
-		scoreText,
-		statusText,
-		settingView,
-	});
+	// console.log("3️⃣ starting with", {
+	// 	socket,
+	// 	role,
+	// 	gameOver,
+	// 	winner,
+	// 	playerResult,
+	// 	isSpectator,
+	// 	gameState,
+	// 	setting,
+	// 	scoreText,
+	// 	statusText,
+	// 	settingView,
+	// });
 
 
 	useEffect(() => {

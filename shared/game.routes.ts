@@ -100,6 +100,7 @@ class Client {
     }
 
     if (input.type === "fetch_world") {
+      console.log("client requested for full game state");
       this.outputQueue.push(compile(true));
     }
   }
