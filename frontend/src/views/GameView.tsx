@@ -140,13 +140,17 @@ class GameClient {
 
 	private needToProcessFullState: boolean = false;
 
+	private keysPressed: Record<string, boolean> = {};
+
 	handleKey(e: KeyboardEvent) {
-		if (isArrowKey(e) && this.websocketRef?.readyState === WebSocket.OPEN) {
-			this.sendData("input", { key: e.key, action: e.type });
-			console.log("sent input");
+		if (!isArrowKey(e)) return;
+
+		if (e.type === "keydown") {
+			this.keysPressed[e.key] = true;
+		} else if (e.type === "keyup") {
+			this.keysPressed[e.key] = false;
 		}
 	}
-
 	sendData(type: string, payload: Record<string, any> = {}) {
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			this.websocketRef.send(JSON.stringify({ type, payload }));
@@ -188,9 +192,6 @@ class GameClient {
 
 			let data = JSON.parse(event.data);
 			this.data = data;
-
-			console.log("received MSG: ", data);
-			console.log("received MSG: ", typeof data);
 
 			if (this.data["type"] === "ready") {
 				this.sendData("fetch_world");
@@ -252,7 +253,15 @@ class GameClient {
 	}
 
 	loop() {
-		console.log("looping");
+
+		if (this.websocketRef?.readyState === WebSocket.OPEN) {
+			if (this.keysPressed["ArrowUp"]) {
+				this.sendData("input", { key: "ArrowUp", action: "hold" });
+			}
+			if (this.keysPressed["ArrowDown"]) {
+				this.sendData("input", { key: "ArrowDown", action: "hold" });
+			}
+		}
 
 		if (this.data === undefined || this.data["state"] === undefined) {
 			requestAnimationFrame(this.loop);

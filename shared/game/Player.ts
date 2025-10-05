@@ -1,5 +1,6 @@
 import { Socket } from 'dgram';
 import { Skin } from './Skins.ts';
+import type { Padel } from './Padel.ts';
 
 export class Player {
 	name: string = "";
@@ -9,6 +10,7 @@ export class Player {
 	team: number = 0;
 	socket: Socket;
 	handshakeComplete: boolean = false;
+	padel: Padel;
 
 	private static globalId = 0;
 
@@ -17,7 +19,7 @@ export class Player {
 	}
 
 	constructor(params: Partial<Player>) {
-		Object.assign(this, {...params, id: Player.globalId});
+		Object.assign(this, {...params});
 
 		Player.globalId ++;
 	}

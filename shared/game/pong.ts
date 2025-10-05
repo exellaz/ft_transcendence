@@ -172,6 +172,8 @@ export class PongGame {
 	state: GameState = GameState.LOADING;
 	winningTeam!: GameTeam;
 
+	players: Map<number, Player> = new Map<number, Player>();
+
 	// -- client-side only --
 	public isClient: boolean = false;
 
@@ -183,12 +185,14 @@ export class PongGame {
 	}
 
 
-	movePaddle(direction: string) {
-		console.log("players left", this.teamLeft.padels.length);
-		console.log("players right", this.teamRight.padels.length);
+	movePaddle(direction: string, clientId: number) {
 
-		if (direction === "ArrowUp") this.teamLeft.padels[0].moveUp();
-		if (direction === "ArrowDown") this.teamLeft.padels[0].moveDown();
+		const player = this.players.get(clientId);
+		console.log("moving", clientId);
+		if (direction === "ArrowUp")
+			player?.padel.moveUp();
+		if (direction === "ArrowDown")
+			player?.padel.moveDown();
 	}
 
 	startGame() {
@@ -211,22 +215,15 @@ export class PongGame {
 
 		const output = this.exportState(false);
 		
-		for (const paddle of this.teamLeft.getPaddles()) {
-			// paddle.player.socket.send(JSON.stringify(output));
-
-			// // console.log("socket state:", client._socket.readyState);
-			// if (client && client._readyState === 1) {
-
-
-			// 	try {
-			// 		if (client.handshakeComplete && client.receivedFullState) {
-			// 			console.log("successfully sent");
-			// 			client.send(output);
-			// 		}
-			// 	} catch (e) {
-			// 		console.error("Error sending to client:", e);
-			// 	}
-			// }
+		for (const paddle of this.teamLeft.getPaddles().concat(this.teamRight.getPaddles())) {
+			paddle.player.socket.send(JSON.stringify({
+				state:(output),
+				metadata: {
+					timestamp: Date.now(),
+					delta: this.delta,
+					fps: this.fps,
+				}
+			}));
 		}
 	}
 
@@ -261,8 +258,10 @@ export class PongGame {
 			player: player
 		});
 
+		console.log("player", player["id"]);
+		this.players.set(player["id"], player);
 		team.padels.push(padel);
-
+		player.padel = padel;
 		this.world.addObject(padel);
 	}
 
@@ -501,7 +500,6 @@ export class PongGame {
 		else if (map === Maps.Arcade) this.mapArcade();
 	}
 
-	players: Player[];
 
 	constructor(
 		clientData: any,
@@ -517,16 +515,6 @@ export class PongGame {
 		console.log("INITIALIZED");
 
 		this.gameSettings = settings;
-
-		this.players = [];
-
-		for (const player of players) {
-			this.players.push(new Player({
-				name: player.name,
-				skin: player.skin,
-				team: player.team
-			}))
-		}
 
 		this.isClient = isClient
 

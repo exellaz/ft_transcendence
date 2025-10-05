@@ -50,7 +50,7 @@ export default async function gameWsRoute(fastify: any) {
 
 
 		socket.on("message", (raw: any) => {
-			console.log("Game WebSocket received:", raw.toString()); //// debug
+			// console.log("Game WebSocket received:", raw.toString()); //// debug
 
 			try {
 				let msg;
@@ -74,10 +74,10 @@ export default async function gameWsRoute(fastify: any) {
 				// 	return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
 				
 
-				console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
+				// console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
 				if (msg.type === "ready") {
-					console.log("player added");
+					console.log("player added ", clientId);
 					room.game.addPlayer(new Player({
 						"id": clientId,
 						"name": playerName,
@@ -96,17 +96,13 @@ export default async function gameWsRoute(fastify: any) {
 				else if (msg.type === "fetch_world") {
 					console.log("requested for full world");
 
-
 					const output = compile(room.game, true);
-
-					console.log("sent full state", output);
-
 					socket.send((output));
 				}
 
-				if (msg.type === "input") {
+				else if (msg.type === "input") {
 					console.log("received move input", msg.payload);
-					room.game.movePaddle(msg["payload"]["key"]);
+					room.game.movePaddle(msg["payload"]["key"], clientId);
 				}
 
 			} catch (err) {
