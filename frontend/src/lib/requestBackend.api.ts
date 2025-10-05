@@ -130,3 +130,29 @@ export async function gameSetting(roomId:string, ballSpeed: number, paddleHeight
     return null;
   }
 }
+
+export async function createTournamentLobby(name: string) {
+	try {
+		const res = await fetch(`${API_URL}/create-tournament`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name }),
+		});
+		if (!res.ok) throw new Error("Failed to create tournament");
+		return await res.json();
+	} catch (error) {
+		console.error("Failed to create tournament:", error);
+		return null;
+	}
+}
+
+export async function fetchTournaments() {
+	try {
+		const res = await fetch(`${API_URL}/tournaments`);
+		if (!res.ok) throw new Error("Failed to fetch tournaments");
+		return await res.json();
+	} catch (error) {
+		console.error("Failed to fetch tournaments:", error);
+		return [];
+	}
+}
