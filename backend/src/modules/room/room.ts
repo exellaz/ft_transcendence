@@ -106,6 +106,11 @@ export function generateRoomId(length = 6): number {
  * @returns Room object
 */
 export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+	const game = new PongGame(
+		null,
+		new GameSettings()
+	);
+	
 	const room: Room = {
 		id,
 		name,
@@ -129,12 +134,7 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		sockets: new Map(),
 		chatHistory: [] as any [],
 		disconnectPlayers: new Set(),
-		game: new PongGame(
-			null,
-			null,
-			[],
-			new GameSettings
-		),
+		game: game,
 		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,

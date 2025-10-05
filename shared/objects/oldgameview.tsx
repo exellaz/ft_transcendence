@@ -129,7 +129,7 @@ class GameClient {
 	private data: Record<string, any> = {};
 	private gameObjectRegistry = (new Map<number, GameObject>());
 	private componentRegistry = (new Map<number, Component>());
-	private game: PongGame = new PongGame(null, true, [], new GameSettings);
+	private game: PongGame = new PongGame(true, new GameSettings);
 	private viewport: Viewport | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private ctx: CanvasRenderingContext2D | null = null;

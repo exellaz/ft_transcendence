@@ -48,7 +48,7 @@ export default async function gameWsRoute(fastify: any) {
 		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 
 
-		
+
 		console.log("player sprite: ", playerSprite);
 		console.log("player name: ", playerName);
 
@@ -76,6 +76,7 @@ export default async function gameWsRoute(fastify: any) {
 				// if (!allowedTypes.includes(msg.type)) 
 				// 	return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
 				
+				console.log(">>>> sprite :", playerSprite);
 
 				// console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 

@@ -133,13 +133,13 @@ class GameClient {
 	private data: Record<string, any> = {};
 	private gameObjectRegistry = (new Map<number, GameObject>());
 	private componentRegistry = (new Map<number, Component>());
-	private game: PongGame = new PongGame(null, true, [], new GameSettings);
+	private game: PongGame = new PongGame(true, new GameSettings());
 	private viewport: Viewport | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private ctx: CanvasRenderingContext2D | null = null;
 
 	static globalId = 0;
-	private id = -1;
+	private id: number = -1;
 
 	private isFullStateProcessed: boolean = false;
 
@@ -169,30 +169,22 @@ class GameClient {
 	constructor(
 		canvasRef: HTMLCanvasElement | null,
 		websocketRef: WebSocket,
-		player: any = {
-			clientId: 1,
-			name: "test",
-			sprite: 1,
-			team: 0
-		}
 	) {
 
 		console.log("created game client");
 		this.id = GameClient.globalId;
 		GameClient.globalId++;
 		this.websocketRef = websocketRef;
-
+``
 		// -- WEBSOCKET --
 
 		// send initial handshake
 		console.log("asking for ready");
 		if (this.websocketRef.readyState === WebSocket.OPEN) {
-			this.sendData("ready", {
-				clientId: player.clientId,
-				playerName: player.name,
-				playerSprite: player.sprite,
-				Team: player.team
-			});
+			this.sendData("ready");
+
+			// TODO ready 
+
 		} else {
 			console.log("not opened");
 		}
@@ -450,7 +442,8 @@ const GameView: React.FC = () => {
 		if (!socket) {
 			console.log("no socket yet");
 			return;
-		}
+		}		
+
 		
 		console.log("initialized");
 		let gameClient = new GameClient(canvasRef.current, socket);

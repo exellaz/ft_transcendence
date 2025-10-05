@@ -170,7 +170,7 @@ export class PongGame {
 
 	public is2v2: boolean = false;
 
-	state: GameState = GameState.LOADING;
+	state: GameState = GameState.STARTING;
 	winningTeam!: GameTeam;
 
 	players: Map<number, Player> = new Map<number, Player>();
@@ -503,9 +503,7 @@ export class PongGame {
 
 
 	constructor(
-		clientData: any,
 		isClient: boolean,
-		players: any[],
 		settings: GameSettings,
 	) {
 
@@ -515,16 +513,13 @@ export class PongGame {
 		
 		console.log("INITIALIZED");
 
-		this.gameSettings = settings;
 
 		this.isClient = isClient
 
 		if (isClient)
 			return;
-		this.clients = clientData;
 		this.world.game = this;
-
-
+		this.gameSettings = settings;
 		this.loadMap(Maps.Stadium);
 		this.gameLoaded = true;
 	}
