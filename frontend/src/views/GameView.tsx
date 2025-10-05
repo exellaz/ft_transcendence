@@ -215,6 +215,7 @@ class GameClient {
 			if (data["state"]["type"] === "full") {
 				console.log("---- received full state ---- ");
 				console.log(`received ${event.data.length} bytes`);
+				console.log(`received`, data);
 				let incomingData = (data["state"]["gameObjects"].map((elem) => {
 					return elem.id;
 				}));
@@ -232,6 +233,7 @@ class GameClient {
 
 				this.isFullStateProcessed = true;
 				this.sendData("received_full_state");
+				this.loop();
 			}
 		};
 
@@ -280,7 +282,7 @@ class GameClient {
 			|| this.data["state"] === undefined
 			|| !this.isFullStateProcessed
 		) {
-			// console.log("not yet received full state");
+			console.log("not yet received full state");
 			requestAnimationFrame(this.loop);
 			return;
 		}
@@ -318,8 +320,6 @@ class GameClient {
 					this.viewport!.camera = (obj as Camera);
 			}
 		}
-
-		this.needToProcessFullState = false;
 
 		// Replace any numeric IDs with object references
 		for (const [id, object] of this.gameObjectRegistry) {
@@ -405,7 +405,10 @@ const GameView: React.FC = () => {
 
 	// TODO: Replace with actual JWT
 	const { user } = useUser();
-	if (!user) return;
+	if (!user) {
+		console.log("user not loaded");
+		return;
+	} 
 	const roomId = Number(sessionStorage.getItem("RoomId") || "1");
 	const roomName = sessionStorage.getItem("RoomName") || "Room 1";
 	const clientId = user.id;
@@ -444,8 +447,11 @@ const GameView: React.FC = () => {
 
 
 	useEffect(() => {
-		if (!socket) return;
-
+		if (!socket) {
+			console.log("no socket yet");
+			return;
+		}
+		
 		console.log("initialized");
 		let gameClient = new GameClient(canvasRef.current, socket);
 

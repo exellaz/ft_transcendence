@@ -48,6 +48,9 @@ export default async function gameWsRoute(fastify: any) {
 		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 
 
+		
+		console.log("player sprite: ", playerSprite);
+		console.log("player name: ", playerName);
 
 		socket.on("message", (raw: any) => {
 			// console.log("Game WebSocket received:", raw.toString()); //// debug

@@ -147,9 +147,6 @@ export function useGameWebSocket({
 		// close connection
 		ws.addEventListener("close", () => { console.log("Game ws disconnected"); });
 
-		console.log("calling callback");
-		callback(socketRef.current);
-
 		// close socket when component unmount
 		return () => ws.close();
 	}, [roomId, clientId, initialRole, roomName]); //re-run effect if any of these change
