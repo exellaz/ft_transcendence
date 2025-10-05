@@ -97,7 +97,8 @@ export default async function gameWsRoute(fastify: any) {
 					console.log("requested for full world");
 
 					const output = compile(room.game, true);
-					socket.send((output));
+					console.log(`compiled ${output.length} bytes`);
+					socket.send(output);
 				}
 
 				else if (msg.type === "input") {

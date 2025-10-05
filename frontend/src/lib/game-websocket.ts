@@ -71,7 +71,7 @@ export function useGameWebSocket({
 					return;
 				}
 
-				console.log("🍹 received message: ", data);
+				// console.log("🍹 received message: ", data);
 
 				// validate message structure
 				// if (typeof data !== "object" || data === null) 

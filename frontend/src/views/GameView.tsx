@@ -138,7 +138,10 @@ class GameClient {
 	private canvas: HTMLCanvasElement | null = null;
 	private ctx: CanvasRenderingContext2D | null = null;
 
-	private needToProcessFullState: boolean = false;
+	static globalId = 0;
+	private id = -1;
+
+	private isFullStateProcessed: boolean = false;
 
 	private keysPressed: Record<string, boolean> = {};
 
@@ -174,37 +177,45 @@ class GameClient {
 		}
 	) {
 
+		console.log("created game client");
+		this.id = GameClient.globalId;
+		GameClient.globalId++;
 		this.websocketRef = websocketRef;
 
 		// -- WEBSOCKET --
 
 		// send initial handshake
-		this.websocketRef.onopen = () => {
+		console.log("asking for ready");
+		if (this.websocketRef.readyState === WebSocket.OPEN) {
 			this.sendData("ready", {
 				clientId: player.clientId,
 				playerName: player.name,
 				playerSprite: player.sprite,
 				Team: player.team
 			});
+		} else {
+			console.log("not opened");
 		}
 
 		this.websocketRef.onmessage = (event) => {
 
 			let data = JSON.parse(event.data);
+
 			this.data = data;
 
-			if (this.data["type"] === "ready") {
+			if (data["type"] === "ready") {
 				this.sendData("fetch_world");
 				console.log("requested for full world");
 			}
 
-			if (!this.data["state"]) {
-				console.log("no state");
+			if (!data["state"]) {
+				console.log("no state", data.type);
 				return;
 			}
-			if (this.data["state"]["type"] === "full") {
+			if (data["state"]["type"] === "full") {
 				console.log("---- received full state ---- ");
-				let incomingData = (this.data["state"]["gameObjects"].map((elem) => {
+				console.log(`received ${event.data.length} bytes`);
+				let incomingData = (data["state"]["gameObjects"].map((elem) => {
 					return elem.id;
 				}));
 				let currentData = Array.from(this.gameObjectRegistry.keys());
@@ -219,7 +230,7 @@ class GameClient {
 					console.log(this.getObject(id) === undefined);
 				}
 
-				
+				this.isFullStateProcessed = true;
 				this.sendData("received_full_state");
 			}
 		};
@@ -250,10 +261,11 @@ class GameClient {
 
 	start() {
 		this.loop();
+		
 	}
 
 	loop() {
-
+		// console.log("looping client", this.id);
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			if (this.keysPressed["ArrowUp"]) {
 				this.sendData("input", { key: "ArrowUp", action: "hold" });
@@ -263,7 +275,12 @@ class GameClient {
 			}
 		}
 
-		if (this.data === undefined || this.data["state"] === undefined) {
+		if (
+			this.data === undefined 
+			|| this.data["state"] === undefined
+			|| !this.isFullStateProcessed
+		) {
+			// console.log("not yet received full state");
 			requestAnimationFrame(this.loop);
 			return;
 		}
@@ -399,6 +416,7 @@ const GameView: React.FC = () => {
 
 	// -------------------------------- Websockets --------------------------------
 
+	
 	const params = {
 		roomId,
 		roomName,
@@ -406,17 +424,7 @@ const GameView: React.FC = () => {
 		initialRole,
 		playerName: "test",
 		playerSprite,
-		callback: (socket: WebSocket) => {
-
-			console.log("initialized");
-			let gameClient = new GameClient(canvasRef.current, socket);
-
-			gameClient.start();
-			return () => {
-				gameClient.destroy(); // ✅ cleanup
-			};
-
-		}
+		callback: (socket: any) => {}
 	};
 	// console.log("params", params);
 
@@ -435,23 +443,17 @@ const GameView: React.FC = () => {
 	} = useGameWebSocket(params);
 
 
-	// console.log("3️⃣ starting with", {
-	// 	socket,
-	// 	role,
-	// 	gameOver,
-	// 	winner,
-	// 	playerResult,
-	// 	isSpectator,
-	// 	gameState,
-	// 	setting,
-	// 	scoreText,
-	// 	statusText,
-	// 	settingView,
-	// });
-
-
 	useEffect(() => {
-	}, []);
+		if (!socket) return;
+
+		console.log("initialized");
+		let gameClient = new GameClient(canvasRef.current, socket);
+
+		gameClient.start();
+		return () => {
+			gameClient.destroy(); // ✅ cleanup
+		};
+	}, [socket]);
 
 	return (
 		<Background variant="plain">

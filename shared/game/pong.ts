@@ -163,6 +163,7 @@ export class PongGame {
 
 	static globalId: number = 0; 
 	public id: number = -1; 
+	public gameLoaded: boolean = false;
 
 	private lastFrameTime: number = performance.now();
 	private ballSpawnCooldown = 0.5;
@@ -525,6 +526,7 @@ export class PongGame {
 
 
 		this.loadMap(Maps.Stadium);
+		this.gameLoaded = true;
 	}
 }
 
