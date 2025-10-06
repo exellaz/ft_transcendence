@@ -8,7 +8,7 @@ import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 
 const app = Fastify({
-  logger: true
+//   logger: true
 });
 
 app.register(fastifyCors, {
