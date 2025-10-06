@@ -155,9 +155,6 @@ class GameClient {
 
 
 
-
-
-
 	sendData(type: string, payload: Record<string, any> = {}) {
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			this.websocketRef.send(JSON.stringify({ type, payload }));
@@ -222,6 +219,9 @@ class GameClient {
 
 				this.isFullStateProcessed = true;
 				this.sendData("received_full_state");
+
+				this.game.initSettings(data["settings"]);
+
 				this.loop();
 			}
 		};
@@ -355,6 +355,7 @@ class GameClient {
 		const objectInstance = gameObjectMap[object.className] ?
 			new gameObjectMap[object.className](params) :
 			new GameObject(params);
+		objectInstance.game = this.game;
 		return objectInstance;
 	}
 

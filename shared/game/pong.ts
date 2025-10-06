@@ -16,6 +16,8 @@ import { Padel } from './Padel.ts';
 import { Player } from './Player.ts';
 import { Skin } from './Skins.ts';
 
+export type MapType = "stadium" | "mansion" | "arcade";
+
 export enum Team {
 	TEAM_LEFT = 0,
 	TEAM_RIGHT = 1
@@ -125,10 +127,12 @@ export class EngineSettings {
 	playerAcceleration: number = 4300;
 	playerCount: number = 2;
 	ballSpeed: number = 500;
+	ballSize: number = 40;
 
 	arrowDownKey: string = "ArrowDown";
 	arrowUpKey: string = "ArrowUp";
 	winningScore: number = 3;
+	map: MapType;
 }
 
 
@@ -164,7 +168,6 @@ export class PongGame {
 
 	static globalId: number = 0; 
 	public id: number = -1; 
-	public gameLoaded: boolean = false;
 
 	private lastFrameTime: number = performance.now();
 	private ballSpawnCooldown = 0.5;
@@ -495,33 +498,52 @@ export class PongGame {
 		}));
 	}
 
-	loadMap(map: Maps) {
-		if (map === Maps.Stadium) this.mapStadium();
-		else if (map === Maps.Mansion) this.mapMansion();
-		else if (map === Maps.Arcade) this.mapArcade();
+	loadMap(map: MapType) {
+		if (map === "stadium") this.mapStadium();
+		else if (map === "mansion") this.mapMansion();
+		else if (map === "arcade") this.mapArcade();
 	}
 
-	constructor(
-		isClient: boolean,
-		incomingSettings: GameSettings
-	) {
-		PongGame.globalId ++;
-
-
-		if (isClient)
-			return;
-		this.world.game = this;
-		
-		// this.gameSettings = incomingSettings;
-
-		
-		console.log("incoming settings", incomingSettings);
-
+	initSettings(settings: GameSettings) {
 		this.gameSettings.ballSpeed = [
 			300,
 			500,
 			800,
-		][incomingSettings.ballSpeed ?? 1];
+		][settings.ballSpeed ?? 1];
+
+		this.gameSettings.ballSize = [
+			30,
+			40,
+			70,
+		][settings.ballSize ?? 1];
+
+		this.gameSettings.winningScore = settings.scorePoint ?? 3;
+		this.gameSettings.map = settings.map ?? "stadium";
+		this.gameSettings.playerAcceleration = [
+			3000,
+			4300,
+			6500
+		][settings.paddleSpeed];
+
+		console.log("incoming settings", settings);
+	}
+
+	constructor(
+		isClient: boolean,
+		incomingSettings: GameSettings,
+	) {
+		PongGame.globalId ++;
+
+		this.initSettings(incomingSettings);
+
+		if (isClient)
+			return;
+		this.world.game = this;
+
+		// this.gameSettings = incomingSettings;
+
+		
+
 
 		// this.gameSettings.ballSpeed = [
 		// 	300,
@@ -534,8 +556,7 @@ export class PongGame {
 
 		console.log("INITIALIZED");
 
-		this.loadMap(Maps.Stadium);
-		this.gameLoaded = true;
+		this.loadMap(this.gameSettings.map);
 	}
 }
 

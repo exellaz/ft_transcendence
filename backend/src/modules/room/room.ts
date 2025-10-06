@@ -53,7 +53,7 @@ export interface Room {
 		scoreRight: number;
 	};
     disconnectPlayers: Set<number>; // client id who disconnected during the game
-	game: Game; // Game instance for game logic
+	game: PongGame; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
     // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
@@ -78,13 +78,13 @@ export interface GameSettings {
 
 //default value for setting
 export const DEFAULT_SETTING = {
-	ballSpeed: 1,
+	ballSpeed: 2,
+	ballSize: 0,
 	paddleHeight: 80,
 	paddleWidth: 10,
-	ballSize: 1,
-	paddleSpeed: 1,
+	paddleSpeed: 0,
 	scorePoint: 5,
-	map: "stadium",
+	map: "arcade",
 };
 
 /**
@@ -135,7 +135,7 @@ export function createRoom(
 	
 	const game = new PongGame(
 		null,
-		settings
+		settings,
 	);
 	
 	const room: Room = {

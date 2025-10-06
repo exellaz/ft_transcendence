@@ -15,20 +15,20 @@ function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 
 
 
-// todo this is the game.routes.ts (server)
+// todo error sometimes certain players dont show up
 
+function compile(pongGame: PongGame, includeStaticObjects: boolean, settings = {}) {
+	const state = pongGame.exportState(includeStaticObjects);
 
-function compile(pongGame: PongGame, includeStaticObjects: boolean) {
-  const state = pongGame.exportState(includeStaticObjects);
-
-  const output = JSON.stringify({
-	state: state,
-	metadata: {
-	  timestamp: Date.now(),
-	  delta: pongGame.delta,
-	  fps: pongGame.fps,
-	}
-  }, null, 2);
+	const output = JSON.stringify({
+		state: state,
+		metadata: {
+			timestamp: Date.now(),
+			delta: pongGame.delta,
+			fps: pongGame.fps,
+		},
+		settings: settings
+	}, null, 2);
 
   return output;
 }
@@ -102,7 +102,7 @@ export default async function gameWsRoute(fastify: any) {
 				else if (msg.type === "fetch_world") {
 					console.log("requested for full world");
 
-					const output = compile(room.game, true);
+					const output = compile(room.game, true, room.setting);
 					console.log(`compiled ${output.length} bytes`);
 					socket.send(output);
 				}

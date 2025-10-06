@@ -59,19 +59,23 @@ export class Ball extends GameObject {
 		super({
 			position: params.position,
 			game: params.game,
+			scale: new Vector2D(1,1),
 			name: "ball",
-			scale: new Vector2D(40, 40),
 			maximumVelocity: new Vector2D(1300, 1300)
 		});
+		
 		this.targetScale = this.scale;
+		this.scale = new Vector2D(this.game?.gameSettings.ballSize!, this.game?.gameSettings.ballSize!);
 
 		this.onClientUpdate = () => {
 			this.rotation += 0.3;
 			this.scale = interpolate(this.scale.toPoint(), this.targetScale.toPoint(), 5).toVector2D();
 
+			console.log("ball size: ", this.game?.gameSettings.ballSize!);
+
 			if (this.position.x === 0) {
 				this.scale = new Vector2D(1, 1);
-				this.targetScale = new Vector2D(40, 40);
+				this.targetScale = new Vector2D(this.game?.gameSettings.ballSize!, this.game?.gameSettings.ballSize!);
 			}
 			
 		}
