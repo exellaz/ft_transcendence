@@ -1,4 +1,5 @@
 
+import type { GameSettings } from '../../backend/src/modules/room/room.ts';
 import { BlendMode } from '../objects/Blendmodes.ts';
 import { Camera } from '../objects/Camera.ts';
 import { interpolate, Point2D, Vector2D } from '../objects/Coordinates.ts';
@@ -120,9 +121,9 @@ class GameTitle extends OnScreenLabel {
 	}
 }
 
-export class GameSettings {
+export class EngineSettings {
 	playerAcceleration: number = 4300;
-	playerCount: number = 4;
+	playerCount: number = 2;
 	ballSpeed: number = 500;
 
 	arrowDownKey: string = "ArrowDown";
@@ -153,7 +154,7 @@ export class PongGame {
 	clients!: any[];
 
 	public world: GameWorld = new GameWorld();
-	public gameSettings: GameSettings | null = null;
+	public gameSettings: EngineSettings = new EngineSettings();
 	public teamLeft!: GameTeam;
 	public teamRight!: GameTeam;
 	public fps: number = 0;
@@ -170,7 +171,7 @@ export class PongGame {
 
 	public is2v2: boolean = false;
 
-	state: GameState = GameState.STARTING;
+	state: GameState = GameState.LOADING;
 	winningTeam!: GameTeam;
 
 	players: Map<number, Player> = new Map<number, Player>();
@@ -181,10 +182,24 @@ export class PongGame {
 
 
 	resetBall() {
-		console.log(">>> RESET BALL");
 		this.ball.position = new Point2D(0, 0);
 	}
+	
+	addPlayer(player: Player) {
+		const team = (!player.team ? this.teamLeft : this.teamRight);
+		const padel = new Padel({
+			zIndex: 10,
+			team: player.team,
+			position: team.playerPositions[team.padels.length],
+			player: player
+		});
 
+		console.log("player", player["id"]);
+		this.players.set(player["id"], player);
+		team.padels.push(padel);
+		player.padel = padel;
+		this.world.addObject(padel);
+	}
 
 	movePaddle(direction: string, clientId: number) {
 
@@ -200,6 +215,8 @@ export class PongGame {
 		this.state = GameState.STARTING;
 	}
 
+
+
 	teamWins(team: GameTeam) {
 		this.state = GameState.GAMEOVER;
 		this.winningTeam = team;
@@ -213,6 +230,11 @@ export class PongGame {
 		this.lastFrameTime = now;
 		this.world.update();
 
+
+		if (this.state === GameState.LOADING 
+			&& this.players.size === this.gameSettings?.playerCount) {
+			this.startGame();
+		}
 
 		const output = this.exportState(false);
 		
@@ -250,23 +272,8 @@ export class PongGame {
 	}
 
 
-	addPlayer(player: Player) {
-		const team = (!player.team ? this.teamLeft : this.teamRight);
-		const padel = new Padel({
-			zIndex: 10,
-			team: player.team,
-			position: team.playerPositions[team.padels.length],
-			player: player
-		});
 
-		console.log("player", player["id"]);
-		this.players.set(player["id"], player);
-		team.padels.push(padel);
-		player.padel = padel;
-		this.world.addObject(padel);
-	}
-
-	initPongGame(scoreUI: Record<string, any>, goalImgPath) {
+	initPongGame(scoreUI: Record<string, any>, goalImgPath: string) {
 
 		// -- add ball --
 
@@ -291,8 +298,6 @@ export class PongGame {
 		// this.players.forEach(player => {
 		// 	this.addPlayer(player);
 		// });
-		
-		
 
 		// // 1v1
 		// if (this.players.length === 2) {
@@ -308,7 +313,7 @@ export class PongGame {
 		// }
 
 
-		this.ballSpawnCooldown = (this.players.length === 2) ? 0.5 : 2;
+		this.ballSpawnCooldown = (this.players.size === 2) ? 0.5 : 2;
 		// -- calculate goalpost positions --
 
 		this.teamLeft.goalPostEnd = lastElem(this.teamLeft.playerPositions).x - goalMargin;
@@ -328,14 +333,13 @@ export class PongGame {
 		this.world.addPeriodicTimer(1, () => {
 
 			if (this.state === GameState.LOADING) {
-				
 				this.onScreenTitle.updateLoad();
-			}
-			else if (this.state === GameState.STARTING) {
+			} else if (this.state === GameState.STARTING) {
 				this.onScreenTitle.updateCountdown();
 				if (this.onScreenTitle.text === "-") {
 					this.onScreenTitle.text = "";
 					this.state = GameState.STARTED;
+					console.log("started game");
 					this.ball.start();
 				}
 			}
@@ -344,8 +348,7 @@ export class PongGame {
 				this.onScreenTitle.scale = new Vector2D(1, 1);
 				if (this.is2v2) {
 					this.onScreenTitle.text = `${this.winningTeam.toString()} Wins!`;
-				}
-				else {
+				} else {
 					this.onScreenTitle.text = `${this.winningTeam.padels[0].player.name} Wins!`;
 				}
 			}
@@ -378,7 +381,7 @@ export class PongGame {
 		}
 	}
 
-	mapStadium() {
+	private mapStadium() {
 		this.initPongGame({
 			text: "0",
 			font: "67px Impact",
@@ -436,7 +439,7 @@ export class PongGame {
 	}
 
 
-	mapMansion() {
+	private mapMansion() {
 		this.initPongGame({
 			glow: new Glow({ Color: "#47fabf" }),
 			color: "#47fabf",
@@ -469,7 +472,7 @@ export class PongGame {
 		}));
 	}
 
-	mapArcade() {
+	private mapArcade() {
 		this.initPongGame({
 			glow: new Glow({ Color: "#ffc02c" }),
 			color: "#ffc02c",
@@ -490,10 +493,7 @@ export class PongGame {
 			}),
 			scaleFactor: scaleFactor,
 		}));
-
 	}
-
-
 
 	loadMap(map: Maps) {
 		if (map === Maps.Stadium) this.mapStadium();
@@ -501,25 +501,39 @@ export class PongGame {
 		else if (map === Maps.Arcade) this.mapArcade();
 	}
 
-
 	constructor(
 		isClient: boolean,
-		settings: GameSettings,
+		incomingSettings: GameSettings
 	) {
-
-		this.id = PongGame.globalId;
-
 		PongGame.globalId ++;
-		
-		console.log("INITIALIZED");
 
-
-		this.isClient = isClient
 
 		if (isClient)
 			return;
 		this.world.game = this;
-		this.gameSettings = settings;
+		
+		// this.gameSettings = incomingSettings;
+
+		
+		console.log("incoming settings", incomingSettings);
+
+		this.gameSettings.ballSpeed = [
+			300,
+			500,
+			800,
+		][incomingSettings.ballSpeed ?? 1];
+
+		// this.gameSettings.ballSpeed = [
+		// 	300,
+		// 	500,
+		// 	800,
+		// ][this.gameSettings.ballSpeed];
+
+		this.id = PongGame.globalId;
+		this.isClient = isClient
+
+		console.log("INITIALIZED");
+
 		this.loadMap(Maps.Stadium);
 		this.gameLoaded = true;
 	}

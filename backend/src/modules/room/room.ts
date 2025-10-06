@@ -3,7 +3,7 @@ import { Game } from "../game/game"; // import game loop
 import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
-import { GameSettings, PongGame } from "../../../shared/game/pong.ts";
+import { PongGame } from "../../../shared/game/pong.ts";
 
 export interface playerInfo {
     clientId: number; // client id
@@ -66,13 +66,23 @@ export interface Room {
 	countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
+export interface GameSettings {
+	ballSpeed?: number,
+	paddleHeight?: number,
+	paddleWidth?: number,
+	ballSize?: number,
+	paddleSpeed?: number,
+	scorePoint?: number,
+	map?: "stadium",
+}
+
 //default value for setting
 export const DEFAULT_SETTING = {
-	ballSpeed: 5,
+	ballSpeed: 1,
 	paddleHeight: 80,
 	paddleWidth: 10,
-	ballSize: 10,
-	paddleSpeed: 2,
+	ballSize: 1,
+	paddleSpeed: 1,
 	scorePoint: 5,
 	map: "stadium",
 };
@@ -105,10 +115,27 @@ export function generateRoomId(length = 6): number {
  * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
 */
-export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, width: number = 800, height: number = 400, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+export function createRoom(
+	id: number, 
+	name: string, 
+	teamSize: number = 1, 
+	leaderId: number = -1, 
+	width: number = 800, 
+	height: number = 400, 
+	isPrivate: boolean = false, 
+	initialSetting: Partial<typeof DEFAULT_SETTING> = {}
+): Room {
+	
+	const settings = {
+		...DEFAULT_SETTING, // start with default setting
+		...initialSetting, // override with any valid client-provided settings
+	};
+
+	console.log("initial settings", initialSetting);
+	
 	const game = new PongGame(
 		null,
-		new GameSettings()
+		settings
 	);
 	
 	const room: Room = {
@@ -117,10 +144,7 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		teamSize,
 		width,
 		height,
-		setting: {
-			...DEFAULT_SETTING, // start with default setting
-			...initialSetting, // override with any valid client-provided settings
-		},
+		setting: settings,
 		gameState: {
 			ball: { x: width / 2, y: height / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
 			paddles: {},

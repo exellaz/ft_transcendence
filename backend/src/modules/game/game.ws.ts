@@ -52,6 +52,8 @@ export default async function gameWsRoute(fastify: any) {
 		console.log("player sprite: ", playerSprite);
 		console.log("player name: ", playerName);
 
+		console.log("room setting", room.setting.ballSpeed);
+
 		socket.on("message", (raw: any) => {
 			// console.log("Game WebSocket received:", raw.toString()); //// debug
 

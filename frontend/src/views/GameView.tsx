@@ -13,7 +13,7 @@ import { GameObject } from "@shared/objects/GameObject";
 import { Arrow } from "@shared/game/Padel";
 import { Player } from "@shared/game/Player";
 import { Point2D, Vector2D } from "@shared/objects/Coordinates";
-import { GameSettings, PongGame, Team } from "@shared/game/pong";
+import { PongGame, Team } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
@@ -128,21 +128,18 @@ function genericUpdate(
 
 
 class GameClient {
+	private id: number = -1;
 
 	private websocketRef: WebSocket | null = null;
 	private data: Record<string, any> = {};
 	private gameObjectRegistry = (new Map<number, GameObject>());
 	private componentRegistry = (new Map<number, Component>());
-	private game: PongGame = new PongGame(true, new GameSettings());
+	private game: PongGame = new PongGame(true, {});
 	private viewport: Viewport | null = null;
 	private canvas: HTMLCanvasElement | null = null;
 	private ctx: CanvasRenderingContext2D | null = null;
-
 	static globalId = 0;
-	private id: number = -1;
-
 	private isFullStateProcessed: boolean = false;
-
 	private keysPressed: Record<string, boolean> = {};
 
 	handleKey(e: KeyboardEvent) {
@@ -154,17 +151,20 @@ class GameClient {
 			this.keysPressed[e.key] = false;
 		}
 	}
+
+
+
+
+
+
+
 	sendData(type: string, payload: Record<string, any> = {}) {
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			this.websocketRef.send(JSON.stringify({ type, payload }));
 		}
 	};
 
-	public destroy() {
-		this.websocketRef?.close();
-		window.removeEventListener("keydown", this.handleKey);
-		window.removeEventListener("keyup", this.handleKey);
-	}
+	
 
 	constructor(
 		canvasRef: HTMLCanvasElement | null,
@@ -182,9 +182,6 @@ class GameClient {
 		console.log("asking for ready");
 		if (this.websocketRef.readyState === WebSocket.OPEN) {
 			this.sendData("ready");
-
-			// TODO ready 
-
 		} else {
 			console.log("not opened");
 		}
@@ -255,7 +252,6 @@ class GameClient {
 
 	start() {
 		this.loop();
-		
 	}
 
 	loop() {
@@ -381,6 +377,12 @@ class GameClient {
 	}
 	setObject(id: number, object: any) {
 		this.gameObjectRegistry.set(id, object);
+	}
+
+	public destroy() {
+		this.websocketRef?.close();
+		window.removeEventListener("keydown", this.handleKey);
+		window.removeEventListener("keyup", this.handleKey);
 	}
 }
 
