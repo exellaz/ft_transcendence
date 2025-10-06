@@ -122,15 +122,15 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     const trimmed = friendId.trim();
 
-    // return if input is empty or not a number
-    if (trimmed === "" || isNaN(Number(trimmed))) {
-      setAddFriendError("Please enter a valid numeric ID");
+    // return if input is empty 
+    if (trimmed === "") {
+      setAddFriendError("Please enter a valid username");
       return;
     }
 
     const result = await addFriend({
       requesterId: userId,
-      accepterId: Number(trimmed),
+      accepterUsername: trimmed,
     });
 
     if (result.success) {

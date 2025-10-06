@@ -65,16 +65,21 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 
 	// POST /friendships
 	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
-		const {  requesterId, accepterId } = request.body as {
+		const {  requesterId, accepterUsername } = request.body as {
 			requesterId: number;
-			accepterId: number;
+			accepterUsername: string;
 		};
 
-		if ( requesterId === accepterId) {
-			throw new ApiError("User cannot friend themselves", 400);
-		}
-
 		try {
+			const acceptedUser = await fastify.db.user.findFirst({
+				where: { username: accepterUsername }
+			});
+			
+			const accepterId = acceptedUser.id;
+			if ( requesterId === accepterId) {
+				throw new ApiError("User cannot friend themselves", 400);
+			}
+			
 			// check if inverse direction exist
 			const inverseFriendship = await fastify.db.friendship.findFirst({
 				where: {
