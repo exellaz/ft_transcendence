@@ -8,8 +8,8 @@ interface RoomParams {
 export default async function roomRoutes(app: FastifyInstance) {
     // ----------------------- LIST ROOMS -----------------------
     app.get("/rooms", async () => {
-    	const response = Array.from(rooms.values()).map(room => ({
-    		id: room.id,
+        const response = Array.from(rooms.values()).map(room => ({
+            id: room.id,
             name: room.name,
             teamSize: room.teamSize,
             leftPlayers: room.gameState.teams.left.length,
@@ -18,31 +18,29 @@ export default async function roomRoutes(app: FastifyInstance) {
             gameEnded: !!room.gameState.gameEnded,
             private: room.private
         }));
-    	// console.log("responding /rooms: ", response); ////debug
-    	return response;
+        // console.log("responding /rooms: ", response); ////debug
+        return response;
     });
 
     // ----------------------- CREATE ROOM -----------------------
     app.post("/create-room", async (req, reply) => {
-    	// console.log("request /Create-room:", req.body); ////debug
-    	const body: any = req.body;
+        // console.log("request /Create-room:", req.body); ////debug
+        const body: any = req.body;
 
-    	//assign body parameters to variables
-    	const {
-    		name,
-    		teamSize,
-    		leaderId,
-    		width,
-    		height,
-    		isPrivate,
-    		ballSpeed,
-    		paddleHeight,
-    		paddleWidth,
-    		ballSize,
-    		paddleSpeed,
-    		scorePoint,
-    		map
-    	} = body as {
+        //assign body parameters to variables
+        const {
+            name,
+            teamSize,
+            leaderId,
+            width,
+            height,
+            isPrivate,
+            ballSpeed,
+            ballSize,
+            paddleSpeed,
+            scorePoint,
+            map
+        } = body as {
             name: string;
             teamSize: number;
             leaderId?: number;
@@ -50,68 +48,68 @@ export default async function roomRoutes(app: FastifyInstance) {
             height: number;
             isPrivate?: boolean;
             ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
             ballSize?: number;
             paddleSpeed?: number;
             scorePoint?: number;
             map?: string;
         };
 
-    	// Validate required fields
-    	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
-    		return reply.code(400).send({ error: "Team size and name are required" });
-    	}
-    	if (typeof width !== "number" || typeof height !== "number") {
-    		return reply.code(400).send({ error: "Width and height are required" });
-    	}
-    	if (isPrivate && (!leaderId || typeof leaderId !== "number")) {
-    	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
-    	}
+        console.log("Received body:", req.body);
 
-    	// Generate a unique room ID
-    	const roomId = generateRoomId();
+        // Validate required fields
+        if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
+            return reply.code(400).send({ error: "Team size and name are required" });
+        }
+        if (typeof width !== "number" || typeof height !== "number") {
+            return reply.code(400).send({ error: "Width and height are required" });
+        }
+        if (isPrivate && (!leaderId || typeof leaderId !== "number")) {
+            return reply.code(400).send({ error: "Leader ID required for private rooms" });
+        }
 
-    	//initialize game setting
-    	const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
-    	if (typeof ballSpeed === "number") initialSetting.ballSpeed = ballSpeed; // if client provided a valid setting, use it to override the default
-    	if (typeof paddleHeight === "number") initialSetting.paddleHeight = paddleHeight;
-    	if (typeof paddleWidth === "number") initialSetting.paddleWidth = paddleWidth;
-    	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
-    	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
-    	if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
-		if (typeof map === "string") initialSetting.map = map;
+        // Generate a unique room ID
+        const roomId = generateRoomId();
 
-    	// Create and store the new room
-    	const room = createRoom(
-    		roomId,
-    		name,
-    		teamSize,
-    		isPrivate ? leaderId : -1,
-    		width,
-    		height,
-    		!!isPrivate,
-    		initialSetting // 👈 important for frontend
-    	);
 
-    	rooms.set(roomId, room);
+        //initialize game setting
+        const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
+        if (typeof ballSpeed === "number") initialSetting.ballSpeed = ballSpeed; // if client provided a valid setting, use it to override the default
+        if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
+        if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
+        if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
+        if (typeof map === "string") initialSetting.map = map;
 
-    	console.log(
-    	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
-    	);
+        // Create and store the new room
+        const room = createRoom(
+            roomId,
+            name,
+            teamSize,
+            isPrivate ? leaderId : -1,
+            width,
+            height,
+            !!isPrivate,
+            initialSetting // 👈 important for frontend
+        );
 
-    	// Respond with room details to client
-    	const response = {
-    		roomId,
-    		name,
-    		teamSize,
-    		gameStarted: room.gameState.gameStarted,
-    		...(isPrivate ? { leaderId } : {}), // only include leaderId if private
-    		private: room.private,
-    		setting: room.setting // 👈 important for frontend
-    	};
-    	// console.log("responding /create-room:", response); ////debug
-    	return response;
+        rooms.set(roomId, room);
+
+        console.log("ball speed: ", ballSpeed);
+        console.log(
+            `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
+        );
+
+        // Respond with room details to client
+        const response = {
+            roomId,
+            name,
+            teamSize,
+            gameStarted: room.gameState.gameStarted,
+            ...(isPrivate ? { leaderId } : {}), // only include leaderId if private
+            private: room.private,
+            setting: room.setting // 👈 important for frontend
+        };
+        // console.log("responding /create-room:", response); ////debug
+        return response;
     });
 
     // ----------------------- UPDATE ROOM SETTING -----------------------
@@ -125,30 +123,24 @@ export default async function roomRoutes(app: FastifyInstance) {
         // update only provided settings from client
         const {
             ballSpeed,
-            paddleHeight,
-            paddleWidth,
             ballSize,
             paddleSpeed,
             scorePoint,
-			map
+            map
         } = req.body as {
             ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
             ballSize?: number;
             paddleSpeed?: number;
             scorePoint?: number;
-			map?: string;
+            map?: string;
         };
 
         // change setting if valid
         room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;
-        room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
-        room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
         room.setting.ballSize = ballSize ?? room.setting.ballSize;
         room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
         room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
-		room.setting.map = map ?? room.setting.map;
+        room.setting.map = map ?? room.setting.map;
 
         // console.log("updated room setting:", room.setting); ////debug
 

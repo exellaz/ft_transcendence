@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { ensurePlayerId, determineSide } from "./requestBackend.api";
 import type { playerInfo } from "../../../backend/src/modules/room/room"
 
+
+
+
 // room structure
 export interface UseRoomWebSocketParams {
 	roomId: number;

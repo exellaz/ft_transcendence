@@ -1,0 +1,45 @@
+import { Point2D, Vector2D, interpolate,randomBetween } from './Coordinates.ts';
+import { GameObject } from './GameObject.ts';
+
+export class Camera extends GameObject {
+    shakeValue: Vector2D = new Vector2D(0,0);
+    target: GameObject;
+    rawPosition: Point2D;
+    className:string = "camera";
+    isFixed: boolean = false;
+
+    constructor (params: Partial<Camera>) {
+        const startingPos = new Point2D(0, 0);
+        super({
+            position: startingPos, 
+        });
+        Object.assign(this, params);
+        this.name = "camera";
+        this.rawPosition = startingPos;
+        this.position = startingPos;
+        
+            
+        this.onUpdate = () => {
+            if (this.isFixed)
+                return;
+            this.position.x += 0.01;
+            this.rawPosition = interpolate(this.rawPosition, new Point2D(this.target.position.x, 0), 60);
+            this.position = this.rawPosition.add(new Vector2D(randomBetween(-this.shakeValue.x,this.shakeValue.x), randomBetween(-this.shakeValue.y,this.shakeValue.y)));
+            this.shakeValue = this.shakeValue.subtract((new Vector2D(170, 170)).multiply(this.game.delta));
+            
+            if (this.shakeValue.x < 0) 
+                this.shakeValue = new Vector2D(0,0);
+
+            return true;
+        }
+    }
+
+    export() {
+        return {
+            id: this.id,
+            position: this.position.export(),
+            className: this.className
+        }
+    }
+
+}
