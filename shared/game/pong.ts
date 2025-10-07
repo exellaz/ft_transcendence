@@ -523,7 +523,7 @@ export class PongGame {
 			3000,
 			4300,
 			6500
-		][settings.paddleSpeed];
+		][settings.paddleSpeed ?? 1];
 
 		console.log("incoming settings", settings);
 	}

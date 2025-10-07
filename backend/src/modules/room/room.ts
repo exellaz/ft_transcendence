@@ -73,11 +73,11 @@ export interface GameSettings {
 
 //default value for setting
 export const DEFAULT_SETTING = {
-	ballSpeed: 2,
-	ballSize: 0,
+	ballSpeed: 0,
+	ballSize: 2,
 	paddleSpeed: 0,
 	scorePoint: 5,
-	map: "stadium",
+	map: "mansion",
 };
 
 /**
