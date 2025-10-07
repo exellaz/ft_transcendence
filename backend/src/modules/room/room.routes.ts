@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { rooms, createRoom, generateRoomId, DEFAULT_SETTING, Room } from "./room";
+import { rooms, createRoom, generateRoomId, DEFAULT_SETTING, Room } from "./room.ts";
 
 interface RoomParams {
     roomId: number;
@@ -8,8 +8,8 @@ interface RoomParams {
 export default async function roomRoutes(app: FastifyInstance) {
     // ----------------------- LIST ROOMS -----------------------
     app.get("/rooms", async () => {
-    	const response = Array.from(rooms.values()).map(room => ({
-    		id: room.id,
+        const response = Array.from(rooms.values()).map(room => ({
+            id: room.id,
             name: room.name,
             teamSize: room.teamSize,
             leftPlayers: room.gameState.teams.left.length,
@@ -18,8 +18,8 @@ export default async function roomRoutes(app: FastifyInstance) {
             gameEnded: !!room.gameState.gameEnded,
             private: room.private
         }));
-    	// console.log("responding /rooms: ", response); ////debug
-    	return response;
+        // console.log("responding /rooms: ", response); ////debug
+        return response;
     });
 
     // ----------------------- CREATE ROOM -----------------------
@@ -55,18 +55,18 @@ export default async function roomRoutes(app: FastifyInstance) {
           return reply.code(400).send({ error: "isPrivate flag is required" });
         }
 
-    	// Generate a unique room ID
-    	const roomId = generateRoomId();
+        // Generate a unique room ID
+        const roomId = generateRoomId();
+
 
     	//initialize game setting
     	const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
     	initialSetting.ballSpeed = body.ballSpeed ?? DEFAULT_SETTING.ballSpeed;
-    	initialSetting.paddleHeight = body.paddleHeight ?? DEFAULT_SETTING.paddleHeight;
-    	initialSetting.paddleWidth = body.paddleWidth ?? DEFAULT_SETTING.paddleWidth;
     	initialSetting.ballSize = body.ballSize ?? DEFAULT_SETTING.ballSize;
     	initialSetting.paddleSpeed = body.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed;
     	initialSetting.scorePoint = body.scorePoint ?? DEFAULT_SETTING.scorePoint;
         initialSetting.map = body.map ?? DEFAULT_SETTING.map;
+
 
     	// Create and store the new room
     	const room = createRoom(
@@ -78,7 +78,7 @@ export default async function roomRoutes(app: FastifyInstance) {
     		initialSetting // 👈 important for frontend
     	);
 
-    	rooms.set(roomId, room);
+        rooms.set(roomId, room);
 
     	console.log(
     	  `Player id: ${leaderId} => ${name} (${roomId}) [${isPrivate ? "Private" : "Public"}] created with team size ${teamSize}`
@@ -109,30 +109,20 @@ export default async function roomRoutes(app: FastifyInstance) {
         // update only provided settings from client
         const {
             ballSpeed,
-            paddleHeight,
-            paddleWidth,
             ballSize,
             paddleSpeed,
             scorePoint,
-			map
+            map
         } = req.body as {
-            ballSpeed: number;
-            paddleHeight: number;
-            paddleWidth: number;
-            ballSize: number;
-            paddleSpeed: number;
-            scorePoint: number;
-			map: string;
+            ballSpeed?: number;
+            ballSize?: number;
+            paddleSpeed?: number;
+            scorePoint?: number;
+            map?: string;
         };
 
         if (ballSpeed === undefined) {
             return reply.code(400).send({ error: "Ball speed not valid" });
-        }
-        if (paddleHeight === undefined) {
-            return reply.code(400).send({ error: "Paddle height not valid" });
-        }
-        if (paddleWidth === undefined) {
-            return reply.code(400).send({ error: "Paddle width not valid" });
         }
         if (ballSize === undefined) {
             return reply.code(400).send({ error: "Ball size not valid" });
@@ -149,12 +139,10 @@ export default async function roomRoutes(app: FastifyInstance) {
 
         // change setting if valid
         room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;
-        room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
-        room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
         room.setting.ballSize = ballSize ?? room.setting.ballSize;
         room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
         room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
-		room.setting.map = map ?? room.setting.map;
+        room.setting.map = map ?? room.setting.map;
 
         // console.log("updated room setting:", room.setting); ////debug
 

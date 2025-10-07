@@ -4,8 +4,6 @@ import { gameSetting } from "./requestBackend.api";
 export function useGameSettings(roomId: string) {
   const [settings, setSettings] = useState<{
     ballSpeed: number;
-    paddleHeight: number;
-    paddleWidth: number;
     ballSize: number;
     paddleSpeed: number;
     scorePoint: number;
@@ -49,8 +47,6 @@ export function useGameSettings(roomId: string) {
       await gameSetting(
         roomId,
         newSettings.ballSpeed,
-        newSettings.paddleHeight,
-        newSettings.paddleWidth,
         newSettings.ballSize,
         newSettings.paddleSpeed,
         newSettings.scorePoint,

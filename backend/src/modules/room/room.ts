@@ -1,8 +1,8 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game } from "../game/game"; // import game loop
 import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
+import { PongGame } from "../../../shared/game/pong.ts";
 
 export interface playerInfo {
     clientId: number; // client id
@@ -25,8 +25,6 @@ export interface Room {
 	height: number; // game height
 	setting: {
 		ballSpeed: number; // ball speed
-		paddleHeight: number; // paddle height
-		paddleWidth: number; // paddle width
 		ballSize: number; // ball size
 		paddleSpeed: number; // paddle speed
 		scorePoint: number; // points to win the game
@@ -52,7 +50,7 @@ export interface Room {
 		scoreRight: number;
 	};
     disconnectPlayers: Set<number>; // client id who disconnected during the game
-	game: Game; // Game instance for game logic
+	game: PongGame; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
     // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
@@ -65,15 +63,21 @@ export interface Room {
 	countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
+export interface GameSettings {
+	ballSpeed?: number,
+	ballSize?: number,
+	paddleSpeed?: number,
+	scorePoint?: number,
+	map?: string,
+}
+
 //default value for setting
-export const DEFAULT_SETTING = {
-	ballSpeed: 5,
-	paddleHeight: 80,
-	paddleWidth: 10,
-	ballSize: 10,
-	paddleSpeed: 2,
-	scorePoint: 5,
-	map: "stadium",
+export const DEFAULT_SETTING: GameSettings = {
+	ballSpeed: 0,
+	ballSize: 2,
+	paddleSpeed: 0,
+	scorePoint: 1,
+	map: "mansion",
 };
 
 /**
@@ -105,6 +109,8 @@ export function generateRoomId(length = 6): number {
  * @returns Room object
 */
 export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
+	const game = new PongGame(null, { ...DEFAULT_SETTING, ...initialSetting });
+
 	const room: Room = {
 		id,
 		name,
@@ -112,8 +118,11 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		width: 800,
 		height: 400,
 		setting: {
-			...DEFAULT_SETTING, // start with default setting
-			...initialSetting, // override with any valid client-provided settings
+			ballSpeed: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
+			ballSize: initialSetting.ballSize ?? DEFAULT_SETTING.ballSize,
+			paddleSpeed: initialSetting.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed,
+			scorePoint: initialSetting.scorePoint ?? DEFAULT_SETTING.scorePoint,
+			map: initialSetting.map ?? DEFAULT_SETTING.map,
 		},
 		gameState: {
 			ball: { x: 800 / 2, y: 400 / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
@@ -128,7 +137,7 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		sockets: new Map(),
 		chatHistory: [] as any [],
 		disconnectPlayers: new Set(),
-		game: new Game(),
+		game: game,
 		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,
@@ -156,7 +165,7 @@ export function startRoomLoop(room: Room) {
 			console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
 			return;
 		}
-		room.game.gameLoop(room);
+		room.game.update(room);
 
 	}, 1000 / 60);
 }
@@ -169,7 +178,7 @@ export function roomStartGame(room: Room) {
 	if (!room.gameState.gameStarted) {
 		room.startTime = new Date();
 		console.log(`room setting: ${JSON.stringify(room.setting)}`);
-		room.game.resetBall(room, "left");
+		// room.game.resetBall(room, "left");
 	}
 }
 

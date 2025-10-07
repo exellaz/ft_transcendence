@@ -13,6 +13,12 @@ export interface WSContext {
 	playerSprite: string;
 }
 
+function error(socket: WebSocket, code: number, message: string) {
+    console.log("❌ |" + message);
+    socket.close(code, message);
+    return null;
+}
+
 /**
  * @brief Validate WebSocket connection parameters
  * @param socket The WebSocket connection
@@ -208,7 +214,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     room.gameState.teams.right = rebuildSide(rightPlayers, "right");
 
     // 3. reset paddles and reassign positions
-    const game = new Game(); //create game object
+    const game = new Game(); //create game object // todo sheldon: Why is there another creategame?
     game.setPaddlePositionWithTeam(room);
 
     // 4. broadcast to all players about the switch
@@ -296,7 +302,7 @@ export function startCountdown(room: Room, onComplete: () => void) {
   if (room.countdownTimer) return; // already running
 
   //set timer for 5 seconds countdown
-  let remaining = 5; //? seconds
+  let remaining = 1; //? seconds
   room.countdownRemaining = remaining;
 
   //broadcast to clients start from 5

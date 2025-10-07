@@ -9,6 +9,7 @@ interface UseGameWebSocketParams {
   initialRole: string;
   playerName: string;
   playerSprite: string;
+  callback: (socket: WebSocket) => void;
 }
 
 /**
@@ -26,7 +27,8 @@ export function useGameWebSocket({
     clientId,
     initialRole,
     playerName,
-    playerSprite
+    playerSprite,
+	callback
 }: UseGameWebSocketParams) {
 	const [role, setRole] = useState(initialRole);
 	const [scoreText, setScoreText] = useState("Score: 0 - 0");
@@ -37,109 +39,112 @@ export function useGameWebSocket({
 	const [playerResult, setPlayerResult] = useState<"win" | "lose" | null>(null);
 	const [isSpectator, setIsSpectator] = useState(false);
 	const [gameState, setGameState] = useState<any>(null);
-	const socketRef = useRef<WebSocket | null>(null);
+	// const socketRef = useRef<WebSocket | null>(null);
+	const [socket, setSocket] = useState<WebSocket | null>(null);
     const [setting, setSetting] = useState<any>({
         ballSize: 0,
-        PaddleHeight: 0,
-        PaddleWidth: 0,
     });
 
 	useEffect(() => {
 		// create websocket connection with player id, room id, and side
 		//const chooseSide = role?.startsWith("left_player") ? "left" : role?.startsWith("right_player") ? "right" : "spectator";
 		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-game?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`);
-		socketRef.current = ws;
+		// socketRef.current = ws;
 
 		// open connection
 		ws.addEventListener("open", () => {
 			console.log("Game ws connected");
+			setSocket(ws);
+			console.log("!created socket: ", socket);
 		});
 
-		// handle incoming message / event from server
-		ws.addEventListener("message", (event) => {
-			try {
-				// validate JSON
-				let data;
-				try {
-					data = JSON.parse(event.data);
-				} catch {
-					console.error("Invalid JSON");
-					return;
-				}
+		ws.onerror = (e) => {
+		  console.error("WebSocket error", e);
+		}
 
-				// validate message structure
-				if (typeof data !== "object" || data === null) {
-					console.error("Invalid message format");
-					return;
-				}
-				if (typeof data.type !== "string") {
-					console.error("Invalid message: missing type: ", data);
-					return;
-				}
-				const allowedTypes = ["roleUpdate", "state"];
-				if (!allowedTypes.includes(data.type)) {
-					console.error(`unsupported message type ${data.type}`);
-					return;
-				}
+		// // handle incoming message / event from server
+		// ws.addEventListener("message", (event) => {
 
-				// handle different message types
-				if (data.type === "roleUpdate") {
-					//validata the game state
-					if (typeof data.gameState !== "object" || data.gameState === null) {
-						console.error("Invalid game state");
-						return;
-					}
-					//update role based on clientId
-					const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
-					const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
-					const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
-					setRole(newRole);
-					setIsSpectator(newRole === "spectator");
-				}
-				if (data.type === "state") {
-					//validate the game state
-					if (typeof data.gameState !== "object" || data.gameState === null) {
-						console.error("Invalid game state");
-						return;
-					}
-					//update game state
-					setGameState(data.gameState);
-                    if (data.gameState.setting) {
-                        setSetting(data.gameState.setting);
-                    }
-					setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
-					setStatusText(`Room: ${roomName} | Role: ${role}`);
-                    setSettingView(`
-						Ball Speed: ${data.gameState.setting?.ballSpeed || 0},
-						Ball Size: ${data.gameState.setting?.ballSize || 0},
-						Paddle Height: ${data.gameState.setting?.paddleHeight || 0},
-						Paddle Width: ${data.gameState.setting?.paddleWidth || 0},
-						Paddle Speed: ${data.gameState.setting?.paddleSpeed || 0},
-						Winning Score: ${data.gameState.setting?.scorePoint || 0},
-						map: ${data.gameState.setting?.map}
-					`);
-					setIsSpectator(role === "spectator");
-					//check for game over
-					const gameWinner = data.result?.winner || null;
-					if (gameWinner && !gameOver) {
-						setGameOver(true);
-						setWinner(gameWinner);
-						// Determine if this client won or lost
-						if (role !== "spectator") {
-							const inLeftTeam = data.gameState.teams.left.some((p:any)=>p.clientId === clientId);
-							const inRightTeam = data.gameState.teams.right.some((p:any)=>p.clientId === clientId);
-							if ((inLeftTeam && gameWinner === "left") || (inRightTeam && gameWinner === "right"))
-								setPlayerResult("win");
-							else
-								setPlayerResult("lose");
-						}
-					}
-				}
-			} catch (err) {
-				console.error("unexpected error in game ws message handling:", err);
-				ws.close(1011, "server error");
-			}
-		});
+		// 	try {
+		// 		// validate JSON
+		// 		let data;
+		// 		try {
+		// 			data = JSON.parse(event.data);
+		// 		} catch {
+		// 			console.error("❌ Invalid JSON");
+		// 			return;
+		// 		}
+
+		// 		console.log("🍹 received message: ", data);
+
+		// 		// validate message structure
+		// 		// if (typeof data !== "object" || data === null)
+		// 		// 	return console.error("❌ Invalid message format");
+
+		// 		// if (typeof data.type !== "string")
+		// 		// 	return console.error("❌ Invalid message: missing type: ", data);
+
+		// 		// const allowedTypes = ["roleUpdate", "state"];
+		// 		// if (!allowedTypes.includes(data.type))
+		// 		// 	return console.error(`unsupported message type ${data.type}`);
+
+		// 		// handle different message types
+		// 		if (data.type === "roleUpdate") {
+		// 			//validata the game state
+		// 			if (typeof data.gameState !== "object" || data.gameState === null)
+		// 				return console.error("❌ Invalid game state");
+
+		// 			//update role based on clientId
+		// 			const leftPlayer = data.gameState.teams.left.find((p:any)=>p.clientId === clientId);
+		// 			const rightPlayer = data.gameState.teams.right.find((p:any)=>p.clientId === clientId);
+		// 			const newRole = leftPlayer?.role || rightPlayer?.role || "spectator";
+		// 			setRole(newRole);
+		// 			setIsSpectator(newRole === "spectator");
+		// 		}
+		// 		if (data.type === "state") {
+		// 			//validate the game state
+		// 			if (typeof data.gameState !== "object" || data.gameState === null)
+		// 				return console.error("❌ Invalid game state");
+
+		// 			//update game state
+		// 			setGameState(data.gameState);
+        //             if (data.gameState.setting) {
+        //                 setSetting(data.gameState.setting);
+        //             }
+		// 			setScoreText(`Score: ${data.gameState.score.left} - ${data.gameState.score.right}`);
+		// 			setStatusText(`Room: ${roomName} | Role: ${role}`);
+        //             setSettingView(`
+		// 				Ball Speed: ${data.gameState.setting?.ballSpeed || 0},
+		// 				Ball Size: ${data.gameState.setting?.ballSize || 0},
+		// 				Paddle Speed: ${data.gameState.setting?.paddleSpeed || 0},
+		// 				Winning Score: ${data.gameState.setting?.scorePoint || 0},
+		// 				map: ${data.gameState.setting?.map}
+		// 			`);
+		// 			setIsSpectator(role === "spectator");
+		// 			//check for game over
+		// 			const gameWinner = data.result?.winner || null;
+		// 			if (gameWinner && !gameOver) {
+		// 				setGameOver(true);
+		// 				setWinner(gameWinner);
+		// 				// Determine if this client won or lost
+		// 				if (role !== "spectator") {
+		// 					const inLeftTeam = data.gameState.teams.left.some((p:any)=>p.clientId === clientId);
+		// 					const inRightTeam = data.gameState.teams.right.some((p:any)=>p.clientId === clientId);
+		// 					if ((inLeftTeam && gameWinner === "left") || (inRightTeam && gameWinner === "right"))
+		// 						setPlayerResult("win");
+		// 					else
+		// 						setPlayerResult("lose");
+		// 				}
+		// 			}
+		// 		}
+
+
+
+		// 	} catch (err) {
+		// 		console.error("❌ unexpected error in game ws message handling:", err);
+		// 		ws.close(1011, "server error");
+		// 	}
+		// });
 
 		// close connection
 		ws.addEventListener("close", () => { console.log("Game ws disconnected"); });
@@ -149,7 +154,7 @@ export function useGameWebSocket({
 	}, [roomId, clientId, initialRole, roomName]); //re-run effect if any of these change
 
 	return {
-		socket: socketRef.current,
+		socket,
 		role,
 		scoreText,
 		statusText,
@@ -181,8 +186,6 @@ export function draw_container(
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
 
-	const paddleWidth = state.setting?.paddleWidth;
-	const paddleHeight = state.setting?.paddleHeight;
 	const ballSize = state.setting?.ballSize;
 
 	ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any existing transforms

@@ -120,7 +120,7 @@ export async function gameSetting(roomId:string, ballSpeed: number, paddleHeight
     const res = await fetch( `${API_URL}/room/${roomId}/game-setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed, scorePoint, map }),
+      body: JSON.stringify({ ballSpeed, ballSize, paddleSpeed, scorePoint, map }),
     });
 
     if (!res.ok) throw new Error("Failed to update room settings");

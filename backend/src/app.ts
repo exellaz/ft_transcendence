@@ -12,12 +12,13 @@ import { fail, ApiError } from "./utils/response";
 import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
+import gameRoutes from "../../shared/game.routes";
 
 const app = Fastify({
 //  logger: true
 });
+await app.register(websocketPlugin);
 
-app.register(websocketPlugin);
 app.register(fastifyCors, {
 	origin: "*",
 	methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // allow your methods
@@ -30,6 +31,7 @@ app.register(friendshipRoutes);
 app.register(blockedFriendshipRoutes);
 app.register(tournamentRoutes);
 app.register(gameWsRoute);
+// app.register(gameRoutes);
 app.register(roomWsRoutes);
 app.register(liveChatRoutes);
 app.register(roomRoutes);
