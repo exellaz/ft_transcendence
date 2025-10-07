@@ -1,5 +1,5 @@
 import { FriendshipStatus, PrismaClient } from "@prisma/client";
-
+import {hashPassword } from "../src/modules/users/users.service"
 const prisma = new PrismaClient();
 
 async function main() {
@@ -9,11 +9,14 @@ async function main() {
 
   let num = 10; // 👈 set how many users you want
   for (let i = 1; i <= num; i++) {
+
+    const password = await hashPassword("Password1");
+
     await prisma.user.create({
       data: {
         username: `username${i}`,
         email: `username${i}@gmail.com`,
-        password: `username${i}pw`,
+        password: password,
         settings: {
           create: {}, // uses defaults
         },
