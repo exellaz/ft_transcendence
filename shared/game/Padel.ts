@@ -224,7 +224,6 @@ export class Arrow extends GameObject {
 		}), true);
 
 			
-		console.log(">>>", this.children[0].rotation);
 		if (!this.isClient) {
 			this.skin = this.parent.player.skin;
 		}

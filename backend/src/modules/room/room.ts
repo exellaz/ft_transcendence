@@ -1,5 +1,4 @@
 import { WebSocket } from "@fastify/websocket";
-import { Game } from "../game/game"; // import game loop
 import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
@@ -26,8 +25,6 @@ export interface Room {
 	height: number; // game height
 	setting: {
 		ballSpeed: number; // ball speed
-		paddleHeight: number; // paddle height
-		paddleWidth: number; // paddle width
 		ballSize: number; // ball size
 		paddleSpeed: number; // paddle speed
 		scorePoint: number; // points to win the game
@@ -68,8 +65,6 @@ export interface Room {
 
 export interface GameSettings {
 	ballSpeed?: number,
-	paddleHeight?: number,
-	paddleWidth?: number,
 	ballSize?: number,
 	paddleSpeed?: number,
 	scorePoint?: number,
@@ -80,11 +75,9 @@ export interface GameSettings {
 export const DEFAULT_SETTING = {
 	ballSpeed: 2,
 	ballSize: 0,
-	paddleHeight: 80,
-	paddleWidth: 10,
 	paddleSpeed: 0,
 	scorePoint: 5,
-	map: "arcade",
+	map: "stadium",
 };
 
 /**

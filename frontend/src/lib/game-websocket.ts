@@ -42,8 +42,6 @@ export function useGameWebSocket({
 	const socketRef = useRef<WebSocket | null>(null);
     const [setting, setSetting] = useState<any>({
         ballSize: 0,
-        PaddleHeight: 0,
-        PaddleWidth: 0,
     });
 
 	useEffect(() => {
@@ -112,8 +110,6 @@ export function useGameWebSocket({
                     setSettingView(`
 						Ball Speed: ${data.gameState.setting?.ballSpeed || 0},
 						Ball Size: ${data.gameState.setting?.ballSize || 0},
-						Paddle Height: ${data.gameState.setting?.paddleHeight || 0},
-						Paddle Width: ${data.gameState.setting?.paddleWidth || 0},
 						Paddle Speed: ${data.gameState.setting?.paddleSpeed || 0},
 						Winning Score: ${data.gameState.setting?.scorePoint || 0},
 						map: ${data.gameState.setting?.map}
@@ -184,8 +180,6 @@ export function draw_container(
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
 
-	const paddleWidth = state.setting?.paddleWidth;
-	const paddleHeight = state.setting?.paddleHeight;
 	const ballSize = state.setting?.ballSize;
 
 	ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any existing transforms
