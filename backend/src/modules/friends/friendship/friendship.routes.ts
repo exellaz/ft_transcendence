@@ -25,13 +25,23 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 		return ok(requesters);
 	});
 
-	// GET /friendships/:userId/accepted
+	// GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
 	fastify.get("/friendships/:userId/accepted", { schema: getFriendShipsByUserIdSchema }, async (request, reply) => {
 		const { userId } = request.params as { userId: string };
 		const uid = Number(userId);
 
-		// Get all users who are in accepted friendships with me
-		const friends: User[] = await fastify.db.user.findMany({
+		type UserWithFriendships = Prisma.UserGetPayload<{
+			include: { 
+				sentFriendships: true,
+				receivedFriendships: true,
+			};
+		}>;
+		/**
+		 *    Fetch all users who are in an accepted friendship with the current user.
+		 *    includes both directions (sent & received), and select only the public fields.
+		 *    Additionally,`id` of the accepted friendship is included
+		 */
+		const friends: UserWithFriendships[] = await fastify.db.user.findMany({
 			where: {
 				OR: [
 					{
@@ -46,22 +56,49 @@ async function friendshipRoutes(fastify: FastifyInstance, options: FastifyPlugin
 					},
 				],
 			},
-			select: userPublicSelect,
-		});
-
-		const blocked: BlockedFriendship[] = await fastify.db.blockedFriendship.findMany({
-			where: {
-				OR: [{ blockerId: uid }, { blockedId: uid }],
+			select: { // include friendshipId
+				...userPublicSelect,
+				sentFriendships: {
+					where: { accepterId: uid, status: "accepted" },
+					select: { id: true },
+				},
+				receivedFriendships: {
+					where: { requesterId: uid, status: "accepted" },
+					select: { id: true },
+				},
 			},
 		});
 
-		// compile all 'otherUser' ids from the blockedFriendships
-		const blockedIds = new Set(blocked.map(b => b.blockerId === uid ? b.blockedId : b.blockerId));
-		// Remove users who are blocked (either direction)
-		const nonBlocked = friends.filter(u => !blockedIds.has(u.id));
-
-		return ok(nonBlocked); // just array of UserPublic
+	// Get all block relationships involving the current user.
+	const blocked: BlockedFriendship[] = await fastify.db.blockedFriendship.findMany({
+		where: {
+			OR: [{ blockerId: uid }, { blockedId: uid }],
+		},
 	});
+
+	// Build a set of all user IDs that are blocked (in either direction).
+	const blockedIds = new Set(
+		blocked.map(b => (b.blockerId === uid ? b.blockedId : b.blockerId))
+	);
+
+	/**
+	 * Format users:
+	 *    - Filter out blocked users
+	 *    - Exclude sentFriendships / receivedFriendships from the output
+	 *    - Compute a single `friendshipId` (from sent or received)
+	 */
+	const formatted = friends
+		.filter(u => !blockedIds.has(u.id))
+		.map(({ sentFriendships, receivedFriendships, ...user }) => ({
+			...user,
+			friendshipId:
+				sentFriendships[0]?.id ??
+				receivedFriendships[0]?.id ??
+				null,
+		}));
+
+	return ok(formatted);
+});
 
 	// POST /friendships
 	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {

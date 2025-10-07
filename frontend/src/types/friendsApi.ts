@@ -20,6 +20,10 @@ export interface BlockedFriendship {
 	createdAt: Date;
 }
 
+export interface UserWithFriendshipId extends User {
+	friendshipId: number;
+}
+
 // ----------------------- API ENDPOINTS -------------------------
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
@@ -34,7 +38,7 @@ export interface GetAcceptedFriendshipsRequest {
 	userId: number;
 }
 
-export interface GetAcceptedFriendshipsResponse extends ApiResponse<User[]> {}
+export interface GetAcceptedFriendshipsResponse extends ApiResponse<UserWithFriendshipId[]> {}
 
 // POST /friendships
 export interface CreateFriendshipRequest {
