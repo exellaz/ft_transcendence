@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { playerInfo } from "../../../backend/src/modules/room/room";
+import { data } from "react-router-dom";
 
 // game structure
 interface UseGameWebSocketParams {
@@ -81,5 +82,36 @@ export function useGameWebSocket({
 		gameState,
         setting,
 		settingView,
+	};
+}
+
+export function useGameRoomWebSocket({
+    roomId,
+    roomName,
+    clientId,
+    initialRole,
+    playerName,
+    playerSprite,
+}: UseGameWebSocketParams) {
+	const [gameOver, setGameOver] = useState(false);
+
+
+	useEffect(() => {
+		const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`);
+
+		ws.onmessage = (event) => {
+			const msg = JSON.parse(event.data);
+			console.log("Game WebSocket message received:", msg); //// debug
+			if (msg.type === "game_over") {
+				setGameOver(msg.canLeave);
+			}
+		};
+
+		// close socket when component unmount
+		return () => ws.close();
+	}, [roomId, clientId, initialRole, roomName]); //re-run effect if any of these change
+
+	return {
+		gameOver,
 	};
 }

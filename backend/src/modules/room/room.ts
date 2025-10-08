@@ -245,13 +245,8 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
 
     //braodcast everyone the game is ended
     broadcast(room, {
-        type: "state",
-        gameState: {
-            ...room.gameState,
-            setting: room.setting
-        },
-        result: room.result,
-        isSpectator: false, //everyone get the result
+    	type: "game_over",
+    	canLeave: true,
     });
 
 	const leftPLayer = room.gameState.teams.left.map(p => p.playerName).join(", ");

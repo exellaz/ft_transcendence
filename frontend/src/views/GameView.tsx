@@ -20,7 +20,7 @@ import type { Camera } from "@shared/objects/Camera";
 import { getUserById } from "../lib/usersApiClient";
 
 
-import { useGameWebSocket, draw_container } from "../lib/game-websocket";
+import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
@@ -460,7 +460,6 @@ const GameView: React.FC = () => {
 	const {
 		socket,
 		role,
-		gameOver,
 		winner,
 		playerResult,
 		isSpectator,
@@ -471,6 +470,8 @@ const GameView: React.FC = () => {
 		settingView,
 	} = useGameWebSocket(params);
 	// console.log("socket has been create: ", socket); ////debug
+
+	const { gameOver } = useGameRoomWebSocket(params);
 
 	useEffect(() => {
 		if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -510,19 +511,21 @@ const GameView: React.FC = () => {
 						className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
 					/>
 				</div>
-			<button
-			  onClick={() => {
-				navigate("/main-menu");
-				sessionStorage.removeItem("playerSide");
-				sessionStorage.removeItem("RoomId");
-				sessionStorage.removeItem("RoomLeaderId");
-				sessionStorage.removeItem("RoomName");
-				sessionStorage.removeItem("RoomType");
-			  }}
-			  className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
-			>
-			  Back to Lobby
-			</button>
+				{gameOver && (
+					<button
+					onClick={() => {
+						navigate("/main-menu");
+						sessionStorage.removeItem("playerSide");
+						sessionStorage.removeItem("RoomId");
+						sessionStorage.removeItem("RoomLeaderId");
+						sessionStorage.removeItem("RoomName");
+						sessionStorage.removeItem("RoomType");
+					}}
+					className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
+					>
+					Back to Lobby
+					</button>
+				)}
 			</div>
 		</Background>
 	);
