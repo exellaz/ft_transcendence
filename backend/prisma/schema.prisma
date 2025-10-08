@@ -49,6 +49,8 @@ model User {
   blockedUsers       BlockedFriendship[] @relation("Blocks")   // people I blocked
   blockedBy          BlockedFriendship[] @relation("BlockedBy") // people who blocked me
 
+  friendChatMessages FriendChatMessage[] 
+
   @@map("users")
 }
 
@@ -74,6 +76,8 @@ model Friendship {
   requester   User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   accepter    User @relation("FriendshipAccepter", fields: [accepterId], references: [id], onDelete: Cascade)
 
+  chatMessages FriendChatMessage[]
+
   @@unique([requesterId, accepterId], name: "uq_friendship")
   @@map("friendships")
   @@index([requesterId], name: "idx_friendships_requester")
@@ -91,6 +95,20 @@ model BlockedFriendship {
 
   @@unique([blockerId, blockedId], name: "uq_blocked_friendship")
 
-  @@map("blocked_user")
+  @@map("blocked_friendship")
 }
 
+model FriendChatMessage {
+  id           Int      @id @default(autoincrement())
+  friendshipId Int  
+  senderId     Int 
+  message      String
+  timestamp    DateTime @default(now())
+
+  friendship  Friendship @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
+  sender      User       @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([friendshipId], name: "idx_friend_chat_messages_friendship")
+
+  @@map("friend_chat_messages")
+}
