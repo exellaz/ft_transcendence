@@ -197,7 +197,7 @@ export default async function roomWsRoutes(fastify: any) {
 
 		// Step 3: handle client disconnect
 		socket.on("close", () => {
-			if (room.game.state === 0 || room.game.state === 3) return;
+			if (room.game.state === 3) return;
 			wsHandler.handleDisconnect(socket, room, clientId, room.id);
 		});
 	});

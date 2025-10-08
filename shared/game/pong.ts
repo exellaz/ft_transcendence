@@ -1,4 +1,5 @@
 
+import { Game } from 'src/modules/game/game.ts';
 import type { GameSettings } from '../../backend/src/modules/room/room.ts';
 import { BlendMode } from '../objects/Blendmodes.ts';
 import { Camera } from '../objects/Camera.ts';
@@ -132,7 +133,7 @@ export class EngineSettings {
 	arrowDownKey: string = "ArrowDown";
 	arrowUpKey: string = "ArrowUp";
 	winningScore: number = 3;
-	map: MapType;
+	map: MapType = "stadium";
 }
 
 
@@ -570,14 +571,28 @@ export class PongGame {
 		][settings.ballSize ?? 1];
 
 		this.gameSettings.winningScore = settings.scorePoint ?? 3;
-		this.gameSettings.map = settings.map ?? "stadium";
+		const allowedMaps: MapType[] = ["stadium", "mansion", "arcade"];
+		this.gameSettings.map = allowedMaps.includes(settings.map as MapType) ? settings.map as MapType : "stadium";
 		this.gameSettings.playerAcceleration = [
 			3000,
 			4300,
 			6500
 		][settings.paddleSpeed ?? 1];
 
-		// console.log("incoming settings", settings);
+		console.log("incoming settings", settings);
+		console.log("final settings", this.gameSettings);
+	}
+
+	//update setting from api setting change
+	updateSettings(newSettings: Partial<GameSettings>) {
+		// Merge new settings into current game settings
+		this.initSettings({ ...this.gameSettings, ...newSettings });
+
+		// If map changed, reload it
+		if (newSettings.map) {
+			this.world.clear();
+			this.loadMap(this.gameSettings.map);
+		}
 	}
 
 	constructor(

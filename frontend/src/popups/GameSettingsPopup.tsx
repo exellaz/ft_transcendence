@@ -81,7 +81,7 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 			label={translate("paddle_speed")}
 			value={settings.paddleSpeed}
 			options={[
-				{ label: translate("slow"), value: 0 },	
+				{ label: translate("slow"), value: 0 },
 				{ label: translate("normal"), value: 1 },
 				{ label: translate("fast"), value: 2 },
 			]}

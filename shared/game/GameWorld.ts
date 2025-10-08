@@ -18,6 +18,13 @@ export class GameWorld {
     this.viewport = viewport ?? new Viewport({ width: 800, height: 400 });
   }
 
+  // cleqr all game objects from the world ( prevent ovelap issue )
+  clear(): void {
+    if (this.gameObjects) {
+        this.gameObjects.clear();
+    }
+  }
+
   addTimer(durationSeconds: number, callback: () => void) {
     this.timers.push(new Timer(durationSeconds, callback));
   }

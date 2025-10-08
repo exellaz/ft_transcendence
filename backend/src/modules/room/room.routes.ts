@@ -144,6 +144,10 @@ export default async function roomRoutes(app: FastifyInstance) {
         room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
         room.setting.map = map ?? room.setting.map;
 
+		if (room.game) {
+			room.game.updateSettings(room.setting);
+		}
+
         // console.log("updated room setting:", room.setting); ////debug
 
         // Notify all connected clients in the room about the setting change
