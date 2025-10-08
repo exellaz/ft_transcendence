@@ -24,6 +24,7 @@ import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
+import Button from "@/components/Button";
 
 
 
@@ -459,15 +460,6 @@ const GameView: React.FC = () => {
 
 	const {
 		socket,
-		role,
-		winner,
-		playerResult,
-		isSpectator,
-		gameState,
-		setting,
-		scoreText,
-		statusText,
-		settingView,
 	} = useGameWebSocket(params);
 	// console.log("socket has been create: ", socket); ////debug
 
@@ -512,19 +504,22 @@ const GameView: React.FC = () => {
 					/>
 				</div>
 				{gameOver && (
-					<button
-					onClick={() => {
-						navigate("/main-menu");
-						sessionStorage.removeItem("playerSide");
-						sessionStorage.removeItem("RoomId");
-						sessionStorage.removeItem("RoomLeaderId");
-						sessionStorage.removeItem("RoomName");
-						sessionStorage.removeItem("RoomType");
-					}}
-					className="mt-4 px-3 py-1 border bg-yellow-400 text-black hover:bg-yellow-500 transition"
-					>
-					Back to Lobby
-					</button>
+					<div>
+						<Button
+						  variant="bigYellow"
+						  className="px-3 py-4 text-2xl"
+						  onClick={() => {
+							navigate("/main-menu");
+							sessionStorage.removeItem("playerSide");
+							sessionStorage.removeItem("RoomId");
+							sessionStorage.removeItem("RoomLeaderId");
+							sessionStorage.removeItem("RoomName");
+							sessionStorage.removeItem("RoomType");
+						  }}
+						>
+						Back to Lobby
+						</Button>
+					</div>
 				)}
 			</div>
 		</Background>

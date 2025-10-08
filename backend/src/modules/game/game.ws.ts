@@ -75,12 +75,6 @@ export default async function gameWsRoute(fastify: any) {
 				if (typeof msg.type !== "string")
 					return closeSocket(socket, 1003, "Invalid message: missing type");
 
-
-				// --- allow type ---
-				// const allowedTypes = ["move"];
-				// if (!allowedTypes.includes(msg.type))
-				// 	return closeSocket(socket, 1003, `unsupported message type ${msg.type}`);
-
 				console.log(">>>> sprite :", playerSprite);
 
 				// console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
@@ -138,8 +132,8 @@ export default async function gameWsRoute(fastify: any) {
 		// Step 3: handle client disconnect
 		socket.on("close", () => {
 			//0 loading, 1 countdown, 2 started, 3 ended
-			//if game still loading, ignore
 			// console.log("pong game state: ", room.game.state); ////debug
+			//if game still loading or game ended, ignore
 			if (room.game.state === 0 || room.game.state === 3) return;
 
 			if (!room) {

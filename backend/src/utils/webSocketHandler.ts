@@ -89,13 +89,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 			};
 			room.clientRoles.set(clientId, player);
 
-			//initialize thier position and score (prevent garbage value)
-			if (roleStr !== "spectator") {
-				game.setPaddlePositionWithTeam(room);
-				room.gameState.score.left = 0;
-				room.gameState.score.right = 0;
-			}
-
 			if (socket) {
 				//notify to the client about his
 				const playerInfo = room.clientRoles.get(clientId);
@@ -115,7 +108,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 					newPlayer: playerInfo,
 					gameState: room.gameState,
 					leaderId: room.leaderId,
-					disconnectPlayers: room.disconnectPlayers,
 				});
 			}
 		}
@@ -176,14 +168,6 @@ export class WebSocketHandler implements IWebSocketHandler {
 				room.leaderId = -1;
 			}
 		}
-
-        const GRACE_PERIOD = 3 * 1000; //? timeout for end game
-
-        // ---- case: disconnect during game ----
-        if (role && role !== "spectator" && room.gameState.gameStarted) {
-            handlePlayerDisconnect(room, clientId, GRACE_PERIOD);
-            return;
-        }
 
 		// ---- case: disconnect during countdown ----
 		if (!room.gameState.gameStarted && !room.gameState.gameEnded) {

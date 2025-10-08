@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import type { playerInfo } from "../../../backend/src/modules/room/room";
-import { data } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 // game structure
 interface UseGameWebSocketParams {
@@ -29,22 +27,9 @@ export function useGameWebSocket({
     initialRole,
     playerName,
     playerSprite,
-	callback
 }: UseGameWebSocketParams) {
-	const [role, setRole] = useState(initialRole);
-	const [scoreText, setScoreText] = useState("Score: 0 - 0");
-	const [statusText, setStatusText] = useState(`Room: ${roomName}`);
-    const [settingView, setSettingView] = useState("");
-	const [gameOver, setGameOver] = useState(false);
-	const [winner, setWinner] = useState<string | null>(null);
-	const [playerResult, setPlayerResult] = useState<"win" | "lose" | null>(null);
-	const [isSpectator, setIsSpectator] = useState(false);
-	const [gameState, setGameState] = useState<any>(null);
-	// const socketRef = useRef<WebSocket | null>(null);
 	const [socket, setSocket] = useState<WebSocket | null>(null);
-    const [setting, setSetting] = useState<any>({
-        ballSize: 0,
-    });
+
 
 	useEffect(() => {
 		// create websocket connection with player id, room id, and side
@@ -72,19 +57,10 @@ export function useGameWebSocket({
 
 	return {
 		socket,
-		role,
-		scoreText,
-		statusText,
-		gameOver,
-		winner,
-		playerResult,
-		isSpectator,
-		gameState,
-        setting,
-		settingView,
 	};
 }
 
+//socket for game over from room
 export function useGameRoomWebSocket({
     roomId,
     roomName,

@@ -134,19 +134,6 @@ export default async function roomWsRoutes(fastify: any) {
 							}
 
 							if (msg.start === true) {
-								// //if not enough player, cannot start
-								// const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
-								// if (totalPlayers < room.teamSize * 2) {
-								// 	console.log(`Player ${player.playerName} (${player.role}) [${player.id}] tried to start the game but insufficient player in room (${room.name}) [${room.id}]`);
-								// 	return;
-								// }
-
-								// //if not all player ready, cannot start
-								// if(!room.canStart) {
-								// 	console.log(`Player ${player.playerName} (${player.role}) [${player.id}] tried to start the game but not all players are ready in room (${room.name}) [${room.id}]`);
-								// 	return;
-								// }
-
 								//execute the start (leader only)
 								console.log(`Player ${player.playerName} (${player.role}) [${player.id}] started the game in room (${room.name}) [${room.id}]`);
 								const { canStart } = updateCanStart(room);

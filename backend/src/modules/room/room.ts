@@ -49,16 +49,12 @@ export interface Room {
 		scoreLeft: number;
 		scoreRight: number;
 	};
-    disconnectPlayers: Set<number>; // client id who disconnected during the game
 	game: PongGame; // Game instance for game logic
 	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
 	duration?: number; // game duration
-    // readyStatus: Map<string, boolean>; // [key] => client id, [value] => ready status
     canStart: boolean; // Flag to indicate if player all ready
-    //startRequestedBy?: string; // clientId of who requested to start game
 	leaderId: number; // clientId of the room leader
     private: boolean; // Flag to indicate if the room is private
-    disconnectTimers?: Map<number, NodeJS.Timeout>; // [key] => client id, [value] => timeout handle for reconnection grace period
 	countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
 	countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
@@ -138,9 +134,7 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
 		clientRoles: new Map(),
 		sockets: new Map(),
 		chatHistory: [] as any [],
-		disconnectPlayers: new Set(),
 		game: game,
-		// readyStatus: new Map(),
 		canStart: false,
 		leaderId: leaderId,
 		private: isPrivate,
