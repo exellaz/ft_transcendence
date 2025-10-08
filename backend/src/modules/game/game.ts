@@ -1,7 +1,6 @@
 import type { Room } from "../room/room";
 import { rooms, roomEndGame } from "../room/room";
 import type { playerInfo } from "../room/room";
-import { PongGame } from "@shared/game/pong";
 
 /**
  * @brief Interface for Game class method
@@ -13,8 +12,6 @@ interface IGame {
 	updateBall(room: Room): void;
 	gameLoop(room: Room): void;
 }
-
-// todo here!!
 
 export class Game implements IGame {
 
@@ -137,9 +134,9 @@ export class Game implements IGame {
 		// Bounce off paddles
 		for (const clientId in room.gameState.paddles) { //look for player id in paddles
 			const paddleY = room.gameState.paddles[clientId];
-			if (!paddleY) continue;
-			//check left is belong this player or not
-			const clientIdNum = parseInt(clientId, 10);
+            if (!paddleY) continue;
+            //check left is belong this player or not
+            const clientIdNum = parseInt(clientId, 10);
 			if (room.gameState.teams.left.some((p: playerInfo) => p.clientId === clientIdNum) && ball.x - ballSize <= paddleWidth) {
 				if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
 					ball.dx *= -1;
@@ -147,11 +144,11 @@ export class Game implements IGame {
 				}
 			}
 			if (room.gameState.teams.right.some((p: playerInfo) => p.clientId === clientIdNum) &&
-				ball.x + ballSize >= room.width - paddleWidth) {
-				if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
-					ball.dx *= -1;
-					ball.x = room.width - paddleWidth - ballSize;
-				}
+			    ball.x + ballSize >= room.width - paddleWidth) {
+			    if (ball.y + ballSize >= paddleY && ball.y - ballSize <= paddleY + paddleHeight) {
+			        ball.dx *= -1;
+			        ball.x = room.width - paddleWidth - ballSize;
+			    }
 			}
 		}
 
@@ -193,14 +190,14 @@ export class Game implements IGame {
 				if (client.readyState === WebSocket.OPEN) { //if the connection is open
 					const playerId = room.sockets.get(client); //get player id from socket
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
-					const role = player?.role; //get player role from player id
+        	        const role = player?.role; //get player role from player id
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const msg = {
 						type: "state",
 						gameState: {
-							...room.gameState,
-							setting: room.setting
-						},
+                            ...room.gameState,
+                            setting: room.setting
+                        },
 						isSpectator
 					};
 					// console.log("game state Sending to client:", playerId, "\n", JSON.stringify(msg)); //// debug
@@ -213,12 +210,12 @@ export class Game implements IGame {
 		if (room.gameState.score.left >= room.setting.scorePoint || room.gameState.score.right >= room.setting.scorePoint) {
 			roomEndGame(room, false);
 
-			//broadcast game ended with the result
-			for (const client of room.clients) {
+            //broadcast game ended with the result
+            for (const client of room.clients) {
 				if (client.readyState === WebSocket.OPEN) { //if the connection is open
 					const playerId = room.sockets.get(client); //get player id from socket
 					const player = playerId ? room.clientRoles.get(playerId!) : null; //get player role from player id
-					const role = player?.role; //get player role from player id
+        	        const role = player?.role; //get player role from player id
 					const isSpectator = role === "spectator"; //check if the player is a spectator
 					const msg = {
 						type: "state",
@@ -230,7 +227,7 @@ export class Game implements IGame {
 					client.send(JSON.stringify(msg));
 				}
 			}
-			return;
+            return;
 		}
 	}
 }

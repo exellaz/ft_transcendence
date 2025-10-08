@@ -19,15 +19,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-    /* 👇 Path mapping goes here */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["../shared/*"]
-    }
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"]
 }
