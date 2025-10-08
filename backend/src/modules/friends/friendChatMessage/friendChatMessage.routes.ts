@@ -9,6 +9,7 @@ async function friendChatMessageRoutes(fastify: FastifyInstance, options: Fastif
   
       const friendChatMessages = await fastify.db.friendChatMessage.findMany({
         where: { friendshipId: Number(friendshipId) },
+        orderBy: { timestamp: 'asc' } // sort timestamp in ascending order
       });
   
       if (!friendChatMessages)
