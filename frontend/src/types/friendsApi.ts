@@ -24,6 +24,14 @@ export interface UserWithFriendshipId extends User {
 	friendshipId: number;
 }
 
+export interface FriendChatMessage {
+	id: number;
+	friendshipId: number;
+	senderId: number;
+	message: string;
+	timestamp: Date;
+}
+
 // ----------------------- API ENDPOINTS -------------------------
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
@@ -87,3 +95,10 @@ export interface DeleteBlockedFriendshipRequest {
 }
 
 export interface DeleteBlockedFriendshipResponse extends ApiResponse<BlockedFriendship> {}
+
+// GET /friendChatMessages/:friendshipId
+export interface GetAllFriendChatMessagesRequest {
+	friendshipId: number;
+}
+
+export interface GetAllFriendChatMessagesResponse extends ApiResponse<FriendChatMessage[]> {}
