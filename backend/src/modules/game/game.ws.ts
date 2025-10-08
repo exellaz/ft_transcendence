@@ -1,11 +1,12 @@
 import { WebSocketHandler } from "../../utils/webSocketHandler"
-import { Game } from "./game"
+// import { Game } from "./game"
 import { validateConnection } from "../../utils/utils";
 // import { PongGame } from "@shared/game/pong";
 const wsHandler = new WebSocketHandler();
 
-import { PongGame, GameSettings } from "../../../shared/game/pong.ts";
+import { PongGame, GameSettings, GameState } from "../../../shared/game/pong.ts";
 import { Player } from "../../../shared/game/Player.ts";
+import { handlePlayerDisconnect } from "src/utils/utils.ts";
 
 function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 	socket.close(1003, errorMsg)
@@ -46,7 +47,6 @@ export default async function gameWsRoute(fastify: any) {
 
 		// Step 1: Assign role to client (player, spectator, etc.)
 		const { clientId, roomId, room, side, playerName, playerSprite } = context;
-		const player = wsHandler.assignRole(room, clientId, socket, roomId, side as string, playerName, playerSprite);
 
 		console.log("player sprite: ", playerSprite);
 		console.log("player name: ", playerName);
@@ -137,8 +137,27 @@ export default async function gameWsRoute(fastify: any) {
 
 		// Step 3: handle client disconnect
 		socket.on("close", () => {
-			if (room.gameState.gameStarted) return;
-			wsHandler.handleDisconnect(socket, room, clientId, room.id);
+			//0 loading, 1 countdown, 2 started, 3 ended
+			//if game still loading, ignore
+			// console.log("pong game state: ", room.game.state); ////debug
+			if (room.game.state === 0 || room.game.state === 3) return;
+
+			if (!room) {
+				console.log ("no room found");
+				return;
+			}
+
+			// get who disconnected in game
+			let side: "left" | "right" | "unknown" = "unknown";
+			if (room.game.teamLeft.padels.some(p => p.player.id === clientId))
+			  side = "left";
+			else if (room.game.teamRight.padels.some(p => p.player.id === clientId))
+			  side = "right";
+			console.log(`❌ Player ${playerName} (${side}) disconnected. countdown 3 sec to end game`);
+
+			// handle player disconnect
+			const GRACE_PERIOD = 3000;
+			handlePlayerDisconnect(room, clientId, GRACE_PERIOD);
 		});
 	});
 }

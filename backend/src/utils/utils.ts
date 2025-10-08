@@ -52,7 +52,7 @@ export function validateConnection(socket: any, req:any): WSContext | null {
 		return null;
 	}
 
-    if (!playerName) {
+    if (!playerName || playerName.trim() === "" || playerName === "undefined") {
         // console.log("Invalid playerName:", playerName); ////debug
         socket.close(1008, "Player name is required");
         return null;
@@ -251,25 +251,11 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
 }
 
 export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number) {
-    const player = room.clientRoles.get(clientId);
-    if (!player) return;
-
-    // notify everyone
-	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds to end game.`);
-    // broadcast(room, createLiveChatMessage(-1, "system", `${player.playerName} disconnected.`));
-    broadcast(room, {
-        type: "roleUpdate",
-        gameState: room.gameState,
-        leaderId: room.leaderId,
-    });
-
     // start time for end game
     setTimeout(() => {
-
         // remove from teams and paddles
         room.gameState.teams.left = room.gameState.teams.left.filter(p => p.clientId !== clientId);
         room.gameState.teams.right = room.gameState.teams.right.filter(p => p.clientId !== clientId);
-        delete room.gameState.paddles[clientId];
         room.clientRoles.delete(clientId);
 
         //determine winner if only one team left
@@ -278,17 +264,12 @@ export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod
         let winner: "left" | "right" | null = null;
         if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
         else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
-        if (winner && !room.gameState.gameEnded) {
-            roomEndGame(room, true, winner);
+        if (winner) {
+			console.log(`${winner} side wins due to opponents disconnected`);
+            room.game.forceEnd(winner);
+			setTimeout(() => roomEndGame(room, true, winner), 1000);
             return;
         }
-
-        // notify updated state
-        broadcast(room, {
-            type: "roleUpdate",
-            gameState: room.gameState,
-            leaderId: room.leaderId,
-        });
     }, gracePeriod);
 }
 

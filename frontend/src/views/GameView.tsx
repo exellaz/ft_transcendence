@@ -17,6 +17,7 @@ import { PongGame, Team } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
+import { getUserById } from "../lib/usersApiClient";
 
 
 import { useGameWebSocket, draw_container } from "../lib/game-websocket";
@@ -168,7 +169,7 @@ class GameClient {
 		websocketRef: WebSocket,
 	) {
 
-		console.log("created game client");
+		// console.log("created game client"); ////debug
 		this.id = GameClient.globalId;
 		GameClient.globalId++;
 		this.websocketRef = websocketRef;
@@ -176,12 +177,12 @@ class GameClient {
 		// -- WEBSOCKET --
 
 		// send initial handshake
-		console.log("asking for ready");
+		// console.log("asking for ready"); ////debug
 		if (this.websocketRef.readyState === WebSocket.OPEN) {
 			this.sendData("ready");
 		} else {
 			this.websocketRef.addEventListener("open", () => {
-  				console.log("socket opened, now sending ready");
+  				// console.log("socket opened, now sending ready"); ////debug
   				this.sendData("ready");
   			});
 		}
@@ -194,32 +195,32 @@ class GameClient {
 
 			if (data["type"] === "ready") {
 				this.sendData("fetch_world");
-				console.log("requested for full world");
+				// console.log("requested for full world"); ////debug
 			}
 
 			if (!data["state"]) {
-				console.log("no state", data.type);
+				// console.log("no state", data.type); ////debug
 				return;
 			}
 			if (data["state"]["type"] === "full") {
-				console.log("Objects in full state:", data.state.gameObjects.map(o => o.className));
-				console.log("---- received full state ---- ");
-				console.log(`received ${event.data.length} bytes`);
-				console.log(`received`, data);
+				// console.log("Objects in full state:", data.state.gameObjects.map(o => o.className)); ////debug
+				// console.log("---- received full state ---- "); ////debug
+				// console.log(`received ${event.data.length} bytes`); ////debug
+				// console.log(`received`, data); ////debug
 				let incomingData = (data["state"]["gameObjects"].map((elem) => {
 					return elem.id;
 				}));
 				let currentData = Array.from(this.gameObjectRegistry.keys());
 				let incomingLen = incomingData.length;
 
-				console.log(`incoming objects length :${incomingLen} / current objects length ${this.gameObjectRegistry.size}`);
-				console.log(`incoming ids :${incomingData}`);
-				console.log(`current ids :${currentData}`);
-				console.log("object ids", this.gameObjectRegistry.keys());
+				// console.log(`incoming objects length :${incomingLen} / current objects length ${this.gameObjectRegistry.size}`); ////debug
+				// console.log(`incoming ids :${incomingData}`); ////debug
+				// console.log(`current ids :${currentData}`); ////debug
+				// console.log("object ids", this.gameObjectRegistry.keys()); ////debug
 
-				for (const id of incomingData) {
-					console.log(this.getObject(id) === undefined);
-				}
+				// for (const id of incomingData) { ////debug
+					// console.log(this.getObject(id) === undefined); ////debug
+				// }
 
 				this.isFullStateProcessed = true;
 				this.sendData("received_full_state");
@@ -230,7 +231,7 @@ class GameClient {
 			}
 		};
 
-		this.websocketRef.onclose = () => console.log("❌ Disconnected");
+		// this.websocketRef.onclose = () => console.log("❌ Disconnected"); ////debug
 
 
 		this.handleKey = this.handleKey.bind(this);
@@ -259,7 +260,7 @@ class GameClient {
 	}
 
 	loop() {
-		// console.log("looping client", this.id);
+		// console.log("looping client", this.id); ////debug
 		if (this.websocketRef?.readyState === WebSocket.OPEN) {
 			if (this.keysPressed["ArrowUp"]) {
 				this.sendData("input", { key: "ArrowUp", action: "hold" });
@@ -274,7 +275,7 @@ class GameClient {
 			|| this.data["state"] === undefined
 			|| !this.isFullStateProcessed
 		) {
-			console.log("not yet received full state");
+			// console.log("not yet received full state"); ////debug
 			requestAnimationFrame(this.loop);
 			return;
 		}
@@ -300,7 +301,7 @@ class GameClient {
 
 			if (obj === undefined) {
 				// hydrate only once
-				console.log("creating new instance");
+				// console.log("creating new instance"); ////debug
 				const revivedObject = revive(stateObject);
 				this.setObject(stateObject["id"], this.createNewInstance(revivedObject));
 			}
@@ -400,24 +401,47 @@ const GameView: React.FC = () => {
 	const { t } = useTranslation();
 	const translate = (key: string) => t(`GameView.${key}`);
 	const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
+	const { user } = useUser();
+	const [userInfo, setUserInfo] = useState<any>(null);
 	const navigate = useNavigate();
 
 	// TODO: Replace with actual JWT
-	const { user } = useUser();
-	if (!user) {
-		console.log("user not loaded");
-		return;
-	}
-	console.log("user loaded", user);
+	// console.log("useUser() returned:", user);
+	// if (!user) {
+	// 	console.log("user not loaded"); ////debug
+	// 	return;
+	// }
+	// Fetch user info when the component mounts
+	React.useEffect(() => {
+		if (!user) return; // Ensure `user` is available
+
+		const fetchUserInfo = async () => {
+		  try {
+			const response = await getUserById({ id: Number(user.id) }); // Call the API
+			if (response.success && response.data) {
+				setUserInfo(response.data); // Store the user info
+				} else {
+			  console.log("Failed to fetch user info"); // Handle API error
+			}
+		  } catch (err) {
+			console.error("Error fetching user info:", err);
+			console.error("An error occurred while fetching user info"); // Handle fetch error
+		  }
+		};
+
+		fetchUserInfo();
+	}, [user]);
+
+	// console.log("user loaded", user); ////debug
 	const roomId = Number(sessionStorage.getItem("RoomId") || "1");
 	const roomName = sessionStorage.getItem("RoomName") || "Room 1";
-	const clientId = user.id;
-	const playerName = user.username;
-	const playerSprite = user.avatarUrl || "default.png";
+	const clientId = userInfo?.id;
+	const playerName = userInfo?.username;
+	const playerSprite = userInfo?.avatarUrl || "default.png";
 	const initialRole = sessionStorage.getItem("playerSide") || "";
-	console.log("player name from session:", playerName);
-	console.log("player sprite from session:", playerSprite);
-	console.log("initial role from session:", initialRole);
+	console.log("player name from session:", playerName); ////debug
+	console.log("player sprite from session:", playerSprite); ////debug
+	console.log("initial role from session:", initialRole); ////debug
 
 	// -------------------------------- Websockets --------------------------------
 
@@ -431,7 +455,7 @@ const GameView: React.FC = () => {
 		playerSprite,
 		callback: () => {}
 	};
-	// console.log("params", params);
+	// console.log("params", params); ////debug
 
 	const {
 		socket,
@@ -446,24 +470,24 @@ const GameView: React.FC = () => {
 		statusText,
 		settingView,
 	} = useGameWebSocket(params);
-	console.log("socket has been create: ", socket);
+	// console.log("socket has been create: ", socket); ////debug
 
 	useEffect(() => {
 		if (!socket || socket.readyState !== WebSocket.OPEN) {
-			console.log("waiting for socket connection...");
+			// console.log("waiting for socket connection..."); ////debug
 			return;
 		}
 
 		if (socket.readyState !== WebSocket.OPEN) {
 		  socket.onopen = () => {
-			console.log("Socket is open, starting game client");
+			// console.log("Socket is open, starting game client"); ////debug
 			let gameClient = new GameClient(canvasRef.current, socket);
 			gameClient.start();
 		  };
 		  return;
 		}
 
-		console.log("start game client with open socket");
+		// console.log("start game client with open socket"); ////debug
 		let gameClient = new GameClient(canvasRef.current, socket);
 
 		gameClient.start();

@@ -157,6 +157,8 @@ export class PongGame {
 
 	clients!: any[];
 
+	private onGameEnd?: (winner: "left" | "right" | "draw") => void;
+
 	public world: GameWorld = new GameWorld();
 	public gameSettings: EngineSettings = new EngineSettings();
 	public teamLeft!: GameTeam;
@@ -182,6 +184,47 @@ export class PongGame {
 	// -- client-side only --
 	public isClient: boolean = false;
 
+	// --- getters for score ---
+	public get scoreLeft(): number {
+		return this.teamLeft.score;
+	}
+
+	public get scoreRight(): number {
+		return this.teamRight.score;
+	}
+
+	// --- force end the game with specified winner ---
+	forceEnd(winner: "left" | "right" | "draw") {
+
+		//set game to gameover state
+		this.state = GameState.GAMEOVER;
+
+		//check who to win
+		if (winner === "left") {
+			this.winningTeam = this.teamLeft;
+		} else if (winner === "right") {
+			this.winningTeam = this.teamRight;
+		} else {
+			this.winningTeam = null;
+		}
+
+		// Update title text (for label display)
+		if (this.onScreenTitle) {
+			if (winner === "draw") {
+				this.onScreenTitle.text = "Draw!";
+			} else {
+				const winnerPlayer = this.winningTeam.padels[0]?.player;
+				this.onScreenTitle.text = `${winnerPlayer?.name ?? winner.toUpperCase()} Wins!`;
+			}
+		}
+
+		// Trigger the standard onGameEnd after short delay
+		setTimeout(() => {
+			if (this.onGameEnd) {
+				this.onGameEnd(winner);
+			}
+		}, 1000);
+	}
 
 
 	resetBall() {
@@ -223,6 +266,13 @@ export class PongGame {
 	teamWins(team: GameTeam) {
 		this.state = GameState.GAMEOVER;
 		this.winningTeam = team;
+
+		setTimeout(() => {
+			if (this.onGameEnd) {
+				const winner = team.team === Team.TEAM_LEFT ? "left" : "right";
+				this.onGameEnd(winner);
+			}
+		}, 2000);
 	}
 
 	update(room: any) {
@@ -533,10 +583,12 @@ export class PongGame {
 	constructor(
 		isClient: boolean,
 		incomingSettings: GameSettings,
+		onGameEnd?: (winner: "left" | "right" | "draw") => void,
 	) {
 		PongGame.globalId ++;
 
 		this.initSettings(incomingSettings);
+		this.onGameEnd = onGameEnd; // callback when game ends
 
 		if (isClient)
 			return;
@@ -559,6 +611,7 @@ export class PongGame {
 		console.log("INITIALIZED");
 
 		this.loadMap(this.gameSettings.map);
+
 	}
 }
 

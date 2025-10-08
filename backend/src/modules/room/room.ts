@@ -109,7 +109,9 @@ export function generateRoomId(length = 6): number {
  * @returns Room object
 */
 export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
-	const game = new PongGame(null, { ...DEFAULT_SETTING, ...initialSetting });
+	const game = new PongGame(false, { ...DEFAULT_SETTING, ...initialSetting }, (winner) => {
+		roomEndGame(room, false, winner);
+	});
 
 	const room: Room = {
 		id,
@@ -155,6 +157,8 @@ export function startRoomLoop(room: Room) {
 	if (room.loopHandle)
 		return;
 
+	roomStartGame(room);
+
 	// Start the game loop at 60 FPS
 	room.loopHandle = setInterval(() => {
 		// If room has no players, stop loop
@@ -193,8 +197,6 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
 		return;
 
 	// close the game when is end
-	room.gameState.gameStarted = false;
-    room.gameState.gameEnded = true;
 	room.endTime = new Date();
 
 	//stop loop
@@ -209,17 +211,17 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
         winner = overrideWinner;
     }
 	else if (!forced) {
-		if (room.gameState.score.left > room.gameState.score.right)
+		if (room.game.scoreLeft > room.game.scoreRight)
 			winner = "left";
-		else if (room.gameState.score.left < room.gameState.score.right)
+		else if (room.game.scoreLeft < room.game.scoreRight)
 			winner = "right";
 		else
 			winner = "draw";
 	}
 	else {
 		// if forced, determine winner by current score
-		const left = room.gameState.score.left;
-		const right = room.gameState.score.right;
+		const left = room.game.scoreLeft;
+		const right = room.game.scoreRight;
 		if (left > right)
 			winner = "left";
 		else if (left < right)
@@ -231,8 +233,8 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
 	// set the result
 	room.result = {
 		winner,
-		scoreLeft: room.gameState.score.left,
-		scoreRight: room.gameState.score.right,
+		scoreLeft: room.game.scoreLeft,
+		scoreRight: room.game.scoreRight,
 	};
 
 	// Calculate duration for a game
@@ -251,7 +253,17 @@ export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" 
         result: room.result,
         isSpectator: false, //everyone get the result
     });
-    console.log(`Game ended in room ${room.id}. Winner: ${winner}, Score: ${room.gameState.score.left}-${room.gameState.score.right}`);
+
+	const leftPLayer = room.gameState.teams.left.map(p => p.playerName).join(", ");
+	const rightPlayer = room.gameState.teams.right.map(p => p.playerName).join(", ");
+
+	console.log("====================== GAME OVER ==================");
+	console.log(`Left team: [${leftPLayer}], Right team: [${rightPlayer}]`);
+    console.log(`Room ${room.id}`);
+	console.log(`Winner: ${winner} => ${winner === "left" ? leftPLayer : winner === "right" ? rightPlayer : ""}`);
+	console.log(`Final Score - Left: ${room.game.scoreLeft}, Right: ${room.game.scoreRight}`);
+	console.log(`Duration: ${Math.floor(room.duration / 1000)} sec (${room.duration} ms)`);
+	console.log("===================================================");
 
 	const roomId = room.id;
 	if (rooms.has(roomId)) {
