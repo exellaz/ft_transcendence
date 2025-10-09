@@ -1,27 +1,27 @@
-import React from 'react';
-import AnimatedSprite from './AnimatedSprite';
-import type { AnimatedSpriteProps } from './AnimatedSprite';
+import React from "react";
+import AnimatedSprite from "./AnimatedSprite";
+import type { AnimatedSpriteProps } from "./AnimatedSprite";
 
 const BouncingSprites: React.FC = () => {
   const sprites: AnimatedSpriteProps[] = [
     {
-      src: '/assets/yellow-ghost.png',
+      src: "/assets/yellow-ghost.png",
       horizontalPosition: 10,
-      mirrorSprite: true
+      mirrorSprite: true,
     },
     {
-      src: '/assets/red-ghost.png', 
+      src: "/assets/red-ghost.png",
       horizontalPosition: 25,
-      mirrorSprite: true
+      mirrorSprite: true,
     },
     {
-      src: '/assets/green-ghost.png',
+      src: "/assets/green-ghost.png",
       horizontalPosition: 75,
     },
     {
-      src: '/assets/blue-ghost.png',
+      src: "/assets/blue-ghost.png",
       horizontalPosition: 90,
-    }
+    },
   ];
 
   return (

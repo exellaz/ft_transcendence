@@ -37,7 +37,10 @@ function loadPlayer(): PlayerInfo {
   return defaultInfo;
 }
 
-const ChoosePlayer: React.FC<ChoosePlayerProps> = ({ open = true, onClose }) => {
+const ChoosePlayer: React.FC<ChoosePlayerProps> = ({
+  open = true,
+  onClose,
+}) => {
   const navigate = useNavigate();
   const [playerInfo, setPlayerInfo] = useState<PlayerInfo>(loadPlayer());
 
@@ -70,7 +73,9 @@ const ChoosePlayer: React.FC<ChoosePlayerProps> = ({ open = true, onClose }) => 
           className="w-full border rounded p-2 mb-2"
           placeholder="Enter your name..."
           value={playerInfo.name}
-          onChange={(e) => setPlayerInfo({ ...playerInfo, name: e.target.value })}
+          onChange={(e) =>
+            setPlayerInfo({ ...playerInfo, name: e.target.value })
+          }
         />
         {!playerInfo.name.trim() && (
           <p className="text-red-500 text-sm mb-2">Name is required</p>
@@ -127,5 +132,3 @@ const ChoosePlayer: React.FC<ChoosePlayerProps> = ({ open = true, onClose }) => 
 };
 
 export default ChoosePlayer;
-
-

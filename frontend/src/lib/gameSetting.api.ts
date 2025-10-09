@@ -18,7 +18,9 @@ export function useGameSettings(roomId: string) {
   useEffect(() => {
     async function fetchSettings() {
       try {
-        const res = await fetch(import.meta.env.VITE_API_URL + `/room/${roomId}`);
+        const res = await fetch(
+          import.meta.env.VITE_API_URL + `/room/${roomId}`,
+        );
         if (!res.ok) throw new Error("Failed to fetch room settings");
         const data = await res.json();
         setSettings(data.setting); // user edit
@@ -34,9 +36,9 @@ export function useGameSettings(roomId: string) {
 
   //handle reset
   function resetSettings() {
-      if (initialSettings) {
+    if (initialSettings) {
       setSettings(initialSettings);
-      }
+    }
   }
 
   // Save
@@ -50,7 +52,7 @@ export function useGameSettings(roomId: string) {
         newSettings.ballSize,
         newSettings.paddleSpeed,
         newSettings.scorePoint,
-		newSettings.map
+        newSettings.map,
       );
       setSettings(newSettings);
     } catch (err) {
@@ -61,5 +63,12 @@ export function useGameSettings(roomId: string) {
     }
   }
 
-  return { settings, setSettings, loading, saving, saveSettings, resetSettings };
+  return {
+    settings,
+    setSettings,
+    loading,
+    saving,
+    saveSettings,
+    resetSettings,
+  };
 }

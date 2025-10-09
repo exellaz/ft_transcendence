@@ -47,8 +47,8 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
               />
               <span
                 className={
-                    //TODO id issue here
-                    `${getUserColor(String(player.id))}`
+                  //TODO id issue here
+                  `${getUserColor(String(player.id))}`
                 }
                 title={player.username}
               >

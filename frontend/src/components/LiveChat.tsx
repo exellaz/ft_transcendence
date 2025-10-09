@@ -40,7 +40,9 @@ const LiveChat: React.FC<{
   // Helper function to get display name for a message
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.id === -1) return "System"; // System messages
-    const player = players.find((p: WaitingTournamentPlayer) => p.id === msg.id); // Find player by uid
+    const player = players.find(
+      (p: WaitingTournamentPlayer) => p.id === msg.id,
+    ); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };
 
@@ -48,7 +50,7 @@ const LiveChat: React.FC<{
     <div className="w-[50%] h-full border-gray-300 border-3 rounded-3xl flex flex-col gap-2 p-6">
       <p className="text-white text-xl font-bold">{translate("live_chat")}</p>
       {/* Chat messages container */}
-	  <div
+      <div
         ref={messagesEndRef}
         className="h-[400px] overflow-y-auto scrollbar-hide"
       >
@@ -66,7 +68,7 @@ const LiveChat: React.FC<{
         ))}
       </div>
 
-	  {/* Input box and send button */}
+      {/* Input box and send button */}
       <div className="flex-row-center gap-2">
         <input
           type="text"

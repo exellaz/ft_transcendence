@@ -1,14 +1,14 @@
 import React from "react";
 
 interface SliderOption {
-  label: string;   // what you display (slow / normal / fast)
-  value: number;   // the actual number (1, 5, 10 etc.)
+  label: string; // what you display (slow / normal / fast)
+  value: number; // the actual number (1, 5, 10 etc.)
 }
 
 interface SliderProps {
   label: string;
-  value: number;                   // current numeric value (5, 10, etc.)
-  options: SliderOption[];         // list of {label, value}
+  value: number; // current numeric value (5, 10, etc.)
+  options: SliderOption[]; // list of {label, value}
   onChange: (value: number) => void;
   className?: string;
 }
@@ -64,9 +64,7 @@ const Slider: React.FC<SliderProps> = ({
       </div>
 
       {/* show label + value */}
-      <p className="text-white text-xl">
-        {options[currentIndex].label}
-      </p>
+      <p className="text-white text-xl">{options[currentIndex].label}</p>
     </div>
   );
 };

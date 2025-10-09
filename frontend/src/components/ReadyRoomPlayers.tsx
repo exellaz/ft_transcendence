@@ -25,18 +25,24 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // Separate players into left and right teams
-  const leftTeamPlayers = players.filter((player: WaitingRoomPlayer) => player.team === "left");
-  const rightTeamPlayers = players.filter((player: WaitingRoomPlayer) => player.team === "right");
+  const leftTeamPlayers = players.filter(
+    (player: WaitingRoomPlayer) => player.team === "left",
+  );
+  const rightTeamPlayers = players.filter(
+    (player: WaitingRoomPlayer) => player.team === "right",
+  );
   const maxPlayersPerTeam = variant === "singles" ? 1 : 2;
 
-	// Determine if current user is leader or ready
-    //TODO replace with JWT
-	const currentId = userId
-	const currentUser = players.find((p: WaitingRoomPlayer) => p.id === currentId); //! WaitingRoomPLayer change id to number
-	const isLeader = currentUser ? currentUser.leader : false;
-	const isReady = currentUser ? currentUser.ready : false;
+  // Determine if current user is leader or ready
+  //TODO replace with JWT
+  const currentId = userId;
+  const currentUser = players.find(
+    (p: WaitingRoomPlayer) => p.id === currentId,
+  ); //! WaitingRoomPLayer change id to number
+  const isLeader = currentUser ? currentUser.leader : false;
+  const isReady = currentUser ? currentUser.ready : false;
 
-	// Basic styling for player and empty cells
+  // Basic styling for player and empty cells
   const basicCellStyling = `w-full bg-input-gray rounded-xl ${
     variant === "doubles"
       ? "h-[70px] flex-row-center"
@@ -68,15 +74,13 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <Avatar
           src={player.spriteUrl}
           size={variant === "doubles" ? 30 : 50}
-          className={
-            `${player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`
-          }
+          className={`${player.ready ? "ring-4 ring-green-500" : "ring-4 ring-red-500"} ${player.leader ? "ring-yellow-400" : ""}`}
         />
       </div>
       <p
         className={
-            //TODO id issue here
-            `text-lg font-bold ${getUserColor(String(player.id))}`
+          //TODO id issue here
+          `text-lg font-bold ${getUserColor(String(player.id))}`
         }
         title={player.username}
       >
@@ -112,7 +116,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           { length: maxPlayersPerTeam - teamPlayers.length },
           (_, index) => (
             <EmptySlot key={`empty-${index}`} />
-          )
+          ),
         )}
       </div>
     </div>
@@ -123,7 +127,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
       {/* Two-column team layout */}
       <div className="relative w-full h-full flex-row-start gap-6">
         {/* Left Team Column */}
-		<TeamColumn
+        <TeamColumn
           title={translate("left_team")}
           teamPlayers={leftTeamPlayers}
         />
@@ -131,7 +135,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <div
           className={`
             rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2
-            ${(isReady && !isLeader) ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
+            ${isReady && !isLeader ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
           `}
           onClick={() => {
             if (!isReady || isLeader) {
@@ -142,7 +146,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           <img
             className={`
               h-10 transition-all duration-200
-              ${(isReady && !isLeader) ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
+              ${isReady && !isLeader ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
             `}
             src="/assets/switch.png"
             alt="Switch Teams"

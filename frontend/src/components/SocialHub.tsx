@@ -19,7 +19,7 @@ import Input from "./Input";
 interface SocialHubProps {
   selectedUser: FriendBasic | FriendRequest | BlockedUser | null;
   setSelectedUser: (
-    user: FriendBasic | FriendRequest | BlockedUser | null
+    user: FriendBasic | FriendRequest | BlockedUser | null,
   ) => void;
 }
 

@@ -19,7 +19,7 @@ const MatchView: React.FC = () => {
   const userId = user?.id ?? 0;
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    "quarterfinals"
+    "quarterfinals",
   );
   const [selectedId, setSelectedId] = useState<number | null>(null);
 

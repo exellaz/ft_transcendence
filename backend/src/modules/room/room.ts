@@ -5,82 +5,83 @@ import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
 
 export interface playerInfo {
-    clientId: number; // client id
-    playerName: string; // player username
-    role: string; // "left" or "right"
-	team: "left" | "right"; // team side
-	leader: boolean; // whether the player is the leader
-	spriteUrl: string; // URL of the player's sprite
-	ready: boolean; // whether the player is ready
+  clientId: number; // client id
+  playerName: string; // player username
+  role: string; // "left" or "right"
+  team: "left" | "right"; // team side
+  leader: boolean; // whether the player is the leader
+  spriteUrl: string; // URL of the player's sprite
+  ready: boolean; // whether the player is ready
 }
 
 /**
  * @brief Room interface ( is like a room information structure)
-*/
+ */
 export interface Room {
-	id: number; // room id
-	name: string; // room name
-	teamSize: number; // team size (1vs1 or 2vs2)
-	width: number; // game width
-	height: number; // game height
-	setting: {
-		ballSpeed: number; // ball speed
-		ballSize: number; // ball size
-		paddleSpeed: number; // paddle speed
-		scorePoint: number; // points to win the game
-		map: string; // game map
-	};
-	gameState: {
-        ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
-		paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
-		teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
-		score: { left: number; right: number }; //[key] => team side, [value] => score
-        gameStarted: boolean; // flag for start game
-        gameEnded?: boolean; // flag for end game
-	};
-	clients: Set<WebSocket>; // Set of WebSocket connections
-	clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
-	sockets: Map<WebSocket, number>; //[key] => socket, [value] => client id
-	chatHistory: liveChatMessage[]; // Array to store chat messages
-	startTime?: Date; //start game time
-	endTime?: Date; //end game time
-	result?: { // game result
-		winner: "left" | "right" | "draw";
-		scoreLeft: number;
-		scoreRight: number;
-	};
-	game: PongGame; // Game instance for game logic
-	loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
-	duration?: number; // game duration
-    canStart: boolean; // Flag to indicate if player all ready
-	leaderId: number; // clientId of the room leader
-    private: boolean; // Flag to indicate if the room is private
-	countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
-	countdownRemaining?: number | null; // Remaining seconds in the countdown
+  id: number; // room id
+  name: string; // room name
+  teamSize: number; // team size (1vs1 or 2vs2)
+  width: number; // game width
+  height: number; // game height
+  setting: {
+    ballSpeed: number; // ball speed
+    ballSize: number; // ball size
+    paddleSpeed: number; // paddle speed
+    scorePoint: number; // points to win the game
+    map: string; // game map
+  };
+  gameState: {
+    ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
+    paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
+    teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
+    score: { left: number; right: number }; //[key] => team side, [value] => score
+    gameStarted: boolean; // flag for start game
+    gameEnded?: boolean; // flag for end game
+  };
+  clients: Set<WebSocket>; // Set of WebSocket connections
+  clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
+  sockets: Map<WebSocket, number>; //[key] => socket, [value] => client id
+  chatHistory: liveChatMessage[]; // Array to store chat messages
+  startTime?: Date; //start game time
+  endTime?: Date; //end game time
+  result?: {
+    // game result
+    winner: "left" | "right" | "draw";
+    scoreLeft: number;
+    scoreRight: number;
+  };
+  game: PongGame; // Game instance for game logic
+  loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
+  duration?: number; // game duration
+  canStart: boolean; // Flag to indicate if player all ready
+  leaderId: number; // clientId of the room leader
+  private: boolean; // Flag to indicate if the room is private
+  countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
+  countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
 export interface GameSettings {
-	ballSpeed?: number,
-	ballSize?: number,
-	paddleSpeed?: number,
-	scorePoint?: number,
-	map?: string,
+  ballSpeed?: number;
+  ballSize?: number;
+  paddleSpeed?: number;
+  scorePoint?: number;
+  map?: string;
 }
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
-	ballSpeed: 0,
-	ballSize: 2,
-	paddleSpeed: 0,
-	scorePoint: 1,
-	map: "mansion",
+  ballSpeed: 0,
+  ballSize: 2,
+  paddleSpeed: 0,
+  scorePoint: 1,
+  map: "mansion",
 };
 
 /**
  * @brief initialize all rooms as a map
  * @key room id
  * @value Room object (info about the room)
-*/
+ */
 export const rooms: Map<number, Room> = new Map();
 
 /**
@@ -89,7 +90,7 @@ export const rooms: Map<number, Room> = new Map();
  * @returns room id as string
  */
 export function generateRoomId(length = 6): number {
-	return Math.floor(Math.random() * Math.pow(10, length));
+  return Math.floor(Math.random() * Math.pow(10, length));
 }
 
 /**
@@ -103,43 +104,59 @@ export function generateRoomId(length = 6): number {
  * @param isPrivate whether the room is private (default: false)
  * @param initialSetting initial game setting (default: empty object)
  * @returns Room object
-*/
-export function createRoom(id: number, name: string, teamSize = 1, leaderId: number = -1, isPrivate: boolean = false, initialSetting: Partial<typeof DEFAULT_SETTING> = {}): Room {
-	const game = new PongGame(false, { ...DEFAULT_SETTING, ...initialSetting }, (winner) => {
-		roomEndGame(room, false, winner);
-	});
+ */
+export function createRoom(
+  id: number,
+  name: string,
+  teamSize = 1,
+  leaderId: number = -1,
+  isPrivate: boolean = false,
+  initialSetting: Partial<typeof DEFAULT_SETTING> = {},
+): Room {
+  const game = new PongGame(
+    false,
+    { ...DEFAULT_SETTING, ...initialSetting },
+    (winner) => {
+      roomEndGame(room, false, winner);
+    },
+  );
 
-	const room: Room = {
-		id,
-		name,
-		teamSize,
-		width: 800,
-		height: 400,
-		setting: {
-			ballSpeed: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-			ballSize: initialSetting.ballSize ?? DEFAULT_SETTING.ballSize,
-			paddleSpeed: initialSetting.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed,
-			scorePoint: initialSetting.scorePoint ?? DEFAULT_SETTING.scorePoint,
-			map: initialSetting.map ?? DEFAULT_SETTING.map,
-		},
-		gameState: {
-			ball: { x: 800 / 2, y: 400 / 2, dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed, dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed },
-			paddles: {},
-			teams: { left: [], right: [] },
-			score: { left: 0, right: 0 },
-			gameStarted: false,
-			gameEnded: false,
-		},
-		clients: new Set(),
-		clientRoles: new Map(),
-		sockets: new Map(),
-		chatHistory: [] as any [],
-		game: game,
-		canStart: false,
-		leaderId: leaderId,
-		private: isPrivate,
-	};
-	return room;
+  const room: Room = {
+    id,
+    name,
+    teamSize,
+    width: 800,
+    height: 400,
+    setting: {
+      ballSpeed: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
+      ballSize: initialSetting.ballSize ?? DEFAULT_SETTING.ballSize,
+      paddleSpeed: initialSetting.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed,
+      scorePoint: initialSetting.scorePoint ?? DEFAULT_SETTING.scorePoint,
+      map: initialSetting.map ?? DEFAULT_SETTING.map,
+    },
+    gameState: {
+      ball: {
+        x: 800 / 2,
+        y: 400 / 2,
+        dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
+        dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
+      },
+      paddles: {},
+      teams: { left: [], right: [] },
+      score: { left: 0, right: 0 },
+      gameStarted: false,
+      gameEnded: false,
+    },
+    clients: new Set(),
+    clientRoles: new Map(),
+    sockets: new Map(),
+    chatHistory: [] as any[],
+    game: game,
+    canStart: false,
+    leaderId: leaderId,
+    private: isPrivate,
+  };
+  return room;
 }
 
 /**
@@ -147,121 +164,122 @@ export function createRoom(id: number, name: string, teamSize = 1, leaderId: num
  * @param room Room object
  */
 export function startRoomLoop(room: Room) {
-	// if loop already running, do nothing
-	if (room.loopHandle)
-		return;
+  // if loop already running, do nothing
+  if (room.loopHandle) return;
 
-	roomStartGame(room);
+  roomStartGame(room);
 
-	// Start the game loop at 60 FPS
-	room.loopHandle = setInterval(() => {
-		// If room has no players, stop loop
-		if (room.clients.size === 0) {
-			clearInterval(room.loopHandle!);
-			room.loopHandle = null;
-			rooms.delete(room.id);
-			console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
-			return;
-		}
-		room.game.update(room);
-
-	}, 1000 / 60);
+  // Start the game loop at 60 FPS
+  room.loopHandle = setInterval(() => {
+    // If room has no players, stop loop
+    if (room.clients.size === 0) {
+      clearInterval(room.loopHandle!);
+      room.loopHandle = null;
+      rooms.delete(room.id);
+      console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
+      return;
+    }
+    room.game.update(room);
+  }, 1000 / 60);
 }
 
 /**
  * @brief start the game time use date for later calculate duration
  * @param room Room object
-*/
+ */
 export function roomStartGame(room: Room) {
-	if (!room.gameState.gameStarted) {
-		room.startTime = new Date();
-		console.log(`room setting: ${JSON.stringify(room.setting)}`);
-		// room.game.resetBall(room, "left");
-	}
+  if (!room.gameState.gameStarted) {
+    room.startTime = new Date();
+    console.log(`room setting: ${JSON.stringify(room.setting)}`);
+    // room.game.resetBall(room, "left");
+  }
 }
 
 /**
  * @brief end the game time and calculate duration
  * @param room Room object
  * @param forced Whether to force end the game
-*/
-export function roomEndGame(room: Room, forced = false, overrideWinner?: "left" | "right" | "draw") {
-	// If game already ended, do nothing
-	if (room.result)
-		return;
+ */
+export function roomEndGame(
+  room: Room,
+  forced = false,
+  overrideWinner?: "left" | "right" | "draw",
+) {
+  // If game already ended, do nothing
+  if (room.result) return;
 
-	// close the game when is end
-	room.endTime = new Date();
+  // close the game when is end
+  room.endTime = new Date();
 
-	//stop loop
-	if (room.loopHandle) {
-		clearInterval(room.loopHandle);
-		room.loopHandle = null;
-	}
+  //stop loop
+  if (room.loopHandle) {
+    clearInterval(room.loopHandle);
+    room.loopHandle = null;
+  }
 
-	//if not force to end then determine winner by score
-	let winner: "left" | "right" | "draw";
-    if (overrideWinner) {
-        winner = overrideWinner;
-    }
-	else if (!forced) {
-		if (room.game.scoreLeft > room.game.scoreRight)
-			winner = "left";
-		else if (room.game.scoreLeft < room.game.scoreRight)
-			winner = "right";
-		else
-			winner = "draw";
-	}
-	else {
-		// if forced, determine winner by current score
-		const left = room.game.scoreLeft;
-		const right = room.game.scoreRight;
-		if (left > right)
-			winner = "left";
-		else if (left < right)
-			winner = "right";
-		else
-			winner = "draw";
-	}
+  //if not force to end then determine winner by score
+  let winner: "left" | "right" | "draw";
+  if (overrideWinner) {
+    winner = overrideWinner;
+  } else if (!forced) {
+    if (room.game.scoreLeft > room.game.scoreRight) winner = "left";
+    else if (room.game.scoreLeft < room.game.scoreRight) winner = "right";
+    else winner = "draw";
+  } else {
+    // if forced, determine winner by current score
+    const left = room.game.scoreLeft;
+    const right = room.game.scoreRight;
+    if (left > right) winner = "left";
+    else if (left < right) winner = "right";
+    else winner = "draw";
+  }
 
-	// set the result
-	room.result = {
-		winner,
-		scoreLeft: room.game.scoreLeft,
-		scoreRight: room.game.scoreRight,
-	};
+  // set the result
+  room.result = {
+    winner,
+    scoreLeft: room.game.scoreLeft,
+    scoreRight: room.game.scoreRight,
+  };
 
-	// Calculate duration for a game
-	const start = room.startTime ?? new Date(); //if the start time is undefined, use current time
-	const end = room.endTime ?? new Date(); //if the end time is undefined, use current time
-	const ms = end.getTime() - start.getTime(); // milliseconds
-	room.duration = ms;                    // store raw ms (number)
+  // Calculate duration for a game
+  const start = room.startTime ?? new Date(); //if the start time is undefined, use current time
+  const end = room.endTime ?? new Date(); //if the end time is undefined, use current time
+  const ms = end.getTime() - start.getTime(); // milliseconds
+  room.duration = ms; // store raw ms (number)
 
-    //braodcast everyone the game is ended
-    broadcast(room, {
-    	type: "game_over",
-    	canLeave: true,
-    });
+  //braodcast everyone the game is ended
+  broadcast(room, {
+    type: "game_over",
+    canLeave: true,
+  });
 
-	const leftPLayer = room.gameState.teams.left.map(p => p.playerName).join(", ");
-	const rightPlayer = room.gameState.teams.right.map(p => p.playerName).join(", ");
+  const leftPLayer = room.gameState.teams.left
+    .map((p) => p.playerName)
+    .join(", ");
+  const rightPlayer = room.gameState.teams.right
+    .map((p) => p.playerName)
+    .join(", ");
 
-	console.log("====================== GAME OVER ==================");
-	console.log(`Left team: [${leftPLayer}], Right team: [${rightPlayer}]`);
-    console.log(`Room ${room.id}`);
-	console.log(`Winner: ${winner} => ${winner === "left" ? leftPLayer : winner === "right" ? rightPlayer : ""}`);
-	console.log(`Final Score - Left: ${room.game.scoreLeft}, Right: ${room.game.scoreRight}`);
-	console.log(`Duration: ${Math.floor(room.duration / 1000)} sec (${room.duration} ms)`);
-	console.log("===================================================");
+  console.log("====================== GAME OVER ==================");
+  console.log(`Left team: [${leftPLayer}], Right team: [${rightPlayer}]`);
+  console.log(`Room ${room.id}`);
+  console.log(
+    `Winner: ${winner} => ${winner === "left" ? leftPLayer : winner === "right" ? rightPlayer : ""}`,
+  );
+  console.log(
+    `Final Score - Left: ${room.game.scoreLeft}, Right: ${room.game.scoreRight}`,
+  );
+  console.log(
+    `Duration: ${Math.floor(room.duration / 1000)} sec (${room.duration} ms)`,
+  );
+  console.log("===================================================");
 
-	const roomId = room.id;
-	if (rooms.has(roomId)) {
-		console.log(`Deleted room ${roomId} after game end.`);
-		rooms.delete(roomId);
-	}
+  const roomId = room.id;
+  if (rooms.has(roomId)) {
+    console.log(`Deleted room ${roomId} after game end.`);
+    rooms.delete(roomId);
+  }
 
-	// Save match result to database
-	// saveMatchResult(room, room.duration);
+  // Save match result to database
+  // saveMatchResult(room, room.duration);
 }
-
-

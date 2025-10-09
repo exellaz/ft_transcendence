@@ -4,12 +4,13 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 /**
  * @brief generate a random player ID and store it in session storage if not already present
  * @return player ID to client
-*/
+ */
 export function ensurePlayerId() {
   const playerInfo = JSON.parse(sessionStorage.getItem("playerInfo") || "{}");
   let playerId = playerInfo.id;
   if (!playerId) {
-    playerId = Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
+    playerId =
+      Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
   }
   return playerId;
 }
@@ -17,7 +18,7 @@ export function ensurePlayerId() {
 /**
  * @brief fetch the list of available rooms from the backend
  * @return list of rooms to client in JSON format
-*/
+ */
 export async function fetchRooms() {
   try {
     const res = await fetch(`${API_URL}/rooms`);
@@ -31,19 +32,19 @@ export async function fetchRooms() {
 
 export async function fetchRoomById(roomId: string) {
   try {
-	const res = await fetch(`${API_URL}/room/${roomId}`);
-	if (!res.ok) throw new Error("Failed to fetch room");
-	return await res.json();
+    const res = await fetch(`${API_URL}/room/${roomId}`);
+    if (!res.ok) throw new Error("Failed to fetch room");
+    return await res.json();
   } catch (error) {
-	console.error("Failed to fetch room:", error);
-	return null;
+    console.error("Failed to fetch room:", error);
+    return null;
   }
 }
 
 /**
  * @brief fetch the list of recent matches from the backend
  * @return list of matches to client in JSON format
-*/
+ */
 export async function fetchMatches(limit = 10) {
   try {
     const res = await fetch(`${API_URL}/matches?limit=${limit}`);
@@ -64,11 +65,11 @@ export async function fetchMatches(limit = 10) {
  * @param options additional options like isPrivate and leaderId ( can be undefined )
  * @return room details to client in JSON format
  * @note it also send the room details to the backend
-*/
+ */
 export async function createRoomAPI(
   teamSize: number,
   roomName: string,
-  options?: { leaderId?: number; isPrivate?: boolean }
+  options?: { leaderId?: number; isPrivate?: boolean },
 ) {
   try {
     const res = await fetch(`${API_URL}/create-room`, {
@@ -90,13 +91,12 @@ export async function createRoomAPI(
   }
 }
 
-
 /**
  * @brief determine which side (left or right) a player should join in a room
  * @param roomId ID of the room
  * @return "left" or "right" side to client in Promise format
  * @note it fetches the room details from the backend to make the decision
-*/
+ */
 export async function determineSide(roomId: number): Promise<"left" | "right"> {
   const rooms = await fetchRooms();
   const room = rooms.find((r: any) => r.id === roomId);
@@ -114,13 +114,26 @@ export async function determineSide(roomId: number): Promise<"left" | "right"> {
  * @param paddleSpeed speed of the paddle
  * @return updated room settings to client in JSON format
  * @note it also sends the updated settings to the backend
-*/
-export async function gameSetting(roomId:string, ballSpeed: number, ballSize: number, paddleSpeed: number, scorePoint: number, map: string) {
+ */
+export async function gameSetting(
+  roomId: string,
+  ballSpeed: number,
+  ballSize: number,
+  paddleSpeed: number,
+  scorePoint: number,
+  map: string,
+) {
   try {
-    const res = await fetch( `${API_URL}/room/${roomId}/game-setting`, {
+    const res = await fetch(`${API_URL}/room/${roomId}/game-setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ballSpeed, ballSize, paddleSpeed, scorePoint, map }),
+      body: JSON.stringify({
+        ballSpeed,
+        ballSize,
+        paddleSpeed,
+        scorePoint,
+        map,
+      }),
     });
 
     if (!res.ok) throw new Error("Failed to update room settings");
@@ -132,27 +145,27 @@ export async function gameSetting(roomId:string, ballSpeed: number, ballSize: nu
 }
 
 export async function createTournamentLobby(name: string) {
-	try {
-		const res = await fetch(`${API_URL}/create-tournament`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ name }),
-		});
-		if (!res.ok) throw new Error("Failed to create tournament");
-		return await res.json();
-	} catch (error) {
-		console.error("Failed to create tournament:", error);
-		return null;
-	}
+  try {
+    const res = await fetch(`${API_URL}/create-tournament`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error("Failed to create tournament");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to create tournament:", error);
+    return null;
+  }
 }
 
 export async function fetchTournaments() {
-	try {
-		const res = await fetch(`${API_URL}/tournaments`);
-		if (!res.ok) throw new Error("Failed to fetch tournaments");
-		return await res.json();
-	} catch (error) {
-		console.error("Failed to fetch tournaments:", error);
-		return [];
-	}
+  try {
+    const res = await fetch(`${API_URL}/tournaments`);
+    if (!res.ok) throw new Error("Failed to fetch tournaments");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch tournaments:", error);
+    return [];
+  }
 }

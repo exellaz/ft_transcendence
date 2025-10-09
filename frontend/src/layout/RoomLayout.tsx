@@ -24,11 +24,11 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
   return (
     <Background>
       <div className="absolute top-10 right-10 flex-col-center gap-6">
-		{isLeader === true && (
-        <Button variant="profile" onClick={() => setShowGameSettings(true)}>
-          {translate("game_settings")}
-        </Button>
-		)}
+        {isLeader === true && (
+          <Button variant="profile" onClick={() => setShowGameSettings(true)}>
+            {translate("game_settings")}
+          </Button>
+        )}
         <Button variant="profile" onClick={() => setShowInviteFriends(true)}>
           {translate("invite_friends")}
         </Button>

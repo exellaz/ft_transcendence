@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 
@@ -8,7 +8,8 @@ type User = {
 };
 
 function randomString(length: number): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -49,15 +50,11 @@ function App() {
         alert(updatedUser.error); // or set some error state
       } else {
         setUsers((prev) =>
-          prev.map((u) =>
-            (u.id === editingId ? updatedUser : u)
-          )
+          prev.map((u) => (u.id === editingId ? updatedUser : u)),
         );
       }
       setEditingId(null);
-
     } else {
-
       // * CREATE
       const randomEmail = `${randomString(10)}@gmail.com`; // ! TMP
 
@@ -76,9 +73,7 @@ function App() {
       if ("error" in newUser) {
         alert(newUser.error); // or set some error state
       } else {
-        setUsers((prev) =>
-          [...prev, newUser]
-        );
+        setUsers((prev) => [...prev, newUser]);
       }
     }
     setUsername("");
@@ -111,9 +106,7 @@ function App() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
-        <h1 className="mb-4 text-2xl font-bold text-center">
-          Username CRUD
-        </h1>
+        <h1 className="mb-4 text-2xl font-bold text-center">Username CRUD</h1>
 
         {/* Input + Button */}
         <div className="mb-4 flex space-x-2">
@@ -159,9 +152,7 @@ function App() {
         </ul>
 
         {users.length === 0 && (
-          <p className="mt-4 text-center text-gray-500">
-            No usernames yet.
-          </p>
+          <p className="mt-4 text-center text-gray-500">No usernames yet.</p>
         )}
       </div>
     </div>
@@ -169,5 +160,3 @@ function App() {
 }
 
 export default App;
-
-

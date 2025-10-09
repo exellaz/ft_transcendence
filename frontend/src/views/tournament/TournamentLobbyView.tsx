@@ -26,7 +26,9 @@ const TournamentLobbyView: React.FC = () => {
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [chatMessages, setChatMessages] = useState<LiveChatMessage[]>([]);
   const [message, setMessage] = useState("");
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">("quarterfinals");
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
+    "quarterfinals",
+  );
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 
   // TODO: Fetch real data based on tournamentId

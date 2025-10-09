@@ -5,14 +5,14 @@ interface BlockedTileProps {
   username: string;
   avatarUrl: string;
   onClick?: () => void;
-  active ?: boolean;
+  active?: boolean;
 }
 
 const BlockedTile: React.FC<BlockedTileProps> = ({
   username,
   avatarUrl,
   onClick,
-  active
+  active,
 }) => (
   <div
     className={`bg-input-gray rounded-xl flex-col-center gap-2 p-4 cursor-pointer

@@ -30,11 +30,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
     <Avatar
       src={avatarUrl}
       size={50}
-      className={
-        online
-          ? "ring-4 ring-green-500"
-          : "ring-4 ring-red-500"
-      }
+      className={online ? "ring-4 ring-green-500" : "ring-4 ring-red-500"}
     />
     <div className="flex flex-col flex-1 gap-1">
       <div className="flex-row-between">

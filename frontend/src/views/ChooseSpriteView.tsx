@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createTournamentLobby, fetchTournaments } from "../lib/requestBackend.api";
+import {
+  createTournamentLobby,
+  fetchTournaments,
+} from "../lib/requestBackend.api";
 
 import Background from "../components/Background";
 import Card from "../components/Card";
@@ -14,7 +17,7 @@ async function handleQuickJoinTournament(user: any, navigate: any) {
 
   // 2. Find one that isn't full (max 8) and hasn't started
   let tournament = tournaments.find(
-    (t: any) => !t.started && t.players.length < 8
+    (t: any) => !t.started && t.players.length < 8,
   );
 
   // 3. If no suitable tournament, create one
@@ -52,7 +55,6 @@ const ChooseSpriteView: React.FC = () => {
           selected={selectedSprite}
           onSelectSprite={setSelectedSprite}
           onConfirm={async () => {
-
             alert(`Confirmed sprite selection: ${selectedSprite}`);
             navigate("/tournament");
           }}

@@ -6,7 +6,10 @@ export function useBlockLeave() {
   useEffect(() => {
     // Prevent refresh (F5 / Ctrl+R)
     const keyHandler = (e: KeyboardEvent) => {
-      if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
+      if (
+        e.key === "F5" ||
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")
+      ) {
         e.preventDefault();
         e.stopPropagation();
       }
@@ -22,7 +25,7 @@ export function useBlockLeave() {
         e.preventDefault();
         e.returnValue = "";
         return "";
-      })
+      }),
     );
 
     window.addEventListener("keydown", keyHandler);
