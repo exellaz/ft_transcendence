@@ -27,6 +27,12 @@
 
     "allowImportingTsExtensions": true,
     "noEmit": true,
+
+    // 🔑 Needed for @shared/*
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    }
   },
   "include": ["src"]
 }

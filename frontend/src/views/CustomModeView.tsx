@@ -9,7 +9,7 @@ import Input from "../components/Input";
 import Logo from "../components/Logo";
 import MainLayout from "../layout/MainLayout";
 import Subheader from "../components/Subheader";
-import Status from "../components/Status";
+import Background from "../components/Background";
 import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
@@ -32,7 +32,8 @@ const CustomModeView: React.FC = () => {
   const [showCreateDoublesGame, setShowCreateDoublesGame] = useState(false);
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
   const [showJoinDoublesGame, setShowJoinDoublesGame] = useState(false);
-  const [status, setStatus] = useState<{ text: string; color: "green" | "red" } | null>(null);
+  const [roomError, setRoomError] = useState<string | null>(null);
+
 
 
   // ------------------------------- Helper Functions -------------------------------
@@ -45,28 +46,11 @@ const CustomModeView: React.FC = () => {
 
   //private room - owner create room from API and navigate to the room
   async function handleCreateRoom(teamSize: number, isPrivate: boolean) {
-    //TODO replace with JWT
-    //const userResponse = await getUserById({ id: Number(userId) });
-    //let userInfo;
-    //if (userResponse.success && userResponse.data) {
-    //    userInfo = userResponse.data;
-    //}
-    //if (!userInfo) return;
     if (!user) return;
-    //TODO handle user info
-	const scale = Math.min(
-	  window.innerWidth / 800,
-	  window.innerHeight / 400,
-	  1
-	);
-	const width = 800 * scale;
-	const height = 400 * scale;
 
 	const room = await createRoomAPI(
 	  teamSize,
 	  teamSize === 1 ? "Singles Room" : "Doubles Room",
-	  width,
-	  height,
 	  { leaderId: user.id, isPrivate }
 	);
     console.log("user id: ", typeof user?.id); ////debug
@@ -76,12 +60,13 @@ const CustomModeView: React.FC = () => {
 	  const roomIdToUse = room.id || room.roomId;
 	  navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
 	} else {
-	  setStatus({ text: "❌ Failed to create room", color: "red" });
+      alert("Failed to create room");
 	}
   }
 
   //quick join public room - fetch rooms from API, find a suitable room or create one if none available, then navigate to the room
   async function handleQuickJoin(teamSize: number) {
+    if (!user) return;
 	//find a public room that is not full and not started
 	const rooms = await fetchRooms();
 	let room = rooms.find(
@@ -94,10 +79,11 @@ const CustomModeView: React.FC = () => {
 
 	// if no room, create one
 	if (!room) {
-		const scale = Math.min(window.innerWidth / 800, window.innerHeight / 400, 1);
-		const width = 800 * scale;
-		const height = 400 * scale;
-		room = await createRoomAPI(teamSize, `Public ${teamSize}v${teamSize}`, width, height, { isPrivate: false });
+		room = await createRoomAPI(
+            teamSize,
+            teamSize === 1 ? "Singles Room" : "Doubles Room",
+            { leaderId: user.id, isPrivate: false }
+        );
 
 		if (!room) {
 			alert ("Failed to create public room");
@@ -107,11 +93,7 @@ const CustomModeView: React.FC = () => {
 
 	//if had room, navigate to it
 	const roomIdToUse = room.id || room.roomId;
-	// sessionStorage.setItem("RoomId", roomIdToUse);
-	// sessionStorage.setItem("RoomName", room.name);
-	// sessionStorage.setItem("RoomLeaderId", room.leaderId);
-    // sessionStorage.setItem("RoomType", "public");
-	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room, joinType: "public" } });
+	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
   //join private room - fetch rooms from API, find the room by ID, then navigate to the room
@@ -127,24 +109,21 @@ const CustomModeView: React.FC = () => {
 
 	//if no room, show error
 	if (!room) {
-	  setStatus({ text: "❌ Room not found", color: "red" });
+	  setRoomError(translate("room_not_found"));
 	  return;
 	}
 	if (room.leftPlayers + room.rightPlayers >= room.teamSize * 2) {
-	  setStatus({ text: "❌ Room is full", color: "red" });
+	  setRoomError(translate("room_is_full"));
 	  return;
 	}
 
 	//if found room, navigate to it
-	// sessionStorage.setItem("RoomId", room.id);
-	// sessionStorage.setItem("RoomName", room.name);
-    // sessionStorage.setItem("RoomType", "private");
-	navigate(getRoomPath(room.teamSize, room.id), { state: { room, joinType: "private" } });
+    const roomIdToUse = room.id || room.roomId;
+	navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
   // Helper to go back one step
   const handleBack = () => {
-	setStatus(null); // reset the error to null to prevent show old error
 	if (menuStep === "action") {
 	  navigate("/main-menu");
 	} else if (menuStep === "createRoom") {
@@ -174,7 +153,6 @@ const CustomModeView: React.FC = () => {
             <Button
               variant="bigYellow"
               onClick={() => {
-                setStatus(null);
                 setMenuStep("createRoom")
             }}
             >
@@ -254,12 +232,30 @@ const CustomModeView: React.FC = () => {
                 <p className="text-white text-xl font-bold">
                   {translate("enter_room_id")}
                 </p>
+                {/* Room ID input */}
                 <Input
                   placeholder={translate("enter_room_id")}
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
                 />
-                {status && <Status text={status.text} color={status.color} className="mb-4"/>}
+                {/* error popup for key in room id */}
+                {roomError && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <Background variant="grass">
+                      <div className="absolute inset-0 bg-black opacity-70"></div>
+                      <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+                        <p className="text-center text-white text-2xl px-4">{roomError}</p>
+                        <Button
+                          variant="red"
+                          onClick={() => setRoomError(null)}
+                        >
+                          {translate("close")}
+                        </Button>
+                      </div>
+                    </Background>
+                  </div>
+                )}
+                {/* button for join room */}
                 <Button onClick={handleJoinPrivateRoom}>
                     {translate("join_room")}
                 </Button>
@@ -291,13 +287,13 @@ const CustomModeView: React.FC = () => {
         text={translate("create_singles_game")}
         open={showCreateSinglesGame}
         onClose={() => setShowCreateSinglesGame(false)}
-        onConfirm={() => handleCreateRoom(1, true)}
+        onConfirm={() => handleCreateRoom(1, false)}
       />
       <ConfirmationPopup
         text={translate("create_doubles_game")}
         open={showCreateDoublesGame}
         onClose={() => setShowCreateDoublesGame(false)}
-        onConfirm={() => handleCreateRoom(2, true)}
+        onConfirm={() => handleCreateRoom(2, false)}
       />
       <ConfirmationPopup
         text={translate("join_singles_game")}

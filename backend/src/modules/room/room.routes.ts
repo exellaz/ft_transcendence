@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { rooms, createRoom, generateRoomId, DEFAULT_SETTING, Room } from "./room";
+import { rooms, createRoom, generateRoomId, DEFAULT_SETTING, Room } from "./room.ts";
 
 interface RoomParams {
     roomId: number;
@@ -8,8 +8,8 @@ interface RoomParams {
 export default async function roomRoutes(app: FastifyInstance) {
     // ----------------------- LIST ROOMS -----------------------
     app.get("/rooms", async () => {
-    	const response = Array.from(rooms.values()).map(room => ({
-    		id: room.id,
+        const response = Array.from(rooms.values()).map(room => ({
+            id: room.id,
             name: room.name,
             teamSize: room.teamSize,
             leftPlayers: room.gameState.teams.left.length,
@@ -18,86 +18,70 @@ export default async function roomRoutes(app: FastifyInstance) {
             gameEnded: !!room.gameState.gameEnded,
             private: room.private
         }));
-    	// console.log("responding /rooms: ", response); ////debug
-    	return response;
+        // console.log("responding /rooms: ", response); ////debug
+        return response;
     });
 
     // ----------------------- CREATE ROOM -----------------------
     app.post("/create-room", async (req, reply) => {
     	// console.log("request /Create-room:", req.body); ////debug
     	const body: any = req.body;
+        // console.log("body:", body); ////debug
 
     	//assign body parameters to variables
     	const {
     		name,
     		teamSize,
     		leaderId,
-    		width,
-    		height,
     		isPrivate,
-    		ballSpeed,
-    		paddleHeight,
-    		paddleWidth,
-    		ballSize,
-    		paddleSpeed,
-    		scorePoint,
-    		map
     	} = body as {
             name: string;
             teamSize: number;
             leaderId?: number;
-            width: number;
-            height: number;
             isPrivate?: boolean;
-            ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
-            ballSize?: number;
-            paddleSpeed?: number;
-            scorePoint?: number;
-            map?: string;
         };
 
     	// Validate required fields
-    	if (typeof teamSize !== "number" || typeof name !== "string" || name.trim() === "") {
-    		return reply.code(400).send({ error: "Team size and name are required" });
+    	if (typeof teamSize !== "number" && (teamSize < 1 || teamSize > 5)) {
+    		return reply.code(400).send({ error: "Team size must be a number between 1 and 5" });
     	}
-    	if (typeof width !== "number" || typeof height !== "number") {
-    		return reply.code(400).send({ error: "Width and height are required" });
+        if (typeof name !== "string" || name.trim() === "") {
+            return reply.code(400).send({ error: "Room name is required" });
+            }
+    	if (!leaderId || typeof leaderId !== "number") {
+    	  return reply.code(400).send({ error: "Leader ID is required" });
     	}
-    	if (isPrivate && (!leaderId || typeof leaderId !== "number")) {
-    	  return reply.code(400).send({ error: "Leader ID required for private rooms" });
-    	}
+        if (isPrivate === undefined || typeof isPrivate !== "boolean") {
+          return reply.code(400).send({ error: "isPrivate flag is required" });
+        }
 
-    	// Generate a unique room ID
-    	const roomId = generateRoomId();
+        // Generate a unique room ID
+        const roomId = generateRoomId();
+
 
     	//initialize game setting
     	const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
-    	if (typeof ballSpeed === "number") initialSetting.ballSpeed = ballSpeed; // if client provided a valid setting, use it to override the default
-    	if (typeof paddleHeight === "number") initialSetting.paddleHeight = paddleHeight;
-    	if (typeof paddleWidth === "number") initialSetting.paddleWidth = paddleWidth;
-    	if (typeof ballSize === "number") initialSetting.ballSize = ballSize;
-    	if (typeof paddleSpeed === "number") initialSetting.paddleSpeed = paddleSpeed;
-    	if (typeof scorePoint === "number") initialSetting.scorePoint = scorePoint;
-		if (typeof map === "string") initialSetting.map = map;
+    	initialSetting.ballSpeed = body.ballSpeed ?? DEFAULT_SETTING.ballSpeed;
+    	initialSetting.ballSize = body.ballSize ?? DEFAULT_SETTING.ballSize;
+    	initialSetting.paddleSpeed = body.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed;
+    	initialSetting.scorePoint = body.scorePoint ?? DEFAULT_SETTING.scorePoint;
+        initialSetting.map = body.map ?? DEFAULT_SETTING.map;
+
 
     	// Create and store the new room
     	const room = createRoom(
     		roomId,
     		name,
     		teamSize,
-    		isPrivate ? leaderId : -1,
-    		width,
-    		height,
-    		!!isPrivate,
+            leaderId,
+    		isPrivate,
     		initialSetting // 👈 important for frontend
     	);
 
-    	rooms.set(roomId, room);
+        rooms.set(roomId, room);
 
     	console.log(
-    	  `${isPrivate ? "Private" : "Public"} room ${name} (${roomId}) created with team size ${teamSize}`
+    	  `Player id: ${leaderId} => ${name} (${roomId}) [${isPrivate ? "Private" : "Public"}] created with team size ${teamSize}`
     	);
 
     	// Respond with room details to client
@@ -105,17 +89,17 @@ export default async function roomRoutes(app: FastifyInstance) {
     		roomId,
     		name,
     		teamSize,
+            leaderId,
     		gameStarted: room.gameState.gameStarted,
     		...(isPrivate ? { leaderId } : {}), // only include leaderId if private
     		private: room.private,
     		setting: room.setting // 👈 important for frontend
     	};
-    	// console.log("responding /create-room:", response); ////debug
     	return response;
     });
 
-    // ----------------------- UPDATE ROOM SETTING -----------------------
-    app.post("/room/:roomId/setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
+    // ----------------------- UPDATE GAME SETTING -----------------------
+    app.post("/room/:roomId/game-setting", async (req: FastifyRequest<{ Params: RoomParams }>, reply: FastifyReply) => {
         const roomId = Number(req.params.roomId);
         const room = rooms.get(roomId);
         if (!room) {
@@ -125,30 +109,44 @@ export default async function roomRoutes(app: FastifyInstance) {
         // update only provided settings from client
         const {
             ballSpeed,
-            paddleHeight,
-            paddleWidth,
             ballSize,
             paddleSpeed,
             scorePoint,
-			map
+            map
         } = req.body as {
             ballSpeed?: number;
-            paddleHeight?: number;
-            paddleWidth?: number;
             ballSize?: number;
             paddleSpeed?: number;
             scorePoint?: number;
-			map?: string;
+            map?: string;
         };
+
+        if (ballSpeed === undefined) {
+            return reply.code(400).send({ error: "Ball speed not valid" });
+        }
+        if (ballSize === undefined) {
+            return reply.code(400).send({ error: "Ball size not valid" });
+        }
+        if (paddleSpeed === undefined) {
+            return reply.code(400).send({ error: "Paddle speed not valid" });
+        }
+        if (scorePoint === undefined) {
+            return reply.code(400).send({ error: "Score point not valid" });
+        }
+        if (map === undefined) {
+            return reply.code(400).send({ error: "Map not valid" });
+        }
 
         // change setting if valid
         room.setting.ballSpeed = ballSpeed ?? room.setting.ballSpeed;
-        room.setting.paddleHeight = paddleHeight ?? room.setting.paddleHeight;
-        room.setting.paddleWidth = paddleWidth ?? room.setting.paddleWidth;
         room.setting.ballSize = ballSize ?? room.setting.ballSize;
         room.setting.paddleSpeed = paddleSpeed ?? room.setting.paddleSpeed;
         room.setting.scorePoint = scorePoint ?? room.setting.scorePoint;
-		room.setting.map = map ?? room.setting.map;
+        room.setting.map = map ?? room.setting.map;
+
+		if (room.game) {
+			room.game.updateSettings(room.setting);
+		}
 
         // console.log("updated room setting:", room.setting); ////debug
 

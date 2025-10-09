@@ -7,10 +7,16 @@ import { URL } from "url";
 export interface WSContext {
 	clientId: number;
 	roomId: number;
-	room: any;
+	room: Room;
 	side?: "left" | "right";
     playerName: string;
 	playerSprite: string;
+}
+
+function error(socket: WebSocket, code: number, message: string) {
+    console.log("❌ |" + message);
+    socket.close(code, message);
+    return null;
 }
 
 /**
@@ -29,38 +35,38 @@ export function validateConnection(socket: any, req:any): WSContext | null {
 	const playerSprite = url.searchParams.get("sprite");
 
     if (isNaN(clientId)) {
-        console.log("Invalid clientId:", clientId);
+        // console.log("Invalid clientId:", clientId); ////debug
 		socket.close(1008, "Client id is required");
         return null;
     }
 
 	if (isNaN(roomId)) {
-        console.log("Invalid roomId:", roomId);
+        // console.log("Invalid roomId:", roomId); ////debug
 		socket.close(1008, "Room id is required");
 		return null;
 	}
 
 	if (!side || (side && side !== "left" && side !== "right")) {
-        console.log("Invalid side:", side);
+        // console.log("Invalid side:", side); ////debug
 		socket.close(1008, "Side is required");
 		return null;
 	}
 
-    if (!playerName) {
-        console.log("Invalid playerName:", playerName);
+    if (!playerName || playerName.trim() === "" || playerName === "undefined") {
+        // console.log("Invalid playerName:", playerName); ////debug
         socket.close(1008, "Player name is required");
         return null;
     }
 
 	if (!playerSprite) {
-        console.log("Invalid playerSprite:", playerSprite);
+        // console.log("Invalid playerSprite:", playerSprite); ////debug
 		socket.close(1008, "Player sprite is required");
 		return null;
 	}
 
 	const room = rooms.get(roomId);
 	if (!room) {
-        console.log("Room not found:", roomId);
+        // console.log("Room not found:", roomId); ////debug
 		socket.close(1008, "Room not found");
 		return null;
 	}
@@ -208,7 +214,7 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     room.gameState.teams.right = rebuildSide(rightPlayers, "right");
 
     // 3. reset paddles and reassign positions
-    const game = new Game(); //create game object
+    const game = new Game(); //create game object // todo sheldon: Why is there another creategame?
     game.setPaddlePositionWithTeam(room);
 
     // 4. broadcast to all players about the switch
@@ -244,71 +250,27 @@ export function handleSwitchSide(room: Room, socket: any, newSide: "left" | "rig
     return newPlayer.role;
 }
 
-export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number, isDuringGame: boolean) {
-    const player = room.clientRoles.get(clientId);
-    if (!player) return;
-
-    // mark as disconnected
-    room.disconnectPlayers.add(clientId);
-	// console.log("room.disconnectPlayers:", room.disconnectPlayers); ////debug
-
-    // notify everyone
-	console.log(`Player ${player.playerName} [ ${clientId} ] disconnected from room ${room.name} (${room.id}). Starting grace period of ${gracePeriod/1000} seconds.`);
-    broadcast(room, createLiveChatMessage(-1, "system", `${player.playerName} disconnected.`));
-    broadcast(room, {
-        type: "roleUpdate",
-        gameState: room.gameState,
-        leaderId: room.leaderId,
-    });
-
-    // cancel any existing timer
-    if (!room.disconnectTimers) room.disconnectTimers = new Map();
-    if (room.disconnectTimers.has(clientId)) {
-        clearTimeout(room.disconnectTimers.get(clientId)!);
-        room.disconnectTimers.delete(clientId);
-    }
-
-    // start timer
-    const timer = setTimeout(() => {
-        console.log(`${player.playerName} fail to reconnect.`);
-
-        // remove from disconnects
-        room.disconnectPlayers.delete(clientId);
-
+export function handlePlayerDisconnect(room: Room, clientId: number, gracePeriod: number) {
+    // start time for end game
+    setTimeout(() => {
         // remove from teams and paddles
         room.gameState.teams.left = room.gameState.teams.left.filter(p => p.clientId !== clientId);
         room.gameState.teams.right = room.gameState.teams.right.filter(p => p.clientId !== clientId);
-        delete room.gameState.paddles[clientId];
         room.clientRoles.delete(clientId);
 
-        // if during game, determine winner if only one team left
-        if (isDuringGame) {
-            const leftRemaining = room.gameState.teams.left.length;
-            const rightRemaining = room.gameState.teams.right.length;
-            let winner: "left" | "right" | null = null;
-            if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
-            else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
-            if (winner && !room.gameState.gameEnded) {
-                roomEndGame(room, true, winner);
-                return;
-            }
-        }
-
-        // notify updated state
-        broadcast(room, {
-            type: "roleUpdate",
-            gameState: room.gameState,
-            leaderId: room.leaderId,
-        });
-
-        if (room.disconnectTimers) {
-            room.disconnectTimers.delete(clientId);
+        //determine winner if only one team left
+        const leftRemaining = room.gameState.teams.left.length;
+        const rightRemaining = room.gameState.teams.right.length;
+        let winner: "left" | "right" | null = null;
+        if (leftRemaining > 0 && rightRemaining === 0) winner = "left";
+        else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
+        if (winner) {
+			console.log(`${winner} side wins due to opponents disconnected`);
+            room.game.forceEnd(winner);
+			setTimeout(() => roomEndGame(room, true, winner), 1000);
+            return;
         }
     }, gracePeriod);
-
-    if (room.disconnectTimers) {
-        room.disconnectTimers.set(clientId, timer);
-    }
 }
 
 /**
@@ -321,7 +283,7 @@ export function startCountdown(room: Room, onComplete: () => void) {
   if (room.countdownTimer) return; // already running
 
   //set timer for 5 seconds countdown
-  let remaining = 5; //? seconds
+  let remaining = 1; //? seconds
   room.countdownRemaining = remaining;
 
   //broadcast to clients start from 5

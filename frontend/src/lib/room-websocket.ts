@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ensurePlayerId, determineSide } from "./requestBackend.api";
+import { determineSide } from "./requestBackend.api";
 import type { playerInfo } from "../../../backend/src/modules/room/room"
+
+
+
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -11,7 +14,8 @@ export interface UseRoomWebSocketParams {
         id: number;
         name: string;
         avatar: string;
-    }
+    };
+	setRoomInfo: React.Dispatch<React.SetStateAction<{ name: string; leaderId: number; type: string; id: number } | null>>;
 }
 
 /**
@@ -20,7 +24,7 @@ export interface UseRoomWebSocketParams {
  * @param roomName The name of the room.
  * @param leaderId The client ID of the room leader.
 */
-export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoomWebSocketParams) {
+export function useRoomWebSocket({ roomId, roomName, leaderId, player, setRoomInfo }: UseRoomWebSocketParams) {
 	const [statusText, setStatusText] = useState("Connecting to room..."); // e.g., "Room MyRoom [id: 1234]"
 	const [playerText, setPlayerText] = useState("Waiting for players..."); // e.g., "You are: Player1 [id: abc123] (left_player1)"
 	const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team..."); // HTML content for left team
@@ -31,14 +35,13 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 	const [gameStarted, setGameStarted] = useState(false); // Whether the game has started
 	const [canStart, setCanStart] = useState(false); // Whether the game can be started (all players ready)
 	const [countdown, setCountdown] = useState<number | null>(null);
+	const [roomError, setRoomError] = useState<string | null>(null); // Error message if room cannot be joined
 	const socketRef = useRef<WebSocket | null>(null);
 
 	useEffect(() => {
         //TODO replace with JWT
 
 		async function connect() {
-			// set room settings
-			//await roomSetting(roomId, BALLSPEED, PADDLEHEIGHT, PADDLEWIDTH, BALLSIZE);
 
 			// pick role (leader gets left_player1)
 			let roleLocal = player.id === leaderId ? "left_player1" : "spectator";
@@ -47,16 +50,16 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 
 			// create websocket connection with player id, room id, side and player name
 			const chooseSide = await determineSide(roomId);
-			console.log("ws side:", chooseSide);
-			console.log("ws player name:", player.name);
-			console.log("ws player sprite:", player.avatar);
+			console.log("ws side:", chooseSide); ////debug
+			console.log("ws player name:", player.name); ////debug
+			console.log("ws player sprite:", player.avatar); ////debug
 			const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`);
 			socketRef.current = ws;
 
 			// open connection
 			ws.onopen = () => {
-				console.log("Room ws connected");
-				setStatusText(`Room ${roomName} [id: ${roomId}]`);
+				console.log("Room ws connected"); ////debug
+				setStatusText(`Room ${roomName} [id: ${roomId}]`); //? can be remove
 			};
 
 			// handle incoming message / event from server
@@ -70,6 +73,13 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 						console.error("Invalid JSON:", ev.data);
 						return;
 					}
+					// handle error message from server
+					if (data.type === "error") {
+						console.warn("Cannot join room:", data.message);
+						setRoomError(data.message);
+						ws.close(1000, "error received");
+						return;
+					}
 
 					// validate message structure
 					if (typeof data !== "object" || data === null) {
@@ -80,7 +90,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 						console.error("Invalid message: missing type:", data);
 						return;
 					}
-					const allowedTypes = ["roleUpdate", "state", "countdown", "countdownCancel"];
+					const allowedTypes = ["roleUpdate", "state", "countdown", "countdownCancel", "roomPrivacyUpdate"];
 					if (!allowedTypes.includes(data.type)) {
 						if (data.type === "chat") return;
 						console.error(`unsupported message type ${data.type}`);
@@ -164,6 +174,11 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 						//cancel the countdown
 						setCountdown(null);
 					}
+					if (data.type === "roomPrivacyUpdate") {
+                        // update room info
+						setRoomInfo(prev => prev ? { ...prev, ...data.data } : data.data);
+						console.log("Room privacy updated:", data.data); ////debug
+					}
 				} catch (err) {
 					console.error("Invalid room message:", err);
 					ws.close(1000, "server error");
@@ -200,10 +215,12 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 	  setReady(newReady);
 	  socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
 	}
+
 	function onStartBtn() {
 	  if (!isLeader || !socketRef.current) return;
 	  socketRef.current.send(JSON.stringify({ type: "start", start: true }));
 	}
+
 	function onLeave() {
 	  try { socketRef.current?.close(); } catch {}
 	  sessionStorage.removeItem("RoomName");
@@ -224,6 +241,7 @@ export function useRoomWebSocket({ roomId, roomName, leaderId, player }: UseRoom
 		setReady,
 		canStart,
 		countdown,
+		roomError,
 		onSwitch,
 		onReady,
 		onStartBtn,

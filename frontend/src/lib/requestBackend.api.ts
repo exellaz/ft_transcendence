@@ -68,8 +68,6 @@ export async function fetchMatches(limit = 10) {
 export async function createRoomAPI(
   teamSize: number,
   roomName: string,
-  width: number,
-  height: number,
   options?: { leaderId?: number; isPrivate?: boolean }
 ) {
   try {
@@ -79,9 +77,7 @@ export async function createRoomAPI(
       body: JSON.stringify({
         teamSize,
         name: roomName,
-        width,
-        height,
-        leaderId: options?.isPrivate ? options?.leaderId : -1,
+        leaderId: options?.leaderId,
         isPrivate: options?.isPrivate ?? false,
       }),
     });
@@ -109,7 +105,7 @@ export async function determineSide(roomId: number): Promise<"left" | "right"> {
 }
 
 /**
- * @brief update the settings of a room
+ * @brief update the settings of a game
  * @param roomId ID of the room
  * @param ballSpeed speed of the ball
  * @param paddleHeight height of the paddle
@@ -119,12 +115,12 @@ export async function determineSide(roomId: number): Promise<"left" | "right"> {
  * @return updated room settings to client in JSON format
  * @note it also sends the updated settings to the backend
 */
-export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight: number, paddleWidth: number, ballSize: number, paddleSpeed: number, scorePoint: number, map: string) {
+export async function gameSetting(roomId:string, ballSpeed: number, ballSize: number, paddleSpeed: number, scorePoint: number, map: string) {
   try {
-    const res = await fetch( `${API_URL}/room/${roomId}/setting`, {
+    const res = await fetch( `${API_URL}/room/${roomId}/game-setting`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ballSpeed, paddleHeight, paddleWidth, ballSize, paddleSpeed, scorePoint, map }),
+      body: JSON.stringify({ ballSpeed, ballSize, paddleSpeed, scorePoint, map }),
     });
 
     if (!res.ok) throw new Error("Failed to update room settings");
@@ -133,4 +129,30 @@ export async function roomSetting(roomId:string, ballSpeed: number, paddleHeight
     console.error("Failed to update room settings:", error);
     return null;
   }
+}
+
+export async function createTournamentLobby(name: string) {
+	try {
+		const res = await fetch(`${API_URL}/create-tournament`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name }),
+		});
+		if (!res.ok) throw new Error("Failed to create tournament");
+		return await res.json();
+	} catch (error) {
+		console.error("Failed to create tournament:", error);
+		return null;
+	}
+}
+
+export async function fetchTournaments() {
+	try {
+		const res = await fetch(`${API_URL}/tournaments`);
+		if (!res.ok) throw new Error("Failed to fetch tournaments");
+		return await res.json();
+	} catch (error) {
+		console.error("Failed to fetch tournaments:", error);
+		return [];
+	}
 }

@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import MapSelector from "../components/MapSelector";
 import PopupCard from "../components/PopupCard";
 import Slider from "../components/Slider";
-import { useRoomSettings } from "../lib/gameSetting.api";
+import { useGameSettings } from "../lib/gameSetting.api";
 
 interface PopupProps {
   open: boolean;
@@ -19,7 +19,7 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 
   // ------------------------------------------ API -----------------------------------------------------
   // fetch settings from API
-  const { settings, setSettings, loading, saving, saveSettings, resetSettings } = useRoomSettings(roomId);
+  const { settings, setSettings, loading, saving, saveSettings, resetSettings } = useGameSettings(roomId);
   // available maps
   const maps = ["stadium", "mansion", "arcade"];
 
@@ -59,9 +59,9 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 			label={translate("ball_speed")}
 			value={settings.ballSpeed}
 			options={[
-				{ label: translate("slow"), value: 1 },
-				{ label: translate("normal"), value: 5 },
-				{ label: translate("fast"), value: 10 },
+				{ label: translate("slow"), value: 0 },
+				{ label: translate("normal"), value: 1 },
+				{ label: translate("fast"), value: 2 },
 			]}
 			onChange={(value) => setSettings({ ...settings, ballSpeed: value })}
 		  />
@@ -70,9 +70,9 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 			label={translate("ball_size")}
 			value={settings.ballSize}
 			options={[
-				{ label: translate("small"), value: 5 },
-				{ label: translate("normal"), value: 10 },
-				{ label: translate("big"), value: 15 },
+				{ label: translate("small"), value: 0 },
+				{ label: translate("normal"), value: 1},
+				{ label: translate("big"), value: 2 },
 			]}
 			onChange={(value) => setSettings({ ...settings, ballSize: value })}
 		  />
@@ -81,9 +81,9 @@ const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
 			label={translate("paddle_speed")}
 			value={settings.paddleSpeed}
 			options={[
-				{ label: translate("slow"), value: 1 },
-				{ label: translate("normal"), value: 2 },
-				{ label: translate("fast"), value: 3 },
+				{ label: translate("slow"), value: 0 },
+				{ label: translate("normal"), value: 1 },
+				{ label: translate("fast"), value: 2 },
 			]}
 			onChange={(value) => setSettings({ ...settings, paddleSpeed: value })}
 		  />

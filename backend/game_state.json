@@ -1,0 +1,81 @@
+{
+  "state": {
+    "camera": {
+      "position": {
+        "className": "Point2D",
+        "x": 0,
+        "y": 0
+      }
+    },
+    "bgColor": "#6D1A1A",
+    "gameObjects": [
+      {
+        "className": "ball",
+        "id": 0,
+        "position": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 1,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "className": "camera"
+      },
+      {
+        "className": "OnScreenLabel",
+        "id": 2,
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "scale": {
+          "x": 9.997079333017075,
+          "y": 9.997079333017075
+        },
+        "text": "LOADING..."
+      },
+      {
+        "className": "label",
+        "id": 3,
+        "position": {
+          "x": -50,
+          "y": 0
+        },
+        "text": "0"
+      },
+      {
+        "className": "label",
+        "id": 4,
+        "position": {
+          "x": 50,
+          "y": 0
+        },
+        "text": "0"
+      },
+      {
+        "id": 9,
+        "position": {
+          "x": 0,
+          "y": -230
+        }
+      },
+      {
+        "id": 10,
+        "position": {
+          "x": 0,
+          "y": -230
+        }
+      }
+    ],
+    "type": "partial"
+  },
+  "metadata": {
+    "timestamp": 1759502831083,
+    "delta": 0.01899685599999793,
+    "fps": 0
+  }
+}

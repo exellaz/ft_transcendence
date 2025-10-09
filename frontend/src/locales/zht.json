@@ -32,7 +32,10 @@
     "create_singles_game": "建立單人遊戲？",
     "create_doubles_game": "建立雙人遊戲？",
     "join_singles_game": "加入單人遊戲？",
-    "join_doubles_game": "加入雙人遊戲？"
+    "join_doubles_game": "加入雙人遊戲？",
+    "room_not_found": "房間未找到",
+    "room_is_full": "房間已滿",
+    "close": "關閉"
   },
   "DoublesRoomView": {
     "doubles_room": "雙人房間",
@@ -42,7 +45,9 @@
 	"start": "開始遊戲",
 	"game_start": "遊戲開始!",
     "leave_room": "離開房間",
-    "leave_confirmation": "你確定要離開房間嗎？"
+    "leave_confirmation": "你確定要離開房間嗎？",
+    "room_is_full": "房間已滿",
+    "close": "關閉"
   },
   "LoginView": {
     "username_or_email": "用戶名 / 電子郵件",
@@ -96,7 +101,10 @@
     "start": "開始遊戲",
 	"game_start": "遊戲開始!",
     "leave_room": "離開房間",
-    "leave_confirmation": "你確定要離開房間嗎？"
+    "leave_confirmation": "你確定要離開房間嗎？",
+    "room_is_full": "房間已滿",
+    "unknown_error": "未知錯誤",
+    "close": "關閉"
   },
   "TournamentLobbyView": {
     "quarterfinals": "四分之一決賽",

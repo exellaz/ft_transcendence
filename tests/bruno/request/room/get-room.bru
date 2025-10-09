@@ -1,0 +1,19 @@
+meta {
+  name: get-room
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/room/{{roomId}}
+  body: none
+  auth: inherit
+}
+
+assert {
+    res.status: eq 200
+    res.body.id: isNumber
+    res.body.name: isNotEmpty
+    res.body.teamSize: in [1, 2]
+    res.body.leaderId: isNumber
+}
