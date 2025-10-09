@@ -2,7 +2,7 @@ import { WebSocket } from "@fastify/websocket";
 import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
-import { PongGame } from "../../../shared/game/pong.ts";
+import { PongGame } from "@shared/game/pong.ts";
 
 export interface playerInfo {
     clientId: number; // client id

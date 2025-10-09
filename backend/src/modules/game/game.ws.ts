@@ -4,8 +4,8 @@ import { validateConnection } from "../../utils/utils";
 // import { PongGame } from "@shared/game/pong";
 const wsHandler = new WebSocketHandler();
 
-import { PongGame, GameSettings, GameState } from "../../../shared/game/pong.ts";
-import { Player } from "../../../shared/game/Player.ts";
+import { PongGame } from "@shared/game/pong.ts";
+import { Player } from "@shared/game/Player.ts";
 import { handlePlayerDisconnect } from "src/utils/utils.ts";
 
 function closeSocket(socket: any, statusCode: number, errorMsg: any) {

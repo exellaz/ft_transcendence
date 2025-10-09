@@ -1,7 +1,6 @@
 import type { Room } from "../room/room";
 import { rooms, roomEndGame } from "../room/room";
 import type { playerInfo } from "../room/room";
-import { PongGame } from "@shared/game/pong";
 
 /**
  * @brief Interface for Game class method
