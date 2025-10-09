@@ -9,6 +9,8 @@ import type {
 	DeleteFriendshipResponse,
 	GetAcceptedFriendshipsRequest,
 	GetAcceptedFriendshipsResponse,
+	GetAllFriendChatMessagesRequest,
+	GetAllFriendChatMessagesResponse,
 	GetBlockedFriendshipsRequest,
 	GetBlockedFriendshipsResponse,
 	GetPendingFriendshipsRequest,
@@ -106,6 +108,15 @@ export async function deleteBlockedFriendship(
 
 	const res = await fetch(`${API_BASE}/blockedFriendships/${blockerId}/${blockedId}`, {
 		method: "DELETE",
+	});
+
+	return res.json();
+}
+
+// GET /friendChatMessages/:friendshipId
+export async function getAllFriendChatMessages({ friendshipId }: GetAllFriendChatMessagesRequest): Promise<GetAllFriendChatMessagesResponse> {
+	const res = await fetch(`${API_BASE}/friendChatMessages/${friendshipId}`, {
+		method: "GET",
 	});
 
 	return res.json();

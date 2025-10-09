@@ -11,8 +11,8 @@ import roomRoutes from "./modules/room/room.routes";
 import { fail, ApiError } from "./utils/response";
 import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
+import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
-import gameRoutes from "../../shared/game.routes";
 
 const app = Fastify({
 //  logger: true
@@ -31,10 +31,10 @@ app.register(friendshipRoutes);
 app.register(blockedFriendshipRoutes);
 app.register(tournamentRoutes);
 app.register(gameWsRoute);
-// app.register(gameRoutes);
 app.register(roomWsRoutes);
 app.register(liveChatRoutes);
 app.register(roomRoutes);
+app.register(friendChatMessageRoutes);
 
 // Global error handler (call after all routes/plugins)
 app.setErrorHandler((error, request, reply) => {
