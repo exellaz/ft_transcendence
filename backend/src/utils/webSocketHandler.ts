@@ -126,7 +126,7 @@ export class WebSocketHandler implements IWebSocketHandler {
 		// ---- guard check ----
 		//if no room, no socket exit this function
 		if (!room || !room.sockets) return;
-		console.log("Disconnect event for", clientId, "disconnectPlayers=", [...room.disconnectPlayers]); ////debug
+		console.log("Disconnect event for", clientId); ////debug
 
 		// always trust the latest role from the server mapping
 		const player = room.clientRoles.get(clientId);
