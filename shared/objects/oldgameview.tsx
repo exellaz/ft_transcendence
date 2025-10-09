@@ -21,15 +21,11 @@
 // import { Viewport } from "@shared/objects/Viewport";
 // import type { Camera } from "@shared/objects/Camera";
 
-
 // function isArrowKey(e: KeyboardEvent): boolean {
 // 	return e.key === "ArrowUp" || e.key === "ArrowDown";
 // }
 
-
-
 // // TODO not populating data beyond the initial handshake
-
 
 // const componentMap: Record<string, new (params: any) => any> = {
 // 	"Point2D": function (params: any) { return new Point2D(params.x, params.y); } as any,
@@ -48,7 +44,6 @@
 // 	"arrow": Arrow,
 // 	"player": Player
 // }
-
 
 // function revive(obj: any): any {
 // 	// -- handle arrays --
@@ -122,7 +117,6 @@
 // 	}
 // }
 
-
 // class GameClient {
 
 // 	private websocketRef: WebSocket | null = null;
@@ -187,8 +181,6 @@
 // 			// if (!this.needToProcessFullState)
 // 			// 	this.data = data;
 
-
-
 // 			if (this.data["type"] === "ready") {
 // 				this.sendData("fetch_world");
 // 				console.log("requested for full world");
@@ -219,7 +211,6 @@
 // 		};
 
 // 		this.websocketRef.onclose = () => console.log("❌ Disconnected");
-
 
 // 		this.handleKey = this.handleKey.bind(this);
 // 		// -- KEYBOARD --
@@ -266,7 +257,6 @@
 // 				this.componentRegistry.set(stateComponent.id, new componentMap[stateComponent.name](stateComponent));
 // 		}
 
-
 // 		// -- instantiate objects --
 // 		for (const stateObject of this.data["state"]["gameObjects"] ?? []) {
 // 			const id = stateObject["id"];
@@ -307,7 +297,6 @@
 // 			});
 // 			object.clientUpdate();
 // 		}
-
 
 // 		// link components
 // 		for (const [id, object] of this.gameObjectRegistry) {

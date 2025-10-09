@@ -1,10 +1,10 @@
-import { Point2D, Vector2D } from '../objects/Coordinates.ts';
-import { GameObject } from '../objects/GameObject.ts';
-import type { Camera } from '../objects/Camera.ts';
-import { Viewport } from '../objects/Viewport.ts';
-import { HitBox } from '../objects/HitBox.ts';
-import { PeriodicTimer, Timer } from '../objects/Timer.ts';
-import { Arrow } from './Padel.ts';
+import { Point2D, Vector2D } from "../objects/Coordinates.ts";
+import { GameObject } from "../objects/GameObject.ts";
+import type { Camera } from "../objects/Camera.ts";
+import { Viewport } from "../objects/Viewport.ts";
+import { HitBox } from "../objects/HitBox.ts";
+import { PeriodicTimer, Timer } from "../objects/Timer.ts";
+import { Arrow } from "./Padel.ts";
 
 export class GameWorld {
   gameObjects: Map<number, GameObject> = new Map();
@@ -21,7 +21,7 @@ export class GameWorld {
   // cleqr all game objects from the world ( prevent ovelap issue )
   clear(): void {
     if (this.gameObjects) {
-        this.gameObjects.clear();
+      this.gameObjects.clear();
     }
   }
 
@@ -44,7 +44,6 @@ export class GameWorld {
     }
     return object;
   }
-
 
   checkCollisions() {
     const hitboxes: HitBox[] = [];
@@ -81,37 +80,32 @@ export class GameWorld {
     }
   }
 
-  exportState(
-    includeStaticObjects: boolean = false
-  ) {
+  exportState(includeStaticObjects: boolean = false) {
     const visited = new Set();
     const flatObjects: any[] = [];
 
     const components = [];
 
-
     function flatten(obj) {
       if (!obj || visited.has(obj.id)) return;
       visited.add(obj.id);
 
-      if (obj.isStatic === true // if only exports once
-        && !includeStaticObjects)
-        return
+      if (
+        obj.isStatic === true && // if only exports once
+        !includeStaticObjects
+      )
+        return;
 
       let exportedObject = obj.export(includeStaticObjects);
 
-      let keysWithId = []
+      let keysWithId = [];
 
       for (const [key, component] of obj.components) {
-        if (component.id)
-          keysWithId.push(key);
+        if (component.id) keysWithId.push(key);
       }
 
       exportedObject.components = keysWithId;
-      if (
-        keysWithId.length === 0 ||
-        !includeStaticObjects
-      )
+      if (keysWithId.length === 0 || !includeStaticObjects)
         delete exportedObject.components;
 
       flatObjects.push(exportedObject);
@@ -123,11 +117,9 @@ export class GameWorld {
 
       if ("children" in exportedObject) {
         if (obj.children && obj.children.length > 0) {
-          for (const child of obj.children)
-            flatten(child);
+          for (const child of obj.children) flatten(child);
         }
-      }
-      else {
+      } else {
         // console.log("no children");
       }
     }
@@ -138,14 +130,13 @@ export class GameWorld {
 
     const output = {
       camera: {
-        position: this.camera?.position
+        position: this.camera?.position,
       },
       bgColor: this.bgColor,
       gameObjects: flatObjects,
-      components: components
+      components: components,
     };
 
     return output;
   }
 }
-

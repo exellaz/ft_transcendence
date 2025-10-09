@@ -7,12 +7,11 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-  
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/ws': {
-        target: 'ws://localhost:4242',
+      "/ws": {
+        target: "ws://localhost:4242",
         ws: true,
         changeOrigin: true,
       },

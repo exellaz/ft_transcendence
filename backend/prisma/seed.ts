@@ -1,15 +1,16 @@
 import { FriendshipStatus, PrismaClient } from "@prisma/client";
-import {hashPassword } from "../src/modules/users/users.service"
+import { hashPassword } from "../src/modules/users/users.service";
 const prisma = new PrismaClient();
 
 async function main() {
   await prisma.user.deleteMany();
-	// reset the sequence manually (id start from 1)
-	await prisma.$executeRawUnsafe(`DELETE FROM sqlite_sequence WHERE name='users';`);
+  // reset the sequence manually (id start from 1)
+  await prisma.$executeRawUnsafe(
+    `DELETE FROM sqlite_sequence WHERE name='users';`,
+  );
 
   let num = 10; // 👈 set how many users you want
   for (let i = 1; i <= num; i++) {
-
     const password = await hashPassword("Password1");
 
     await prisma.user.create({
@@ -25,7 +26,6 @@ async function main() {
   }
   console.log(`✅ Seeded ${num} users`);
 
-
   num = 7;
   const statuses: FriendshipStatus[] = ["accepted", "pending"];
 
@@ -40,7 +40,9 @@ async function main() {
     });
   }
 
-  console.log(`✅ Seeded ${num} friendships equally across accepted and pending`);
+  console.log(
+    `✅ Seeded ${num} friendships equally across accepted and pending`,
+  );
 
   num = 6;
 
@@ -79,11 +81,10 @@ async function main() {
     }
   }
 
-  console.log(`✅ Seeded ${acceptedFriendships.length * messagesPerFriendship} friend chat messages`);
-
+  console.log(
+    `✅ Seeded ${acceptedFriendships.length * messagesPerFriendship} friend chat messages`,
+  );
 }
-
-
 
 main()
   .catch((e) => {

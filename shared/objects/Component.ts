@@ -1,35 +1,32 @@
-import type { GameObject } from './GameObject.ts';
+import type { GameObject } from "./GameObject.ts";
 
 export class Component {
+  static globalId: number = 1;
 
-    static globalId: number = 1;
+  id: number = -1;
 
-    id: number = -1;
+  name: string = "";
+  renderable: boolean = false;
+  enabled: boolean = true;
+  host: GameObject | null = null;
 
+  public onUpdate?: () => void;
 
-    name: string = "";
-    renderable: boolean = false;
-    enabled: boolean = true;
-    host: GameObject | null = null;
+  constructor(params: Partial<Component>) {
+    Object.assign(this, params);
+    this.id = Component.globalId;
+    Component.globalId++;
+  }
 
-    public onUpdate?: () => void;
+  init(): Component {
+    return this;
+  }
 
-    constructor(params: Partial<Component>) {
-        Object.assign(this, params);
-        this.id = Component.globalId;
-        Component.globalId ++;
-    }
+  update() {
+    if (this.onUpdate) this.onUpdate();
+  }
 
-    init(): Component {
-        return this;
-    }
-
-    update() {
-        if (this.onUpdate)
-            this.onUpdate();
-    }
-
-    export() {
-        return this;
-    }
+  export() {
+    return this;
+  }
 }

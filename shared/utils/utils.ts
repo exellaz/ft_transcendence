@@ -27,7 +27,6 @@
 //   URL.revokeObjectURL(url);
 // }
 
-
 // export function mapToObject<K, V>(map: Map<K, V>): Record<string, V> {
 // 	const obj: Record<string, V> = {};
 // 	for (const [key, value] of map.entries()) {

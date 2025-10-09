@@ -8,7 +8,11 @@ export const clientScripts: Record<string, (object) => void> = {
     const baseY = -240;
 
     // apply oscillation
-    object.position.y = oscillateValue(baseY, amplitude, frequency, Number(object.id % 2 === 0) * 15);
-
+    object.position.y = oscillateValue(
+      baseY,
+      amplitude,
+      frequency,
+      Number(object.id % 2 === 0) * 15,
+    );
   },
 };

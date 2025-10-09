@@ -25,3 +25,4 @@ lerna-debug.log*
 
 .github
 tests/bruno/environments/*.bru
+subject.md
