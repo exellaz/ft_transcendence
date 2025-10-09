@@ -1,0 +1,15 @@
+meta {
+  name: get-tournament-stats
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/users/1/tournament-stats
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
