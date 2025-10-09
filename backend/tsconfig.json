@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    "rootDir": "../",
     "outDir": "./dist",
 
     // Environment
@@ -31,7 +31,8 @@
     // 🔑 Needed for @shared/*
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*",
+                    "../shared/*"]
     }
   },
   "include": ["src"]
