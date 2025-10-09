@@ -11,7 +11,6 @@ import roomRoutes from "./modules/room/room.routes";
 import { fail, ApiError } from "./utils/response";
 import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
-import gameRoutes from "../../shared/game.routes";
 
 const app = Fastify({
 //  logger: true

@@ -4,16 +4,15 @@ import { validateConnection } from "../../utils/utils";
 // import { PongGame } from "@shared/game/pong";
 const wsHandler = new WebSocketHandler();
 
-import { PongGame, GameSettings } from "../../../shared/game/pong.ts";
-import { Player } from "../../../shared/game/Player.ts";
+import { PongGame } from "@shared/game/pong.ts";
+import { Player } from "@shared/game/Player";
 
-function closeSocket(socket: any, statusCode: number, errorMsg: any) {
+
+function closeSocket(socket: any, statusCode:number, errorMsg: any) {
 	socket.close(1003, errorMsg)
 	console.log(`🅰️ ${errorMsg}`);
 	return null;
 }
-
-
 
 // todo error sometimes certain players dont show up
 

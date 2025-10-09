@@ -1,4 +1,4 @@
-import app from "./app"
+import app from "./app.ts"
 
 // Start server
 const start = async () => {

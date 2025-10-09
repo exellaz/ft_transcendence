@@ -3,35 +3,37 @@
     // File Layout
     "rootDir": "../",
     "outDir": "./dist",
-
     // Environment
     "target": "ES2020",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "types": ["node"],
-
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": [
+      "node"
+    ],
     // Debugging
     "sourceMap": true,
-
     // Type Safety
-    "strict": false,
+    "strict": true,
     "noUncheckedIndexedAccess": true,
-
+    "exactOptionalPropertyTypes": true,
     // Performance
     "skipLibCheck": true,
-
-    // Module interopjs"
+    // Module interop
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-
     "allowImportingTsExtensions": true,
     "noEmit": true,
-
-    // 🔑 Needed for @shared/*
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@shared/*": [
+        "./shared/*"
+      ] // 👈 add this
     }
   },
-  "include": ["src", "../shared/utils", "../shared/client.ts", "../shared/entry_test.ts", "../shared/game.routes.ts", "../shared/server.ts", "../shared/objects", "../shared/game"]
+  "include": [
+    "src"
+  ],
 }

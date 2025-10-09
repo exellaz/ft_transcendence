@@ -153,7 +153,7 @@ enum GameState {
 	GAMEOVER = 3,
 }
 
-export class PongGame {
+export class 	 PongGame {
 
 	clients!: any[];
 

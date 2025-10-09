@@ -3,8 +3,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "npx nodemon --watch src --exec tsx src/server.ts",
+    "dev": "npx nodemon --verbose  --watch src --exec tsx src/server.ts",
     "dev2": "nodemon --watch src --exec ts-node src/loginApp.ts",
+    "dev3": "node --trace-warnings --loader ts-node/esm src/server.ts",
     "build": "tsc -b",
     "start": "node dist/server.js",
     "start2": "node dist/app.js",
