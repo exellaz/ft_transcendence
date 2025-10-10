@@ -18,6 +18,7 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
+import RoomList from "./views/testRoomList";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
 // including BouncingSprites at the App level ensures animation consistency
@@ -60,6 +61,7 @@ const App: React.FC = () => {
             <Route path="/singles-room/:roomId" element={<SinglesRoomView />} />
             <Route path="/doubles-room/:roomId" element={<DoublesRoomView />} />
             <Route path="/test" element={<TestView />} />
+            <Route path="/roomList" element={<RoomList />} />
           </Routes>
         </PreLoginWrapper>
       </BrowserRouter>

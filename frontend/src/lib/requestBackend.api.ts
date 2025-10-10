@@ -1,3 +1,5 @@
+import type { Room } from "../../../backend/src/utils/interface";
+
 const API_URL = import.meta.env.VITE_API_URL as string;
 //const API_URL = `/api`;
 
@@ -71,6 +73,7 @@ export async function createRoomAPI(
   roomName: string,
   options?: { leaderId?: number; isPrivate?: boolean },
 ) {
+    console.log("Creating room with:", { teamSize, roomName, options }); ////debug
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",
@@ -99,7 +102,7 @@ export async function createRoomAPI(
  */
 export async function determineSide(roomId: number): Promise<"left" | "right"> {
   const rooms = await fetchRooms();
-  const room = rooms.find((r: any) => r.id === roomId);
+  const room = rooms.find((r: Room) => r.id === roomId);
   if (!room) return "left";
   return room.leftPlayers <= room.rightPlayers ? "left" : "right";
 }

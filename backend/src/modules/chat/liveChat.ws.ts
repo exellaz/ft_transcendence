@@ -1,7 +1,10 @@
+import { FastifyInstance, FastifyRequest } from "fastify";
+import WebSocket from "ws";
+
 export const chatRooms = new Map();
 
-export default async function liveChatRoutes(fastify: any) {
-  fastify.get("/ws-chat", { websocket: true }, (socket: any, req: any) => {
+export default async function liveChatRoutes(fastify: FastifyInstance) {
+  fastify.get("/ws-chat", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     // Step 1: get client query param
     const { room } = req.query as { room?: string };
     // console.log("Chat WebSocket connection request for room:", room); //// debug
@@ -20,7 +23,7 @@ export default async function liveChatRoutes(fastify: any) {
     clients.add(socket);
 
     // Step 2: handle incoming messages from clients
-    socket.on("message", (raw: any) => {
+    socket.on("message", (raw: WebSocket.Data) => {
       // console.log("Chat WebSocket received:", raw.toString()); //// debug
       try {
         let msg;

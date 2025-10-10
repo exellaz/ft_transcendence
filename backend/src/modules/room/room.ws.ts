@@ -1,6 +1,6 @@
 import { WebSocketHandler } from "../../utils/webSocketHandler";
 import { validateConnection } from "../../utils/utils";
-import type { playerInfo } from "../../modules/room/room";
+import type { playerInfo } from "../../utils/interface";
 import { startRoomLoop, roomStartGame } from "./room";
 import { createLiveChatMessage } from "../../modules/chat/liveChat";
 import {
@@ -10,11 +10,13 @@ import {
   startCountdown,
   cancelCountdown,
 } from "../../utils/utils";
+import { FastifyInstance, FastifyRequest } from "fastify";
+import WebSocket from "ws";
 
 const wsHandler = new WebSocketHandler();
 
-export default async function roomWsRoutes(fastify: any) {
-  fastify.get("/ws-room", { websocket: true }, (socket: any, req: any) => {
+export default async function roomWsRoutes(fastify: FastifyInstance) {
+  fastify.get("/ws-room", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     const context = validateConnection(socket, req);
     // console.log("Websocket connection context: ", context); //// debug
     if (!context) return; // Invalid connection, already closed in validateConnection
@@ -33,11 +35,11 @@ export default async function roomWsRoutes(fastify: any) {
     //  console.log("Websocket assign role response: ", player); //// debug
 
     // step 2: handle incoming messages from clients
-    socket.on("message", (raw: any) => {
+    socket.on("message", (raw: WebSocket.Data) => {
       try {
         let msg;
         try {
-          msg = JSON.parse(raw);
+          msg = JSON.parse(raw.toString());
         } catch {
           socket.close(1003, "Invalid JSON");
           return;
@@ -149,7 +151,7 @@ export default async function roomWsRoutes(fastify: any) {
             );
 
             //broadcastState(room);
-            const { canStart, reason } = updateCanStart(room);
+            const { canStart } = updateCanStart(room);
             broadcast(room, {
               type: "roleUpdate",
               gameState: room.gameState,
@@ -226,7 +228,7 @@ export default async function roomWsRoutes(fastify: any) {
           broadcast(room, {
             type: "roomPrivacyUpdate",
             data: {
-              type: room.private ? "private" : "public",
+              type: room.private ? "private" : "public"
             },
           });
         }

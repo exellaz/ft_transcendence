@@ -4,9 +4,11 @@ import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "../components/Avatar";
 import ProfilePopup from "../popups/ProfilePopup";
+import type { User } from "@/types/usersApi";
+import type { playerInfo } from "../../../backend/src/utils/interface";
 
 interface ReadyPlayersProps {
-  players: any[];
+  players: (User & playerInfo)[];
 }
 
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
@@ -48,7 +50,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
               <span
                 className={
                   //TODO id issue here
-                  `${getUserColor(String(player.id))}`
+                  `${getUserColor(player.id)}`
                 }
                 title={player.username}
               >

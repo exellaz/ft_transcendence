@@ -1,28 +1,10 @@
 import { chatRooms } from "../modules/chat/liveChat.ws";
-import {
-  rooms,
-  roomEndGame,
-  type Room,
-  playerInfo,
-} from "../modules/room/room";
-import { Game } from "../modules/game/game";
+import { rooms, roomEndGame } from "../modules/room/room";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
-
-export interface WSContext {
-  clientId: number;
-  roomId: number;
-  room: Room;
-  side?: "left" | "right";
-  playerName: string;
-  playerSprite: string;
-}
-
-function error(socket: WebSocket, code: number, message: string) {
-  console.log("❌ |" + message);
-  socket.close(code, message);
-  return null;
-}
+import { FastifyRequest } from "fastify/types/request";
+import WebSocket, { WebSocket as WSWebSocket } from "ws";
+import { BroadcastMessage, WSContext, playerInfo, Room } from "./interface";
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -31,7 +13,7 @@ function error(socket: WebSocket, code: number, message: string) {
  * @return WSContext if valid, otherwise null (and closes socket)
  * @note Close the socket with appropriate code/message if validation fails
  */
-export function validateConnection(socket: any, req: any): WSContext | null {
+export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WSContext | null {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
   const clientId = Number(url.searchParams.get("id"));
   const roomId = Number(url.searchParams.get("room"));
@@ -101,10 +83,10 @@ export function updateCanStart(room: Room): {
 
   // get left and right players excluding spectators
   const leftPlayers = room.gameState.teams.left.filter(
-    (p: any) => p.role !== "spectator",
+    (p: playerInfo) => p.role !== "spectator",
   );
   const rightPlayers = room.gameState.teams.right.filter(
-    (p: any) => p.role !== "spectator",
+    (p: playerInfo) => p.role !== "spectator",
   );
 
   // combine all players and get total count
@@ -112,9 +94,9 @@ export function updateCanStart(room: Room): {
 
   // get non-leader players and check if all are ready
   const nonLeaderPlayers = leaderPlayer
-    ? allPlayers.filter((p: any) => p.clientId !== leaderId)
+    ? allPlayers.filter((p: playerInfo) => p.clientId !== leaderId)
     : allPlayers;
-  const allReady = nonLeaderPlayers.every((p: any) => p.ready);
+  const allReady = nonLeaderPlayers.every((p: playerInfo) => p.ready);
 
   // check if teams are balanced
   const teamsBalanced =
@@ -150,9 +132,11 @@ export function updateCanStart(room: Room): {
  * @param msg The message object to broadcast
  * @note Adds message to room chat history and sends to all connected clients
  */
-export function broadcast(room: Room, msg: any) {
+export function broadcast(room: Room, msg: BroadcastMessage) {
   // console.log("Broadcasting message:", msg); ////debug
-  room.chatHistory.push(msg);
+  if (msg.type === "chat") {
+    room.chatHistory.push(msg);
+  }
   for (const client of room.clients) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(msg));
@@ -181,7 +165,7 @@ export function broadcast(room: Room, msg: any) {
  */
 export function handleSwitchSide(
   room: Room,
-  socket: any,
+  socket: WSWebSocket,
   newSide: "left" | "right",
 ): string | undefined {
   const clientId = room.sockets.get(socket);
@@ -197,8 +181,8 @@ export function handleSwitchSide(
   delete room.gameState.paddles[oldRole];
 
   // 1. collect playerInfo per team (excluding the switching client)
-  const leftPlayers: any[] = [];
-  const rightPlayers: any[] = [];
+  const leftPlayers: playerInfo[] = [];
+  const rightPlayers: playerInfo[] = [];
   for (const [cid, p] of room.clientRoles.entries()) {
     if (cid === clientId) continue; // skip moving client for now
     if (p.role.startsWith("left_player")) leftPlayers.push({ ...p });
@@ -210,7 +194,7 @@ export function handleSwitchSide(
   else rightPlayers.push({ ...player });
 
   // 2. rebuild team role + update mapping
-  function rebuildSide(players: any[], side: "left" | "right"): any[] {
+  function rebuildSide(players: playerInfo[], side: "left" | "right"): playerInfo[] {
     return players.map((p, i) => {
       const newRole = `${side}_player${i + 1}`;
       // preserve readiness from gameState if available
@@ -233,10 +217,6 @@ export function handleSwitchSide(
 
   room.gameState.teams.left = rebuildSide(leftPlayers, "left");
   room.gameState.teams.right = rebuildSide(rightPlayers, "right");
-
-  // 3. reset paddles and reassign positions
-  const game = new Game(); //create game object // todo sheldon: Why is there another creategame?
-  game.setPaddlePositionWithTeam(room);
 
   // 4. broadcast to all players about the switch
   const newPlayer = room.clientRoles.get(clientId);
@@ -262,7 +242,6 @@ export function handleSwitchSide(
         newPlayer: newPlayer,
         gameState: room.gameState,
         leaderId: room.leaderId,
-        disconnectPlayers: room.disconnectPlayers,
       }),
     );
   }
@@ -274,7 +253,6 @@ export function handleSwitchSide(
     newPlayer: newPlayer,
     gameState: room.gameState,
     leaderId: room.leaderId,
-    disconnectPlayers: room.disconnectPlayers,
     readyStatus: newPlayer.ready,
     canStart: canStart,
   });

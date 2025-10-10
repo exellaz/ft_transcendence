@@ -65,6 +65,13 @@ const SinglesRoomView: React.FC = () => {
     );
   };
 
+  React.useEffect (() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+        sessionStorage.removeItem("reloading");
+        navigate("/main-menu");
+        }
+  }, []);
+
   // Fetch user info when the component mounts
   React.useEffect(() => {
     if (!user) return; // Ensure `user` is available

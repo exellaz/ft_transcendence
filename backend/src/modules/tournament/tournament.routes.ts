@@ -17,7 +17,7 @@ function generateTournamentId(): number {
 }
 
 export default async function tournamentRoutes(app: FastifyInstance) {
-  app.post("/create-tournament", async (req, reply) => {
+  app.post("/create-quater-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
     const body: any = req.body;
 
     const { name } = body as { name: string };
@@ -53,7 +53,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     return res;
   });
 
-  app.get("/tournaments", async () => {
+  app.get("/list-tournaments", async () => {
     const response = Array.from(tournaments.values()).map((tournament) => ({
       id: tournament.id,
       name: tournament.name,

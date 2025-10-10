@@ -24,6 +24,7 @@ import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button";
+import type { User } from "@/types/usersApi";
 
 function isArrowKey(e: KeyboardEvent): boolean {
   return e.key === "ArrowUp" || e.key === "ArrowDown";
@@ -369,22 +370,23 @@ class GameClient {
 const GameView: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useBlockLeave();
-  const { t } = useTranslation();
-  const translate = (key: string) => t(`GameView.${key}`);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
+//  const { t } = useTranslation();
+//  const translate = (key: string) => t(`GameView.${key}`);panel-1-6
+  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals" | "custom">(
     "quarterfinals",
   );
   const { user } = useUser();
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  // TODO: Replace with actual JWT
-  // console.log("useUser() returned:", user);
-  // if (!user) {
-  // 	console.log("user not loaded"); ////debug
-  // 	return;
-  // }
-  // Fetch user info when the component mounts
+  //check for reload
+  React.useEffect (() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+        sessionStorage.removeItem("reloading");
+        navigate("/main-menu");
+        }
+  }, []);
+
   React.useEffect(() => {
     if (!user) return; // Ensure `user` is available
 
@@ -408,8 +410,8 @@ const GameView: React.FC = () => {
   // console.log("user loaded", user); ////debug
   const roomId = Number(sessionStorage.getItem("RoomId") || "1");
   const roomName = sessionStorage.getItem("RoomName") || "Room 1";
-  const clientId = userInfo?.id;
-  const playerName = userInfo?.username;
+  const clientId = userInfo?.id ?? -1; // Ensure clientId is always a number
+  const playerName = userInfo?.username ?? "undefined"; // Ensure playerName is always a string
   const playerSprite = userInfo?.avatarUrl || "default.png";
   const initialRole = sessionStorage.getItem("playerSide") || "";
   console.log("player name from session:", playerName); ////debug
@@ -443,7 +445,7 @@ const GameView: React.FC = () => {
     if (socket.readyState !== WebSocket.OPEN) {
       socket.onopen = () => {
         // console.log("Socket is open, starting game client"); ////debug
-        let gameClient = new GameClient(canvasRef.current, socket);
+        const gameClient = new GameClient(canvasRef.current, socket);
         gameClient.start();
       };
       return;
@@ -458,12 +460,14 @@ const GameView: React.FC = () => {
     };
   }, [socket]);
 
+//  setStage("custom");
+
   return (
     <Background variant="plain">
       <div className="w-full h-full flex-col-center gap-10 px-25">
-        <TournamentHeader>
+        {/*<TournamentHeader>
           {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
-        </TournamentHeader>
+        </TournamentHeader>*/}
         <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
           <canvas
             ref={canvasRef} // ✅ fixed

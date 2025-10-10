@@ -1,14 +1,11 @@
-import { WebSocketHandler } from "../../utils/webSocketHandler";
-// import { Game } from "./game"
 import { validateConnection } from "../../utils/utils";
-// import { PongGame } from "@shared/game/pong";
-const wsHandler = new WebSocketHandler();
-
 import { PongGame } from "@shared/game/pong.ts";
 import { Player } from "@shared/game/Player.ts";
 import { handlePlayerDisconnect } from "src/utils/utils.ts";
+import { FastifyInstance, FastifyRequest } from "fastify";
+import WebSocket from "ws";
 
-function closeSocket(socket: any, statusCode: number, errorMsg: any) {
+function closeSocket(socket: WebSocket, statusCode: number, errorMsg: string) {
   socket.close(1003, errorMsg);
   console.log(`🅰️ ${errorMsg}`);
   return null;
@@ -40,13 +37,13 @@ function compile(
 /**
  * @note websocket error code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
  */
-export default async function gameWsRoute(fastify: any) {
-  fastify.get("/ws-game", { websocket: true }, (socket: any, req: any) => {
+export default async function gameWsRoute(fastify: FastifyInstance) {
+  fastify.get("/ws-game", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     const context = validateConnection(socket, req);
     if (!context) return; // Invalid connection, already closed in validateConnection
 
     // Step 1: Assign role to client (player, spectator, etc.)
-    const { clientId, roomId, room, side, playerName, playerSprite } = context;
+    const { clientId, room, side, playerName, playerSprite } = context;
 
     console.log("player sprite: ", playerSprite);
     console.log("player name: ", playerName);
@@ -57,7 +54,7 @@ export default async function gameWsRoute(fastify: any) {
       console.error("ws backend error: ", err);
     });
 
-    socket.on("message", (raw: any) => {
+    socket.on("message", (raw: WebSocket.Data) => {
       // console.log("Game WebSocket received:", raw.toString()); //// debug
 
       try {
@@ -92,7 +89,7 @@ export default async function gameWsRoute(fastify: any) {
           );
 
           //ensure the socket is up to date
-          room.sockets.set(clientId, socket);
+          room.sockets.set(socket, clientId);
 
           console.log("concluding handshake");
           socket.send(
@@ -104,11 +101,11 @@ export default async function gameWsRoute(fastify: any) {
 
           // ✅ New addition: broadcast updated world to all
           const fullWorld = compile(room.game, true, room.setting);
-          for (const s of room.sockets.values()) {
+          for (const s of room.sockets.keys()) {
             try {
               s.send(fullWorld);
-            } catch (e) {
-              // console.error("Failed to send full world:", e);
+            } catch (err) {
+               console.error("Failed to send full world:", err);
             }
           }
         } else if (msg.type === "fetch_world") {

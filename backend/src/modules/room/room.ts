@@ -1,72 +1,6 @@
-import { WebSocket } from "@fastify/websocket";
-import { liveChatMessage } from "../chat/liveChat"; // import chat message type
-//import { saveMatchResult } from "../../plugins/database";
+import { Room, GameSettings } from "../../utils/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
-
-export interface playerInfo {
-  clientId: number; // client id
-  playerName: string; // player username
-  role: string; // "left" or "right"
-  team: "left" | "right"; // team side
-  leader: boolean; // whether the player is the leader
-  spriteUrl: string; // URL of the player's sprite
-  ready: boolean; // whether the player is ready
-}
-
-/**
- * @brief Room interface ( is like a room information structure)
- */
-export interface Room {
-  id: number; // room id
-  name: string; // room name
-  teamSize: number; // team size (1vs1 or 2vs2)
-  width: number; // game width
-  height: number; // game height
-  setting: {
-    ballSpeed: number; // ball speed
-    ballSize: number; // ball size
-    paddleSpeed: number; // paddle speed
-    scorePoint: number; // points to win the game
-    map: string; // game map
-  };
-  gameState: {
-    ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
-    paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
-    teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
-    score: { left: number; right: number }; //[key] => team side, [value] => score
-    gameStarted: boolean; // flag for start game
-    gameEnded?: boolean; // flag for end game
-  };
-  clients: Set<WebSocket>; // Set of WebSocket connections
-  clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
-  sockets: Map<WebSocket, number>; //[key] => socket, [value] => client id
-  chatHistory: liveChatMessage[]; // Array to store chat messages
-  startTime?: Date; //start game time
-  endTime?: Date; //end game time
-  result?: {
-    // game result
-    winner: "left" | "right" | "draw";
-    scoreLeft: number;
-    scoreRight: number;
-  };
-  game: PongGame; // Game instance for game logic
-  loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
-  duration?: number; // game duration
-  canStart: boolean; // Flag to indicate if player all ready
-  leaderId: number; // clientId of the room leader
-  private: boolean; // Flag to indicate if the room is private
-  countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
-  countdownRemaining?: number | null; // Remaining seconds in the countdown
-}
-
-export interface GameSettings {
-  ballSpeed?: number;
-  ballSize?: number;
-  paddleSpeed?: number;
-  scorePoint?: number;
-  map?: string;
-}
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
@@ -128,18 +62,18 @@ export function createRoom(
     width: 800,
     height: 400,
     setting: {
-      ballSpeed: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-      ballSize: initialSetting.ballSize ?? DEFAULT_SETTING.ballSize,
-      paddleSpeed: initialSetting.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed,
-      scorePoint: initialSetting.scorePoint ?? DEFAULT_SETTING.scorePoint,
-      map: initialSetting.map ?? DEFAULT_SETTING.map,
+      ballSpeed: DEFAULT_SETTING.ballSpeed ?? -1,
+      ballSize: DEFAULT_SETTING.ballSize ?? -1,
+      paddleSpeed: DEFAULT_SETTING.paddleSpeed ?? -1,
+      scorePoint: DEFAULT_SETTING.scorePoint ?? -1,
+      map: DEFAULT_SETTING.map ?? "unknown",
     },
     gameState: {
       ball: {
         x: 800 / 2,
         y: 400 / 2,
-        dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-        dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
+        dx: (initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed) as number,
+        dy: (initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed) as number,
       },
       paddles: {},
       teams: { left: [], right: [] },
@@ -150,7 +84,7 @@ export function createRoom(
     clients: new Set(),
     clientRoles: new Map(),
     sockets: new Map(),
-    chatHistory: [] as any[],
+    chatHistory: [] as [],
     game: game,
     canStart: false,
     leaderId: leaderId,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { determineSide } from "./requestBackend.api";
-import type { playerInfo } from "../../../backend/src/modules/room/room";
+import type { playerInfo } from "../../../backend/src/utils/interface";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -53,7 +53,7 @@ export function useRoomWebSocket({
 
     async function connect() {
       // pick role (leader gets left_player1)
-      let roleLocal = player.id === leaderId ? "left_player1" : "spectator";
+      const roleLocal = player.id === leaderId ? "left_player1" : "spectator";
       setRole(roleLocal);
       setIsLeader(player.id === leaderId);
 

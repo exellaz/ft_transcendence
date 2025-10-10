@@ -1,0 +1,143 @@
+import { PongGame } from "@shared/game/pong.ts";
+import type { WebSocket as WSWebSocket } from "ws";
+
+export interface playerInfo {
+  clientId: number; // client id
+  playerName: string; // player username
+  role: string; // "left" or "right"
+  team: "left" | "right"; // team side
+  leader: boolean; // whether the player is the leader
+  spriteUrl: string; // URL of the player's sprite
+  ready: boolean; // whether the player is ready
+}
+
+/**
+ * @brief Room interface ( is like a room information structure)
+ */
+export interface Room {
+  id: number; // room id
+  name: string; // room name
+  teamSize: number; // team size (1vs1 or 2vs2)
+  width: number; // game width
+  height: number; // game height
+  setting: {
+    ballSpeed: number; // ball speed
+    ballSize: number; // ball size
+    paddleSpeed: number; // paddle speed
+    scorePoint: number; // points to win the game
+    map: string; // game map
+  };
+  gameState: {
+    ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
+    paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
+    teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
+    score: { left: number; right: number }; //[key] => team side, [value] => score
+    gameStarted: boolean; // flag for start game
+    gameEnded?: boolean; // flag for end game
+  };
+  clients: Set<WSWebSocket>; // Set of WebSocket connections
+  clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
+  sockets: Map<WSWebSocket, number>; //[key] => socket, [value] => client id
+  chatHistory: liveChatMessage[]; // Array to store chat messages
+  startTime?: Date; //start game time
+  endTime?: Date; //end game time
+  result?: {
+    // game result
+    winner: "left" | "right" | "draw";
+    scoreLeft: number;
+    scoreRight: number;
+  };
+  game: PongGame; // Game instance for game logic
+  loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
+  duration?: number; // game duration
+  canStart: boolean; // Flag to indicate if player all ready
+  leaderId: number; // clientId of the room leader
+  private: boolean; // Flag to indicate if the room is private
+  countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
+  countdownRemaining?: number | null; // Remaining seconds in the countdown
+}
+
+export interface GameSettings {
+  ballSpeed?: number;
+  ballSize?: number;
+  paddleSpeed?: number;
+  scorePoint?: number;
+  map?: string;
+}
+
+export interface WSContext {
+  clientId: number;
+  roomId: number;
+  room: Room;
+  side?: "left" | "right";
+  playerName: string;
+  playerSprite: string;
+}
+
+export interface listRoomsResponse {
+    id: number;
+    name: string;
+    teamSize: number;
+    leftPlayers: number;
+    rightPlayers: number;
+    gameStarted: boolean;
+    gameEnded: boolean;
+    private: boolean;
+}
+
+export type BroadcastMessage =
+    | liveChatMessage
+    | gameOver
+    | countdown
+    | countdownCancel
+    | roleUpdate
+    | roomPrivacyUpdate
+    | roleUpdateReadyStatus
+    ;
+
+/**
+ * @brief Represents a chat message in the game.
+ */
+export interface liveChatMessage {
+  type: "chat";
+  id: number;
+  from: string;
+  text: string;
+  time: number;
+}
+
+export interface gameOver {
+    type: "game_over";
+    canLeave: boolean;
+};
+
+export interface countdown {
+    type: "countdown";
+    remaining: number;
+}
+
+export interface countdownCancel {
+    type: "countdownCancel";
+}
+
+export interface roleUpdate {
+    type: "roleUpdate";
+    newPlayer: playerInfo;
+    gameState: Room["gameState"];
+    leaderId: number;
+    canStart: boolean;
+    readyStatus?: playerInfo["ready"];
+}
+
+export interface roleUpdateReadyStatus {
+    type: "roleUpdate";
+    gameState: Room["gameState"];
+    leaderId: number;
+}
+
+export interface roomPrivacyUpdate {
+    type: "roomPrivacyUpdate";
+    data: {
+        type: string;
+    };
+}
