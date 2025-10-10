@@ -30,9 +30,12 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
 
   // API query for user data
+  // "0" is assigned for unset userId
+  // only send out the API call if userId has been set
   const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: userId }),
-    [userId]
+    [userId],
+    userId !== 0
   );
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();

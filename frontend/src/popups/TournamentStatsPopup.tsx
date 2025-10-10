@@ -47,7 +47,8 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
     refetch: refetchStats,
   } = useApiQuery<TournamentStats>(
     () => getTournamentStatsRequest({ id: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API query for tournament history data
@@ -58,7 +59,8 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
     refetch: refetchHistory,
   } = useApiQuery<TournamentHistory[]>(
     () => getTournamentHistoryRequest({ id: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // TODO: Delete when API is integrated
@@ -99,7 +101,11 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
           <StatsBadge
             className="w-2/5"
             label={translate("tournaments_played")}
-            value={stats.completedTournaments !== 0 ? stats.completedTournaments : "-"}
+            value={
+              stats.completedTournaments !== 0
+                ? stats.completedTournaments
+                : "-"
+            }
           />
           <StatsBadge
             className="w-2/5"

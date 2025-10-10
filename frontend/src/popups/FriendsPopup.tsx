@@ -57,7 +57,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchFriends,
   } = useApiQuery<User[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API query for friend requests list
@@ -68,7 +69,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchRequests,
   } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API query for blocked users list
@@ -79,7 +81,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchBlocked,
   } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API mutation to add a friend
@@ -122,7 +125,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     const trimmed = friendId.trim();
 
-    // return if input is empty 
+    // return if input is empty
     if (trimmed === "") {
       setAddFriendError("Please enter a valid username");
       return;
