@@ -51,6 +51,11 @@ export class GameTeam {
         ),
       );
     }
+
+    if (this.game.teamSize === 1) {
+      	const paddleDistanceFromCenter = 400;
+      	this.playerPositions[0]!.x = paddleDistanceFromCenter * (this.team === Team.TEAM_LEFT ? -1 : 1);
+    }
   }
 
   getPaddles(): Padel[] {
@@ -183,6 +188,7 @@ export class PongGame {
 
   private lastFrameTime: number = performance.now();
   private ballSpawnCooldown = 0.5;
+  public teamSize!: number;
 
   public is2v2: boolean = false;
 
@@ -332,6 +338,10 @@ export class PongGame {
     ) as Camera;
 
     this.world.viewport.camera = this.world.camera;
+
+    if(this.teamSize === 1) {
+      this.world.camera.isFixed = true;
+    }
 
     this.teamLeft = new GameTeam(this, Team.TEAM_LEFT);
     this.teamRight = new GameTeam(this, Team.TEAM_RIGHT);
@@ -581,6 +591,8 @@ export class PongGame {
       settings.paddleSpeed ?? 1
     ];
 
+    
+
     console.log("incoming settings", settings);
     console.log("final settings", this.gameSettings);
   }
@@ -601,8 +613,12 @@ export class PongGame {
     isClient: boolean,
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
+    teamSize: number = 0
   ) {
     PongGame.globalId++;
+
+    this.teamSize = teamSize;
+    
 
     this.initSettings(incomingSettings);
     this.onGameEnd = onGameEnd; // callback when game ends

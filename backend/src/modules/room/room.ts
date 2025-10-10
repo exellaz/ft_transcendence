@@ -123,6 +123,7 @@ export function createRoom(
     (winner) => {
       roomEndGame(room, false, winner);
     },
+    teamSize
   );
 
   const room: Room = {
@@ -237,7 +238,6 @@ export function startRoomLoop(room: Room) {
 export function roomStartGame(room: Room) {
   if (!room.gameState.gameStarted) {
     room.startTime = new Date();
-    console.log(`room setting: ${JSON.stringify(room.setting)}`);
     // room.game.resetBall(room, "left");
   }
 }
