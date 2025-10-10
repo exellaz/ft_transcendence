@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket, { WebSocketServer } from "ws";
 import { tournaments, tournament } from "./tournament.routes";
 
-export interface TournamentPlayer {
+export interface TournamentPlayerWs {
     id: number;
     username: string;
     spriteUrl: string;
@@ -11,7 +11,7 @@ export interface TournamentPlayer {
 
 export interface TournamentLobby {
     tournamentId: number;
-    players: TournamentPlayer[];
+    players: TournamentPlayerWs[];
 }
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
@@ -42,7 +42,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         }
 
         //add player to the tournament if not already present
-        const exists = tournament.players.find((p: TournamentPlayer) => p.id === playerId);
+        const exists = tournament.players.find((p: TournamentPlayerWs) => p.id === playerId);
         if (!exists) {
             tournament.players.push({ id: playerId, username: playerName, spriteUrl: playerSprite, ready: false });
 
