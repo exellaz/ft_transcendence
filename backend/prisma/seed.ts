@@ -1,8 +1,10 @@
 import { FriendshipStatus, PrismaClient, RoundType, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { hashPassword } from "../src/modules/users/users.service";
+import fs, { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from "url";
+
 const prisma = new PrismaClient();
-
-
 
 interface SeedOptions {
   userCount: number;
@@ -13,9 +15,17 @@ interface SeedOptions {
 
 async function seed({ userCount, tournamentCount, playersPerTournament, matchesPerTournament }: SeedOptions) {
   await prisma.user.deleteMany();
+  await prisma.userSettings.deleteMany();
+  await prisma.friendship.deleteMany();
+  await prisma.blockedFriendship.deleteMany();
+  await prisma.friendChatMessage.deleteMany();
+  await prisma.tournament.deleteMany();
+  await prisma.tournamentMatch.deleteMany();
+  await prisma.tournamentPlayer.deleteMany();
+
   // reset the sequence manually (id start from 1)
   await prisma.$executeRawUnsafe(
-    `DELETE FROM sqlite_sequence WHERE name='users';`,
+    `DELETE FROM sqlite_sequence;`,
   );
   
   for (let i = 1; i <= userCount; i++) {
@@ -92,56 +102,66 @@ async function seed({ userCount, tournamentCount, playersPerTournament, matchesP
   console.log(
     `✅ Seeded ${acceptedFriendships.length * messagesPerFriendship} friend chat messages`,
   );
-  console.log(`🌱 Seeding ${tournamentCount} tournaments...`);
 
-  for (let t = 1; t <= tournamentCount; t++) {
-    const tournament = await prisma.tournament.create({
-      data: {
-        status: TournamentStatus.COMPLETED,
-      },
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const filePath = path.join(__dirname, 'mockTournamentData.json');
+  const raw = readFileSync(filePath, 'utf-8');
+  const data = JSON.parse(raw);
+  console.log(`🌱 Seeding ${data.tournaments.length} tournaments...`);
+
+  for (const tournamentData of data.tournaments) {
+    const tournament = await prisma.tournament.upsert({
+      where: { id: tournamentData.id },
+      update: { status: TournamentStatus.COMPLETED },
+      create: { id: tournamentData.id, status: TournamentStatus.COMPLETED }
     });
 
-    console.log(`🏆 Created Tournament ${tournament.id}`);
+    console.log(`🏆 Upserted Tournament ${tournament.id}`);
 
-    // Create players
-    const players:TournamentPlayer[] = [];
-    for (let p = 1; p <= playersPerTournament; p++) {
-      const player = await prisma.tournamentPlayer.create({
-        data: {
+    // Create Players
+    const players: TournamentPlayer[] = [];
+    for (const p of tournamentData.players) {
+      const player = await prisma.tournamentPlayer.upsert({
+        where: { id: p.id },
+        update: {
           tournamentId: tournament.id,
-          userId: p, // you could randomize this or link to a User table
-          ranking: p,
+          userId: p.userId,
+          ranking: p.ranking
         },
+        create: {
+          id: p.id,
+          tournamentId: tournament.id,
+          userId: p.userId,
+          ranking: p.ranking
+        }
       });
       players.push(player);
     }
 
-    console.log(`👥 Created ${players.length} players for tournament ${tournament.id}`);
+    console.log(`👥 Created ${players.length} players for Tournament ${tournament.id}`);
 
-    // Create matches
-    for (let m = 1; m <= matchesPerTournament; m++) {
-      // randomly select two different players
-      const [p1, p2] = getTwoDistinct(players);
+    // Create Matches
+    for (const m of tournamentData.matches) {
+      const p1 = players[m.player1Index - 1];
+      const p2 = players[m.player2Index - 1];
 
-      // random winner
-      const winner = Math.random() > 0.5 ? p1 : p2;
-      const player1Score = Math.floor(Math.random() * 10);
-      const player2Score = Math.floor(Math.random() * 10);
+      const winner = m.player1Score > m.player2Score ? p1 : p2;
 
       await prisma.tournamentMatch.create({
         data: {
           tournamentId: tournament.id,
-          round: randomRound(),
+          round: m.round,
           player1Id: p1.id,
           player2Id: p2.id,
           winnerId: winner.id,
-          player1Score,
-          player2Score,
-        },
+          player1Score: m.player1Score,
+          player2Score: m.player2Score
+        }
       });
     }
 
-    console.log(`⚔️ Created ${matchesPerTournament} matches for tournament ${tournament.id}`);
+    console.log(`⚔️ Created ${tournamentData.matches.length} matches for Tournament ${tournament.id}`);
   }
 
   console.log('✅ Seeding complete!');
