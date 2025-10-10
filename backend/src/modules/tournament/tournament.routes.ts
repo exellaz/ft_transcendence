@@ -1,4 +1,6 @@
-import fastify, { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import {
+  FastifyInstance,
+} from "fastify";
 import { generateRoomId } from "../room/room";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
@@ -88,28 +90,29 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         },
       },
     } satisfies Prisma.TournamentPlayerInclude;
-    
+
     type TournamentHistory = Prisma.TournamentPlayerGetPayload<{
       include: typeof tournamentHistoryInclude;
     }>;
-    
-    const tournaments: TournamentHistory[] = await app.db.tournamentPlayer.findMany({
-      where: {
-        userId: userId,
-        tournament: { status: 'COMPLETED' },
-      },
-      include: tournamentHistoryInclude,
-    });
 
-    const formatted = tournaments.map(tp => {
-      const matches = [...tp.matchesAsP1, ...tp.matchesAsP2].map(m => {
+    const tournaments: TournamentHistory[] =
+      await app.db.tournamentPlayer.findMany({
+        where: {
+          userId: userId,
+          tournament: { status: "COMPLETED" },
+        },
+        include: tournamentHistoryInclude,
+      });
+
+    const formatted = tournaments.map((tp) => {
+      const matches = [...tp.matchesAsP1, ...tp.matchesAsP2].map((m) => {
         const isPlayer1 = m.player1Id === tp.id;
         const opponent = isPlayer1 ? m.player2 : m.player1;
-    
+
         const myScore = isPlayer1 ? m.player1Score : m.player2Score;
         const opponentScore = isPlayer1 ? m.player2Score : m.player1Score;
         const result = m.winnerId === tp.id ? "win" : "lose";
-    
+
         return {
           round: m.round,
           opponentUsername: opponent.user.username,
@@ -117,7 +120,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
           result,
         };
       });
-    
+
       return {
         tournamentId: tp.tournamentId,
         date: tp.tournament.createdAt.toISOString().split("T")[0],
@@ -125,25 +128,25 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         matches,
       };
     });
-    
+
     return ok(formatted);
   });
-  
 
   // GET /users/:id/tournament-stats
   app.get("/users/:id/tournament-stats", async (request, response) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
-    const completedTournaments: TournamentPlayer[] = await app.db.tournamentPlayer.findMany({
-      where: {
-        userId: userId,
-        tournament: { status: TournamentStatus.COMPLETED },
-      },
-      select: { ranking: true },
-    });
+    const completedTournaments: TournamentPlayer[] =
+      await app.db.tournamentPlayer.findMany({
+        where: {
+          userId: userId,
+          tournament: { status: TournamentStatus.COMPLETED },
+        },
+        select: { ranking: true },
+      });
 
-    const rankings = completedTournaments.map(t => t.ranking);
+    const rankings = completedTournaments.map((t) => t.ranking);
 
     // use prisma to get average ranking
     const stats = await app.db.tournamentPlayer.aggregate({
@@ -155,14 +158,13 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     });
 
     const tournamentStats = {
-      firstPlace: rankings.filter(r => r === 1).length,
-      secondPlace: rankings.filter(r => r === 2).length,
-      thirdPlace: rankings.filter(r => r === 3).length,
+      firstPlace: rankings.filter((r) => r === 1).length,
+      secondPlace: rankings.filter((r) => r === 2).length,
+      thirdPlace: rankings.filter((r) => r === 3).length,
       completedTournaments: rankings.length,
-      averageRanking: stats._avg.ranking // if user hasn't join tournaments, avgRanking = null
+      averageRanking: stats._avg.ranking, // if user hasn't join tournaments, avgRanking = null
     };
 
     return ok(tournamentStats);
   });
-
 }
