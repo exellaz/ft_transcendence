@@ -15,7 +15,6 @@ import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
-import type { GameSettings } from "../../popups/GameSettingsPopup";
 
 // hooks
 import { useRoomWebSocket } from "../../lib/room-websocket";
@@ -33,12 +32,6 @@ const DoublesRoomView: React.FC = () => {
   const translate = (key: string) => t(`DoublesRoomView.${key}`);
   const [players, setPlayers] = useState<WaitingRoomPlayer[]>([]);
   const [showLeaveRoom, setShowLeaveRoom] = useState(false);
-  const [gameSettings, setGameSettings] = useState<GameSettings>({
-    map: "stadium",
-    ballSpeed: 2,
-    ballSize: 2,
-    paddleSpeed: 2,
-  });
   const navigate = useNavigate();
   const [roomInfo, setRoomInfo] = useState<{
     name: string;
@@ -186,7 +179,7 @@ const DoublesRoomView: React.FC = () => {
       {!roomId ? (
         <h1>no room id</h1>
       ) : (
-        <RoomLayout gameSettings={gameSettings} onGameSettingsChange={setGameSettings} isLeader={isLeader}>
+        <RoomLayout isLeader={isLeader}>
           <div className="relative w-full flex justify-center">
             <Card size="large">
               {/* show countdown */}

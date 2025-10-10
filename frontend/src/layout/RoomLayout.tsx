@@ -1,21 +1,19 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "@/context/UserProvider";
+import { useUser } from "../context/UserProvider";
 
 import Background from "../components/Background";
 import Button from "../components/Button";
 
 import FriendsPopup from "../popups/FriendsPopup";
-import GameSettingsPopup, { type GameSettings } from "../popups/GameSettingsPopup";
+import RoomGameSettingsPopup from "../popups/RoomGameSettingsPopup";
 
 interface RoomLayoutProps {
-  gameSettings: GameSettings;
-  onGameSettingsChange: (settings: GameSettings) => void;
   children: React.ReactNode;
   isLeader: boolean | null;
 }
 
-const RoomLayout: React.FC<RoomLayoutProps> = ({ gameSettings, onGameSettingsChange, children, isLeader }) => {
+const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`RoomLayout.${key}`);
   const [showGameSettings, setShowGameSettings] = useState(false);
@@ -29,7 +27,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ gameSettings, onGameSettingsCha
 
   return (
     <Background>
-      <div className="absolute top-10 right-10 flex-col-center gap-6">
+      <div className="absolute top-10 right-10 flex-col-center gap-6 z-20">
         {isLeader === true && (
           <Button variant="profile" onClick={() => setShowGameSettings(true)}>
             {translate("game_settings")}
@@ -40,11 +38,9 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ gameSettings, onGameSettingsCha
         </Button>
       </div>
       {children}
-      <GameSettingsPopup
+      <RoomGameSettingsPopup
         open={showGameSettings}
         onClose={() => setShowGameSettings(false)}
-        settings={gameSettings}
-        onChange={onGameSettingsChange}
         roomId={roomId}
       />
       <FriendsPopup
