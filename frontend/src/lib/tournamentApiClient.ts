@@ -1,15 +1,15 @@
-import type { 
-    GetTournamentHistoryRequest, 
-    GetTournamentHistoryResponse, 
-    GetTournamentStatsRequest,
-    GetTournamentStatsResponse
+import type {
+  GetTournamentHistoryRequest,
+  GetTournamentHistoryResponse,
+  GetTournamentStatsRequest,
+  GetTournamentStatsResponse,
 } from "@/types/tournamentApi";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
 
 // GET /users/:id/tournament-history  - tournament history + matches
 export async function getTournamentHistoryRequest({
-  id
+  id,
 }: GetTournamentHistoryRequest): Promise<GetTournamentHistoryResponse> {
   const res = await fetch(`${API_BASE}/users/${id}/tournament-history`, {
     method: "GET",
@@ -20,7 +20,7 @@ export async function getTournamentHistoryRequest({
 
 // GET /users/:id/tournament-stats
 export async function getTournamentStatsRequest({
-    id
+  id,
 }: GetTournamentStatsRequest): Promise<GetTournamentStatsResponse> {
   const res = await fetch(`${API_BASE}/users/${id}/tournament-stats`, {
     method: "GET",
