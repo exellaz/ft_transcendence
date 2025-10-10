@@ -15,19 +15,19 @@ import { BroadcastMessage, WSContext, playerInfo, Room } from "./interface";
  */
 export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WSContext | null {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-  const clientId = Number(url.searchParams.get("id"));
-  const roomId = Number(url.searchParams.get("room"));
+  const clientId = url.searchParams.get("id");
+  const roomId = url.searchParams.get("room");
   const side = url.searchParams.get("side") as "left" | "right" | null;
   const playerName = url.searchParams.get("name");
   const playerSprite = url.searchParams.get("sprite");
 
-  if (isNaN(clientId)) {
+  if (!clientId) {
     // console.log("Invalid clientId:", clientId); ////debug
     socket.close(1008, "Client id is required");
     return null;
   }
 
-  if (isNaN(roomId)) {
+  if (!roomId) {
     // console.log("Invalid roomId:", roomId); ////debug
     socket.close(1008, "Room id is required");
     return null;
@@ -51,7 +51,7 @@ export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WS
     return null;
   }
 
-  const room = rooms.get(roomId);
+  const room = rooms.get(parseInt(roomId));
   if (!room) {
     // console.log("Room not found:", roomId); ////debug
     socket.close(1008, "Room not found");
@@ -59,8 +59,8 @@ export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WS
   }
 
   return {
-    clientId: Number(clientId),
-    roomId: Number(roomId),
+    clientId: parseInt(clientId),
+    roomId: parseInt(roomId),
     room,
     side: side ?? undefined,
     playerName,

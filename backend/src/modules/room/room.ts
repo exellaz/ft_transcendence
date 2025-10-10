@@ -4,11 +4,11 @@ import { PongGame } from "@shared/game/pong.ts";
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
-  ballSpeed: 0,
-  ballSize: 2,
-  paddleSpeed: 0,
+  ballSpeed: 1,
+  ballSize: 1,
+  paddleSpeed: 1,
   scorePoint: 1,
-  map: "mansion",
+  map: "stadium",
 };
 
 /**

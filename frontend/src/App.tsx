@@ -53,7 +53,7 @@ const App: React.FC = () => {
             <Route path="/custom" element={<CustomModeView />} />
             <Route path="/local-game" element={<LocalGameView />} />
             <Route path="/choose-sprite" element={<ChooseSpriteView />} />
-            <Route path="/tournament" element={<TournamentLobbyView />} />
+            <Route path="/tournament/:tournamentId" element={<TournamentLobbyView />} />
             <Route path="/match" element={<MatchView />} />
             <Route path="/game" element={<GameView />} />
             <Route path="/advance" element={<AdvanceView />} />

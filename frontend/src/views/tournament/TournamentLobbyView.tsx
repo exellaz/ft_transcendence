@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  mockWaitingTournamentPlayers,
-  mockTournamentLiveChat,
-} from "../../data/mockUsers";
+import { mockWaitingTournamentPlayers } from "../../data/mockUsers";
 import type {
   WaitingTournamentPlayer,
   LiveChatMessage,
 } from "../../types/apiInterfaces";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { useUser } from "../../context/UserProvider";
+import { getUserById } from "../../lib/usersApiClient";
+import type { User } from "../../types/usersApi";
+import { useTournamentWebSocket } from "../../lib/tournament-websocket";
 import { formatTimestamp } from "../../utils/date";
 
 import Background from "../../components/Background";
@@ -17,7 +18,6 @@ import Card from "../../components/Card";
 import LiveChat from "../../components/LiveChat";
 import ReadyPlayers from "../../components/ReadyPlayers";
 import TournamentHeader from "../../components/TournamentHeader";
-
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 
 const TournamentLobbyView: React.FC = () => {
@@ -30,6 +30,42 @@ const TournamentLobbyView: React.FC = () => {
     "quarterfinals",
   );
   const [showQuitTournament, setShowQuitTournament] = useState(false);
+  const navigate = useNavigate();
+  const { tournamentId: paramTournamentId } = useParams();
+  const tournamentId = parseInt(sessionStorage.getItem("tournamentId") || "");
+  console.log("----------------------------------------------------------------Tournament ID:", tournamentId);
+  const { user } = useUser();
+  const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
+  console.log("User info in TournamentLobbyView:", userinfo);
+
+  // Fetch user info when the component mounts
+  React.useEffect(() => {
+    if (!user) return; // Ensure `user` is available
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getUserById({ id: Number(user.id) }); // Call the API
+        if (response.success && response.data) {
+          console.log("===================================================Fetched user info:", response.data);
+          setUserinfo(response.data); // Store the user info
+        } else {
+          console.log("Failed to fetch user info"); // Handle API error
+        }
+      } catch (err) {
+        console.error("Error fetching user info:", err);
+        console.error("An error occurred while fetching user info"); // Handle fetch error
+      }
+    };
+
+    fetchUserInfo();
+  }, [user]);
+
+  //update session storage when paramTournamentId change
+  React.useEffect(() => {
+    if (paramTournamentId) {
+      sessionStorage.setItem("tournamentId", paramTournamentId);
+    }
+  }, [paramTournamentId]);
 
   // TODO: Fetch real data based on tournamentId
   // React.useEffect(() => {
@@ -43,10 +79,37 @@ const TournamentLobbyView: React.FC = () => {
   // }, [tournamentId]);
 
   // TODO: Remove mock data when integrating real API
+//  React.useEffect(() => {
+//    setPlayers(mockWaitingTournamentPlayers["t1"]);
+//    //setChatMessages(mockTournamentLiveChat["t1"]);
+//  }, []);
+
+  //need websocket to update players when a new player joins
+    //React.useEffect(() => {
+    //    setPlayers([
+    //        { id: userinfo?.id || 0, username: userinfo?.username || "Guest", spriteUrl: userinfo?.avatarUrl || "", ready: false },
+    //    ]);
+    //}, [userinfo]);
+  const {
+    players: currentPlayer,
+    ready,
+    started,
+    startTournament,
+    toggleReady,
+    onleave
+  } = useTournamentWebSocket({
+    tournamentId,
+    player: {
+      id: userinfo?.id || -1,
+      username: userinfo?.username || "",
+      avatarUrl: userinfo?.avatarUrl || "",
+    }
+  });
+  console.log ("Current players from WebSocket:", currentPlayer);
+
   React.useEffect(() => {
-    setPlayers(mockWaitingTournamentPlayers["t1"]);
-    setChatMessages(mockTournamentLiveChat["t1"]);
-  }, []);
+    setPlayers(currentPlayer);
+  }, [currentPlayer]);
 
   // todo: Replace 1 with current user id
   function handleSendMessage() {
@@ -75,7 +138,9 @@ const TournamentLobbyView: React.FC = () => {
             </TournamentHeader>
             <ReadyPlayers players={players} />
             <div className="flex-row-center gap-6">
-              <Button variant="green">{translate("ready")}</Button>
+              <Button variant="green" onClick={toggleReady}>
+                {ready ? translate("Unready") : translate("ready")}
+              </Button>
               {stage === "quarterfinals" && (
                 <Button
                   variant="red"
@@ -99,7 +164,10 @@ const TournamentLobbyView: React.FC = () => {
         text={translate("quit_confirmation")}
         open={showQuitTournament}
         onClose={() => setShowQuitTournament(false)}
-        redirectPath="/main-menu"
+        onConfirm={() => {
+          onleave();
+          navigate("/main-menu");
+        }}
       />
     </Background>
   );

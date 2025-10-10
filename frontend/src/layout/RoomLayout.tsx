@@ -5,7 +5,7 @@ import Background from "../components/Background";
 import Button from "../components/Button";
 
 import GameSettingsPopup from "../popups/GameSettingsPopup";
-import InviteFriendsPopup from "../popups/InviteFriendsPopup";
+import FriendsPopup from "../popups/FriendsPopup";
 
 interface RoomLayoutProps {
   children: React.ReactNode;
@@ -39,7 +39,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
         onClose={() => setShowGameSettings(false)}
         roomId={roomId}
       />
-      <InviteFriendsPopup
+      <FriendsPopup
         open={showInviteFriends}
         onClose={() => setShowInviteFriends(false)}
       />

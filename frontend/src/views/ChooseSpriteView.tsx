@@ -4,12 +4,15 @@ import {
   createTournamentLobby,
   fetchTournaments,
 } from "../lib/requestBackend.api";
+import type { User } from "@/types/usersApi";
+import { useUser } from "@/context/UserProvider";
 
 import Background from "../components/Background";
 import Card from "../components/Card";
 import ChooseSpriteContents from "../components/ChooseSpriteContents";
+import { updateUserById, updateUserSettingsById } from "@/lib/usersApiClient";
 
-async function handleQuickJoinTournament(user: any, navigate: any) {
+async function handleJoinTournament(user: User | null, navigate: any) {
   if (!user) return;
 
   // 1. Fetch existing tournaments
@@ -31,23 +34,25 @@ async function handleQuickJoinTournament(user: any, navigate: any) {
 
   // 4. "Join" happens by adding current user to the tournament.players array
   //    You can simulate this on frontend until you wire backend
-  if (!tournament.players.some((p: any) => p.id === user.id)) {
-    tournament.players.push({
-      id: user.id,
-      name: user.name,
-      sprite: user.sprite,
-    });
-  }
+//  if (!tournament.players.some((p: User) => p.id === user.id)) {
+//    tournament.players.push({
+//      id: user.id,
+//      name: user.username,
+//      sprite: user.avatarUrl,
+//    });
+//  }
 
   // 5. Navigate into the tournament lobby
-  navigate(`/tournament/${tournament.id || tournament.tournamentId}`, {
-    state: { tournament, player: user },
+  navigate(`/tournament/${tournament.id}`, {
+    state: { tournament },
   });
 }
 
 const ChooseSpriteView: React.FC = () => {
   const [selectedSprite, setSelectedSprite] = useState<string>("");
   const navigate = useNavigate();
+  const { user } = useUser();
+
   return (
     <Background>
       <Card size="wide">
@@ -55,8 +60,31 @@ const ChooseSpriteView: React.FC = () => {
           selected={selectedSprite}
           onSelectSprite={setSelectedSprite}
           onConfirm={async () => {
-            alert(`Confirmed sprite selection: ${selectedSprite}`);
-            navigate("/tournament");
+            if (!selectedSprite) {
+              alert("Please choose a sprite before continuing");
+              return;
+            }
+
+            // attach the chosen sprite to the user
+            if (!user || typeof user.id !== "number") {
+              alert("User information is incomplete");
+              return;
+            }
+
+            //update user avatarUrl
+            const player: User = {
+              ...user,
+              avatarUrl: selectedSprite,
+            };
+
+            //update the user avatar in database
+            updateUserById(player).catch((err) => {
+                console.error("Failed to update user avatar:", err);
+            });
+            console.log("Chosen sprite:", selectedSprite, "for user:", player);
+
+            //navigate to the tournament lobby
+            await handleJoinTournament(player, navigate);
           }}
         />
       </Card>

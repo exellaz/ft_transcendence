@@ -6,15 +6,17 @@ import Avatar from "../components/Avatar";
 import ProfilePopup from "../popups/ProfilePopup";
 import type { User } from "@/types/usersApi";
 import type { playerInfo } from "../../../backend/src/utils/interface";
+import type { WaitingTournamentPlayer } from "@/types/apiInterfaces";
 
 interface ReadyPlayersProps {
-  players: (User & playerInfo)[];
+  players: (WaitingTournamentPlayer)[];
 }
 
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyPlayers.${key}`);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  console.log("Players in ReadyPlayers component:", players);
 
   return (
     <>

@@ -13,6 +13,7 @@ import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
+import tournamentWsRoute from "./modules/tournament/tournament.ws";
 
 const app = Fastify({
   //  logger: true
@@ -30,6 +31,7 @@ app.register(authRoutes);
 app.register(friendshipRoutes);
 app.register(blockedFriendshipRoutes);
 app.register(tournamentRoutes);
+app.register(tournamentWsRoute);
 app.register(gameWsRoute);
 app.register(roomWsRoutes);
 app.register(liveChatRoutes);

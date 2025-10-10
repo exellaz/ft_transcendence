@@ -147,6 +147,12 @@ export async function gameSetting(
   }
 }
 
+/**
+ * @brief create a tournament lobby
+ * @param name name of the tournament
+ * @return tournament details to client in JSON format
+ * @note it also sends the tournament details to the backend
+ */
 export async function createTournamentLobby(name: string) {
   try {
     const res = await fetch(`${API_URL}/create-tournament`, {
@@ -162,9 +168,13 @@ export async function createTournamentLobby(name: string) {
   }
 }
 
+/**
+ * @brief fetch the list of available tournaments from the backend
+ * @return list of tournaments to client in JSON format
+*/
 export async function fetchTournaments() {
   try {
-    const res = await fetch(`${API_URL}/tournaments`);
+    const res = await fetch(`${API_URL}/list-tournaments`);
     if (!res.ok) throw new Error("Failed to fetch tournaments");
     return await res.json();
   } catch (error) {
