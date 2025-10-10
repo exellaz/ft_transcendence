@@ -1,6 +1,6 @@
 export function formatTimestamp(date: Date | string) {
   const d = new Date(date);
-  const pad = (n: number) => n.toString().padStart(2, '0');
+  const pad = (n: number) => n.toString().padStart(2, "0");
   const year = d.getFullYear();
   const month = pad(d.getMonth() + 1);
   const day = pad(d.getDate());
@@ -23,7 +23,7 @@ export function formatTimestamp(date: Date | string) {
 
 export function formatDate(date: Date | string) {
   const d = new Date(date);
-  const pad = (n: number) => n.toString().padStart(2, '0');
+  const pad = (n: number) => n.toString().padStart(2, "0");
   const year = d.getFullYear();
   // JavaScript's getMonth() is zero-indexed
   const month = pad(d.getMonth() + 1);

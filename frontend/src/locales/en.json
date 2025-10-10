@@ -28,14 +28,24 @@
     "create_singles_game": "Create a singles game?",
     "create_doubles_game": "Create a doubles game?",
     "join_singles_game": "Join a singles game?",
-    "join_doubles_game": "Join a doubles game?"
+    "join_doubles_game": "Join a doubles game?",
+    "room_not_found": "Room not found",
+    "room_is_full": "Room is full",
+    "close": "close"
   },
   "DoublesRoomView": {
     "doubles_room": "Doubles Room",
     "room_id": "Room ID",
     "ready": "Ready",
+    "unready": "Unready",
+    "start": "Start",
+    "game_start": "Game Start!",
     "leave_room": "Leave Room",
-    "leave_confirmation": "Are you sure you want to leave the room?"
+    "leave_confirmation": "Are you sure you want to leave the room?",
+    "room_is_full": "Room is full",
+    "room_not_found": "Room not found",
+    "unknown_error": "Unknown error",
+    "close": "close"
   },
   "LocalGameView": {
     "change_sprite": "Change Sprite",
@@ -91,8 +101,14 @@
     "singles_room": "Singles Room",
     "room_id": "Room ID",
     "ready": "Ready",
+    "unready": "Unready",
+    "start": "Start",
+    "game_start": "Game Start!",
     "leave_room": "Leave Room",
-    "leave_confirmation": "Are you sure you want to leave the room?"
+    "leave_confirmation": "Are you sure you want to leave the room?",
+    "room_is_full": "Room is full",
+    "unknown_error": "未知錯誤",
+    "close": "close"
   },
   "TournamentLobbyView": {
     "quarterfinals": "Quarterfinals",

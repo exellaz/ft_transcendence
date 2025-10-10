@@ -1,0 +1,35 @@
+meta {
+  name: update-room-setting
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/room/{{roomId}}/game-setting
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+    {
+        "ballSpeed": 6,
+        "ballSize": 12,
+        "paddleSpeed": 18,
+        "scorePoint": 15,
+        "map": "mansion"
+    }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.setting.ballSpeed: gte 0
+  res.body.setting.ballSize: gte 0
+  res.body.setting.paddleSpeed: gte 0
+  res.body.setting.scorePoint: gte 0
+  res.body.setting.map: isNotEmpty
+}

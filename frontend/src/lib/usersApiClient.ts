@@ -10,14 +10,14 @@ import type {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
-  RegisterResponse
+  RegisterResponse,
 } from "../types/usersApi";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
 
 // POST /auth/register
 export async function register(
-  payload: RegisterRequest
+  payload: RegisterRequest,
 ): Promise<RegisterResponse> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
@@ -26,12 +26,10 @@ export async function register(
   });
 
   return res.json();
-};
+}
 
 // POST /auth/login
-export async function login(
-  payload: LoginRequest
-): Promise<LoginResponse> {
+export async function login(payload: LoginRequest): Promise<LoginResponse> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -39,7 +37,7 @@ export async function login(
   });
 
   return res.json();
-};
+}
 
 // GET /users/:id
 export async function getUserById({
@@ -55,7 +53,7 @@ export async function getUserById({
 
 // PATCH /users/:id
 export async function updateUserById(
-  payload: UpdateUserRequest
+  payload: UpdateUserRequest,
 ): Promise<UpdateUserResponse> {
   const { id, ...data } = payload;
   const res = await fetch(`${API_BASE}/users/${id}`, {
@@ -81,7 +79,7 @@ export async function getUserSettingsById({
 
 // PATCH /users/:id/settings
 export async function updateUserSettingsById(
-  payload: UpdateUserSettingsRequest
+  payload: UpdateUserSettingsRequest,
 ): Promise<UpdateUserSettingsResponse> {
   const { id, ...data } = payload;
   const res = await fetch(`${API_BASE}/users/${id}/settings`, {

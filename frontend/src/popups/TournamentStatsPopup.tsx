@@ -38,7 +38,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   userId = 0;
   function getTournamentStatsById(
     userId: number,
-    data: TournamentStats[]
+    data: TournamentStats[],
   ): TournamentStats | undefined {
     return data.find((user) => user.id === userId);
   }
@@ -160,10 +160,10 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
                                   m.match === "QF"
                                     ? translate("quarterfinals")
                                     : m.match === "SF"
-                                    ? translate("semifinals")
-                                    : m.match === "F"
-                                    ? translate("finals")
-                                    : ""
+                                      ? translate("semifinals")
+                                      : m.match === "F"
+                                        ? translate("finals")
+                                        : ""
                                 }
                               >
                                 {m.match}

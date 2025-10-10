@@ -41,7 +41,7 @@ interface MatchDetail {
 }
 
 // Social features API interfaces
-// - SocialHub.tsx, Messaging.tsx, ProfileContents.tsx
+// - Messaging.tsx, ProfileContents.tsx
 export interface FriendBasic {
   id: number;
   avatarUrl: string;
@@ -99,6 +99,7 @@ export interface WaitingTournamentPlayer {
 // Chat message in tournament lobby
 export interface LiveChatMessage {
   id: number;
+  from: string;
   text: string;
   timestamp: string; // ISO string or formatted
 }

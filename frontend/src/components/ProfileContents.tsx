@@ -27,7 +27,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
   // TODO: Delete when API is integrated
   function getProfileById(
     userId: number,
-    data: Profile[]
+    data: Profile[],
   ): Profile | undefined {
     return data.find((user) => user.id === userId);
   }

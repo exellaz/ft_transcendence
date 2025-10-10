@@ -6,7 +6,7 @@ export interface AnimatedSpriteProps {
   speed?: number;
   delay?: number;
   horizontalPosition: number; // 0-100 (percentage from left)
-  mirrorSprite?: boolean
+  mirrorSprite?: boolean;
 }
 
 // Animation loop using requestAnimationFrame
@@ -24,14 +24,14 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
   speed = 5,
   delay = 0,
   horizontalPosition,
-  mirrorSprite = false
+  mirrorSprite = false,
 }) => {
   // 1 = down, -1 = up
   // Randomize starting direction and starting position (0 to window height)
   const [sprite, setSprite] = useState(() => ({
     pos: Math.random() * (window.innerHeight - size),
     dir: Math.random() > 0.5 ? 1 : -1,
-  })); 
+  }));
 
   useEffect(() => {
     const startTime = Date.now() + delay;
@@ -80,7 +80,7 @@ const AnimatedSprite: React.FC<AnimatedSpriteProps> = ({
         height: size,
         left: `${horizontalPosition}%`,
         top: `${sprite.pos}px`,
-        transform: `translateX(-50%) ${mirrorSprite ? 'scaleX(-1)' : ''}` // Center horizontally
+        transform: `translateX(-50%) ${mirrorSprite ? "scaleX(-1)" : ""}`, // Center horizontally
       }}
     />
   );

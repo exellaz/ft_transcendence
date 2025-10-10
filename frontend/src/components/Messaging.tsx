@@ -26,19 +26,19 @@ const Messaging: React.FC<MessagingProps> = ({
 
   // TODO: Fetch real data based on userId
   // useEffect(() => {
-    //   // Fetch messages between user and friend
-    //   fetch(`/api/messages?userId=${userId}&friendId=${friendId}`)
-    //     .then((res) => res.json())
-    //     .then(setFriend);
-    // }, [friendId, userId]);
+  //   // Fetch messages between user and friend
+  //   fetch(`/api/messages?userId=${userId}&friendId=${friendId}`)
+  //     .then((res) => res.json())
+  //     .then(setFriend);
+  // }, [friendId, userId]);
 
   // const userId = useUser().user?.id;
-    
+
   // TODO: Delete when API is integrated
   const userId = 0;
   function getFriendMessagingById(
     friendId: number,
-    data: FriendMessaging[]
+    data: FriendMessaging[],
   ): FriendMessaging | undefined {
     return data.find((friend) => friend.id === friendId);
   }
@@ -62,9 +62,7 @@ const Messaging: React.FC<MessagingProps> = ({
         {/* Status */}
         <span
           className={`rounded-full text-white text-sm font-semibold ml-auto px-4 py-2 ${
-            friendBasic.online
-              ? "bg-green-500"
-              : "bg-red-500"
+            friendBasic.online ? "bg-green-500" : "bg-red-500"
           }`}
         >
           {friendBasic.online ? translate("online") : translate("offline")}

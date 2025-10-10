@@ -1,6 +1,6 @@
 export const validateUsername = (
   username: string,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): { isValid: boolean; error?: string } => {
   if (!username.trim()) {
     return { isValid: false, error: t("common.username_required") };

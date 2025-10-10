@@ -12,7 +12,7 @@ const Avatar: React.FC<AvatarProps> = ({
   src,
   alt = "Avatar",
   size = 80,
-  className
+  className,
 }) => (
   <div
     className={`rounded-full bg-white overflow-hidden ${className}`}

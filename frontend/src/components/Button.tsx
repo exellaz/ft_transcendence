@@ -15,7 +15,7 @@ interface ButtonProps {
     | "profile"
     | "dropdown"
     | "send"
-    | "mapSelector"
+    | "mapSelector";
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
@@ -45,7 +45,7 @@ const variantClasses: Record<string, string> = {
   profile: `w-60 rounded-full text-xl ${padding} ${yellow}`,
   dropdown: `w-48 border border-gray-400 rounded ${padding} ${white}`,
   send: `rounded px-4 py-2 ${yellow}`,
-  mapSelector: `w-12 h-12 rounded-full text-6xl pb-4 flex-row-center ${brown}`
+  mapSelector: `w-12 h-12 rounded-full text-6xl pb-4 flex-row-center ${brown}`,
 };
 
 const Button: React.FC<ButtonProps> = ({

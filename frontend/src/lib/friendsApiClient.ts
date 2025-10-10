@@ -1,112 +1,138 @@
 import type {
-	CreateBlockedFriendshipRequest,
-	CreateBlockedFriendshipResponse,
-	CreateFriendshipRequest,
-	CreateFriendshipResponse,
-	DeleteBlockedFriendshipRequest,
-	DeleteBlockedFriendshipResponse,
-	DeleteFriendshipRequest,
-	DeleteFriendshipResponse,
-	GetAcceptedFriendshipsRequest,
-	GetAcceptedFriendshipsResponse,
-	GetBlockedFriendshipsRequest,
-	GetBlockedFriendshipsResponse,
-	GetPendingFriendshipsRequest,
-	GetPendingFriendshipsResponse,
-	UpdateFriendshipRequest,
-	UpdateFriendshipResponse
+  CreateBlockedFriendshipRequest,
+  CreateBlockedFriendshipResponse,
+  CreateFriendshipRequest,
+  CreateFriendshipResponse,
+  DeleteBlockedFriendshipRequest,
+  DeleteBlockedFriendshipResponse,
+  DeleteFriendshipRequest,
+  DeleteFriendshipResponse,
+  GetAcceptedFriendshipsRequest,
+  GetAcceptedFriendshipsResponse,
+  GetAllFriendChatMessagesRequest,
+  GetAllFriendChatMessagesResponse,
+  GetBlockedFriendshipsRequest,
+  GetBlockedFriendshipsResponse,
+  GetPendingFriendshipsRequest,
+  GetPendingFriendshipsResponse,
+  UpdateFriendshipRequest,
+  UpdateFriendshipResponse,
 } from "../types/friendsApi";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
-export async function getPendingFriendshipsByUserId({ userId }: GetPendingFriendshipsRequest): Promise<GetPendingFriendshipsResponse> {
-	const res = await fetch(`${API_BASE}/friendships/${userId}/pending`, {
-		method: "GET",
-	});
+export async function getPendingFriendshipsByUserId({
+  userId,
+}: GetPendingFriendshipsRequest): Promise<GetPendingFriendshipsResponse> {
+  const res = await fetch(`${API_BASE}/friendships/${userId}/pending`, {
+    method: "GET",
+  });
 
-	return res.json();
+  return res.json();
 }
 
 // GET /friendships/:userId/accepted
-export async function getAcceptedFriendshipsByUserId({ userId }: GetAcceptedFriendshipsRequest): Promise<GetAcceptedFriendshipsResponse> {
-	const res = await fetch(`${API_BASE}/friendships/${userId}/accepted`, {
-		method: "GET",
-	});
+export async function getAcceptedFriendshipsByUserId({
+  userId,
+}: GetAcceptedFriendshipsRequest): Promise<GetAcceptedFriendshipsResponse> {
+  const res = await fetch(`${API_BASE}/friendships/${userId}/accepted`, {
+    method: "GET",
+  });
 
-	return res.json();
+  return res.json();
 }
 
 // POST /friendships
 export async function createFriendship(
-	payload: CreateFriendshipRequest
-	): Promise<CreateFriendshipResponse> {
-	const res = await fetch(`${API_BASE}/friendships`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload),
-	});
+  payload: CreateFriendshipRequest,
+): Promise<CreateFriendshipResponse> {
+  const res = await fetch(`${API_BASE}/friendships`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-	return res.json();
+  return res.json();
 }
 
 // PATCH /friendships/:requesterId/:accepterId
 export async function updateFriendship(
-	payload: UpdateFriendshipRequest
+  payload: UpdateFriendshipRequest,
 ): Promise<UpdateFriendshipResponse> {
+  const { requesterId, accepterId, ...data } = payload;
+  const res = await fetch(
+    `${API_BASE}/friendships/${requesterId}/${accepterId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    },
+  );
 
-	const {requesterId, accepterId, ...data } = payload
-	const res = await fetch(`${API_BASE}/friendships/${requesterId}/${accepterId}`, {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(data),
-	});
-
-	return res.json();
+  return res.json();
 }
 
-
 // DELETE /friendships/:requesterId/:accepterId
-export async function deleteFriendship(
-	{ requesterId, accepterId }: DeleteFriendshipRequest
-): Promise<DeleteFriendshipResponse> {
+export async function deleteFriendship({
+  requesterId,
+  accepterId,
+}: DeleteFriendshipRequest): Promise<DeleteFriendshipResponse> {
+  const res = await fetch(
+    `${API_BASE}/friendships/${requesterId}/${accepterId}`,
+    {
+      method: "DELETE",
+    },
+  );
 
-	const res = await fetch(`${API_BASE}/friendships/${requesterId}/${accepterId}`, {
-		method: "DELETE",
-	});
-
-	return res.json();
+  return res.json();
 }
 
 // GET /blockedFriendships/:userId  (get all blocked friends by user)
-export async function getBlockedFriendshipsByUserId({ userId }: GetBlockedFriendshipsRequest): Promise<GetBlockedFriendshipsResponse> {
-	const res = await fetch(`${API_BASE}/blockedFriendships/${userId}`, {
-		method: "GET",
-	});
+export async function getBlockedFriendshipsByUserId({
+  userId,
+}: GetBlockedFriendshipsRequest): Promise<GetBlockedFriendshipsResponse> {
+  const res = await fetch(`${API_BASE}/blockedFriendships/${userId}`, {
+    method: "GET",
+  });
 
-	return res.json();
+  return res.json();
 }
 
 // POST /blockedFriendships
 export async function createBlockedFriendship(
-	payload: CreateBlockedFriendshipRequest
-	): Promise<CreateBlockedFriendshipResponse> {
-	const res = await fetch(`${API_BASE}/blockedFriendships`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(payload),
-	});
+  payload: CreateBlockedFriendshipRequest,
+): Promise<CreateBlockedFriendshipResponse> {
+  const res = await fetch(`${API_BASE}/blockedFriendships`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
-	return res.json();
+  return res.json();
 }
 // DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
-export async function deleteBlockedFriendship(
-	{ blockerId, blockedId }: DeleteBlockedFriendshipRequest
-): Promise<DeleteBlockedFriendshipResponse> {
+export async function deleteBlockedFriendship({
+  blockerId,
+  blockedId,
+}: DeleteBlockedFriendshipRequest): Promise<DeleteBlockedFriendshipResponse> {
+  const res = await fetch(
+    `${API_BASE}/blockedFriendships/${blockerId}/${blockedId}`,
+    {
+      method: "DELETE",
+    },
+  );
 
-	const res = await fetch(`${API_BASE}/blockedFriendships/${blockerId}/${blockedId}`, {
-		method: "DELETE",
-	});
+  return res.json();
+}
 
-	return res.json();
+// GET /friendChatMessages/:friendshipId
+export async function getAllFriendChatMessages({
+  friendshipId,
+}: GetAllFriendChatMessagesRequest): Promise<GetAllFriendChatMessagesResponse> {
+  const res = await fetch(`${API_BASE}/friendChatMessages/${friendshipId}`, {
+    method: "GET",
+  });
+
+  return res.json();
 }

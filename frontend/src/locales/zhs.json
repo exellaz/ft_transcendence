@@ -32,14 +32,22 @@
     "create_singles_game": "创建单人游戏？",
     "create_doubles_game": "创建双人游戏？",
     "join_singles_game": "加入单人游戏？",
-    "join_doubles_game": "加入双人游戏？"
+    "join_doubles_game": "加入双人游戏？",
+    "room_not_found": "房间未找到",
+    "room_is_full": "房间已满",
+    "close": "关闭"
   },
   "DoublesRoomView": {
     "doubles_room": "双人房间",
     "room_id": "房间ID",
     "ready": "准备",
+    "unready": "取消准备",
+    "start": "开始游戏",
+    "game_start": "游戏开始!",
     "leave_room": "离开房间",
-    "leave_confirmation": "你确定要离开房间吗？"
+    "leave_confirmation": "你确定要离开房间吗？",
+    "room_is_full": "房间已满",
+    "close": "关闭"
   },
   "LocalGameView": {
     "change_sprite": "更换角色",
@@ -95,8 +103,14 @@
     "singles_room": "单人房间",
     "room_id": "房间ID",
     "ready": "准备",
+    "unready": "取消准备",
+    "start": "开始游戏",
+    "game_start": "游戏开始!",
     "leave_room": "离开房间",
-    "leave_confirmation": "你确定要离开房间吗？"
+    "leave_confirmation": "你确定要离开房间吗？",
+    "room_is_full": "房间已满",
+    "unknown_error": "未知错误",
+    "close": "关闭"
   },
   "TournamentLobbyView": {
     "quarterfinals": "四分之一决赛",

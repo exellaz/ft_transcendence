@@ -15,8 +15,8 @@ export interface User {
 }
 
 export interface UserSettings {
-	userId: number;
-	language: Language;
+  userId: number;
+  language: Language;
 }
 
 export interface LoginData {
@@ -33,16 +33,14 @@ export interface GetUserRequest {
 
 export interface GetUserResponse extends ApiResponse<User> {}
 
-
 // PATCH /users/:id
 export interface UpdateUserRequest {
-  id: number;              // user ID to update
-  username?: string;       // optional
-  avatarUrl?: string;      // optional
+  id: number; // user ID to update
+  username?: string; // optional
+  avatarUrl?: string; // optional
 }
 
 export interface UpdateUserResponse extends ApiResponse<User> {}
-
 
 // GET /users/:id/settings
 export interface GetUserSettingsRequest {
@@ -51,11 +49,10 @@ export interface GetUserSettingsRequest {
 
 export interface GetUserSettingsResponse extends ApiResponse<UserSettings> {}
 
-
 // PATCH /users/:id/settings
 export interface UpdateUserSettingsRequest {
-  id: number;              // user ID to update
-  language?: string;       // optional
+  id: number; // user ID to update
+  language?: string; // optional
 }
 
 export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}

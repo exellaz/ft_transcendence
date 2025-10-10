@@ -2,14 +2,14 @@
 
 @theme {
   --color-card-blue: #081334;
-  --color-input-gray: #1F2B4F;
-  --color-brown: #5A4A24;
+  --color-input-gray: #1f2b4f;
+  --color-brown: #5a4a24;
   --color-grass-green: #8ac639;
   --color-grass-light-green: #9fd044;
 
-  --color-gold: #FDD602;
-  --color-silver: #8EBAC5;
-  --color-bronze: #EA9B58;
+  --color-gold: #fdd602;
+  --color-silver: #8ebac5;
+  --color-bronze: #ea9b58;
 }
 
 .icon-btn {

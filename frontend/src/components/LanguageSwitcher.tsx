@@ -4,7 +4,7 @@ import { useLanguage } from "../context/LanguageProvider";
 const languageOptions = [
   { value: "english", label: "English" },
   { value: "simplified_chinese", label: "简体中文" },
-  { value: "traditional_chinese", label: "繁體中文" }
+  { value: "traditional_chinese", label: "繁體中文" },
 ];
 
 const LanguageSwitcher: React.FC = () => {
