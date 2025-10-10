@@ -1,4 +1,3 @@
-import { Game } from "src/modules/game/game.ts";
 import type { GameSettings } from "../../backend/src/modules/room/room.ts";
 import { BlendMode } from "../objects/Blendmodes.ts";
 import { Camera } from "../objects/Camera.ts";
@@ -292,23 +291,6 @@ export class PongGame {
       this.players.size === this.gameSettings?.playerCount
     ) {
       this.startGame();
-    }
-
-    const output = this.exportState(false);
-
-    for (const paddle of this.teamLeft
-      .getPaddles()
-      .concat(this.teamRight.getPaddles())) {
-      paddle.player.socket.send(
-        JSON.stringify({
-          state: output,
-          metadata: {
-            timestamp: Date.now(),
-            delta: this.delta,
-            fps: this.fps,
-          },
-        }),
-      );
     }
   }
 

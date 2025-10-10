@@ -218,6 +218,14 @@ class GameClient {
     window.addEventListener("keydown", this.handleKey);
     window.addEventListener("keyup", this.handleKey);
 
+    let lastKeyTime = 0;
+    document.addEventListener('keydown', e => {
+      const t = performance.now();
+      console.log("Input delay since last key:", t - lastKeyTime);
+      lastKeyTime = t;
+    });
+
+
     this.canvas = canvasRef;
     if (!this.canvas) return;
 
