@@ -4,8 +4,6 @@ import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "../components/Avatar";
 import ProfilePopup from "../popups/ProfilePopup";
-import type { User } from "@/types/usersApi";
-import type { playerInfo } from "../../../backend/src/utils/interface";
 import type { WaitingTournamentPlayer } from "@/types/apiInterfaces";
 
 interface ReadyPlayersProps {

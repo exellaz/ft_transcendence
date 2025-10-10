@@ -10,7 +10,7 @@ import { useUser } from "@/context/UserProvider";
 import Background from "../components/Background";
 import Card from "../components/Card";
 import ChooseSpriteContents from "../components/ChooseSpriteContents";
-import { updateUserById, updateUserSettingsById } from "@/lib/usersApiClient";
+import { updateUserById } from "@/lib/usersApiClient";
 
 async function handleJoinTournament(user: User | null, navigate: any) {
   if (!user) return;
