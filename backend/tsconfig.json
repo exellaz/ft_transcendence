@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    "rootDir": "../",
     "outDir": "./dist",
 
     // Environment
@@ -27,6 +27,13 @@
 
     "allowImportingTsExtensions": true,
     "noEmit": true,
+
+    // 🔑 Needed for @shared/*
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*",
+                    "../shared/*"]
+    }
   },
   "include": ["src"]
 }

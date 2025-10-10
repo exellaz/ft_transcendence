@@ -1,0 +1,42 @@
+meta {
+    name: create-room
+    type: http
+    seq: 1
+}
+
+post {
+    url: {{baseUrl}}/create-room
+    body: json
+    auth: inherit
+}
+
+headers {
+    Content-Type: application/json
+}
+
+body:json {
+    {
+        "name": "test room",
+        "teamSize": 1,
+        "leaderId": 1,
+        "isPrivate": false
+    }
+}
+
+assert {
+    res.status: eq 200
+    res.body.roomId: isNumber
+    res.body.name: isNotEmpty
+    res.body.teamSize: in [1, 2]
+    res.body.private: isBoolean
+    res.body.gameStarted: eq false
+    res.body.leaderId: isNumber
+}
+
+script:post-response {
+    // Parse the JSON response
+    let data = res.body;
+    if (data && data.roomId) {
+        bru.setVar("roomId", data.roomId);
+    }
+}

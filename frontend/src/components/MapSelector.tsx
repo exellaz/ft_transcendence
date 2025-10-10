@@ -53,7 +53,11 @@ const MapSelector: React.FC<MapSelectorProps> = ({
       </div>
 
       <div className="w-full h-50 bg-white rounded-lg flex-row-center border-4 border-brown">
-        <img src={`/assets/${selectedMap}.png`} alt={selectedMap} className="h-full bg-input-gray" />
+        <img
+          src={`/assets/${selectedMap}.png`}
+          alt={selectedMap}
+          className="h-full bg-input-gray"
+        />
       </div>
     </>
   );

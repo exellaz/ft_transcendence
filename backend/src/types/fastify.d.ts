@@ -15,4 +15,3 @@ declare module "fastify" {
 //     db: Database;
 //   }
 // }
-

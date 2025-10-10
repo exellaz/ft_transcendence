@@ -21,11 +21,19 @@ const Medals: React.FC<MedalsProps> = ({ gold, silver, bronze }) => {
         <span className="text-gold">{displayGold}</span>
       </div>
       <div className="w-1/6">
-        <img src="/assets/silver.png" alt="Silver" title={translate("silver")} />
+        <img
+          src="/assets/silver.png"
+          alt="Silver"
+          title={translate("silver")}
+        />
         <span className="text-silver">{displaySilver}</span>
       </div>
       <div className="w-1/6">
-        <img src="/assets/bronze.png" alt="Bronze" title={translate("bronze")} />
+        <img
+          src="/assets/bronze.png"
+          alt="Bronze"
+          title={translate("bronze")}
+        />
         <span className="text-bronze">{displayBronze}</span>
       </div>
     </div>

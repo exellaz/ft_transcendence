@@ -31,16 +31,10 @@ const FriendRequestTile: React.FC<FriendRequestTileProps> = ({
     <span className="text-white font-bold flex-1" title={username}>
       {username.length > 10 ? username.slice(0, 10) + "…" : username}
     </span>
-    <Button
-      variant="smallGreen"
-      onClick={onAccept}
-    >
+    <Button variant="smallGreen" onClick={onAccept}>
       ✓
     </Button>
-    <Button
-      variant="smallRed"
-      onClick={onReject}
-    >
+    <Button variant="smallRed" onClick={onReject}>
       ✗
     </Button>
   </div>

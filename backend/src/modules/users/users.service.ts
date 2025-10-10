@@ -3,23 +3,26 @@ import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 
 // helper to generate unique user code *DEPRECATED*
-export async function generateUniqueUserCode(fastify: FastifyInstance, username: string) {
-	let code: string;
-	let exists = true;
+export async function generateUniqueUserCode(
+  fastify: FastifyInstance,
+  username: string,
+) {
+  let code: string;
+  let exists = true;
 
-	console.log("Generating user code for:", username);
-	while (exists) {
-	  code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
-	  const user = await fastify.db.user.findUnique({
-		where: { usercode: code }, // compound unique
-	  });
-	  exists = !!user;
-	}
-
-	return code!;
+  console.log("Generating user code for:", username);
+  while (exists) {
+    code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    const user = await fastify.db.user.findUnique({
+      where: { usercode: code }, // compound unique
+    });
+    exists = !!user;
   }
 
-  export async function hashPassword(password: string): Promise<string> {
+  return code!;
+}
+
+export async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
   return bcrypt.hash(password, saltRounds);
 }
@@ -33,15 +36,17 @@ export function generateAuthToken(userId: number, email: string): string {
 
   const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "1h";
 
-  return jwt.sign(
-    { userId, email },
-    jwtSecret,
-    { expiresIn: jwtExpiresIn } as SignOptions
-  );
+  return jwt.sign({ userId, email }, jwtSecret, {
+    expiresIn: jwtExpiresIn,
+  } as SignOptions);
 }
 
 // Input validation for registration
-export function validateRegistrationInput(email: string, password: string, username: string) {
+export function validateRegistrationInput(
+  email: string,
+  password: string,
+  username: string,
+) {
   const errors: string[] = [];
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,7 +58,9 @@ export function validateRegistrationInput(email: string, password: string, usern
     errors.push("Password must be at least 8 characters long");
   }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-    errors.push("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+    errors.push(
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+    );
   }
 
   if (username.trim().length < 2) {
@@ -63,13 +70,18 @@ export function validateRegistrationInput(email: string, password: string, usern
     errors.push("Username must be less than 15 characters");
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-    errors.push("Username can only contain letters, numbers, underscores, and hyphens");
+    errors.push(
+      "Username can only contain letters, numbers, underscores, and hyphens",
+    );
   }
 
   return errors;
 }
 
-export async function verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+export async function verifyPassword(
+  plainPassword: string,
+  hashedPassword: string,
+): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword);
 }
 

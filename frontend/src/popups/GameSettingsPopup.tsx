@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import Button from "../components/Button";
@@ -6,71 +5,116 @@ import Header from "../components/Header";
 import MapSelector from "../components/MapSelector";
 import PopupCard from "../components/PopupCard";
 import Slider from "../components/Slider";
+import { useGameSettings } from "../lib/gameSetting.api";
 
 interface PopupProps {
   open: boolean;
   onClose: () => void;
+  roomId: string;
 }
 
-const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
+const GameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameSettingsPopup.${key}`);
 
-  // Game settings state
-  const [ballSpeed, setBallSpeed] = useState(2);
-  const [ballSize, setBallSize] = useState(2);
-  const [paddleSpeed, setPaddleSpeed] = useState(2);
-  const [selectedMap, setSelectedMap] = useState("stadium");
-  const [resetToDefault, setResetToDefault] = useState(false);
-
+  // ------------------------------------------ API -----------------------------------------------------
+  // fetch settings from API
+  const {
+    settings,
+    setSettings,
+    loading,
+    saving,
+    saveSettings,
+    resetSettings,
+  } = useGameSettings(roomId);
+  // available maps
   const maps = ["stadium", "mansion", "arcade"];
 
+  // ----------------------------------------- Helper Functions -----------------------------------------
+  // handle reset (restore backend defaults)
   const handleReset = () => {
-    setBallSpeed(2);
-    setBallSize(2);
-    setPaddleSpeed(2);
-    setSelectedMap("stadium");
-    setResetToDefault(!resetToDefault);
+    resetSettings();
   };
 
+  // handle save (send to backend)
+  const handleSave = () => {
+    if (settings) {
+      saveSettings(settings);
+      onClose();
+    }
+  };
+
+  // loading state
+  if (loading || !settings) {
+    return (
+      <PopupCard size="large" open={open} onClose={onClose}>
+        <Header>{translate("header")}</Header>
+        <div className="flex-col-center h-full">{translate("loading")}</div>
+      </PopupCard>
+    );
+  }
+
+  // ----------------------------------------- Render -------------------------------------------------
   return (
     <PopupCard size="large" open={open} onClose={onClose}>
       <Header>{translate("header")}</Header>
       <div className="w-full h-full flex-row-start gap-15 px-10">
         {/* Left side - Sliders */}
         <div className="h-full flex-1 flex-col-center gap-6">
+          {/* ball speed */}
           <Slider
             label={translate("ball_speed")}
-            value={ballSpeed}
-            options={[translate("slow"), translate("normal"), translate("fast")]}
-            onChange={setBallSpeed}
+            value={settings.ballSpeed}
+            options={[
+              { label: translate("slow"), value: 0 },
+              { label: translate("normal"), value: 1 },
+              { label: translate("fast"), value: 2 },
+            ]}
+            onChange={(value) => setSettings({ ...settings, ballSpeed: value })}
           />
+          {/* ball size */}
           <Slider
             label={translate("ball_size")}
-            value={ballSize}
-            options={[translate("small"), translate("normal"), translate("big")]}
-            onChange={setBallSize}
+            value={settings.ballSize}
+            options={[
+              { label: translate("small"), value: 0 },
+              { label: translate("normal"), value: 1 },
+              { label: translate("big"), value: 2 },
+            ]}
+            onChange={(value) => setSettings({ ...settings, ballSize: value })}
           />
+          {/* paddle speed */}
           <Slider
             label={translate("paddle_speed")}
-            value={paddleSpeed}
-            options={[translate("slow"), translate("normal"), translate("fast")]}
-            onChange={setPaddleSpeed}
+            value={settings.paddleSpeed}
+            options={[
+              { label: translate("slow"), value: 0 },
+              { label: translate("normal"), value: 1 },
+              { label: translate("fast"), value: 2 },
+            ]}
+            onChange={(value) =>
+              setSettings({ ...settings, paddleSpeed: value })
+            }
           />
         </div>
         {/* Right side - Map Selection */}
         <div className="h-full flex-1 flex-col-center gap-6">
           <MapSelector
-            selectedMap={selectedMap}
+            selectedMap={settings.map}
             maps={maps}
-            onMapChange={setSelectedMap}
+            onMapChange={(map) => setSettings({ ...settings, map })}
             label={translate("choose_map")}
           />
         </div>
       </div>
+      {/* Buttons */}
       <div className="flex-row-center gap-6">
+        {/* reset */}
         <Button onClick={handleReset}>{translate("restore_default")}</Button>
-        <Button variant="green">{translate("save_changes")}</Button>
+        {/* save */}
+        <Button variant="green" onClick={handleSave} disabled={saving}>
+          {saving ? translate("saving") : translate("save_changes")}
+        </Button>
       </div>
     </PopupCard>
   );

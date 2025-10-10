@@ -5,7 +5,7 @@ interface PopupCardProps {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: "default" | "small" | "large";
+  size?: "default" | "small" | "large" | "wide";
   className?: string;
 }
 
@@ -30,6 +30,7 @@ const PopupCard: React.FC<PopupCardProps> = ({
     default: "w-[450px] h-[600px] min-w-[450px] min-h-[600px]",
     small: "w-[450px] h-[300px] min-w-[450px] min-h-[300px]",
     large: "w-[900px] h-[600px] min-w-[900px] min-h-[600px]",
+    wide: "w-[550px] h-[450px] min-w-[550px] min-h-[450px]",
   };
 
   return (

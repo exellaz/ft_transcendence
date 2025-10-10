@@ -1,45 +1,23 @@
 {
+  "common": {
+    "loading": "載入中...",
+    "username_required": "使用者名稱為必填項",
+    "username_length": "使用者名稱必須為2-15個字元",
+    "username_characters": "只允許字母、數字和底線"
+  },
   "AdvanceView": {
     "advancement": "晉級",
     "congratulations": "恭喜！",
     "next_round": "你已晉級到下一輪！",
     "continue": "繼續"
   },
-  "ChooseSpriteView": {
+  "ChooseSpriteContents": {
     "choose_sprite": "選擇一個角色",
     "confirm": "確認"
   },
-  "DoublesRoomView": {
-    "doubles_room": "雙人房間",
-    "room_id": "房間ID",
-    "ready": "準備",
-    "leave_room": "離開房間",
-    "leave_confirmation": "你確定要離開房間嗎？"
-  },
-  "LoginView": {
-    "username": "用戶名",
-    "password": "密碼",
-    "login": "登入",
-    "loading": "載入中...",
-    "continue_with_google": "使用 Google 繼續",
-    "signup_prompt": "還沒有帳號？註冊"
-  },
-  "MainMenuView": {
-    "tournament_mode": "錦標賽模式",
-    "normal_mode": "普通模式",
-    "settings": "設定",
-    "join_tournament": "參加錦標賽？"
-  },
-  "MatchView": {
-    "loading": "載入中...",
-    "ready": "準備",
-    "pending": "等待中",
-    "quarterfinals": "四分之一決賽",
-    "semifinals": "準決賽",
-    "finals": "決賽"
-  },
-  "NormalModeView": {
+  "CustomModeView": {
     "choose_action": "選擇操作",
+    "play_locally": "本地遊玩",
     "create_room": "建立房間",
     "join_room": "加入房間",
     "back": "返回",
@@ -50,10 +28,48 @@
     "quick_join": "快速加入",
     "join_private": "加入私人房間",
     "enter_room_id": "輸入房間ID",
+    "create_local_game": "建立本地遊戲？",
     "create_singles_game": "建立單人遊戲？",
     "create_doubles_game": "建立雙人遊戲？",
     "join_singles_game": "加入單人遊戲？",
-    "join_doubles_game": "加入雙人遊戲？"
+    "join_doubles_game": "加入雙人遊戲？",
+    "room_not_found": "房間未找到",
+    "room_is_full": "房間已滿",
+    "close": "關閉"
+  },
+  "DoublesRoomView": {
+    "doubles_room": "雙人房間",
+    "room_id": "房間ID",
+    "ready": "準備",
+    "unready": "取消準備",
+    "start": "開始遊戲",
+    "game_start": "遊戲開始!",
+    "leave_room": "離開房間",
+    "leave_confirmation": "你確定要離開房間嗎？",
+    "room_is_full": "房間已滿",
+    "close": "關閉"
+  },
+  "LoginView": {
+    "username_or_email": "用戶名 / 電子郵件",
+    "password": "密碼",
+    "login": "登入",
+    "loading": "載入中...",
+    "continue_with_google": "使用 Google 繼續",
+    "signup_prompt": "還沒有帳號？註冊"
+  },
+  "MainMenuView": {
+    "tournament_mode": "錦標賽模式",
+    "custom_mode": "自訂模式",
+    "settings": "設定",
+    "join_tournament": "參加錦標賽？"
+  },
+  "MatchView": {
+    "loading": "載入中...",
+    "ready": "準備",
+    "pending": "等待中",
+    "quarterfinals": "四分之一決賽",
+    "semifinals": "準決賽",
+    "finals": "決賽"
   },
   "ResultsView": {
     "results": "結果",
@@ -81,8 +97,14 @@
     "singles_room": "單人房間",
     "room_id": "房間ID",
     "ready": "準備",
+    "unready": "取消準備",
+    "start": "開始遊戲",
+    "game_start": "遊戲開始!",
     "leave_room": "離開房間",
-    "leave_confirmation": "你確定要離開房間嗎？"
+    "leave_confirmation": "你確定要離開房間嗎？",
+    "room_is_full": "房間已滿",
+    "unknown_error": "未知錯誤",
+    "close": "關閉"
   },
   "TournamentLobbyView": {
     "quarterfinals": "四分之一決賽",
@@ -165,6 +187,12 @@
     "finals": "決賽",
     "won": "勝利",
     "lost": "失敗"
+  },
+  "ApiState": {
+    "loading": "載入中...",
+    "error": "錯誤",
+    "try_again": "重試",
+    "not_found": "未找到記錄。"
   },
   "CascadeCard": {
     "confirm_block": "確定要封鎖 {{username}} 嗎？",

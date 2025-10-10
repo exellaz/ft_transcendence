@@ -1,4 +1,4 @@
-import app from "./app"
+import app from "./app";
 
 // Start server
 const start = async () => {
@@ -9,5 +9,5 @@ const start = async () => {
     app.log.error(err);
     process.exit(1);
   }
-}
+};
 start();

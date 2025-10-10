@@ -1,0 +1,15 @@
+meta {
+    name: "List Tournaments"
+    type: http
+    seq: 2
+}
+
+get {
+    url: {{baseUrl}}/tournaments
+    auth: inherit
+}
+
+assert {
+    res.status: eq 200
+    res.body: isArray
+}
