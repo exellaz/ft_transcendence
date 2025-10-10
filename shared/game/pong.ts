@@ -294,7 +294,7 @@ export class PongGame {
 
     if (
       this.state === GameState.LOADING &&
-      this.players.size === this.gameSettings?.playerCount
+      this.players.size === this.teamSize/2
     ) {
       this.startGame();
     }
@@ -350,19 +350,6 @@ export class PongGame {
     this.players.forEach((player) => {
       this.addPlayer(player);
     });
-
-    // // 1v1
-    // if (this.players.length === 2) {
-    // 	const paddleDistanceFromCenter = 400;
-    // 	this.team1.padels[0].position.x = -paddleDistanceFromCenter;
-    // 	this.team2.padels[0].position.x = paddleDistanceFromCenter;
-    // 	this.world.viewport.camera.isFixed = true;
-    // }
-
-    // // 2v2
-    // else {
-    // 	this.is2v2 = true;
-    // }
 
     this.ballSpawnCooldown = this.players.size === 2 ? 0.5 : 2;
     // -- calculate goalpost positions --
