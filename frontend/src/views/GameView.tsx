@@ -147,7 +147,74 @@ class GameClient {
       this.websocketRef.send(JSON.stringify({ type, payload }));
     }
   }
+async processStateAsync(state: any) {
+  const { gameObjects = [], components = [] } = state;
+  const chunkSize = 50;
+    this.isFullStateProcessed = true;
 
+  // --- 1️⃣ Components ---
+  for (let i = 0; i < components.length; i += chunkSize) {
+    const chunk = components.slice(i, i + chunkSize);
+    for (const stateComp of chunk) {
+      const existing = this.componentRegistry.get(stateComp.id);
+      if (existing) {
+        Object.assign(existing, revive(stateComp));
+      } else if (componentMap[stateComp.name]) {
+        const newComp = new componentMap[stateComp.name](revive(stateComp));
+        this.componentRegistry.set(stateComp.id, newComp);
+      }
+    }
+    await new Promise((r) => setTimeout(r, 0));
+  }
+
+  // --- 2️⃣ Game Objects ---
+  for (let i = 0; i < gameObjects.length; i += chunkSize) {
+    const chunk = gameObjects.slice(i, i + chunkSize);
+    for (const stateObj of chunk) {
+      const id = stateObj.id;
+      let obj = this.getObject(id);
+
+      if (!obj) {
+        const revived = revive(stateObj);
+        this.setObject(id, this.createNewInstance(revived));
+      } else {
+        genericUpdate(obj, stateObj);
+        if (stateObj.className === "camera") {
+          this.viewport!.camera = obj as Camera;
+        }
+      }
+    }
+    await new Promise((r) => setTimeout(r, 0));
+  }
+
+  // --- 3️⃣ Re-link child/parent + components ---
+  for (const [id, obj] of this.gameObjectRegistry) {
+    // children linking
+    obj.children = obj.children.map((child: any) => {
+      if (typeof child !== "number") return child;
+      const childObj = this.gameObjectRegistry.get(child);
+      if (childObj) {
+        childObj.parent = obj;
+        return childObj;
+      }
+      return child;
+    });
+
+    // component linking
+    if (obj.component_list) {
+      for (const cid of obj.component_list) {
+        if (typeof cid !== "number") continue;
+        const comp = this.componentRegistry.get(cid);
+        if (!comp) continue;
+        comp.host = obj;
+        obj.addComponent(comp);
+      }
+    }
+
+    obj.clientUpdate?.();
+  }
+}
+private processingPromise: Promise<void> = Promise.resolve();
   constructor(canvasRef: HTMLCanvasElement | null, websocketRef: WebSocket) {
     // console.log("created game client"); ////debug
     this.id = GameClient.globalId;
@@ -167,49 +234,23 @@ class GameClient {
       });
     }
 
-    this.websocketRef.onmessage = (event) => {
-      let data = JSON.parse(event.data);
+    
+this.websocketRef.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  this.data = data;
 
-      this.data = data;
-
-      if (data["type"] === "ready") {
-        this.sendData("fetch_world");
-        // console.log("requested for full world"); ////debug
-      }
-
-      if (!data["state"]) {
-        // console.log("no state", data.type); ////debug
-        return;
-      }
-      if (data["state"]["type"] === "full") {
-        // console.log("Objects in full state:", data.state.gameObjects.map(o => o.className)); ////debug
-        // console.log("---- received full state ---- "); ////debug
-        // console.log(`received ${event.data.length} bytes`); ////debug
-        // console.log(`received`, data); ////debug
-        let incomingData = data["state"]["gameObjects"].map((elem) => {
-          return elem.id;
-        });
-        let currentData = Array.from(this.gameObjectRegistry.keys());
-        let incomingLen = incomingData.length;
-
-        // console.log(`incoming objects length :${incomingLen} / current objects length ${this.gameObjectRegistry.size}`); ////debug
-        // console.log(`incoming ids :${incomingData}`); ////debug
-        // console.log(`current ids :${currentData}`); ////debug
-        // console.log("object ids", this.gameObjectRegistry.keys()); ////debug
-
-        // for (const id of incomingData) { ////debug
-        // console.log(this.getObject(id) === undefined); ////debug
-        // }
-
-        this.isFullStateProcessed = true;
-        this.sendData("received_full_state");
-
-        this.game.initSettings(data["settings"]);
-
-        this.loop();
-      }
-    };
-
+  this.processingPromise = this.processingPromise.then(async () => {
+    if (data["state"]?.type === "full") {
+      await this.processStateAsync(data["state"]);
+      this.isFullStateProcessed = true;
+      this.sendData("received_full_state");
+      this.game.initSettings(data["settings"]);
+      this.loop();
+    } else if (data["state"]?.gameObjects || data["state"]?.components) {
+      await this.processStateAsync(data["state"]); // now awaited in sequence
+    }
+  });
+};
     // this.websocketRef.onclose = () => console.log("❌ Disconnected"); ////debug
 
     this.handleKey = this.handleKey.bind(this);
@@ -245,92 +286,23 @@ class GameClient {
     this.loop();
   }
 
-  loop() {
-    // console.log("looping client", this.id); ////debug
-    if (this.websocketRef?.readyState === WebSocket.OPEN) {
-      if (this.keysPressed["ArrowUp"]) {
-        this.sendData("input", { key: "ArrowUp", action: "hold" });
-      }
-      if (this.keysPressed["ArrowDown"]) {
-        this.sendData("input", { key: "ArrowDown", action: "hold" });
-      }
-    }
-
-    if (
-      this.data === undefined ||
-      this.data["state"] === undefined ||
-      !this.isFullStateProcessed
-    ) {
-      // console.log("not yet received full state"); ////debug
-      requestAnimationFrame(this.loop);
-      return;
-    }
-
-    if (this.data["bgColor"]) this.game.world.bgColor = this.data["bgColor"];
-
-    // -- sync server components with components
-    for (const stateComponent of this.data["state"]["components"] ?? []) {
-      const component = this.componentRegistry.get(stateComponent.id);
-
-      if (component !== undefined)
-        Object.assign(component, revive(stateComponent));
-      else if (componentMap[stateComponent.name])
-        this.componentRegistry.set(
-          stateComponent.id,
-          new componentMap[stateComponent.name](stateComponent),
-        );
-    }
-
-    // -- instantiate objects --
-    for (const stateObject of this.data["state"]["gameObjects"] ?? []) {
-      const id = stateObject["id"];
-      let obj = this.getObject(id);
-
-      if (obj === undefined) {
-        // hydrate only once
-        // console.log("creating new instance"); ////debug
-        const revivedObject = revive(stateObject);
-        this.setObject(
-          stateObject["id"],
-          this.createNewInstance(revivedObject),
-        );
-      } else {
-        // update from raw JSON
-        genericUpdate(obj, stateObject);
-        if (stateObject.className === "camera")
-          this.viewport!.camera = obj as Camera;
-      }
-    }
-
-    // Replace any numeric IDs with object references
-    for (const [id, object] of this.gameObjectRegistry) {
-      object.children = object.children.map((child: any) => {
-        if (typeof child !== "number") return child;
-
-        const childObj = this.gameObjectRegistry.get(child);
-
-        if (childObj) {
-          childObj.parent = object;
-          return childObj; // replace number with actual object
-        } else return child; // cannot link yet
-      });
-      object.clientUpdate();
-    }
-
-    // link components
-    for (const [id, object] of this.gameObjectRegistry) {
-      for (const id of object.component_list) {
-        if (typeof id !== "number") continue;
-        const compObj = this.componentRegistry.get(id);
-        if (!compObj) continue;
-
-        compObj.host = object;
-        object.addComponent(compObj);
-      }
-    }
-    this.draw();
-    requestAnimationFrame(this.loop);
+loop() {
+  if (this.websocketRef?.readyState === WebSocket.OPEN) {
+    if (this.keysPressed["ArrowUp"])
+      this.sendData("input", { key: "ArrowUp", action: "hold" });
+    if (this.keysPressed["ArrowDown"])
+      this.sendData("input", { key: "ArrowDown", action: "hold" });
   }
+
+  if (!this.isFullStateProcessed) {
+    requestAnimationFrame(this.loop);
+    return;
+  }
+
+  // Rendering only — state updates happen async
+  this.draw();
+  requestAnimationFrame(this.loop);
+}
 
   createNewInstance(object: any) {
     const params = {

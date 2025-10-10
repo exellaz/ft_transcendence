@@ -165,7 +165,7 @@ export function createRoom(
 
 
 const ENABLE_FPS_CAP: boolean = false;
-const FPS_CAP: number = 45;
+const FPS_CAP: number = 60;
 
 let lastLoopTime = performance.now();
 
