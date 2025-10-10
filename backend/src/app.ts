@@ -42,8 +42,6 @@ app.setErrorHandler((error, request, reply) => {
     return reply.status(error.statusCode).send(fail(error.message));
   }
 
-  console.log("Error Message: |, ", error.message, " |");
-
   // Fastify validation errors (AJV)
   if ((error as any).validation)
     return reply
