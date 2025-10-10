@@ -1,30 +1,55 @@
 {
-    "tournaments": [
-      {
-        "id": 1,
-        "status": "COMPLETED",
-        "players": [
-          { "id": 1, "userId": 1, "ranking": 3 },
-          { "id": 2, "userId": 2, "ranking": 5 },
-          { "id": 3, "userId": 3, "ranking": 6 },
-          { "id": 4, "userId": 4, "ranking": 2 },
-          { "id": 5, "userId": 5, "ranking": 1 },
-          { "id": 6, "userId": 6, "ranking": 7 },
-          { "id": 7, "userId": 7, "ranking": 8 },
-          { "id": 8, "userId": 8, "ranking": 4 }
-        ],
-        "matches": [
-          { "round": "QF", "player1Index": 1, "player2Index": 2, "player1Score": 8, "player2Score": 4 },
-          { "round": "QF", "player1Index": 3, "player2Index": 4, "player1Score": 2, "player2Score": 7 },
-          { "round": "QF", "player1Index": 5, "player2Index": 6, "player1Score": 9, "player2Score": 5 },
-          { "round": "QF", "player1Index": 7, "player2Index": 8, "player1Score": 3, "player2Score": 6 },
-  
-          { "round": "SF", "player1Index": 1, "player2Index": 4, "player1Score": 6, "player2Score": 9 },
-          { "round": "SF", "player1Index": 5, "player2Index": 8, "player1Score": 10, "player2Score": 4 },
-  
-          { "round": "F", "player1Index": 4, "player2Index": 5, "player1Score": 7, "player2Score": 9 }
-        ]
-      }
-    ]
-  }
+  "tournaments": [
+    {
+      "id": 1,
+      "status": "COMPLETED",
+      "players": [
+        { "id": 1, "userId": 1, "ranking": 3 },
+        { "id": 2, "userId": 2, "ranking": 5 },
+        { "id": 3, "userId": 3, "ranking": 6 },
+        { "id": 4, "userId": 4, "ranking": 2 },
+        { "id": 5, "userId": 5, "ranking": 1 },
+        { "id": 6, "userId": 6, "ranking": 7 },
+        { "id": 7, "userId": 7, "ranking": 8 },
+        { "id": 8, "userId": 8, "ranking": 4 }
+      ],
+      "matches": [
+        { "round": "QF", "player1Index": 1, "player2Index": 2, "player1Score": 8, "player2Score": 4 },
+        { "round": "QF", "player1Index": 3, "player2Index": 4, "player1Score": 2, "player2Score": 7 },
+        { "round": "QF", "player1Index": 5, "player2Index": 6, "player1Score": 9, "player2Score": 5 },
+        { "round": "QF", "player1Index": 7, "player2Index": 8, "player1Score": 3, "player2Score": 6 },
+
+        { "round": "SF", "player1Index": 1, "player2Index": 4, "player1Score": 6, "player2Score": 9 },
+        { "round": "SF", "player1Index": 5, "player2Index": 8, "player1Score": 10, "player2Score": 4 },
+
+        { "round": "F", "player1Index": 4, "player2Index": 5, "player1Score": 7, "player2Score": 9 }
+      ]
+    },
+    {
+      "id": 2,
+      "status": "COMPLETED",
+      "players": [
+        { "id": 1, "userId": 1, "ranking": 3 },
+        { "id": 2, "userId": 2, "ranking": 5 },
+        { "id": 3, "userId": 3, "ranking": 6 },
+        { "id": 4, "userId": 4, "ranking": 2 },
+        { "id": 5, "userId": 5, "ranking": 1 },
+        { "id": 6, "userId": 6, "ranking": 7 },
+        { "id": 7, "userId": 7, "ranking": 8 },
+        { "id": 8, "userId": 8, "ranking": 4 }
+      ],
+      "matches": [
+        { "round": "QF", "player1Index": 1, "player2Index": 2, "player1Score": 8, "player2Score": 4 },
+        { "round": "QF", "player1Index": 3, "player2Index": 4, "player1Score": 2, "player2Score": 7 },
+        { "round": "QF", "player1Index": 5, "player2Index": 6, "player1Score": 9, "player2Score": 5 },
+        { "round": "QF", "player1Index": 7, "player2Index": 8, "player1Score": 3, "player2Score": 6 },
+
+        { "round": "SF", "player1Index": 1, "player2Index": 4, "player1Score": 6, "player2Score": 9 },
+        { "round": "SF", "player1Index": 5, "player2Index": 8, "player1Score": 10, "player2Score": 4 },
+
+        { "round": "F", "player1Index": 4, "player2Index": 5, "player1Score": 7, "player2Score": 9 }
+      ]
+    }
+  ]
+}
   

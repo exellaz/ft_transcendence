@@ -111,34 +111,27 @@ async function seed({ userCount, tournamentCount, playersPerTournament, matchesP
   console.log(`🌱 Seeding ${data.tournaments.length} tournaments...`);
 
   for (const tournamentData of data.tournaments) {
-    const tournament = await prisma.tournament.upsert({
-      where: { id: tournamentData.id },
-      update: { status: TournamentStatus.COMPLETED },
-      create: { id: tournamentData.id, status: TournamentStatus.COMPLETED }
+    const tournament = await prisma.tournament.create({
+      data: {
+        id: tournamentData.id,
+        status: TournamentStatus.COMPLETED,
+      },
     });
-
-    console.log(`🏆 Upserted Tournament ${tournament.id}`);
-
+    
+    console.log(`🏆 Created Tournament ${tournament.id}`);
+    
     // Create Players
     const players: TournamentPlayer[] = [];
     for (const p of tournamentData.players) {
-      const player = await prisma.tournamentPlayer.upsert({
-        where: { id: p.id },
-        update: {
+      const player = await prisma.tournamentPlayer.create({
+        data: {
           tournamentId: tournament.id,
           userId: p.userId,
-          ranking: p.ranking
+          ranking: p.ranking,
         },
-        create: {
-          id: p.id,
-          tournamentId: tournament.id,
-          userId: p.userId,
-          ranking: p.ranking
-        }
       });
       players.push(player);
     }
-
     console.log(`👥 Created ${players.length} players for Tournament ${tournament.id}`);
 
     // Create Matches
