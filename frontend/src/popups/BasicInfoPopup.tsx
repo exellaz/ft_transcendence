@@ -111,7 +111,6 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   else
     children = (
       <>
-        <Header>{translate("header")}</Header>
         <div className="w-full text-center text-white">
           <p>ID: {user.id}</p>
           <p>
@@ -164,6 +163,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   return (
     <PopupCard open={open} onClose={onClose}>
+      <Header>{translate("header")}</Header>
       {children}
     </PopupCard>
   );

@@ -101,16 +101,12 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
           <StatsBadge
             className="w-2/5"
             label={translate("tournaments_played")}
-            value={
-              stats.completedTournaments !== 0
-                ? stats.completedTournaments
-                : "-"
-            }
+            value={stats.completedTournaments}
           />
           <StatsBadge
             className="w-2/5"
             label={translate("average_ranking")}
-            value={stats.averageRanking ?? "-"}
+            value={stats.averageRanking}
           />
         </div>
       </>
