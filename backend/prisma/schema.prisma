@@ -29,6 +29,17 @@ enum userStatus {
   ingame
 }
 
+enum TournamentStatus {
+  NOT_COMPLETE
+  COMPLETED
+}
+
+enum RoundType {
+  QF  // Quarter Finals
+  SF  // Semi Finals
+  F   // Finals
+}
+
 // MODELS
 model User {
   id         Int            @id @default(autoincrement())
@@ -50,6 +61,8 @@ model User {
   blockedBy          BlockedFriendship[] @relation("BlockedBy") // people who blocked me
 
   friendChatMessages FriendChatMessage[] 
+
+  tournamentPlayers  TournamentPlayer[]
 
   @@map("users")
 }
@@ -112,3 +125,50 @@ model FriendChatMessage {
 
   @@map("friend_chat_messages")
 }
+
+model Tournament {
+  id         Int                  @id @default(autoincrement())
+  status     TournamentStatus     @default(NOT_COMPLETE)
+  createdAt  DateTime             @default(now()) @map("created_at")
+
+  players    TournamentPlayer[]
+  matches    TournamentMatch[]
+
+  @@map("tournaments")
+}
+
+model TournamentPlayer {
+  id            Int          @id @default(autoincrement())
+  tournamentId  Int          @map("tournament_id")
+  userId        Int          @map("user_id")
+  ranking       Int?         @default(0)
+
+  tournament    Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchesAsP1   TournamentMatch[] @relation("Player1")
+  matchesAsP2   TournamentMatch[] @relation("Player2")
+  matchesAsWinner TournamentMatch[] @relation("Winner")
+
+  @@unique([tournamentId, userId]) // prevent duplicate player entries per tournament
+  @@map("tournament_players")
+}
+
+model TournamentMatch {
+  id             Int              @id @default(autoincrement())
+  tournamentId   Int              @map("tournament_id")
+  round          RoundType
+  player1Id      Int              @map("player1_id")
+  player2Id      Int              @map("player2_id")
+  winnerId       Int?             @map("winner_id")
+  player1Score   Int?             @default(0)
+  player2Score   Int?             @default(0)
+  createdAt      DateTime         @default(now())
+
+  tournament     Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player1        TournamentPlayer @relation("Player1", fields: [player1Id], references: [id], onDelete: Cascade)
+  player2        TournamentPlayer @relation("Player2", fields: [player2Id], references: [id], onDelete: Cascade)
+  winner         TournamentPlayer? @relation("Winner", fields: [winnerId], references: [id], onDelete: Cascade)
+
+  @@map("tournament_matches")
+}
+
