@@ -9,9 +9,6 @@ import type {
   TournamentStats,
   TournamentHistory,
 } from "../types/tournamentApi";
-// TODO: Remove mock data import when integrating real API
-// import type { TournamentStats } from "../types/apiInterfaces";
-// import { mockTournamentStats } from "../data/mockUsers";
 
 import {
   LoadingState,
@@ -62,19 +59,6 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
     [open],
     userId !== 0
   );
-
-  // TODO: Delete when API is integrated
-  // const [user, setUser] = useState<TournamentStats | null>(null);
-  // userId = 0;
-  // function getTournamentStatsById(
-  //   userId: number,
-  //   data: TournamentStats[],
-  // ): TournamentStats | undefined {
-  //   return data.find((user) => user.id === userId);
-  // }
-  // useEffect(() => {
-  //   setUser(getTournamentStatsById(userId, mockTournamentStats) || null);
-  // }, [userId]);
 
   function handleClose() {
     onClose();

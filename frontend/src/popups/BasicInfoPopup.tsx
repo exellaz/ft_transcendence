@@ -4,9 +4,6 @@ import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import { getUserById, updateUserById } from "../lib/usersApiClient";
 import type { User } from "../types/usersApi";
 import { formatDate } from "../utils/date";
-// TODO: Remove mock data import when integrating real API
-// import type { BasicInfo } from "../types/apiInterfaces";
-// import { mockBasicInfo } from "../data/mockUsers";
 
 import {
   LoadingState,
@@ -52,28 +49,17 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const [username, setUsername] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // When user data is fetched, populate the form fields
+  // when user data is fetched, populate the form fields
   useEffect(() => {
     if (user) setUsername(user.username);
   }, [user]);
 
-  // TODO: Delete when API is integrated
-  // const [user, setUser] = useState<BasicInfo | null>(null);
-  // function getBasicInfoById(
-  //   userId: number,
-  //   data: BasicInfo[]
-  // ): BasicInfo | undefined {
-  //   return data.find((user) => user.id === userId);
-  // }
-  // useEffect(() => {
-  //   setUser(getBasicInfoById(userId, mockBasicInfo) || null);
-  // }, [userId]);
-
   const handleFileChange = () => {};
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    if (saveError) setSaveError(null); // Clear error when user types
+    setUsername(e.target.value);\
+     // clear error when user types
+    if (saveError) setSaveError(null);
   };
 
   const handleSave = async (): Promise<void> => {

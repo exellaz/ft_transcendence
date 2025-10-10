@@ -21,11 +21,6 @@ function decodeJWT(token: string) {
 }
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  // todo: update with real user data from backend
-  // const [user, ]: User = {
-  //   id: "u0",
-  // };
-
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {

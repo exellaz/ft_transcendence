@@ -1,8 +1,5 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-// TODO: Delete when API is integrated
-// import type { Profile } from "../types/apiInterfaces";
-// import { mockProfiles } from "../data/mockUsers";
 import { useApiQuery } from "../hooks/useApi";
 import { getUserById } from "../lib/usersApiClient";
 import type { User } from "../types/usersApi";
@@ -50,19 +47,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
     [open],
     userId !== 0
   );
-
-  // TODO: Delete when API is integrated
-  // const [user, setUser] = useState<Profile | null>(null);
-  // function getProfileById(
-  //   userId: number,
-  //   data: Profile[],
-  // ): Profile | undefined {
-  //   return data.find((user) => user.id === userId);
-  // }
-  // useEffect(() => {
-  //   setUser(getProfileById(userId, mockProfiles) || null);
-  // }, [userId]);
-
+  
   let contents: React.ReactNode;
   
     if (userLoading || statsLoading) contents = <LoadingState />;
