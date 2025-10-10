@@ -1,0 +1,15 @@
+meta {
+  name: get-tournament-history-success
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/users/1/tournament-history
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
