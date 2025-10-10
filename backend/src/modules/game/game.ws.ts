@@ -81,7 +81,7 @@ export default async function gameWsRoute(fastify: any) {
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
         if (msg.type === "ready") {
-          console.log("player added ", clientId);
+          console.log("player connected ", clientId);
           room.game.addPlayer(
             new Player({
               id: clientId,

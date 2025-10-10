@@ -254,7 +254,6 @@ export class PongGame {
       player: player,
     });
 
-    // console.log("player", player["id"]);
     this.players.set(player["id"], player);
     team.padels.push(padel);
     player.padel = padel;
@@ -273,6 +272,7 @@ export class PongGame {
   }
 
   teamWins(team: GameTeam) {
+    console.log("team wins!", )
     this.state = GameState.GAMEOVER;
     this.winningTeam = team;
 
@@ -294,7 +294,7 @@ export class PongGame {
 
     if (
       this.state === GameState.LOADING &&
-      this.players.size === this.teamSize/2
+      this.players.size === this.teamSize / 2
     ) {
       this.startGame();
     }
@@ -311,7 +311,8 @@ export class PongGame {
   onHitGoal(team: Team) {
     team === Team.TEAM_LEFT ? this.teamRight.win() : this.teamLeft.win();
 
-    if (this.state == GameState.GAMEOVER) return;
+    if (this.state == GameState.GAMEOVER) 
+      return;
 
     this.world.addTimer(this.ballSpawnCooldown, () => {
       this.ball.start(team);
@@ -384,7 +385,7 @@ export class PongGame {
         }
       } else if (this.state === GameState.GAMEOVER) {
         this.onScreenTitle.scale = new Vector2D(1, 1);
-        if (this.is2v2) {
+        if (!this.is2v2) {
           this.onScreenTitle.text = `${this.winningTeam.toString()} Wins!`;
         } else {
           const winnerPlayer = this.winningTeam.padels[0]?.player;
@@ -600,7 +601,7 @@ export class PongGame {
     isClient: boolean,
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
-    teamSize: number = 0
+    teamSize: number = 1
   ) {
     PongGame.globalId++;
 
@@ -609,6 +610,9 @@ export class PongGame {
 
     this.initSettings(incomingSettings);
     this.onGameEnd = onGameEnd; // callback when game ends
+
+    this.is2v2 = (teamSize === 1);
+    console.log("is 2v2", this.is2v2);
 
     if (isClient) return;
     this.world.game = this;
