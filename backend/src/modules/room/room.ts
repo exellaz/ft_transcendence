@@ -64,6 +64,7 @@ export interface Room {
   countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
+
 export interface GameSettings {
   ballSpeed?: number;
   ballSize?: number;

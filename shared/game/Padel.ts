@@ -14,14 +14,14 @@ import { Team } from "./pong.ts";
 import { SKIN_PATHS, Skin } from "./Skins.ts";
 
 export class Padel extends GameObject {
-  public team: Team;
-  public player: Player;
+  public team!: Team;
+  public player!: Player;
   public moveDownKey: string = "ArrowDown";
   public moveUpKey: string = "ArrowUp";
 
   isMoving: boolean = false;
 
-  sprite: Sprite;
+  sprite!: Sprite;
   teamWins(team: Team) {}
 
   skinPath: string;
@@ -48,10 +48,11 @@ export class Padel extends GameObject {
     });
 
     this.addComponent(new HitBox({}));
-
     Object.assign(this, params);
 
-    this.skinPath = SKIN_PATHS[params.player?.skin || Skin.ghost_dark].base;
+    this.skinPath = this.skinPath = SKIN_PATHS[
+      (params.player?.skin ?? Skin.ghost_dark) as Skin
+    ].base;
   }
 
   moveUp() {

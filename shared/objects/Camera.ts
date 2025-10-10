@@ -7,11 +7,11 @@ import {
 import { GameObject } from "./GameObject.ts";
 
 export class Camera extends GameObject {
-  shakeValue: Vector2D = new Vector2D(0, 0);
-  target: GameObject;
-  rawPosition: Point2D;
-  className: string = "camera";
-  isFixed: boolean = false;
+  public shakeValue: Vector2D = new Vector2D(0, 0);
+  public target: GameObject | null = null;
+  public rawPosition: Point2D;
+  public className: string = "camera";
+  public isFixed: boolean = false;
 
   constructor(params: Partial<Camera>) {
     const startingPos = new Point2D(0, 0);
@@ -24,13 +24,18 @@ export class Camera extends GameObject {
     this.position = startingPos;
 
     this.onUpdate = () => {
-      if (this.isFixed) return;
+      if (this.isFixed) 
+        return;
       this.position.x += 0.01;
-      this.rawPosition = interpolate(
-        this.rawPosition,
-        new Point2D(this.target.position.x, 0),
-        60,
-      );
+
+      if (this.target) {
+        this.rawPosition = interpolate(
+          this.rawPosition,
+          new Point2D(this.target.position.x, 0),
+          60,
+        );
+      }
+
       this.position = this.rawPosition.add(
         new Vector2D(
           randomBetween(-this.shakeValue.x, this.shakeValue.x),
@@ -38,7 +43,7 @@ export class Camera extends GameObject {
         ),
       );
       this.shakeValue = this.shakeValue.subtract(
-        new Vector2D(170, 170).multiply(this.game.delta),
+        new Vector2D(170, 170).multiply(this.game?.delta ?? 1),
       );
 
       if (this.shakeValue.x < 0) this.shakeValue = new Vector2D(0, 0);
