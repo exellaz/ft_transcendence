@@ -190,7 +190,8 @@
     "semifinals": "Semifinals",
     "finals": "Finals",
     "won": "Won",
-    "lost": "Lost"
+    "lost": "Lost",
+    "no_history_yet": "No tournament history yet."
   },
   "ApiState": {
     "loading": "Loading...",

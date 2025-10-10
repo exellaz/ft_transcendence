@@ -192,7 +192,8 @@
     "semifinals": "準決賽",
     "finals": "決賽",
     "won": "勝利",
-    "lost": "失敗"
+    "lost": "失敗",
+    "no_history_yet": "尚無比賽紀錄。"
   },
   "ApiState": {
     "loading": "載入中...",
