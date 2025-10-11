@@ -124,11 +124,6 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
             </Button>
           </div>
         )}
-        {activeTab === "requests" && (
-          <Button variant="red" onClick={() => handleActionClick("block")}>
-            {translate("block")}
-          </Button>
-        )}
         {activeTab === "blocked" && (
           <Button variant="red" onClick={() => handleActionClick("unblock")}>
             {translate("unblock")}

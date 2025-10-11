@@ -165,7 +165,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           open={true}
           onClose={() => setSelectedId(null)}
           userId={selectedId}
-          variant="other"
+          variant={selectedId === userId ? "self" : "other"}
         />
       )}
     </>

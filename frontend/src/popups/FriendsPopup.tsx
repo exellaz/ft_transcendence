@@ -138,6 +138,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     if (result.success) {
       setAddFriendSuccess(true);
+      handleCloseCascadeCard();
+
     } else {
       setAddFriendError("Failed to add friend");
     }
@@ -154,7 +156,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     });
     if (result.success) {
       alert("Friend request accepted!");
-      refetchRequests();
+      handleCloseCascadeCard();
     }
   };
 
@@ -165,7 +167,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     });
     if (result.success) {
       alert("Friend request rejected!");
-      refetchRequests();
+      handleCloseCascadeCard();
     }
   };
 

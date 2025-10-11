@@ -57,7 +57,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const handleFileChange = () => {};
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);\
+    setUsername(e.target.value);
      // clear error when user types
     if (saveError) setSaveError(null);
   };
