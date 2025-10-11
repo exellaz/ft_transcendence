@@ -10,6 +10,7 @@ import {
   updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
+import type { UserWithFriendshipId } from "../types/friendsApi";
 
 import {
   LoadingState,
@@ -55,7 +56,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading: friendsLoading,
     error: friendsError,
     refetch: refetchFriends,
-  } = useApiQuery<User[]>(
+  } = useApiQuery<UserWithFriendshipId[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open],
     userId !== 0
@@ -427,6 +428,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           <CascadeCard
             userId={userId}
             selectedUser={selectedUser}
+            friendshipId={(selectedUser as UserWithFriendshipId).friendshipId}
             activeTab={activeTab}
             onActionSuccess={handleCloseCascadeCard}
           />

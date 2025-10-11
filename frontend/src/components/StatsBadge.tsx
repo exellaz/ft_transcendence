@@ -11,7 +11,7 @@ const StatsBadge: React.FC<StatsBadgeProps> = ({
   value,
   className = "",
 }) => {
-  let displayValue: number | string = value ?? "-";
+  const displayValue: number | string = value ?? "-";
 
   return (
     <div

@@ -233,7 +233,8 @@
     "online": "在線",
     "offline": "離線",
     "type_message": "輸入訊息",
-    "send": "發送"
+    "send": "發送",
+    "no_messages_yet": "還沒有訊息"
   },
   "ProfileContents": {
     "loading": "載入中...",

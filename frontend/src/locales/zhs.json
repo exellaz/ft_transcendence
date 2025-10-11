@@ -233,7 +233,8 @@
     "online": "在线",
     "offline": "离线",
     "type_message": "输入消息",
-    "send": "发送"
+    "send": "发送",
+    "no_messages_yet": "还没有消息"
   },
   "ProfileContents": {
     "loading": "加载中...",

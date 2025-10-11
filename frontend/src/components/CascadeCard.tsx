@@ -14,6 +14,7 @@ import Messaging from "./Messaging";
 interface CascadeCardProps {
   userId: number;
   selectedUser: User;
+  friendshipId?: number;
   activeTab: string;
   onActionSuccess: () => void;
 }
@@ -21,6 +22,7 @@ interface CascadeCardProps {
 const CascadeCard: React.FC<CascadeCardProps> = ({
   userId,
   selectedUser,
+  friendshipId,
   activeTab,
   onActionSuccess,
 }) => {
@@ -136,8 +138,9 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   else if (activeTab === "friends" && !showProfile) {
     children = (
       <Messaging
-        friendBasic={selectedUser}
-        friendId={selectedUser.id}
+        userId={userId}
+        selectedUser={selectedUser}
+        friendshipId={friendshipId!}
         onProfileClick={() => setShowProfile(true)}
       />
     );

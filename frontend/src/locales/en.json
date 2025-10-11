@@ -235,7 +235,8 @@
     "online": "Online",
     "offline": "Offline",
     "type_message": "Type a message",
-    "send": "Send"
+    "send": "Send",
+    "no_messages_yet": "No messages yet."
   },
   "ProfileContents": {
     "loading": "Loading...",
