@@ -18,8 +18,6 @@ export interface Room {
   id: number; // room id
   name: string; // room name
   teamSize: number; // team size (1vs1 or 2vs2)
-  width: number; // game width
-  height: number; // game height
   setting: {
     ballSpeed: number; // ball speed
     ballSize: number; // ball size
@@ -28,12 +26,8 @@ export interface Room {
     map: string; // game map
   };
   gameState: {
-    ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
-    paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
     teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
     score: { left: number; right: number }; //[key] => team side, [value] => score
-    gameStarted: boolean; // flag for start game
-    gameEnded?: boolean; // flag for end game
   };
   clients: Set<WSWebSocket>; // Set of WebSocket connections
   clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo

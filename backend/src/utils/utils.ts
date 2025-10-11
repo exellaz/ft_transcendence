@@ -177,8 +177,6 @@ export function handleSwitchSide(
 
   //remove the old role before reindex
   const oldRole = player.role;
-  // Remove old paddle for this client (optional since we'll rebuild paddles)
-  delete room.gameState.paddles[oldRole];
 
   // 1. collect playerInfo per team (excluding the switching client)
   const leftPlayers: playerInfo[] = [];
@@ -300,8 +298,8 @@ export function handlePlayerDisconnect(
 export function startCountdown(room: Room, onComplete: () => void) {
   if (room.countdownTimer) return; // already running
 
-  //set timer for 5 seconds countdown
-  let remaining = 1; //? seconds
+  //set timer for countdown
+  let remaining = 5; //? room countdown time
   room.countdownRemaining = remaining;
 
   //broadcast to clients start from 5
@@ -339,171 +337,3 @@ export function cancelCountdown(room: Room) {
     broadcast(room, { type: "countdownCancel" });
   }
 }
-
-// export function startTournamentCountdown(
-// 	tournamentId: number,
-// 	broadcast: (msg: string) => void,
-// 	countdownTime: number = 10,
-// 	client: Map<WebSocket, { tournamentId: number; playerId: number }>
-// ) {
-//   const tournament = tournaments.get(tournamentId);
-//   if (!tournament || tournament.countdownTimer) return; // already running
-
-//   //set timer for 5 seconds countdown
-//   tournament.countdownRemaining = countdownTime;
-
-//   tournament.countdownTimer = setInterval(() => {
-//     const t = tournaments.get(tournamentId);
-//     if (!t) return;
-
-//     if (t.countdownRemaining! > 0) {
-//         broadcast(JSON.stringify({ type: "countdown", remaining: t.countdownRemaining }));
-//         t.countdownRemaining!--;
-//     } else {
-//       //countdown complete
-//       clearInterval(t.countdownTimer);
-//       t.countdownTimer = undefined;
-//       t.countdownRemaining = undefined;
-//       t.started = true;
-
-//       const shuffeld = [...t.players].sort(() => 0.5 - Math.random());
-//       const matches: TournamentMatch[] = [];
-//       for (let i = 0; i < shuffeld.length; i += 2) {
-//         const pair = shuffeld.slice(i, i + 2);
-//         const room = createGameRoom(tournamentId, pair);
-//         console.log("Tournament game room created:", room); ////debug
-
-//         for (const [ws, info] of client.entries()) {
-//           if (info.tournamentId === tournamentId) {
-//             const matchPlayer = pair.find(p => p.id === info.playerId);
-//             if (matchPlayer) {
-//               room.clients.add(ws);
-//               room.sockets.set(ws, info.playerId);
-
-//               // Set sessionStorage only if playerId is defined and found in clientRoles
-//               const playerInfo = room.clientRoles.get(info.playerId);
-//               if (playerInfo) {
-// 				ws.send(JSON.stringify({
-// 					type: "getPlayerTeam",
-// 					roomId: room.id,
-// 					roomName: tournament.stage,
-// 					team: playerInfo.team === "left" ? "left" : "right",
-// 				}));
-//               }
-//             }
-//           }
-//         }
-
-//         matches.push({ roomId: room.id, players: pair, winnerId: -1 });
-//         startRoomLoop(room);
-//       }
-
-//       t.matches = matches;
-//       t.stage = "quarterfinals";
-
-//       broadcast(JSON.stringify({ type: "tournamentStarted", stage: t.stage, matches: t.matches }));
-//       console.log (`Tournament ${tournamentId} started with ${t.players.length} players`); //// debug
-//     }
-//   }, 1000);
-//   console.log (`Tournament ${tournamentId} countdown started`); //// debug
-// }
-
-// export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg: string) => void) {
-//     const tournament = tournaments.get(tournamentId);
-//     if (!tournament || !tournament.countdownTimer) return;
-
-//     clearInterval(tournament.countdownTimer);
-//     tournament.countdownTimer = undefined;
-//     tournament.countdownRemaining = undefined;
-//     broadcast(JSON.stringify({ type: "countdownCancel" }));
-//     console.log (`Tournament ${tournamentId} countdown cancelled`); //// debug
-// }
-
-// export function createGameRoom(
-//     tournamentId: number,
-//     playerPair: { id: number, username: string, spriteUrl: string }[]
-// ) {
-//     const roomId = generateRoomId();
-//     const roomName = `Tournament ${tournamentId} - Room ${roomId}`;
-
-//     const pongGame = new PongGame(
-//       false,
-//       {
-//         ballSpeed: 1,
-//         ballSize: 1,
-//         paddleSpeed: 1,
-//         scorePoint: 1,
-//         map: "stadium",
-//       },
-// 	  (winner) => {
-// 		const room = rooms.get(roomId);
-// 		if (!room) return;
-// 		roomEndGame(room, true, winner);
-// 	  }
-//     );
-
-//     if (!playerPair[0] || !playerPair[1]) {
-//         throw new Error("playerPair must contain two defined players");
-//     }
-
-//     const leftPlayer: playerInfo = {
-//         clientId: playerPair[0].id,
-//         playerName: playerPair[0].username,
-//         role: "left_player1",
-//         team: "left",
-//         leader: false,
-//         spriteUrl: playerPair[0].spriteUrl,
-//         ready: true,
-//     }
-
-//     const rightPlayer: playerInfo = {
-//         clientId: playerPair[1].id,
-//         playerName: playerPair[1].username,
-//         role: "right_player1",
-//         team: "right",
-//         leader: false,
-//         spriteUrl: playerPair[1].spriteUrl,
-//         ready: true,
-//     }
-
-//     const newRoom: Room = {
-//         id: roomId,
-//         name: roomName,
-//         teamSize: 1,
-//         width: 800,
-//         height: 400,
-//         setting: {
-//             ballSpeed: 1,
-//             ballSize: 1,
-//             paddleSpeed: 1,
-//             scorePoint: 1,
-//             map: "stadium"
-//         },
-//         gameState: {
-//             ball: { x:0, y:0, dx:0, dy:0 },
-//             paddles: {},
-//             teams: { left: [leftPlayer], right: [rightPlayer] },
-//             score: { left: 0, right: 0 },
-//             gameStarted: false,
-//             gameEnded: false,
-//         },
-//         clients: new Set(),
-//         clientRoles: new Map<number, playerInfo>([
-//             [leftPlayer.clientId, leftPlayer],
-//             [rightPlayer.clientId, rightPlayer],
-//         ]),
-//         sockets: new Map<WebSocket, number>(),
-//         chatHistory: [],
-//         game: pongGame,
-//         duration: 0,
-//         canStart: false,
-//         leaderId: -1,
-//         private: false,
-//     };
-
-//     rooms.set(roomId, newRoom);
-
-//     console.log(`Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`);
-
-//     return newRoom;
-// }

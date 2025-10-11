@@ -200,10 +200,9 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
             // Start the countdown to start the game
             startCountdown(room, () => {
-              if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+                if (room.game.state === 2 || room.game.state === 3) return;
                 roomStartGame(room);
                 startRoomLoop(room);
-              }
             });
             return;
           }

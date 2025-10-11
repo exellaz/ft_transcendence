@@ -204,7 +204,7 @@ export class WebSocketHandler implements IWebSocketHandler {
     room.clients.delete(socket);
 
     // --- handle leader leaving ---
-    if (clientId === room.leaderId && !room.gameState.gameEnded) {
+    if (clientId === room.leaderId && room.game.state !== 3) {
       //check for remaining players except spectators and the leaving leader
       const remainingPlayers = room.clientRoles
         ? Array.from(room.clientRoles.entries() as Iterable<[number, playerInfo]>)
@@ -213,7 +213,7 @@ export class WebSocketHandler implements IWebSocketHandler {
         : [];
 
       //if have remaining player when leader left pass leader to the player
-      if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
+      if (remainingPlayers.length > 0 && room.game.state !== 2) {
         room.leaderId = remainingPlayers[0] as number; // assign new leader
         const newLeader = room.clientRoles.get(room.leaderId);
         if (newLeader) {
@@ -237,12 +237,12 @@ export class WebSocketHandler implements IWebSocketHandler {
     }
 
     // ---- case: disconnect during countdown ----
-    if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+    if (room.game.state !== 2 && room.game.state !== 3) {
       cancelCountdown(room);
     }
 
     // ---- case: leave before game start / game ended ----
-    if (!room.gameState.gameStarted || room.gameState.gameEnded) {
+    if (room.game.state !== 2 && room.game.state !== 3) {
       console.log(
         `Player ${player.playerName} (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`,
       );
@@ -257,7 +257,6 @@ export class WebSocketHandler implements IWebSocketHandler {
           (p: playerInfo) => p.role !== role,
         );
         room.clientRoles.delete(clientId);
-        delete room.gameState.paddles[role];
       }
 
       //remove room if no player

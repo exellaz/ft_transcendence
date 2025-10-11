@@ -59,8 +59,6 @@ export function createRoom(
     id,
     name,
     teamSize,
-    width: 800,
-    height: 400,
     setting: {
       ballSpeed: DEFAULT_SETTING.ballSpeed ?? -1,
       ballSize: DEFAULT_SETTING.ballSize ?? -1,
@@ -69,17 +67,8 @@ export function createRoom(
       map: DEFAULT_SETTING.map ?? "unknown",
     },
     gameState: {
-      ball: {
-        x: 800 / 2,
-        y: 400 / 2,
-        dx: (initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed) as number,
-        dy: (initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed) as number,
-      },
-      paddles: {},
       teams: { left: [], right: [] },
       score: { left: 0, right: 0 },
-      gameStarted: false,
-      gameEnded: false,
     },
     clients: new Set(),
     clientRoles: new Map(),
@@ -122,11 +111,9 @@ export function startRoomLoop(room: Room) {
  * @param room Room object
  */
 export function roomStartGame(room: Room) {
-  if (!room.gameState.gameStarted) {
     room.startTime = new Date();
     console.log(`room setting: ${JSON.stringify(room.setting)}`);
     // room.game.resetBall(room, "left");
-  }
 }
 
 /**

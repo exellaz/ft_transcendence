@@ -88,7 +88,7 @@ export default async function roomRoutes(app: FastifyInstance) {
       name,
       teamSize,
       leaderId,
-      gameStarted: room.gameState.gameStarted,
+      gameStarted: room.game.state === 2 ? true : false,
       ...(isPrivate ? { leaderId } : {}), // only include leaderId if private
       private: room.private,
       setting: room.setting, // 👈 important for frontend
@@ -171,11 +171,7 @@ export default async function roomRoutes(app: FastifyInstance) {
         id: room.id,
         name: room.name,
         teamSize: room.teamSize,
-        width: room.width,
-        height: room.height,
-        setting: room.setting, // 👈 important for frontend
-        gameStarted: room.gameState.gameStarted,
-        gameEnded: !!room.gameState.gameEnded,
+        setting: room.setting,
         private: room.private,
         leaderId: room.leaderId,
       };

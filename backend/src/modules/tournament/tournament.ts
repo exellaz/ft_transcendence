@@ -150,8 +150,6 @@ export function createGameRoom(
 		id: roomId,
 		name: roomName,
 		teamSize: 1,
-		width: 800, //!delete
-		height: 400, //!delete
 		setting: {
 			ballSpeed: 1,
 			ballSize: 1,
@@ -160,12 +158,8 @@ export function createGameRoom(
 			map: "stadium"
 		},
 		gameState: {
-			ball: { x:0, y:0, dx:0, dy:0 }, //! delete
-			paddles: {}, //! delete
 			teams: { left: [leftPlayer], right: [rightPlayer] },
 			score: { left: 0, right: 0 },
-			gameStarted: false, //! delete
-			gameEnded: false, //! delete
 		},
 		clients: new Set(),
 		clientRoles: new Map<number, playerInfo>([
