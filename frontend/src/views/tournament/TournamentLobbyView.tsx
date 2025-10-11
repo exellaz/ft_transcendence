@@ -15,8 +15,10 @@ import ReadyPlayers from "../../components/ReadyPlayers";
 import TournamentHeader from "../../components/TournamentHeader";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
 import { useLiveChatWebSocket } from "@/lib/liveChat-websocket";
+import { useBlockLeave } from "@/utils/blockRefresh";
 
 const TournamentLobbyView: React.FC = () => {
+  useBlockLeave();
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
@@ -31,6 +33,14 @@ const TournamentLobbyView: React.FC = () => {
   const { user } = useUser();
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
   console.log("User info in TournamentLobbyView:", userinfo); ////debug
+
+  // prevent player from reloading the page
+  React.useEffect (() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+        sessionStorage.removeItem("reloading");
+        navigate("/main-menu");
+        }
+  }, []);
 
   // Fetch user info when the component mounts
   React.useEffect(() => {
@@ -66,10 +76,13 @@ const TournamentLobbyView: React.FC = () => {
     message,
     setMessage,
     handleSendMsg
-  } = useLiveChatWebSocket(tournamentId ?? -1, {
-    id: userinfo?.id ?? -1,
-    name: userinfo?.username ?? "",
-    });
+  } = useLiveChatWebSocket(
+    tournamentId ?? -1,
+    {
+      id: userinfo?.id ?? -1,
+      name: userinfo?.username ?? "",
+    }
+  );
 
   const {
     players: currentPlayer,

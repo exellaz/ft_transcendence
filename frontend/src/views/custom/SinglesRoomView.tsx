@@ -65,6 +65,7 @@ const SinglesRoomView: React.FC = () => {
     );
   };
 
+  // prevent player from reloading the page
   React.useEffect (() => {
     if (sessionStorage.getItem("reloading") !== null) {
         sessionStorage.removeItem("reloading");

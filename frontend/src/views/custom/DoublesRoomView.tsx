@@ -65,6 +65,14 @@ const DoublesRoomView: React.FC = () => {
     );
   };
 
+  // prevent player from reloading the page
+  React.useEffect (() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+        sessionStorage.removeItem("reloading");
+        navigate("/main-menu");
+        }
+  }, []);
+
   // Fetch user info when the component mounts
   React.useEffect(() => {
     if (!user) return; // Ensure `user` is available
