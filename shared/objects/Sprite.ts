@@ -157,14 +157,6 @@ export function drawImg(
   const worldPos = sprite.host!.getWorldPosition();
   const rotation = sprite.host!.rotation || 0;
   const scale = sprite.host!.scale || { x: 1, y: 1 };
-
-
-  // if ( ( as string).includes("eyes.png") ) {
-  //   console.log("drawung");
-  // }
-
-  // console.log("image path: ", sprite.imagePath);
-
   const position = sprite.host!.toScreenPosition(viewport);
 
   viewport.ctx.save();

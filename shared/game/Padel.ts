@@ -213,8 +213,8 @@ export class PadelLabel extends Label {
 }
 
 export class Arrow extends GameObject {
-  team: Team;
-  text: string;
+  team!: Team;
+  text!: string;
   declare parent: Padel;
   public skin: number = 0;
 
@@ -252,7 +252,7 @@ export class Arrow extends GameObject {
 
     this.addComponent(
       new Sprite({
-        imagePath: SKIN_PATHS[this.skin].arrow,
+        imagePath: SKIN_PATHS[this.skin as Skin].arrow,
         flippedHorizontal: this.team === Team.TEAM_LEFT,
       }),
     );
