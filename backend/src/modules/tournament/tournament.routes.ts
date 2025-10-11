@@ -8,15 +8,43 @@ import { TournamentPlayerWs } from "./tournament.ws";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
 
+export interface TournamentPlayerWs {
+    id: number;
+    username: string;
+    spriteUrl: string;
+    ready: boolean;
+}
+
+export interface TournamentMatch {
+    roomId: number;
+    players: TournamentPlayerWs[];
+    winnerId: number;
+}
+
 export interface tournament {
   id: number;
   name: string;
   players: TournamentPlayerWs[];
+  matches?: TournamentMatch[];
   started: boolean;
   stage: "quarterfinals" | "semifinals" | "finals";
   countdownTimer?: NodeJS.Timeout | undefined;
   countdownRemaining?: number | undefined;
   maxPlayer: number;
+}
+
+export interface TournamentGameRoom {
+  id: number;
+  name: string;
+  players: {
+    id: number;
+    username: string;
+    spriteUrl: string;
+    side: "left" | "right";
+  }[];
+  gameStarted: boolean;
+  gameEnded: boolean;
+  tournamentId?: number;
 }
 
 export const tournaments = new Map<number, tournament>();

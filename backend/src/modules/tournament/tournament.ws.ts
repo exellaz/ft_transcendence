@@ -1,20 +1,8 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
-import { tournaments } from "./tournament.routes";
+import { tournaments, TournamentPlayerWs } from "./tournament.routes";
 import { startTournamentCountdown, cancelTournamentCountdown } from "src/utils/utils";
 import { start } from "repl";
-
-export interface TournamentPlayerWs {
-    id: number;
-    username: string;
-    spriteUrl: string;
-    ready: boolean;
-}
-
-export interface TournamentLobby {
-    tournamentId: number;
-    players: TournamentPlayerWs[];
-}
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 

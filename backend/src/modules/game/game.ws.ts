@@ -45,6 +45,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     // Step 1: Assign role to client (player, spectator, etc.)
     const { clientId, room, side, playerName, playerSprite } = context;
 
+    //? implement socket for tournament use
+    room.sockets.set(socket, clientId);
+    room.clients.add(socket);
+
     console.log("player sprite: ", playerSprite);
     console.log("player name: ", playerName);
 

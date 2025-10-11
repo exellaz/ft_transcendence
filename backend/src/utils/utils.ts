@@ -1,11 +1,12 @@
 import { chatRooms } from "../modules/chat/liveChat.ws";
-import { rooms, roomEndGame } from "../modules/room/room";
+import { rooms, roomEndGame, createRoom, generateRoomId } from "../modules/room/room";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
 import { BroadcastMessage, WSContext, playerInfo, Room } from "./interface";
-import { tournaments } from "../modules/tournament/tournament.routes";
+import { tournaments, TournamentMatch, TournamentGameRoom } from "../modules/tournament/tournament.routes";
+import { PongGame } from "@shared/game/pong.ts";
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -362,7 +363,18 @@ export function startTournamentCountdown(tournamentId: number, broadcast: (msg: 
       t.countdownRemaining = undefined;
       t.started = true;
 
-      broadcast(JSON.stringify({ type: "tournamentStarted", players: t.players }));
+      const shuffeld = [...t.players].sort(() => 0.5 - Math.random());
+      const matches: TournamentMatch[] = [];
+      for (let i = 0; i < shuffeld.length; i += 2) {
+        const pair = shuffeld.slice(i, i + 2);
+        const room = createGameRoom(tournamentId, pair);
+        matches.push({ roomId: room.id, players: pair, winnerId: -1 });
+      }
+
+      t.matches = matches;
+      t.stage = "quarterfinals";
+
+      broadcast(JSON.stringify({ type: "tournamentStarted", stage: t.stage, matches: t.matches }));
       console.log (`Tournament ${tournamentId} started with ${t.players.length} players`); //// debug
     }
   }, 1000);
@@ -378,4 +390,88 @@ export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg:
     tournament.countdownRemaining = undefined;
     broadcast(JSON.stringify({ type: "countdownCancel" }));
     console.log (`Tournament ${tournamentId} countdown cancelled`); //// debug
+}
+
+export function createGameRoom(
+    tournamentId: number,
+    playerPair: { id: number, username: string, spriteUrl: string }[]
+) {
+    const roomId = 99 + generateRoomId();
+    const roomName = `Tournament ${tournamentId} - Room ${roomId}`;
+
+    const pongGame = new PongGame(
+      false,
+      {
+        ballSpeed: 1,
+        ballSize: 1,
+        paddleSpeed: 1,
+        scorePoint: 1,
+        map: "stadium",
+      },
+    );
+
+    if (!playerPair[0] || !playerPair[1]) {
+        throw new Error("playerPair must contain two defined players");
+    }
+
+    const leftPlayer: playerInfo = {
+        clientId: playerPair[0].id,
+        playerName: playerPair[0].username,
+        role: "left_player1",
+        team: "left",
+        leader: false,
+        spriteUrl: playerPair[0].spriteUrl,
+        ready: true,
+    }
+
+    const rightPlayer: playerInfo = {
+        clientId: playerPair[1].id,
+        playerName: playerPair[1].username,
+        role: "right_player1",
+        team: "right",
+        leader: false,
+        spriteUrl: playerPair[1].spriteUrl,
+        ready: true,
+    }
+
+    const newRoom: Room = {
+        id: roomId,
+        name: roomName,
+        teamSize: 1,
+        width: 800,
+        height: 400,
+        setting: {
+            ballSpeed: 1,
+            ballSize: 1,
+            paddleSpeed: 1,
+            scorePoint: 1,
+            map: "stadium"
+        },
+        gameState: {
+            ball: { x:0, y:0, dx:0, dy:0 },
+            paddles: {},
+            teams: { left: [leftPlayer], right: [rightPlayer] },
+            score: { left: 0, right: 0 },
+            gameStarted: false,
+            gameEnded: false,
+        },
+        clients: new Set(),
+        clientRoles: new Map<number, playerInfo>([
+            [leftPlayer.clientId, leftPlayer],
+            [rightPlayer.clientId, rightPlayer],
+        ]),
+        sockets: new Map<WebSocket, number>(),
+        chatHistory: [],
+        game: pongGame,
+        duration: 0,
+        canStart: false,
+        leaderId: -1,
+        private: false,
+    };
+
+    rooms.set(roomId, newRoom);
+
+    console.log(`Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`);
+
+    return newRoom;
 }
