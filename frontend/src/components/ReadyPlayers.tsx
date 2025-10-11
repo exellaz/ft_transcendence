@@ -66,7 +66,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userId={selectedId}
+          selectedId={selectedId}
           variant={selectedId === userId ? "self" : "other"}
         />
       )}

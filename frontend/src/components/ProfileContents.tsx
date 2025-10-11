@@ -17,10 +17,10 @@ import Medals from "./Medals";
 import StatsBadge from "./StatsBadge";
 
 interface ProfileContentsProps {
-  userId: number;
+  selectedId: number;
 }
 
-const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
+const ProfileContents: React.FC<ProfileContentsProps> = ({ selectedId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileContents.${key}`);
 
@@ -31,9 +31,9 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
     error: userError,
     refetch: refetchUser,
   } = useApiQuery<User>(
-    () => getUserById({ id: userId }),
+    () => getUserById({ id: selectedId }),
     [open],
-    userId !== 0
+    selectedId !== 0
   );
 
   // API query for tournament stats data
@@ -43,9 +43,9 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
     error: statsError,
     refetch: refetchStats,
   } = useApiQuery<TournamentStats>(
-    () => getTournamentStatsRequest({ id: userId }),
+    () => getTournamentStatsRequest({ id: selectedId }),
     [open],
-    userId !== 0
+    selectedId !== 0
   );
   
   let contents: React.ReactNode;

@@ -94,8 +94,8 @@ const MatchView: React.FC = () => {
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userId={selectedId}
-          variant="other"
+          selectedId={selectedId}
+          variant={selectedId === userId ? "self" : "other"}
         />
       )}
     </Background>

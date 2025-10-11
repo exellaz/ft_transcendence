@@ -160,7 +160,9 @@
     "header": "我的資料",
     "header_other": "資料",
     "add_friend": "新增好友",
-    "block": "封鎖"
+    "friend": "好友",
+    "request_sent": "已送出",
+    "blocked": "已封鎖"
   },
   "SettingsPopup": {
     "header": "設定",

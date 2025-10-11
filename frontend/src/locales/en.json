@@ -158,7 +158,9 @@
     "header": "My Profile",
     "header_other": "Profile",
     "add_friend": "Add Friend",
-    "block": "Block"
+    "friend": "Friend",
+    "request_sent": "Request Sent",
+    "blocked": "Blocked"
   },
   "SettingsPopup": {
     "header": "Settings",
