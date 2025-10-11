@@ -241,9 +241,6 @@ export class GameObject {
     for (const child of this.children) {
       if (child instanceof GameObject) {
         child.draw(viewport);
-        if (child.constructor.name === "ImageObject") {
-          console.log("drawing child", child.sprite.imagePath);
-        }
       } 
     }
   }

@@ -97,12 +97,22 @@ const LocalGameView: React.FC = () => {
             controls={["↑", "↓"]}
           />
         </div>
-        <div className="flex-row-center gap-6">
-          <Button onClick={() => setShowGameSettings(true)}>
-            {translate("game_settings")}
-          </Button>
-          <Button variant="green">{translate("start")}</Button>
-        </div>
+        <Button onClick={() => setShowGameSettings(true)}>
+          {translate("game_settings")}
+        </Button>
+        <Button
+          variant="green"
+          onClick={() => {
+            const gameDetails: GameDetails = {
+              player1,
+              player2,
+              gameSettings,
+            };
+            navigate("/local-game-view", { state: gameDetails });
+          }}
+        >
+          {translate("start")}
+        </Button>
       </Card>
       <ChooseSpritePopup
         open={choosingPlayer !== null}

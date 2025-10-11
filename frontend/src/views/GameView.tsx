@@ -145,6 +145,10 @@ const GameView: React.FC<GameViewProps> = () => {
   }
 
   else if (mode === "local") {
+    const location = useLocation();
+    const state = location.state
+
+    console.log("state", state);
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -160,6 +164,8 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const game = new PongGame(false, {}, () => { }, 1);
+
+      game.updateSettings(location.state.gameSettings);
 
       game.addPlayer(
         new Player({
@@ -181,7 +187,7 @@ const GameView: React.FC<GameViewProps> = () => {
       const keysPressed = new Set<string>();
 
       const handleKeyDown = (event: KeyboardEvent) => {
-        if (event.key === "w" || event.key === "s") {
+        if (["w", "s", "ArrowUp", "ArrowDown"].includes(event.key)) {
           keysPressed.add(event.key);
         }
       };
@@ -208,6 +214,12 @@ const GameView: React.FC<GameViewProps> = () => {
         }
         if (keysPressed.has("s")) {
           game.movePaddle("ArrowDown", 0);
+        }
+        if (keysPressed.has("ArrowDown")) {
+          game.movePaddle("ArrowDown", 1);
+        }
+        if (keysPressed.has("ArrowUp")) {
+          game.movePaddle("ArrowUp", 1);
         }
 
         // Update and render
@@ -245,6 +257,23 @@ const GameView: React.FC<GameViewProps> = () => {
           <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
             <canvas ref={canvasRef} width={880} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
             />
+          </div>
+          {/* ✅ Back to Lobby Button */}
+          <div>
+            <Button
+              variant="bigYellow"
+              className="px-3 py-4 text-2xl"
+              onClick={() => {
+                navigate("/main-menu");
+                sessionStorage.removeItem("playerSide");
+                sessionStorage.removeItem("RoomId");
+                sessionStorage.removeItem("RoomLeaderId");
+                sessionStorage.removeItem("RoomName");
+                sessionStorage.removeItem("RoomType");
+              }}
+            >
+              Back to Lobby
+            </Button>
           </div>
         </div>
       </Background>
