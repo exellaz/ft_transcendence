@@ -66,6 +66,13 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       if (data.type === "countdownCancel") {
         setCountdown(null);
       }
+
+	  if (data.type === "getPlayerTeam") {
+		console.log("Received getPlayerTeam message:", data.roomId); ////debug
+		sessionStorage.setItem("playerSide", data.team === "left" ? "left" : "right");
+		sessionStorage.setItem("RoomId", data.roomId);
+		sessionStorage.setItem("RoomName", data.roomName);
+	  }
     };
 
     ws.onclose = () => {

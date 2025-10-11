@@ -107,7 +107,7 @@ const TournamentLobbyView: React.FC = () => {
 
   React.useEffect(() => {
     if (started) {
-      navigate("/main-menu"); //TODO need implment room -> game
+      navigate("/game"); //TODO need implment room -> game
     }
   }, [started]);
 

@@ -74,6 +74,12 @@ export function useGameRoomWebSocket({
   playerSprite,
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
+  console.log("allinfo:");
+  console.log("roomId:", roomId);
+  console.log("clientId:", clientId);
+  console.log("initialRole:", initialRole);
+  console.log("playerName:", playerName);
+  console.log("playerSprite:", playerSprite);
 
   useEffect(() => {
     const ws = new WebSocket(

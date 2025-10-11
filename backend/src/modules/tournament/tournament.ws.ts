@@ -1,8 +1,9 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { tournaments, TournamentPlayerWs } from "./tournament.routes";
-import { startTournamentCountdown, cancelTournamentCountdown } from "src/utils/utils";
+import { startTournamentCountdown, cancelTournamentCountdown } from "./tournament";
 import { start } from "repl";
+import { roomEndGame } from "../room/room";
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 
@@ -49,7 +50,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             console.log (`Player ${playerName} joined tournament ${tournamentId}`); //// debug
 
             if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
-                startTournamentCountdown(tournamentId, broadcast, 10); //start 10 seconds countdown
+                startTournamentCountdown(tournamentId, broadcast, 10, client); //start 10 seconds countdown
             }
         }
 
@@ -103,6 +104,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         });
 
         socket.on("close", () => {
+			if (tournament.started) return;
             tournament.players = tournament.players.filter(p => p.id !== playerId);
             client.delete(socket);
 
@@ -123,7 +125,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                 cancelTournamentCountdown(tournamentId, broadcast);
             }
 
-            if (tournament.players.length === 0) {
+            if (!tournament.started && tournament.players.length === 0) {
                 tournaments.delete(tournamentId);
                 console.log(`Tournament ${tournamentId} deleted due to no players`);
             }

@@ -414,6 +414,9 @@ const GameView: React.FC = () => {
   const playerName = userInfo?.username ?? "undefined"; // Ensure playerName is always a string
   const playerSprite = userInfo?.avatarUrl || "default.png";
   const initialRole = sessionStorage.getItem("playerSide") || "";
+  console.log("room id from session:", roomId); ////debug
+  console.log("room name from session:", roomName); ////debug
+  console.log("client id from session:", clientId); ////debug
   console.log("player name from session:", playerName); ////debug
   console.log("player sprite from session:", playerSprite); ////debug
   console.log("initial role from session:", initialRole); ////debug
