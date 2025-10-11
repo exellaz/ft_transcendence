@@ -41,7 +41,7 @@ interface MatchDetail {
 }
 
 // Social features API interfaces
-// - SocialHub.tsx, Messaging.tsx, ProfileContents.tsx
+// - Messaging.tsx, ProfileContents.tsx
 export interface FriendBasic {
   id: number;
   avatarUrl: string;

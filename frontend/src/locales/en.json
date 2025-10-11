@@ -48,8 +48,10 @@
     "close": "close"
   },
   "LocalGameView": {
+    "change_sprite": "Change Sprite",
     "local_game": "Local Game",
-    "ready": "Ready"
+    "game_settings": "Game Settings",
+    "start": "Start"
   },
   "LoginView": {
     "username_or_email": "Username / Email",
@@ -261,7 +263,7 @@
     "game_settings": "Game Settings",
     "invite_friends": "Invite Friends"
   },
-  "SocialHub": {
+  "FriendsPopup": {
     "tabs": {
       "friends": "Friends",
       "requests": "Requests",
@@ -271,7 +273,10 @@
     "search_friend": "Search friend",
     "enter_friend_username": "Enter friend's username",
     "friend_added": "Friend has been added.",
-    "username_not_exist": "Username does not exist.",
-    "back": "Back"
+    "user_not_exist": "User does not exist.",
+    "back": "Back",
+    "no_friends_yet": "No friends yet.",
+    "no_new_requests": "No new requests.",
+    "no_blocked_users": "No blocked users."
   }
 }

@@ -31,8 +31,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   // API query for user data
   const { data: user, refetch } = useApiQuery<User>(
-    () => getUserById({ id: Number(userId) }),
-    [userId],
+    () => getUserById({ id: userId }),
+    [userId]
   );
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();

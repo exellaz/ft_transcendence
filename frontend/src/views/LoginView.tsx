@@ -70,7 +70,7 @@ const LoginView: React.FC = () => {
 
       // Raw API query for user's preferred language
       const settingsResponse = await getUserSettingsById({
-        id: Number(loginResponse.data.user.id),
+        id: loginResponse.data.user.id,
       });
       if (settingsResponse.success && settingsResponse.data?.language) {
         setLanguage(settingsResponse.data.language);

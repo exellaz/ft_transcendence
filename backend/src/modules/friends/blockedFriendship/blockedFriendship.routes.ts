@@ -25,7 +25,9 @@ async function blockedFriendshipRoutes(
     if (!blockedFriendships)
       throw new ApiError("Blocked Friendships not found", 404);
 
-    return ok(blockedFriendships); // 200 OK
+    type BlockedFriendship = (typeof blockedFriendships)[number];
+
+    return ok(blockedFriendships.map((b: BlockedFriendship) => b.blocked)); // 200 OK
   });
 
   // POST /blockedFriendships

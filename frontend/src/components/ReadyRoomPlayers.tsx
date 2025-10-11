@@ -80,7 +80,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
       <p
         className={
           //TODO id issue here
-          `text-lg font-bold ${getUserColor(String(player.id))}`
+          `text-lg font-bold ${getUserColor(player.id)}`
         }
         title={player.username}
       >
