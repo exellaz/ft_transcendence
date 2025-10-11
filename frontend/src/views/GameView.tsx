@@ -1,352 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useParams, useRef, useEffect } from "react";
 import { useTranslation, withSSR } from "react-i18next";
 import Background from "../components/Background";
 import TournamentHeader from "../components/TournamentHeader";
-import { Sprite } from "@shared/objects/Sprite";
-import { HitBox } from "@shared/objects/HitBox";
-import { Glow } from "@shared/objects/Glow";
-import { Label } from "@shared/objects/Label";
-import { ImageObject } from "@shared/objects/ImageObject";
-import { Ball } from "@shared/game/ball";
-import { OnScreenLabel } from "@shared/objects/Label";
-import { GameObject } from "@shared/objects/GameObject";
-import { Arrow } from "@shared/game/Padel";
-import { Player } from "@shared/game/Player";
-import { Point2D, Vector2D } from "@shared/objects/Coordinates";
-import { PongGame, Team } from "@shared/game/pong";
-import type { Component } from "@shared/objects/Component";
-import { Viewport } from "@shared/objects/Viewport";
-import type { Camera } from "@shared/objects/Camera";
 import { getUserById } from "../lib/usersApiClient";
-
 import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button";
+import { GameClient } from "./Gameclient";
+import { useLocation } from "react-router-dom";
+import { PongGame } from "@shared/game/pong";
+import { Viewport } from "@shared/objects/Viewport";
+import { Player } from "@shared/game/Player";
 
-function isArrowKey(e: KeyboardEvent): boolean {
-  return e.key === "ArrowUp" || e.key === "ArrowDown";
+interface GameViewProps {
+  mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
 }
 
-// TODO not populating data beyond the initial handshake
-
-const componentMap: Record<string, new (params: any) => any> = {
-  Point2D: function (params: any) {
-    return new Point2D(params.x, params.y);
-  } as any,
-  Vector2D: function (params: any) {
-    return new Vector2D(params.x, params.y);
-  } as any,
-  sprite: Sprite,
-  glow: Glow,
-  hitbox: HitBox,
-};
-
-const gameObjectMap: Record<string, new (params: any) => any> = {
-  imageObject: ImageObject,
-  label: Label,
-  ball: Ball,
-  OnScreenLabel: OnScreenLabel,
-  gameObject: GameObject,
-  arrow: Arrow,
-  player: Player,
-};
-
-function revive(obj: any): any {
-  // -- handle arrays --
-  if (Array.isArray(obj)) return obj.map(revive);
-
-  // -- handle object (nested) --
-  if (obj && typeof obj === "object") {
-    const { className } = obj;
-
-    // If the object matches a known component, rebuild as an instance
-    // -end of recursion
-    if (className && componentMap[className]) {
-      const revivedParams: Record<string, any> = {};
-      for (const key in obj) revivedParams[key] = revive(obj[key]);
-
-      return new componentMap[className](revivedParams);
-    }
-
-    // Otherwise, recurse further
-    for (const key in obj) {
-      if (key === "position")
-        obj.position = new Point2D(obj.position.x, obj.position.y);
-      else if (key === "scaleFactor")
-        obj.scaleFactor = new Vector2D(obj.scaleFactor.x, obj.scaleFactor.y);
-      else obj[key] = revive(obj[key]);
-    }
-  }
-
-  return obj;
-}
-
-function genericUpdate(obj: Record<string, any>, params: Record<string, any>) {
-  for (const key in params) {
-    if (key === "parent" || key === "children")
-      continue;
-
-    const value = params[key];
-
-    // -- update array types --
-    if (Array.isArray(value)) {
-      obj[key] = obj[key] || [];
-      value.forEach((item, index) => {
-        obj[key][index] = obj[key][index] || {};
-        genericUpdate(obj[key][index], item);
-      });
-    } else if (key === "cUpdate" && obj.onClientUpdateId !== value) {
-      obj.setOnClientUpdate(value);
-      continue;
-    }
-
-    // -- update nested object types --
-    else if (typeof value === "object" && value !== null) {
-      obj[key] = obj[key] || {};
-      genericUpdate(obj[key], value);
-    }
-
-    // -- assign primitive or different value --
-    else {
-      if (key === "id") 
-        continue;
-      obj[key] = value;
-    }
-  }
-}
-
-class GameClient {
-  private id: number = -1;
-
-  private websocketRef: WebSocket | null = null;
-  private data: Record<string, any> = {};
-  private gameObjectRegistry = new Map<number, GameObject>();
-  private componentRegistry = new Map<number, Component>();
-  private game: PongGame = new PongGame(true, {});
-  private viewport: Viewport | null = null;
-  private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
-  static globalId = 0;
-  private isFullStateProcessed: boolean = false;
-  private keysPressed: Record<string, boolean> = {};
-
-  handleKey(e: KeyboardEvent) {
-    if (!isArrowKey(e)) return;
-
-    if (e.type === "keydown") {
-      this.keysPressed[e.key] = true;
-    } else if (e.type === "keyup") {
-      this.keysPressed[e.key] = false;
-    }
-  }
-
-  sendData(type: string, payload: Record<string, any> = {}) {
-    if (this.websocketRef?.readyState === WebSocket.OPEN) {
-      this.websocketRef.send(JSON.stringify({ type, payload }));
-    }
-  }
-  async processStateAsync(state: any) {
-    const { gameObjects = [], components = [] } = state;
-    const chunkSize = 50;
-    this.isFullStateProcessed = true;
-
-    // --- 1️⃣ Components ---
-    for (let i = 0; i < components.length; i += chunkSize) {
-      const chunk = components.slice(i, i + chunkSize);
-      for (const stateComp of chunk) {
-        const existing = this.componentRegistry.get(stateComp.id);
-        if (existing) {
-          Object.assign(existing, revive(stateComp));
-        } else if (componentMap[stateComp.name]) {
-          const newComp = new componentMap[stateComp.name](revive(stateComp));
-          this.componentRegistry.set(stateComp.id, newComp);
-        }
-      }
-      await new Promise((r) => setTimeout(r, 0));
-    }
-
-    // --- 2️⃣ Game Objects ---
-    for (let i = 0; i < gameObjects.length; i += chunkSize) {
-      const chunk = gameObjects.slice(i, i + chunkSize);
-      for (const stateObj of chunk) {
-        const id = stateObj.id;
-        let obj = this.getObject(id);
-
-        if (!obj) {
-          const revived = revive(stateObj);
-          this.setObject(id, this.createNewInstance(revived));
-        } else {
-          genericUpdate(obj, stateObj);
-          if (stateObj.className === "camera") {
-            this.viewport!.camera = obj as Camera;
-          }
-        }
-      }
-      await new Promise((r) => setTimeout(r, 0));
-    }
-
-    // --- 3️⃣ Re-link child/parent + components ---
-    for (const [id, obj] of this.gameObjectRegistry) {
-      // children linking
-      obj.children = obj.children.map((child: any) => {
-        if (typeof child !== "number") return child;
-        const childObj = this.gameObjectRegistry.get(child);
-        if (childObj) {
-          childObj.parent = obj;
-          return childObj;
-        }
-        return child;
-      });
-
-      // component linking
-      if (obj.component_list) {
-        for (const cid of obj.component_list) {
-          if (typeof cid !== "number") continue;
-          const comp = this.componentRegistry.get(cid);
-          if (!comp) continue;
-          comp.host = obj;
-          obj.addComponent(comp);
-        }
-      }
-
-      obj.clientUpdate?.();
-    }
-  }
-  private processingPromise: Promise<void> = Promise.resolve();
-  constructor(canvasRef: HTMLCanvasElement | null, websocketRef: WebSocket) {
-    // console.log("created game client"); ////debug
-    this.id = GameClient.globalId;
-    GameClient.globalId++;
-    this.websocketRef = websocketRef;
-    ``;
-    // -- WEBSOCKET --
-
-    // send initial handshake
-    // console.log("asking for ready"); ////debug
-    if (this.websocketRef.readyState === WebSocket.OPEN) {
-      this.sendData("ready");
-    } else {
-      this.websocketRef.addEventListener("open", () => {
-        // console.log("socket opened, now sending ready"); ////debug
-        this.sendData("ready");
-      });
-    }
 
 
-    this.websocketRef.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      this.data = data;
-
-      this.processingPromise = this.processingPromise.then(async () => {
-        if (data["state"]?.type === "full") {
-          await this.processStateAsync(data["state"]);
-          this.isFullStateProcessed = true;
-          this.sendData("received_full_state");
-          this.game.initSettings(data["settings"]);
-          this.loop();
-        } else if (data["state"]?.gameObjects || data["state"]?.components) {
-          await this.processStateAsync(data["state"]); // now awaited in sequence
-        }
-      });
-    };
-    // this.websocketRef.onclose = () => console.log("❌ Disconnected"); ////debug
-
-    this.handleKey = this.handleKey.bind(this);
-    // -- KEYBOARD --
-
-    window.addEventListener("keydown", this.handleKey);
-    window.addEventListener("keyup", this.handleKey);
-
-    let lastKeyTime = 0;
-    document.addEventListener('keydown', e => {
-      const t = performance.now();
-      console.log("Input delay since last key:", t - lastKeyTime);
-      lastKeyTime = t;
-    });
-
-
-    this.canvas = canvasRef;
-    if (!this.canvas) return;
-
-    this.ctx = this.canvas.getContext("2d");
-    if (!this.ctx) return;
-
-    this.viewport = new Viewport({
-      ctx: this.ctx,
-      width: this.canvas.width,
-      height: this.canvas.height,
-    });
-
-    this.loop = this.loop.bind(this);
-  }
-
-  start() {
-    this.loop();
-  }
-
-  loop() {
-    if (this.websocketRef?.readyState === WebSocket.OPEN) {
-      if (this.keysPressed["ArrowUp"])
-        this.sendData("input", { key: "ArrowUp", action: "hold" });
-      if (this.keysPressed["ArrowDown"])
-        this.sendData("input", { key: "ArrowDown", action: "hold" });
-    }
-
-    if (!this.isFullStateProcessed) {
-      requestAnimationFrame(this.loop);
-      return;
-    }
-
-    // Rendering only — state updates happen async
-    this.draw();
-    requestAnimationFrame(this.loop);
-  }
-
-  createNewInstance(object: any) {
-    const params = {
-      ...object,
-      components: [],
-      isClient: true,
-      component_list: object.components ?? [],
-    };
-    const objectInstance = gameObjectMap[object.className]
-      ? new gameObjectMap[object.className](params)
-      : new GameObject(params);
-    objectInstance.game = this.game;
-    return objectInstance;
-  }
-
-  draw() {
-    const renderList = Array.from(this.gameObjectRegistry.values()).sort(
-      (a, b) => a.zIndex - b.zIndex,
-    );
-
-    // -- CLEAR CANVAS --
-    this.ctx!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
-    this.ctx!.fillStyle = this.game.world.bgColor;
-    this.ctx!.fillRect(0, 0, this.canvas!.width, this.canvas!.height);
-
-    // -- RENDER OBJECTS --
-    for (const clientObj of renderList) clientObj.draw(this.viewport!);
-  }
-
-  getObject(id: number) {
-    return this.gameObjectRegistry.get(id);
-  }
-  setObject(id: number, object: any) {
-    this.gameObjectRegistry.set(id, object);
-  }
-
-  public destroy() {
-    this.websocketRef?.close();
-    window.removeEventListener("keydown", this.handleKey);
-    window.removeEventListener("keyup", this.handleKey);
-  }
-}
-
-const GameView: React.FC = () => {
+const GameView: React.FC<GameViewProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useBlockLeave();
   const { t } = useTranslation();
@@ -357,122 +31,217 @@ const GameView: React.FC = () => {
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<any>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const mode = location.pathname === "/local-game-view" ? "local" : "remote";
 
-  // TODO: Replace with actual JWT
-  // console.log("useUser() returned:", user);
-  // if (!user) {
-  // 	console.log("user not loaded"); ////debug
-  // 	return;
-  // }
-  // Fetch user info when the component mounts
-  React.useEffect(() => {
-    if (!user) return; // Ensure `user` is available
 
-    const fetchUserInfo = async () => {
-      try {
-        const response = await getUserById({ id: Number(user.id) }); // Call the API
-        if (response.success && response.data) {
-          setUserInfo(response.data); // Store the user info
-        } else {
-          console.log("Failed to fetch user info"); // Handle API error
+  if (mode === "remote") {
+    // TODO: Replace with actual JWT
+    // console.log("useUser() returned:", user);
+    // if (!user) {
+    // 	console.log("user not loaded"); ////debug
+    // 	return;
+    // }
+    // Fetch user info when the component mounts
+    React.useEffect(() => {
+  
+    console.log("mode used: ", mode);
+  
+      if (!user) return; // Ensure `user` is available
+  
+      const fetchUserInfo = async () => {
+        try {
+          const response = await getUserById({ id: Number(user.id) }); // Call the API
+          if (response.success && response.data) {
+            setUserInfo(response.data); // Store the user info
+          } else {
+            console.log("Failed to fetch user info"); // Handle API error
+          }
+        } catch (err) {
+          console.error("Error fetching user info:", err);
+          console.error("An error occurred while fetching user info"); // Handle fetch error
         }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-        console.error("An error occurred while fetching user info"); // Handle fetch error
-      }
-    };
-
-    fetchUserInfo();
-  }, [user]);
-
-  // console.log("user loaded", user); ////debug
-  const roomId = Number(sessionStorage.getItem("RoomId") || "1");
-  const roomName = sessionStorage.getItem("RoomName") || "Room 1";
-  const clientId = userInfo?.id;
-  const playerName = userInfo?.username;
-  const playerSprite = userInfo?.avatarUrl || "default.png";
-  const initialRole = sessionStorage.getItem("playerSide") || "";
-  console.log("player name from session:", playerName); ////debug
-  console.log("player sprite from session:", playerSprite); ////debug
-  console.log("initial role from session:", initialRole); ////debug
-
-  // -------------------------------- Websockets --------------------------------
-
-  const params = {
-    roomId,
-    roomName,
-    clientId,
-    initialRole,
-    playerName,
-    playerSprite,
-    callback: () => { },
-  };
-  // console.log("params", params); ////debug
-
-  const { socket } = useGameWebSocket(params);
-  // console.log("socket has been create: ", socket); ////debug
-
-  const { gameOver } = useGameRoomWebSocket(params);
-
-  useEffect(() => {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      // console.log("waiting for socket connection..."); ////debug
-      return;
-    }
-
-    if (socket.readyState !== WebSocket.OPEN) {
-      socket.onopen = () => {
-        // console.log("Socket is open, starting game client"); ////debug
-        let gameClient = new GameClient(canvasRef.current, socket);
-        gameClient.start();
       };
-      return;
-    }
-
-    // console.log("start game client with open socket"); ////debug
-    let gameClient = new GameClient(canvasRef.current, socket);
-
-    gameClient.start();
-    return () => {
-      gameClient.destroy(); // ✅ cleanup
+  
+      fetchUserInfo();
+    }, [user]);
+  
+    // console.log("user loaded", user); ////debug
+    const roomId = Number(sessionStorage.getItem("RoomId") || "1");
+    const roomName = sessionStorage.getItem("RoomName") || "Room 1";
+    const clientId = userInfo?.id;
+    const playerName = userInfo?.username;
+    const playerSprite = userInfo?.avatarUrl || "default.png";
+    const initialRole = sessionStorage.getItem("playerSide") || "";
+  
+    // -------------------------------- Websockets --------------------------------
+  
+    const params = {
+      roomId,
+      roomName,
+      clientId,
+      initialRole,
+      playerName,
+      playerSprite,
+      callback: () => { },
     };
-  }, [socket]);
+  
+    const { socket } = useGameWebSocket(params);
+    const { gameOver } = useGameRoomWebSocket(params);
+  
+    useEffect(() => {
+      if (!socket || socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+  
+      if (socket.readyState !== WebSocket.OPEN) {
+        socket.onopen = () => {
+          let gameClient = new GameClient(canvasRef.current, socket);
+          gameClient.start();
+        };
+        return;
+      }
+      let gameClient = new GameClient(canvasRef.current, socket);
+  
+      gameClient.start();
+      return () => {
+        gameClient.destroy(); // ✅ cleanup
+      };
+    }, [socket]);
 
-  return (
-    <Background variant="plain">
-      <div className="w-full h-full flex-col-center gap-10 px-25">
-        <TournamentHeader>
-          {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
-        </TournamentHeader>
-        <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-          <canvas
-            ref={canvasRef} // ✅ fixed
-            width={880}
-            height={500}
-            className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
-          />
-        </div>
-        {gameOver && (
-          <div>
-            <Button
-              variant="bigYellow"
-              className="px-3 py-4 text-2xl"
-              onClick={() => {
-                navigate("/main-menu");
-                sessionStorage.removeItem("playerSide");
-                sessionStorage.removeItem("RoomId");
-                sessionStorage.removeItem("RoomLeaderId");
-                sessionStorage.removeItem("RoomName");
-                sessionStorage.removeItem("RoomType");
-              }}
-            >
-              Back to Lobby
-            </Button>
+    return (
+      <Background variant="plain">
+        <div className="w-full h-full flex-col-center gap-10 px-25">
+          <TournamentHeader>
+            {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
+          </TournamentHeader>
+          <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
+            <canvas ref={canvasRef} width={880} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            />
           </div>
-        )}
-      </div>
-    </Background>
-  );
+          {gameOver && (
+            <div>
+              <Button
+                variant="bigYellow"
+                className="px-3 py-4 text-2xl"
+                onClick={() => {
+                  navigate("/main-menu");
+                  sessionStorage.removeItem("playerSide");
+                  sessionStorage.removeItem("RoomId");
+                  sessionStorage.removeItem("RoomLeaderId");
+                  sessionStorage.removeItem("RoomName");
+                  sessionStorage.removeItem("RoomType");
+                }}
+              >
+                Back to Lobby
+              </Button>
+            </div>
+          )}
+        </div>
+      </Background>
+    );
+  }
+
+  else if (mode === "local") {
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const viewport = new Viewport({
+        ctx,
+        width: canvas.width,
+        height: canvas.height,
+      });
+
+      const game = new PongGame(false, {}, () => { }, 1);
+
+      game.addPlayer(
+        new Player({
+          team: 0,
+          name: "Player1",
+          id: 0,
+        })
+      );
+
+      game.addPlayer(
+        new Player({
+          team: 1,
+          name: "Player2",
+          id: 1,
+        })
+      );
+
+      // --- ✅ Track pressed keys for smooth motion ---
+      const keysPressed = new Set<string>();
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "w" || event.key === "s") {
+          keysPressed.add(event.key);
+        }
+      };
+
+      const handleKeyUp = (event: KeyboardEvent) => {
+        keysPressed.delete(event.key);
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+
+      // --- 🎮 Game Loop ---
+      function loop() {
+        // Move based on held keys
+        if (keysPressed.has("w")) {
+          game.movePaddle("ArrowUp", 0);
+        }
+        if (keysPressed.has("s")) {
+          game.movePaddle("ArrowDown", 0);
+        }
+
+        // Update and render
+        game.update({});
+        viewport.ctx.clearRect(0, 0, viewport.width, viewport.height);
+        viewport.ctx.fillStyle = "#000000";
+        viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
+
+        const renderList = Array.from(game.world.gameObjects.values()).sort(
+          (a, b) => a.zIndex - b.zIndex
+        );
+        for (const obj of renderList) {
+          obj.clientUpdate();
+          obj.draw(viewport);
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+
+      // --- 🧹 Cleanup ---
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      };
+    }, []);
+
+    return (
+      <Background variant="plain">
+        <div className="w-full h-full flex-col-center gap-10 px-25">
+          <TournamentHeader>
+            {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
+          </TournamentHeader>
+          <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
+            <canvas ref={canvasRef} width={880} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            />
+          </div>
+        </div>
+      </Background>
+    );
+  }
+
 };
 
 export default GameView;

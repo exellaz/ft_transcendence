@@ -75,9 +75,9 @@ export interface GameSettings {
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
-  ballSpeed: 0,
+  ballSpeed: 1,
   ballSize: 2,
-  paddleSpeed: 0,
+  paddleSpeed: 1,
   scorePoint: 1,
   map: "mansion",
 };
