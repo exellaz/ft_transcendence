@@ -134,9 +134,14 @@ export class GameObject {
   }
 
   addChild(object: GameObject, overrideClient: boolean = false) {
+    // todo problem here
+
     if (this.isClient && !overrideClient) {
       return;
     }
+    // if (object.constructor.name === "ImageObject") {
+    //   console.log("added child", object.sprite);
+    // }
     this.children.push(object);
     object.parent = this;
     object.game = this.game;
@@ -234,7 +239,12 @@ export class GameObject {
 
     // Recursively draw children
     for (const child of this.children) {
-      if (child instanceof GameObject) child.draw(viewport);
+      if (child instanceof GameObject) {
+        child.draw(viewport);
+        if (child.constructor.name === "ImageObject") {
+          console.log("drawing child", child.sprite.imagePath);
+        }
+      } 
     }
   }
 

@@ -13,6 +13,8 @@ import { useLocation } from "react-router-dom";
 import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
+import { ImageObject } from "@shared/objects/ImageObject";
+import type { GameObject } from "@shared/objects/GameObject";
 
 interface GameViewProps {
   mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
@@ -191,6 +193,13 @@ const GameView: React.FC<GameViewProps> = () => {
       window.addEventListener("keydown", handleKeyDown);
       window.addEventListener("keyup", handleKeyUp);
 
+      function updateObjectClient(obj: GameObject) {
+        obj.clientUpdate();
+        for (const children of obj.children) {
+          updateObjectClient(children);
+        }
+      }
+
       // --- 🎮 Game Loop ---
       function loop() {
         // Move based on held keys
@@ -211,8 +220,8 @@ const GameView: React.FC<GameViewProps> = () => {
           (a, b) => a.zIndex - b.zIndex
         );
         for (const obj of renderList) {
-          obj.clientUpdate();
-          obj.draw(viewport);
+          updateObjectClient(obj);
+          obj.draw(viewport);            
         }
 
         requestAnimationFrame(loop);

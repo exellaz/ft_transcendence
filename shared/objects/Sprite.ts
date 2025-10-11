@@ -149,12 +149,21 @@ export function drawImg(
   const { opacity, blendMode, glow, flippedHorizontal, outline, image } =
     merged;
 
-  if (!image) return;
+  if (!image) {
+    return;
+  }
 
   // World position of host
   const worldPos = sprite.host!.getWorldPosition();
   const rotation = sprite.host!.rotation || 0;
   const scale = sprite.host!.scale || { x: 1, y: 1 };
+
+
+  // if ( ( as string).includes("eyes.png") ) {
+  //   console.log("drawung");
+  // }
+
+  // console.log("image path: ", sprite.imagePath);
 
   const position = sprite.host!.toScreenPosition(viewport);
 
