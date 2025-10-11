@@ -87,8 +87,8 @@ const TournamentLobbyView: React.FC = () => {
   const {
     players: currentPlayer,
     ready,
-    //started,
-    //startTournament,
+    started,
+    countdown,
     toggleReady,
     onleave
   } = useTournamentWebSocket({
@@ -105,6 +105,12 @@ const TournamentLobbyView: React.FC = () => {
     setPlayers(currentPlayer);
   }, [currentPlayer]);
 
+  React.useEffect(() => {
+    if (started) {
+      navigate("/main-menu"); //TODO need implment room -> game
+    }
+  }, [started]);
+
   let stageHeader;
   if (stage === "quarterfinals") stageHeader = translate("quarterfinals");
   else if (stage === "semifinals") stageHeader = translate("semifinals");
@@ -112,14 +118,29 @@ const TournamentLobbyView: React.FC = () => {
 
   return (
     <Background>
+    <div className="relative w-full flex justify-center">
       <Card size="large">
         <div className="w-full h-full flex-row-center gap-6">
+
+          {/* countdown */}
+          {countdown !== null && !started && (
+            <p className="absolute -top-8 text-6xl font-bold text-white">
+              {countdown > 0 ? countdown : translate("game_start")}
+            </p>
+          )}
+
+          {/* Main tournament content */}
           <div className="w-[50%] h-full flex-col-between">
+            {/* lobby tittle */}
             <TournamentHeader>
               <span>{stageHeader}</span>
               <span>{translate("tournament_lobby")}</span>
             </TournamentHeader>
+
+            {/* players ready status */}
             <ReadyPlayers players={players} />
+
+            {/* ready and leave button*/}
             <div className="flex-row-center gap-6">
               <Button variant="green" onClick={toggleReady}>
                 {ready ? translate("Unready") : translate("ready")}
@@ -134,6 +155,8 @@ const TournamentLobbyView: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* live chat */}
           <LiveChat
             players={players}
             chatMessages={chatMessages}
@@ -141,8 +164,10 @@ const TournamentLobbyView: React.FC = () => {
             setMessage={setMessage}
             onSendMessage={handleSendMsg}
           />
+
         </div>
       </Card>
+
       <ConfirmationPopup
         text={translate("quit_confirmation")}
         open={showQuitTournament}
@@ -152,6 +177,8 @@ const TournamentLobbyView: React.FC = () => {
           navigate("/main-menu");
         }}
       />
+
+    </div>
     </Background>
   );
 };

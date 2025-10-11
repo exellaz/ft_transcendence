@@ -5,6 +5,7 @@ import { URL } from "url";
 import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
 import { BroadcastMessage, WSContext, playerInfo, Room } from "./interface";
+import { tournaments } from "../modules/tournament/tournament.routes";
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -338,4 +339,43 @@ export function cancelCountdown(room: Room) {
     room.countdownRemaining = null;
     broadcast(room, { type: "countdownCancel" });
   }
+}
+
+export function startTournamentCountdown(tournamentId: number, broadcast: (msg: string) => void, countdownTime: number = 10) {
+  const tournament = tournaments.get(tournamentId);
+  if (!tournament || tournament.countdownTimer) return; // already running
+
+  //set timer for 5 seconds countdown
+  tournament.countdownRemaining = countdownTime;
+
+  tournament.countdownTimer = setInterval(() => {
+    const t = tournaments.get(tournamentId);
+    if (!t) return;
+
+    if (t.countdownRemaining! > 0) {
+        broadcast(JSON.stringify({ type: "countdown", remaining: t.countdownRemaining }));
+        t.countdownRemaining!--;
+    } else {
+      //countdown complete
+      clearInterval(t.countdownTimer);
+      t.countdownTimer = undefined;
+      t.countdownRemaining = undefined;
+      t.started = true;
+
+      broadcast(JSON.stringify({ type: "tournamentStarted", players: t.players }));
+      console.log (`Tournament ${tournamentId} started with ${t.players.length} players`); //// debug
+    }
+  }, 1000);
+  console.log (`Tournament ${tournamentId} countdown started`); //// debug
+}
+
+export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg: string) => void) {
+    const tournament = tournaments.get(tournamentId);
+    if (!tournament || !tournament.countdownTimer) return;
+
+    clearInterval(tournament.countdownTimer);
+    tournament.countdownTimer = undefined;
+    tournament.countdownRemaining = undefined;
+    broadcast(JSON.stringify({ type: "countdownCancel" }));
+    console.log (`Tournament ${tournamentId} countdown cancelled`); //// debug
 }

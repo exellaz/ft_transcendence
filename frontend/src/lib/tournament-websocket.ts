@@ -1,7 +1,6 @@
 // lib/tournament-websocket.ts
 import { useEffect, useRef, useState } from "react";
 import type { WaitingTournamentPlayer } from "../types/apiInterfaces";
-import type { User } from "../types/usersApi";
 
 export interface useTournamentWebSocketParams {
     tournamentId: number;
@@ -17,6 +16,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
   const [ready, setReady] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const [started, setStarted] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   console.log("Tournament ID in useTournamentWebSocket:", tournamentId);
   console.log("Player info in useTournamentWebSocket:", player);
 
@@ -56,6 +56,16 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       if (data.type === "tournamentStarted") {
         setStarted(true);
       }
+
+      if (data.type === "countdown") {
+        if (typeof data.remaining === "number") {
+            setCountdown(data.remaining);
+        }
+      }
+
+      if (data.type === "countdownCancel") {
+        setCountdown(null);
+      }
     };
 
     ws.onclose = () => {
@@ -82,10 +92,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     });
   }
 
-  function startTournament() {
-    wsRef.current?.send(JSON.stringify({ type: "start" }));
-  }
-
   function onleave() {
     try {
         wsRef.current?.close();
@@ -98,7 +104,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     players,
     ready,
     started,
-    startTournament,
+    countdown,
     toggleReady,
     onleave,
   };

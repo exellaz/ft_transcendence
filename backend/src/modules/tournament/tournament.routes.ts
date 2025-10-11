@@ -14,6 +14,8 @@ export interface tournament {
   players: TournamentPlayerWs[];
   started: boolean;
   stage: "quarterfinals" | "semifinals" | "finals";
+  countdownTimer?: NodeJS.Timeout | undefined;
+  countdownRemaining?: number | undefined;
   maxPlayer: number;
 }
 
@@ -40,6 +42,8 @@ export default async function tournamentRoutes(app: FastifyInstance) {
       players: [],
       started: false,
       stage: "quarterfinals",
+      countdownTimer: undefined,
+      countdownRemaining: undefined,
       maxPlayer: 8,
     };
 

@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
-import WebSocket, { WebSocketServer } from "ws";
-import { tournaments, tournament } from "./tournament.routes";
+import WebSocket from "ws";
+import { tournaments } from "./tournament.routes";
+import { startTournamentCountdown, cancelTournamentCountdown } from "src/utils/utils";
+import { start } from "repl";
 
 export interface TournamentPlayerWs {
     id: number;
@@ -46,14 +48,21 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         if (!exists) {
             tournament.players.push({ id: playerId, username: playerName, spriteUrl: playerSprite, ready: false });
 
-            //notify all clients in the same tournament about the new player
-            const message = JSON.stringify({ type: "playerJoined", players: tournament.players });
-            for (const [ws, info] of client.entries()) {
-                if (info.tournamentId === tournamentId) {
-                    ws.send(message);
+            const broadcast = (msg: string) => {
+                for (const [ws, info] of client.entries()) {
+                    if (info.tournamentId === tournamentId) {
+                        ws.send(msg);
+                    }
                 }
             }
+
+            //notify all clients in the same tournament about the new player
+            broadcast(JSON.stringify({ type: "playerJoined", players: tournament.players }));
             console.log (`Player ${playerName} joined tournament ${tournamentId}`); //// debug
+
+            if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
+                startTournamentCountdown(tournamentId, broadcast, 10); //start 10 seconds countdown
+            }
         }
 
 
@@ -86,27 +95,18 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                 if (msg.type === "ready") {
                     const player = tournament.players.find(p => p.id === info.playerId);
                     if (player) player.ready = msg.ready;
+
+                    const broadcast = (msg: string) => {
+                        for (const [ws, info] of client.entries()) {
+                            if (info.tournamentId === tournamentId) {
+                                ws.send(msg);
+                            }
+                        }
+                    };
+
                     //notify all clients in the same tournament about the player ready status
-                    const message = JSON.stringify({ type: "updatePlayer", players: tournament.players });
-                    for (const [ws, info] of client.entries()) {
-                        if (info.tournamentId === tournamentId) {
-                            ws.send(message);
-                        }
-                    }
+                    broadcast(JSON.stringify({ type: "updatePlayer", players: tournament.players }));
                     console.log (`Player ${player?.username} is ${player?.ready ? "ready" : "not ready"} in tournament ${tournamentId}`); //// debug
-                }
-
-                if (msg.type === "start") {
-                    const allReady = tournament.players.length > 0 && tournament.players.every(p => p.ready);
-                    tournament.started = true;
-
-                    const message = JSON.stringify({ type: "tournamentStarted", players: tournament.players });
-                    for (const [ws, info] of client.entries()) {
-                        if (info.tournamentId === tournamentId) {
-                            ws.send(message);
-                        }
-                    }
-                    console.log (`Tournament ${tournamentId} started with ${tournament.players.length} players`); //// debug
                 }
             } catch (err) {
                 console.error("Error handling message:", err);
@@ -118,14 +118,22 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             tournament.players = tournament.players.filter(p => p.id !== playerId);
             client.delete(socket);
 
-            //notify all clients in the same tournament about the player leaving
-            const message = JSON.stringify({ type: "playerLeft", players: tournament.players });
-            for (const [ws, info] of client.entries()) {
-                if (info.tournamentId === tournamentId) {
-                    ws.send(message);
+            const broadcast = (msg: string) => {
+                for (const [ws, info] of client.entries()) {
+                    if (info.tournamentId === tournamentId) {
+                        ws.send(msg);
+                    }
                 }
-            }
+            };
+
+            //notify all clients in the same tournament about the player leaving
+            broadcast(JSON.stringify({ type: "playerLeft", players: tournament.players }));
             console.log (`Player ${playerId} left tournament ${tournamentId}`); //// debug
+
+            //cancel countdown if player less
+            if (tournament.players.length < tournament.maxPlayer) {
+                cancelTournamentCountdown(tournamentId, broadcast);
+            }
 
             if (tournament.players.length === 0) {
                 tournaments.delete(tournamentId);
