@@ -115,7 +115,6 @@ async function seed({
   for (const tournamentData of data.tournaments) {
     const tournament = await prisma.tournament.create({
       data: {
-        id: tournamentData.id,
         status: TournamentStatus.COMPLETED,
       },
     });
@@ -164,7 +163,7 @@ async function seed({
   }
 
   console.log("✅ Seeding complete!");
-  await prisma.$disconnect();
+
 }
 
 seed({
