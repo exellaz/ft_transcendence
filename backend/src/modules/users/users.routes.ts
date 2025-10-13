@@ -82,32 +82,6 @@ async function userRoutes(
 
   // ============================ USER =================================
 
-  // POST /users (Create User)
-  fastify.post("/users", async (request, reply) => {
-    const { username, email, password } = request.body as {
-      username: string;
-      email: string;
-      password: string;
-    };
-    try {
-      const user = await fastify.db.user.create({
-        data: {
-          username,
-          email,
-          password,
-          settings: { create: {} }, // use all @default values
-        },
-      });
-      return ok(user);
-    } catch (err: any) {
-      if (err.code === "P2002")
-        // Prisma unique constraint violation
-        throw new ApiError("Username or Email already exists", 400);
-
-      throw err; // let Fastify handle other errors
-    }
-  });
-
   // GET /users/:id (Get single user)
   fastify.get(
     "/users/:id",
