@@ -18,7 +18,13 @@ export interface TournamentMatchInput {
   player2Score: number;
 }
 
-// create Tournament
+/**
+ * Creates a new tournament with default NOT_COMPLETE status
+ * @returns {Object} Standardized response object with success flag and either data or error
+ * @returns {boolean} .success - Whether operation was successful
+ * @returns {Object} .data - Created tournament object (if successful)
+ * @returns {string} .error - Error message (if unsuccessful)
+ */
 export async function createTournament() {
   try {
     const tournament = await prisma.tournament.create({
@@ -43,7 +49,14 @@ export async function createTournament() {
   }
 }
 
-// create TournamentPlayer
+/**
+ * Creates a new tournament player entry
+ * @param {TournamentPlayerInput} p - Tournament player data containing tournamentId, userId and ranking
+ * @returns {Object} Standardized response object with success flag and either data or error
+ * @returns {boolean} .success - Whether operation was successful
+ * @returns {Object} .data - Created tournament player object (if successful)
+ * @returns {string} .error - Error message (if unsuccessful)
+ */
 export async function createTournamentPlayer(p: TournamentPlayerInput) {
   try {
 
@@ -71,8 +84,17 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
   }
 }
 
-// create TournamentMatch
-export async function createTournamentMatch(m: TournamentMatchInput) {
+/**
+ * Creates a new tournament match after validating match data
+ * @param {TournamentMatchInput} m - Tournament match data including players, scores and round info
+ * @returns {Object} Standardized response object with success flag and either data or error
+ * @returns {boolean} .success - Whether operation was successful
+ * @returns {Object} .data - Created tournament match object (if successful)
+ * @returns {string} .error - Error message (if unsuccessful)
+ * @note Performs extensive validation: players must be different, winner must be one of the players,
+ *       scores must be non-negative and not tied, winner must match score result,
+ *       players must exist and belong to the specified tournament
+ */export async function createTournamentMatch(m: TournamentMatchInput) {
   try {
     if (m.player1Id === m.player2Id)
       throw new Error("A player cannot play against themselves");
