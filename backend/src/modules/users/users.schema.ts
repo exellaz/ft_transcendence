@@ -1,7 +1,5 @@
 // schemas/userSchemas.ts
 
-import { prototype } from "events";
-
 export const getUserByIdSchema = {
   params: {
     type: "object",

@@ -1,10 +1,9 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 import {
   BlockedFriendship,
   FriendshipStatus,
   Prisma,
-  User,
 } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import {
@@ -14,13 +13,12 @@ import {
 
 async function friendshipRoutes(
   fastify: FastifyInstance,
-  options: FastifyPluginOptions,
 ) {
   // GET /friendships/:3/pending (get friends that send friend request to u)
   fastify.get(
     "/friendships/:userId/pending",
     { schema: getFriendShipsByUserIdSchema },
-    async (request, reply) => {
+    async (request) => {
       const { userId } = request.params as { userId: string };
 
       const requesters = await fastify.db.user.findMany({
@@ -43,7 +41,7 @@ async function friendshipRoutes(
   fastify.get(
     "/friendships/:userId/accepted",
     { schema: getFriendShipsByUserIdSchema },
-    async (request, reply) => {
+    async (request) => {
       const { userId } = request.params as { userId: string };
       const uid = Number(userId);
 
@@ -119,7 +117,7 @@ async function friendshipRoutes(
   );
 
 	// POST /friendships
-	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
+	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request) => {
 		const {  requesterId, accepterUsername } = request.body as {
 			requesterId: number;
 			accepterUsername: string;
@@ -167,7 +165,7 @@ async function friendshipRoutes(
   // PATCH /friendships/:requesterId/:accepterId
   fastify.patch(
     "/friendships/:requesterId/:accepterId",
-    async (request, reply) => {
+    async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
         accepterId: string;
@@ -217,7 +215,7 @@ async function friendshipRoutes(
   // DELETE /friendships/:requesterId/:accepterId
   fastify.delete(
     "/friendships/:requesterId/:accepterId",
-    async (request, reply) => {
+    async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
         accepterId: string;
