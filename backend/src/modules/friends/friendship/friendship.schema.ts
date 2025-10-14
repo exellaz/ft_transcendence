@@ -22,6 +22,7 @@ export const createFriendshipSchema = {
 		type: "object",
 		properties: {
 			requesterId: { type: "integer", minimum: 1 },
+      accepterId: { type: "integer", minimum: 1 },
 		  accepterUsername: { type: "string" },
 		  status: {
 				type: "string",
@@ -29,7 +30,7 @@ export const createFriendshipSchema = {
 				default: "pending"
 		  }
 		},
-		required: ["requesterId", "accepterUsername"],
+		required: ["requesterId"],
 		additionalProperties: false // disallow extra fields
 	}
 }

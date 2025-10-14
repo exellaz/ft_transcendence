@@ -10,6 +10,7 @@ import {
   updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
+import type { UserWithFriendshipId } from "../types/friendsApi";
 
 import {
   LoadingState,
@@ -55,9 +56,10 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     loading: friendsLoading,
     error: friendsError,
     refetch: refetchFriends,
-  } = useApiQuery<User[]>(
+  } = useApiQuery<UserWithFriendshipId[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API query for friend requests list
@@ -68,7 +70,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchRequests,
   } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API query for blocked users list
@@ -79,7 +82,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchBlocked,
   } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
+    userId !== 0
   );
 
   // API mutation to add a friend
@@ -122,7 +126,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     const trimmed = friendId.trim();
 
-    // return if input is empty 
+    // return if input is empty
     if (trimmed === "") {
       setAddFriendError("Please enter a valid username");
       return;
@@ -135,6 +139,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     if (result.success) {
       setAddFriendSuccess(true);
+      handleCloseCascadeCard();
+
     } else {
       setAddFriendError("Failed to add friend");
     }
@@ -151,7 +157,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     });
     if (result.success) {
       alert("Friend request accepted!");
-      refetchRequests();
+      handleCloseCascadeCard();
     }
   };
 
@@ -162,7 +168,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     });
     if (result.success) {
       alert("Friend request rejected!");
-      refetchRequests();
+      handleCloseCascadeCard();
     }
   };
 
@@ -422,6 +428,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           <CascadeCard
             userId={userId}
             selectedUser={selectedUser}
+            friendshipId={(selectedUser as UserWithFriendshipId).friendshipId}
             activeTab={activeTab}
             onActionSuccess={handleCloseCascadeCard}
           />

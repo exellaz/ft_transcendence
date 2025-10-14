@@ -79,7 +79,6 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
       </div>
       <p
         className={
-          //TODO id issue here
           `text-lg font-bold ${getUserColor(player.id)}`
         }
         title={player.username}
@@ -164,8 +163,8 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userId={selectedId}
-          variant="other"
+          selectedId={selectedId}
+          variant={selectedId === userId ? "self" : "other"}
         />
       )}
     </>

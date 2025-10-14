@@ -39,9 +39,9 @@ const LocalGameView: React.FC = () => {
 
   const [gameSettings, setGameSettings] = useState<GameSettings>({
     map: "stadium",
-    ballSpeed: 2,
-    ballSize: 2,
-    paddleSpeed: 2,
+    ballSpeed: 1,
+    ballSize: 1,
+    paddleSpeed: 1,
   });
   const [choosingPlayer, setChoosingPlayer] = useState<1 | 2 | null>(null);
   const [showGameSettings, setShowGameSettings] = useState(false);
