@@ -1,85 +1,89 @@
-import { tournaments, TournamentMatch} from "./tournament.routes";
+import { tournaments } from "./tournament.routes";
 import { rooms, roomEndGame, generateRoomId, startRoomLoop } from "../room/room";
 import { PongGame } from "@shared/game/pong.ts";
 import { playerInfo, Room } from "../../utils/interface";
 import WebSocket from "ws";
+import { TournamentMatch } from "../../utils/interface";
+import { clear } from "console";
 
 // Start tournament countdown and manage tournament progression
 export function startTournamentCountdown(
-	tournamentId: number,
-	broadcast: (msg: string) => void,
-	countdownTime: number,
-	client: Map<WebSocket, { tournamentId: number; playerId: number }>
+  tournamentId: number,
+  broadcast: (msg: string) => void,
+  countdownTime: number,
+  client: Map<WebSocket, { tournamentId: number; playerId: number }>
 ) {
   const tournament = tournaments.get(tournamentId);
   if (!tournament || tournament.countdownTimer) return;
 
-  //set timer for the tournament start
+  // Helper function to start the tournament immediately
+  const startTournamentNow = () => {
+    clearInterval(tournament.countdownTimer);
+    tournament.countdownTimer = undefined;
+    tournament.countdownRemaining = undefined;
+    tournament.started = true;
+
+    // Shuffle players and create matches
+    const shuffled = [...tournament.players].sort(() => 0.5 - Math.random());
+    const matches: TournamentMatch[] = [];
+
+    for (let i = 0; i < shuffled.length; i += 2) {
+      const pair = shuffled.slice(i, i + 2);
+      const room = createGameRoom(tournamentId, pair);
+      console.log("Tournament game room created:", room);
+
+      // Assign WebSocket clients to the game room
+      for (const [ws, info] of client.entries()) {
+        if (info.tournamentId === tournamentId) {
+          const matchPlayer = pair.find(p => p.id === info.playerId);
+          if (matchPlayer) {
+            room.clients.add(ws);
+            room.sockets.set(ws, info.playerId);
+
+            const playerInfo = room.clientRoles.get(info.playerId);
+            if (playerInfo) {
+              ws.send(JSON.stringify({
+                type: "getPlayerTeam",
+                roomId: room.id,
+                roomName: tournament.stage,
+                team: playerInfo.team === "left" ? "left" : "right",
+              }));
+            }
+          }
+        }
+      }
+
+      matches.push({ roomId: room.id, players: pair, winnerId: -1 });
+      startRoomLoop(room);
+    }
+
+    // Update tournament and notify clients
+    tournament.matches = matches;
+    broadcast(JSON.stringify({ type: "tournamentStarted", stage: tournament.stage, matches }));
+    console.log(`Tournament ${tournamentId} started with ${tournament.players.length} players`);
+  };
+
+  // If countdownTime is 0, start immediately
+  if (countdownTime <= 0) {
+    startTournamentNow();
+    return;
+  }
+
+  // Otherwise, run countdown normally
   tournament.countdownRemaining = countdownTime;
-
-  //broadcast countdown every second
   tournament.countdownTimer = setInterval(() => {
-	const t = tournaments.get(tournamentId);
-	if (!t) return;
+    const t = tournaments.get(tournamentId);
+    if (!t) return;
 
-	//if countdown is still running, broadcast remaining time
-	if (t.countdownRemaining! > 0) {
-		broadcast(JSON.stringify({ type: "countdown", remaining: t.countdownRemaining }));
-		t.countdownRemaining!--;
-	} else {
-	  //if count down finished, start the tournament
-	  clearInterval(t.countdownTimer);
-	  t.countdownTimer = undefined;
-	  t.countdownRemaining = undefined;
-	  t.started = true;
-
-	  //shuffle players and create matches
-	  const shuffeld = [...t.players].sort(() => 0.5 - Math.random());
-	  const matches: TournamentMatch[] = [];
-
-	  // Create game rooms for each pair of players
-	  for (let i = 0; i < shuffeld.length; i += 2) {
-		const pair = shuffeld.slice(i, i + 2);
-		const room = createGameRoom(tournamentId, pair);
-		console.log("Tournament game room created:", room); ////debug
-
-		// Assign WebSocket clients to the game room
-		for (const [ws, info] of client.entries()) {
-		  if (info.tournamentId === tournamentId) {
-			const matchPlayer = pair.find(p => p.id === info.playerId);
-			if (matchPlayer) {
-			  room.clients.add(ws);
-			  room.sockets.set(ws, info.playerId);
-
-			  //send few info for game websocket need
-			  const playerInfo = room.clientRoles.get(info.playerId);
-			  if (playerInfo) {
-				ws.send(JSON.stringify({
-					type: "getPlayerTeam",
-					roomId: room.id,
-					roomName: tournament.stage,
-					team: playerInfo.team === "left" ? "left" : "right",
-				}));
-			  }
-			}
-		  }
-		}
-
-		// Initialize match with no winner yet and start game loop
-		matches.push({ roomId: room.id, players: pair, winnerId: -1 });
-		startRoomLoop(room);
-	  }
-
-	  // Update tournament with matches and advance stage
-	  t.matches = matches;
-	  t.stage = "quarterfinals";
-
-	  // Notify all clients that the tournament has started
-	  broadcast(JSON.stringify({ type: "tournamentStarted", stage: t.stage, matches: t.matches }));
-	  console.log (`Tournament ${tournamentId} started with ${t.players.length} players`); //// debug
-	}
+    if (t.countdownRemaining! > 0) {
+      broadcast(JSON.stringify({ type: "countdown", remaining: t.countdownRemaining }));
+      t.countdownRemaining!--;
+    } else {
+      startTournamentNow();
+    }
   }, 1000);
-  console.log (`Tournament ${tournamentId} countdown started`); //// debug
+
+  console.log(`Tournament ${tournamentId} countdown started`);
 }
 
 // Cancel the tournament countdown

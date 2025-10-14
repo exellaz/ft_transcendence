@@ -1,9 +1,8 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
-import { tournaments, TournamentPlayerWs } from "./tournament.routes";
+import { tournaments } from "./tournament.routes";
 import { startTournamentCountdown, cancelTournamentCountdown } from "./tournament";
-import { start } from "repl";
-import { roomEndGame } from "../room/room";
+import { TournamentPlayerWs } from "../../utils/interface";
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 
@@ -96,6 +95,19 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                     //notify all clients in the same tournament about the player ready status
                     broadcast(JSON.stringify({ type: "updatePlayer", players: tournament.players }));
                     console.log (`Player ${player?.username} is ${player?.ready ? "ready" : "not ready"} in tournament ${tournamentId}`); //// debug
+
+                    if (tournament.players.filter(p => p.ready === true).length === tournament.maxPlayer && !tournament.started) {
+                        //reset the countdown
+                        if (tournament.countdownTimer) {
+                            clearInterval(tournament.countdownTimer);
+                            tournament.countdownTimer = undefined;
+                            tournament.countdownRemaining = undefined;
+                        }
+
+                        // All players are ready, start the tournament
+                        console.log(`All players are ready in tournament ${tournamentId}, starting tournament immediately`); //// debug
+                        startTournamentCountdown(tournamentId, broadcast, 0, client);
+                    }
                 }
             } catch (err) {
                 console.error("Error handling message:", err);

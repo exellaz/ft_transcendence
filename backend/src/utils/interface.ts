@@ -1,6 +1,45 @@
 import { PongGame } from "@shared/game/pong.ts";
 import type { WebSocket as WSWebSocket } from "ws";
 
+export interface TournamentPlayerWs {
+    id: number;
+    username: string;
+    spriteUrl: string;
+    ready: boolean;
+}
+
+export interface TournamentMatch {
+    roomId: number;
+    players: TournamentPlayerWs[];
+    winnerId: number;
+}
+
+export interface TournamentLobby {
+  id: number;
+  name: string;
+  players: TournamentPlayerWs[];
+  matches?: TournamentMatch[];
+  started: boolean;
+  stage: "quarterfinals" | "semifinals" | "finals";
+  countdownTimer?: NodeJS.Timeout | undefined;
+  countdownRemaining?: number | undefined;
+  maxPlayer: number;
+}
+
+export interface TournamentGameRoom {
+  id: number;
+  name: string;
+  players: {
+    id: number;
+    username: string;
+    spriteUrl: string;
+    side: "left" | "right";
+  }[];
+  gameStarted: boolean;
+  gameEnded: boolean;
+  tournamentId?: number;
+}
+
 export interface playerInfo {
   clientId: number; // client id
   playerName: string; // player username
