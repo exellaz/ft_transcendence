@@ -21,11 +21,6 @@ function decodeJWT(token: string) {
 }
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  // todo: update with real user data from backend
-  // const [user, ]: User = {
-  //   id: "u0",
-  // };
-
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -33,6 +28,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       // TODO: Validate token in backend
       const payload = decodeJWT(token);
+      // Number() conversion necessary because JWT payload is string
       if (payload?.userId) {
         setUser({ id: Number(payload.userId) } as User);
       }

@@ -1,3 +1,7 @@
+// Discrepancy in time is because database time is stored in UTC
+// but will be converted to local time for display.
+// database: 2025-10-10T21:40:37.853Z
+// local time: 05:38:37
 export function formatTimestamp(date: Date | string) {
   const d = new Date(date);
   const pad = (n: number) => n.toString().padStart(2, "0");

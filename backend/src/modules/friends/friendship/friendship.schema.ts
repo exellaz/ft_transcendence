@@ -18,18 +18,19 @@ export const getFriendShipsByUserIdSchema = {
 
 // POST /friendships
 export const createFriendshipSchema = {
-  body: {
-    type: "object",
-    properties: {
-      requesterId: { type: "integer", minimum: 1 },
+	body: {
+		type: "object",
+		properties: {
+			requesterId: { type: "integer", minimum: 1 },
       accepterId: { type: "integer", minimum: 1 },
-      status: {
-        type: "string",
-        enum: ["pending", "accepted", "blocked"], // Prisma enum
-        default: "pending",
-      },
-    },
-    required: ["requesterId", "accepterId"],
-    additionalProperties: false, // disallow extra fields
-  },
-};
+		  accepterUsername: { type: "string" },
+		  status: {
+				type: "string",
+				enum: ["pending", "accepted", "blocked"], // Prisma enum
+				default: "pending"
+		  }
+		},
+		required: ["requesterId"],
+		additionalProperties: false // disallow extra fields
+	}
+}

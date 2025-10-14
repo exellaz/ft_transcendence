@@ -14,7 +14,7 @@ import {
 
 async function friendshipRoutes(
   fastify: FastifyInstance,
-  options: FastifyPluginOptions,
+  options: FastifyPluginOptions
 ) {
   // GET /friendships/:3/pending (get friends that send friend request to u)
   fastify.get(
@@ -36,7 +36,7 @@ async function friendshipRoutes(
       });
 
       return ok(requesters);
-    },
+    }
   );
 
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
@@ -97,7 +97,7 @@ async function friendshipRoutes(
 
       // Build a set of all user IDs that are blocked (in either direction).
       const blockedIds = new Set(
-        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId)),
+        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId))
       );
 
       /**
@@ -115,7 +115,7 @@ async function friendshipRoutes(
         }));
 
       return ok(formatted);
-    },
+    }
   );
 
   // POST /friendships
@@ -123,22 +123,41 @@ async function friendshipRoutes(
     "/friendships",
     { schema: createFriendshipSchema },
     async (request, reply) => {
-      const { requesterId, accepterId } = request.body as {
+      const { requesterId, accepterId, accepterUsername } = request.body as {
         requesterId: number;
-        accepterId: number;
+        accepterId?: number;
+        accepterUsername?: string;
       };
 
-      if (requesterId === accepterId) {
-        throw new ApiError("User cannot friend themselves", 400);
-      }
-
       try {
+        let finalAccepterId = accepterId;
+
+        if (!finalAccepterId) {
+          if (!accepterUsername) {
+            throw new ApiError(
+              "Either accepterId or accepterUsername must be provided",
+              400
+            );
+          }
+
+          const acceptedUser = await fastify.db.user.findFirst({
+            where: { username: accepterUsername },
+          });
+          if (!acceptedUser) throw new ApiError("User not found", 404);
+
+          finalAccepterId = acceptedUser.id;
+        }
+
+        if (requesterId === finalAccepterId) {
+          throw new ApiError("User cannot friend themselves", 400);
+        }
+
         // check if inverse direction exist
         const inverseFriendship = await fastify.db.friendship.findFirst({
           where: {
             OR: [
-              { requesterId: requesterId, accepterId: accepterId },
-              { requesterId: accepterId, accepterId: requesterId },
+              { requesterId: requesterId, accepterId: finalAccepterId },
+              { requesterId: finalAccepterId, accepterId: requesterId },
             ],
           },
         });
@@ -148,7 +167,7 @@ async function friendshipRoutes(
         const friendship = await fastify.db.friendship.create({
           data: {
             requesterId,
-            accepterId,
+            accepterId: finalAccepterId,
             status: "pending",
           },
         });
@@ -159,7 +178,7 @@ async function friendshipRoutes(
         if (err.code === "P2003") throw new ApiError("User not found", 404);
         throw err;
       }
-    },
+    }
   );
 
   // PATCH /friendships/:requesterId/:accepterId
@@ -209,7 +228,7 @@ async function friendshipRoutes(
 
         throw err; // let Fastify handle other errors
       }
-    },
+    }
   );
 
   // DELETE /friendships/:requesterId/:accepterId
@@ -253,7 +272,7 @@ async function friendshipRoutes(
 
         throw err; // let Fastify handle other errors
       }
-    },
+    }
   );
 }
 

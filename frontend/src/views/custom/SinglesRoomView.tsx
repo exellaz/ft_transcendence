@@ -7,6 +7,7 @@ import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
 import type { User } from "../../types/usersApi"; // Import the User type
 
 // components
+import Background from "../../components/Background";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
@@ -14,7 +15,6 @@ import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
-import Background from "../../components/Background";
 
 // hooks
 import { useRoomWebSocket } from "../../lib/room-websocket";

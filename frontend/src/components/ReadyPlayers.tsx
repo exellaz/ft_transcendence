@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserProvider";
 import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "../components/Avatar";
@@ -49,7 +50,6 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
               />
               <span
                 className={
-                  //TODO id issue here
                   `${getUserColor(player.id)}`
                 }
                 title={player.username}
@@ -66,8 +66,8 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userId={selectedId}
-          variant="other"
+          selectedId={selectedId}
+          variant={selectedId === userId ? "self" : "other"}
         />
       )}
     </>

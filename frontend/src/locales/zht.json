@@ -49,6 +49,12 @@
     "room_is_full": "房間已滿",
     "close": "關閉"
   },
+  "LocalGameView": {
+    "change_sprite": "更換角色",
+    "local_game": "本地遊戲",
+    "game_settings": "遊戲設定",
+    "start": "開始"
+  },
   "LoginView": {
     "username_or_email": "用戶名 / 電子郵件",
     "password": "密碼",
@@ -154,7 +160,9 @@
     "header": "我的資料",
     "header_other": "資料",
     "add_friend": "新增好友",
-    "block": "封鎖"
+    "friend": "好友",
+    "request_sent": "已送出",
+    "blocked": "已封鎖"
   },
   "SettingsPopup": {
     "header": "設定",
@@ -186,7 +194,8 @@
     "semifinals": "準決賽",
     "finals": "決賽",
     "won": "勝利",
-    "lost": "失敗"
+    "lost": "失敗",
+    "no_history_yet": "尚無比賽紀錄。"
   },
   "ApiState": {
     "loading": "載入中...",
@@ -224,7 +233,8 @@
     "online": "在線",
     "offline": "離線",
     "type_message": "輸入訊息",
-    "send": "發送"
+    "send": "發送",
+    "no_messages_yet": "還沒有訊息"
   },
   "ProfileContents": {
     "loading": "載入中...",
@@ -255,7 +265,7 @@
     "game_settings": "遊戲設定",
     "invite_friends": "邀請好友"
   },
-  "SocialHub": {
+  "FriendsPopup": {
     "tabs": {
       "friends": "好友",
       "requests": "請求",
@@ -265,7 +275,10 @@
     "search_friend": "搜尋好友",
     "enter_friend_username": "輸入好友用戶名",
     "friend_added": "好友已新增。",
-    "username_not_exist": "用戶名不存在。",
-    "back": "返回"
+    "user_not_exist": "用戶不存在。",
+    "back": "返回",
+    "no_friends_yet": "還沒有朋友。",
+    "no_new_requests": "沒有新的請求。",
+    "no_blocked_users": "沒有被封鎖的用戶。"
   }
 }
