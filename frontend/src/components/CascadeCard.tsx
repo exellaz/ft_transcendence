@@ -58,7 +58,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         alert(
           t("CascadeCard.blocked", {
             username: selectedUser.username,
-          })
+          }),
         );
         onActionSuccess();
       }
@@ -71,7 +71,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
         alert(
           t("CascadeCard.unblocked", {
             username: selectedUser.username,
-          })
+          }),
         );
         onActionSuccess();
       }

@@ -57,7 +57,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchFriends,
   } = useApiQuery<User[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
   );
 
   // API query for friend requests list
@@ -68,7 +68,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchRequests,
   } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
   );
 
   // API query for blocked users list
@@ -79,7 +79,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     refetch: refetchBlocked,
   } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
-    [open]
+    [open],
   );
 
   // API mutation to add a friend
@@ -122,7 +122,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     const trimmed = friendId.trim();
 
-    // return if input is empty 
+    // return if input is empty
     if (trimmed === "") {
       setAddFriendError("Please enter a valid username");
       return;
@@ -190,7 +190,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         {friends
           // filters friends list based on search term
           .filter((user) =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase())
+            user.username.toLowerCase().includes(searchTerm.toLowerCase()),
           )
           .map((user) => (
             <FriendTile
