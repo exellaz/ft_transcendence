@@ -14,9 +14,6 @@ async function authRoutes(
   fastify: FastifyInstance,
   options: FastifyPluginOptions,
 ) {
-  fastify.get("/auth/me", { preHandler: authenticate }, async (request) => {
-    return ok(request.user);
-  });
 
   fastify.post(
     "/auth/register",

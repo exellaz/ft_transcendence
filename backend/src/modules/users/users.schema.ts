@@ -110,7 +110,7 @@ export const postUserRegisterSchema = {
     properties: {
       username: {
         type: "string",
-        minLength: 2,
+        minLength: 1,
         maxLength: 15,
         pattern: "^[a-zA-Z0-9_-]+$",
       },
