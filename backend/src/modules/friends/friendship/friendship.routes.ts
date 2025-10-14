@@ -118,34 +118,37 @@ async function friendshipRoutes(
     },
   );
 
-	// POST /friendships
-	fastify.post("/friendships", { schema: createFriendshipSchema }, async (request, reply) => {
-		const {  requesterId, accepterUsername } = request.body as {
-			requesterId: number;
-			accepterUsername: string;
-		};
+  // POST /friendships
+  fastify.post(
+    "/friendships",
+    { schema: createFriendshipSchema },
+    async (request, reply) => {
+      const { requesterId, accepterUsername } = request.body as {
+        requesterId: number;
+        accepterUsername: string;
+      };
 
-		try {
-			const acceptedUser = await fastify.db.user.findFirst({
-				where: { username: accepterUsername }
-			});
-			
-			const accepterId = acceptedUser.id;
-			if ( requesterId === accepterId) {
-				throw new ApiError("User cannot friend themselves", 400);
-			}
-			
-			// check if inverse direction exist
-			const inverseFriendship = await fastify.db.friendship.findFirst({
-				where: {
-					OR: [
-						{ requesterId: requesterId, accepterId: accepterId },
-						{ requesterId: accepterId, accepterId: requesterId },
-					]
-				}
-			});
-			if (inverseFriendship)
-				throw new ApiError("Friendship already exists", 400);
+      try {
+        const acceptedUser = await fastify.db.user.findFirst({
+          where: { username: accepterUsername },
+        });
+
+        const accepterId = acceptedUser.id;
+        if (requesterId === accepterId) {
+          throw new ApiError("User cannot friend themselves", 400);
+        }
+
+        // check if inverse direction exist
+        const inverseFriendship = await fastify.db.friendship.findFirst({
+          where: {
+            OR: [
+              { requesterId: requesterId, accepterId: accepterId },
+              { requesterId: accepterId, accepterId: requesterId },
+            ],
+          },
+        });
+        if (inverseFriendship)
+          throw new ApiError("Friendship already exists", 400);
 
         const friendship = await fastify.db.friendship.create({
           data: {

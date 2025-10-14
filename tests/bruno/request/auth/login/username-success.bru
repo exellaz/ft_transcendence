@@ -21,10 +21,10 @@ tests {
   test("should return 200 status", function() {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("should login with username successfully", function() {
     const body = res.getBody();
     expect(body).to.have.property('success', true);
-    expect(body.data.user).to.have.property('username', '{{testUsername}}');
+    expect(body.data.user).to.have.property('username', bru.getEnvVar('testUsername'));
   });
 }

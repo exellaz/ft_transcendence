@@ -7,6 +7,20 @@ declare module "fastify" {
   interface FastifyInstance {
     db: PrismaClient;
   }
+  interface FastifyError {
+    validation?: Array<{
+      instancePath?: string;
+      keyword: string;
+      params?: {
+        missingProperty?: string;
+        [key: string]: unknown;
+      };
+      message?: string;
+      schemaPath?: string;
+      data?: unknown;
+    }>;
+    validationContext?: string;
+  }
 }
 
 // // declare module is used to augment or extend the type definitions of an existing module (like fastify).

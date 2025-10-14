@@ -1,20 +1,12 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../utils/response";
 import { postUserRegisterSchema } from "../users/users.schema";
-import {
-  hashPassword,
-  generateAuthToken,
-  validateRegistrationInput,
-} from "../users/users.service";
+import { hashPassword, generateAuthToken } from "../users/users.service";
 import { userPublicSelect } from "../users/users.select";
 import { postUserLoginSchema } from "../users/users.schema";
-import { validateLoginInput, verifyPassword } from "../users/users.service";
+import { verifyPassword } from "../users/users.service";
 
-async function authRoutes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions,
-) {
-
+async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/auth/register",
     { schema: postUserRegisterSchema },
@@ -24,18 +16,6 @@ async function authRoutes(
         password: string;
         username: string;
       };
-
-      // const validationErrors = validateRegistrationInput(
-      //   email,
-      //   password,
-      //   username,
-      // );
-      // if (validationErrors.length > 0) {
-      //   throw new ApiError(
-      //     `Validation failed: ${validationErrors.join(", ")}`,
-      //     400,
-      //   );
-      // }
 
       const existingUser = await fastify.db.user.findFirst({
         where: {
@@ -51,9 +31,11 @@ async function authRoutes(
           existingUser.email === email.toLowerCase().trim()
             ? "email"
             : "username";
-        throw new ApiError(
+        throw ApiError.conflict(
           `User with this ${conflictField} already exists`,
-          409,
+          conflictField === "email"
+            ? "EMAIL_ALREADY_EXISTS"
+            : "USERNAME_ALREADY_EXISTS",
         );
       }
 
@@ -88,19 +70,11 @@ async function authRoutes(
   fastify.post(
     "/auth/login",
     { schema: postUserLoginSchema },
-    async (request, reply) => {
+    async (request) => {
       const { identifier, password } = request.body as {
         identifier: string;
         password: string;
       };
-
-      // const validationErrors = validateLoginInput(identifier, password);
-      // if (validationErrors.length > 0) {
-      //   throw new ApiError(
-      //     `Validation failed: ${validationErrors.join(", ")}`,
-      //     400,
-      //   );
-      // }
 
       const user = await fastify.db.user.findFirst({
         where: {
@@ -116,15 +90,21 @@ async function authRoutes(
       });
 
       if (!user || !user.password) {
-        throw new ApiError("Invalid credentials", 401);
+        throw ApiError.unauthorized(
+          "Invalid credentials",
+          "INVALID_CREDENTIALS",
+        );
       }
 
       const isValidPassword = await verifyPassword(password, user.password);
       if (!isValidPassword) {
-        throw new ApiError("Invalid credentials", 401);
+        throw ApiError.unauthorized(
+          "Invalid credentials",
+          "INVALID_CREDENTIALS",
+        );
       }
 
-      const { password: _, ...userWithoutPassword } = user;
+      const { ...userWithoutPassword } = user;
 
       const token = generateAuthToken(user.id, user.email);
 

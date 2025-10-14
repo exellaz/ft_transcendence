@@ -16,9 +16,7 @@ interface SeedOptions {
   userCount: number;
 }
 
-async function seed({
-  userCount,
-}: SeedOptions) {
+async function seed({ userCount }: SeedOptions) {
   await prisma.user.deleteMany();
   await prisma.userSettings.deleteMany();
   await prisma.friendship.deleteMany();

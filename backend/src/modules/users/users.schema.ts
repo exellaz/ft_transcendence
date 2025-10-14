@@ -1,5 +1,13 @@
-import { maxHeaderSize } from "http";
-import { describe } from "node:test";
+export const errorResponseSchema = {
+  type: "object",
+  properties: {
+    success: { type: "boolean", const: false },
+    error: { type: "string" },
+    errorCode: { type: "string" },
+  },
+  required: ["success", "error"],
+  additionalProperties: false,
+};
 
 // GET /users/:id
 export const getUserByIdSchema = {
@@ -164,29 +172,8 @@ export const postUserRegisterSchema = {
       required: ["success", "data"],
       additionalProperties: false,
     },
-    400: {
-      type: "object",
-      properties: {
-        success: { type: "boolean", const: false },
-        error: { type: "string" },
-        details: {
-          type: "array",
-          items: { type: "string" },
-          description: "Detailed validation errors",
-        },
-      },
-      required: ["success", "error"],
-      additionalProperties: false,
-    },
-    409: {
-      type: "object",
-      properties: {
-        success: { type: "boolean", const: false },
-        error: { type: "string" },
-      },
-      required: ["success", "error"],
-      additionalProperties: false,
-    },
+    400: errorResponseSchema,
+    409: errorResponseSchema,
   },
 };
 
@@ -245,23 +232,7 @@ export const postUserLoginSchema = {
       required: ["success", "data"],
       additionalProperties: false,
     },
-    400: {
-      type: "object",
-      properties: {
-        success: { type: "boolean", const: false },
-        error: { type: "string" },
-      },
-      required: ["success", "error"],
-      additionalProperties: false,
-    },
-    401: {
-      type: "object",
-      properties: {
-        success: { type: "boolean", const: false },
-        error: { type: "string" },
-      },
-      required: ["success", "error"],
-      additionalProperties: false,
-    },
+    400: errorResponseSchema,
+    401: errorResponseSchema,
   },
 };
