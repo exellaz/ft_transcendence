@@ -260,7 +260,6 @@ export class PongGame {
 
   movePaddle(direction: string, clientId: number) {
     const player = this.players.get(clientId);
-    console.log("moving", clientId);
     if (direction === "ArrowUp") player?.padel.moveUp();
     if (direction === "ArrowDown") player?.padel.moveDown();
   }

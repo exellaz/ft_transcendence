@@ -108,7 +108,7 @@ const LocalGameView: React.FC = () => {
               player2,
               gameSettings,
             };
-            navigate("/local-game-view", { state: gameDetails });
+            navigate("/local-game-view", { state: gameDetails});
           }}
         >
           {translate("start")}

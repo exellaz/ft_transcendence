@@ -15,12 +15,22 @@ import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
 import { ImageObject } from "@shared/objects/ImageObject";
 import type { GameObject } from "@shared/objects/GameObject";
+import { SKIN_PATHS } from "@shared/game/Skins";
 
 interface GameViewProps {
   mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
 }
 
-
+const SKIN_MAPPING = {
+  "/assets/yellow-ghost.png": 0,
+  "/assets/green-ghost.png": 1,
+  "/assets/blue-ghost.png": 2,
+  "/assets/red-ghost.png": 3,
+  "/assets/purple-ghost.png": 4,
+  "/assets/starry-ghost.png": 5,
+  "/assets/white-ghost.png": 6,
+  "/assets/42-ghost.png": 7,
+}
 
 const GameView: React.FC<GameViewProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,11 +56,11 @@ const GameView: React.FC<GameViewProps> = () => {
     // }
     // Fetch user info when the component mounts
     React.useEffect(() => {
-  
-    console.log("mode used: ", mode);
-  
+
+      console.log("mode used: ", mode);
+
       if (!user) return; // Ensure `user` is available
-  
+
       const fetchUserInfo = async () => {
         try {
           const response = await getUserById({ id: Number(user.id) }); // Call the API
@@ -64,10 +74,10 @@ const GameView: React.FC<GameViewProps> = () => {
           console.error("An error occurred while fetching user info"); // Handle fetch error
         }
       };
-  
+
       fetchUserInfo();
     }, [user]);
-  
+
     // console.log("user loaded", user); ////debug
     const roomId = Number(sessionStorage.getItem("RoomId") || "1");
     const roomName = sessionStorage.getItem("RoomName") || "Room 1";
@@ -75,9 +85,9 @@ const GameView: React.FC<GameViewProps> = () => {
     const playerName = userInfo?.username;
     const playerSprite = userInfo?.avatarUrl || "default.png";
     const initialRole = sessionStorage.getItem("playerSide") || "";
-  
+
     // -------------------------------- Websockets --------------------------------
-  
+
     const params = {
       roomId,
       roomName,
@@ -87,15 +97,15 @@ const GameView: React.FC<GameViewProps> = () => {
       playerSprite,
       callback: () => { },
     };
-  
+
     const { socket } = useGameWebSocket(params);
     const { gameOver } = useGameRoomWebSocket(params);
-  
+
     useEffect(() => {
       if (!socket || socket.readyState !== WebSocket.OPEN) {
         return;
       }
-  
+
       if (socket.readyState !== WebSocket.OPEN) {
         socket.onopen = () => {
           let gameClient = new GameClient(canvasRef.current, socket);
@@ -104,7 +114,7 @@ const GameView: React.FC<GameViewProps> = () => {
         return;
       }
       let gameClient = new GameClient(canvasRef.current, socket);
-  
+
       gameClient.start();
       return () => {
         gameClient.destroy(); // ✅ cleanup
@@ -118,7 +128,7 @@ const GameView: React.FC<GameViewProps> = () => {
             {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
           </TournamentHeader>
           <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas ref={canvasRef} width={880} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            <canvas ref={canvasRef} width={1000} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
             />
           </div>
           {gameOver && (
@@ -163,15 +173,23 @@ const GameView: React.FC<GameViewProps> = () => {
         height: canvas.height,
       });
 
-      const game = new PongGame(false, {}, () => { }, 1);
 
-      game.updateSettings(location.state.gameSettings);
+      const settings = location.state?.gameSettings ?? {};
+      const player1Settings = location.state?.player1 ?? {};
+      const player2Settings = location.state?.player2 ?? {};
+
+      console.log("settings: ", location.state);
+      const game = new PongGame(false, settings, () => { }, 1);
+
+      console.log("player 1", SKIN_MAPPING[player1Settings.spriteUrl]);
+
 
       game.addPlayer(
         new Player({
           team: 0,
           name: "Player1",
           id: 0,
+          skin: SKIN_MAPPING[player1Settings.spriteUrl]
         })
       );
 
@@ -180,6 +198,7 @@ const GameView: React.FC<GameViewProps> = () => {
           team: 1,
           name: "Player2",
           id: 1,
+          skin: SKIN_MAPPING[player2Settings.spriteUrl]
         })
       );
 
@@ -206,26 +225,29 @@ const GameView: React.FC<GameViewProps> = () => {
         }
       }
 
+      const FIXED_TIMESTEP = 1 / 60;
+      let lastTime = performance.now();
+      let accumulator = 0;
+
       // --- 🎮 Game Loop ---
-      function loop() {
-        // Move based on held keys
-        if (keysPressed.has("w")) {
-          game.movePaddle("ArrowUp", 0);
-        }
-        if (keysPressed.has("s")) {
-          game.movePaddle("ArrowDown", 0);
-        }
-        if (keysPressed.has("ArrowDown")) {
-          game.movePaddle("ArrowDown", 1);
-        }
-        if (keysPressed.has("ArrowUp")) {
-          game.movePaddle("ArrowUp", 1);
+      function loop(now: number) {
+        const frameTime = (now - lastTime) / 1000; // seconds
+        lastTime = now;
+        accumulator += frameTime;
+
+        while (accumulator >= FIXED_TIMESTEP) {
+          if (keysPressed.has("w")) game.movePaddle("ArrowUp", 0);
+          if (keysPressed.has("s")) game.movePaddle("ArrowDown", 0);
+          if (keysPressed.has("ArrowDown")) game.movePaddle("ArrowDown", 1);
+          if (keysPressed.has("ArrowUp")) game.movePaddle("ArrowUp", 1);
+
+          game.update({ deltaOverride: FIXED_TIMESTEP }); // optional: pass delta if needed
+          accumulator -= FIXED_TIMESTEP;
         }
 
-        // Update and render
-        game.update({});
+        // --- 🎨 Render phase ---
         viewport.ctx.clearRect(0, 0, viewport.width, viewport.height);
-        viewport.ctx.fillStyle = "#000000";
+        viewport.ctx.fillStyle = "#000";
         viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
 
         const renderList = Array.from(game.world.gameObjects.values()).sort(
@@ -233,14 +255,13 @@ const GameView: React.FC<GameViewProps> = () => {
         );
         for (const obj of renderList) {
           updateObjectClient(obj);
-          obj.draw(viewport);            
+          obj.draw(viewport);
         }
 
         requestAnimationFrame(loop);
       }
 
-      loop();
-
+      requestAnimationFrame(loop);
       // --- 🧹 Cleanup ---
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
@@ -255,7 +276,7 @@ const GameView: React.FC<GameViewProps> = () => {
             {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
           </TournamentHeader>
           <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas ref={canvasRef} width={880} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            <canvas ref={canvasRef} width={1200} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
             />
           </div>
           {/* ✅ Back to Lobby Button */}

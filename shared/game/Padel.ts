@@ -58,7 +58,7 @@ export class Padel extends GameObject {
   moveUp() {
     this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
   }
-
+  
   moveDown() {
     this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
   }
@@ -111,26 +111,7 @@ export class Padel extends GameObject {
       );
 
       this.acceleration.y = 0;
-      // for (const client of this.game!.clients) {
-      // 	if (client.keysPressed.has("ArrowUp")) {
-      // 		this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
-      // 	}
-      // 	else if (client.keysPressed.has("ArrowDown")) {
-      // 		this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
-      // 	}
-
-      // }
-      // let copied = this.sprite.clone();
-      // copied.opacity = 0.1;
-      // copied.blendMode = BlendMode.ColorDodge;
-      // copied.gselow = null;
-      // this.game.particles.particles.push(new Particle(this.game, 120, copied, this.position.clone(), (instance) => {
-      //     instance.sprite.opacity *= 0.96;
-      // }));
-      // return true;
     };
-
-    // console.log(this.player);
 
     this.addChild(
       new Arrow({

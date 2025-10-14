@@ -78,7 +78,7 @@ export const DEFAULT_SETTING: GameSettings = {
   ballSpeed: 1,
   ballSize: 2,
   paddleSpeed: 1,
-  scorePoint: 1,
+  scorePoint: 3,
   map: "mansion",
 };
 

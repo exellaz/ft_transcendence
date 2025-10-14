@@ -147,29 +147,29 @@ export class GameObject {
     object.game = this.game;
   }
 
-  update() {
-    this.velocity = this.velocity.add(
-      this.acceleration.multiply(this.game!.delta),
-    );
-
-    if (this.maximumVelocity) {
-      this.velocity.x = Math.max(
-        -Math.abs(this.maximumVelocity.x),
-        Math.min(this.velocity.x, Math.abs(this.maximumVelocity.x)),
+    update() {
+      this.velocity = this.velocity.add(
+        this.acceleration.multiply(this.game!.delta),
       );
-      this.velocity.y = Math.max(
-        -Math.abs(this.maximumVelocity.y),
-        Math.min(this.velocity.y, Math.abs(this.maximumVelocity.y)),
-      );
-    }
 
-    this.position = this.position.add(this.velocity.multiply(this.game!.delta));
+      if (this.maximumVelocity) {
+        this.velocity.x = Math.max(
+          -Math.abs(this.maximumVelocity.x),
+          Math.min(this.velocity.x, Math.abs(this.maximumVelocity.x)),
+        );
+        this.velocity.y = Math.max(
+          -Math.abs(this.maximumVelocity.y),
+          Math.min(this.velocity.y, Math.abs(this.maximumVelocity.y)),
+        );
+      }
 
-    if (this.onUpdate) this.onUpdate();
-    for (const child of this.children) {
-      child.update();
+      this.position = this.position.add(this.velocity.multiply(this.game!.delta));
+
+      if (this.onUpdate) this.onUpdate();
+      for (const child of this.children) {
+        child.update();
+      }
     }
-  }
 
   setOnClientUpdate(id: string) {
     const script = clientScripts[id];
