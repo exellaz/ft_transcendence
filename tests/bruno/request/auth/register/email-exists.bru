@@ -1,0 +1,36 @@
+meta {
+  name: email-exists
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "uniqueuser",
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+  }
+}
+
+tests {
+  test("should return 409 conflict status", function() {
+    expect(res.getStatus()).to.equal(409);
+  });
+  
+  test("should have error response structure", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', false);
+    expect(body).to.have.property('error');
+    expect(body.error).to.include('email');
+  });
+}
+
+settings {
+  encodeUrl: false
+}

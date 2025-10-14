@@ -1,0 +1,57 @@
+meta {
+  name: register-success
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}",
+    "username": "{{testUsername}}"
+  }
+}
+
+tests {
+  test("should return 201 status", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("should have success response structure", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', true);
+    expect(body).to.have.property('data');
+  });
+  
+  test("should return user data and token", function() {
+    const { data } = res.getBody();
+    expect(data).to.have.property('token');
+    expect(data).to.have.property('user');
+  
+    const { user } = data;
+    expect(user).to.have.property('id');
+    expect(user).to.have.property('username', bru.getEnvVar('testUsername'));
+    expect(user).to.have.property('email', bru.getEnvVar('testEmail'));
+    expect(user).to.have.property('status');
+    expect(user).to.not.have.property('password');
+  });
+  
+  test("should store auth token for future requests", function() {
+    const { data } = res.getBody();
+    bru.setEnvVar('authToken', data.token);
+  });
+}
+
+settings {
+  encodeUrl: true
+}

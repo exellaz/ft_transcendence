@@ -1,0 +1,31 @@
+meta {
+  name: invalid-username
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "a",
+    "email": "invaliduser@transcendence.local",
+    "password": "{{testPassword}}"
+  }
+}
+
+tests {
+  test("should return 400 validation error", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+  
+  test("should reject username for invalid character", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', false);
+    expect(body).to.have.property('error');
+  });
+}
