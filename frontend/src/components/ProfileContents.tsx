@@ -1,44 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import type { Profile } from "../types/apiInterfaces";
-import { mockProfiles } from "../data/mockUsers";
+import { useApiQuery } from "../hooks/useApi";
+import { getUserById } from "../lib/usersApiClient";
+import type { User } from "../types/usersApi";
+import { getTournamentStatsRequest } from "../lib/tournamentApiClient";
+import type { TournamentStats } from "../types/tournamentApi";
+import { formatDate } from "../utils/date";
 
+import {
+  LoadingState,
+  ErrorState,
+  NotFoundState,
+} from "../components/ApiState";
 import Avatar from "./Avatar";
 import Medals from "./Medals";
 import StatsBadge from "./StatsBadge";
 
 interface ProfileContentsProps {
-  userId: number;
+  selectedId: number;
 }
 
-const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
+const ProfileContents: React.FC<ProfileContentsProps> = ({ selectedId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileContents.${key}`);
-  const [user, setUser] = useState<Profile | null>(null);
 
-  // TODO: Fetch real data based on userId
-  // useEffect(() => {
-  //   // Fetch profile
-  //   fetch(`/api/profile?userId=${userId}`)
-  //     .then((res) => res.json())
-  //     .then(setUser);
-  // }, [userId]);
+  // API query for user data
+  const {
+    data: user,
+    loading: userLoading,
+    error: userError,
+    refetch: refetchUser,
+  } = useApiQuery<User>(
+    () => getUserById({ id: selectedId }),
+    [open],
+    selectedId !== 0
+  );
 
-  // TODO: Delete when API is integrated
-  function getProfileById(
-    userId: number,
-    data: Profile[],
-  ): Profile | undefined {
-    return data.find((user) => user.id === userId);
-  }
-  useEffect(() => {
-    setUser(getProfileById(userId, mockProfiles) || null);
-  }, [userId]);
-
-  if (!user) return <div>{translate("loading")}</div>;
-
-  return (
-    <>
+  // API query for tournament stats data
+  const {
+    data: stats,
+    loading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useApiQuery<TournamentStats>(
+    () => getTournamentStatsRequest({ id: selectedId }),
+    [open],
+    selectedId !== 0
+  );
+  
+  let contents: React.ReactNode;
+  
+    if (userLoading || statsLoading) contents = <LoadingState />;
+    else if (userError) contents = <ErrorState error={userError} onRetry={refetchUser} />;
+    else if (statsError) contents = <ErrorState error={statsError} onRetry={refetchStats} />;
+    else if (!user || !stats) contents = <NotFoundState />;
+    else
+      contents = (<>
       <div className="w-full flex-row-center gap-6">
         <div>
           <Avatar src={user.avatarUrl} size={100} />
@@ -51,29 +68,30 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ userId }) => {
           </p>
           <p>ID: {user.id}</p>
           <p>
-            {translate("joined")}: {user.joinDate}
+            {translate("joined")}: {formatDate(user.joinedAt)}
           </p>
         </div>
       </div>
       <Medals
-        gold={user.stats.medals.gold}
-        silver={user.stats.medals.silver}
-        bronze={user.stats.medals.bronze}
+        gold={stats.firstPlace}
+        silver={stats.secondPlace}
+        bronze={stats.thirdPlace}
       />
       <div className="w-full flex justify-around">
         <StatsBadge
           className="w-[40%]"
           label={translate("tournaments_played")}
-          value={user.stats.tournamentsPlayed}
+          value={stats.completedTournaments}
         />
         <StatsBadge
           className="w-[40%]"
           label={translate("average_ranking")}
-          value={user.stats.averageRanking}
+          value={stats.averageRanking}
         />
       </div>
     </>
   );
+  return contents;
 };
 
 export default ProfileContents;

@@ -160,7 +160,9 @@
     "header": "我的资料",
     "header_other": "资料",
     "add_friend": "添加好友",
-    "block": "屏蔽"
+    "friend": "好友",
+    "request_sent": "已发送",
+    "blocked": "已封锁"
   },
   "SettingsPopup": {
     "header": "设置",
@@ -192,7 +194,8 @@
     "semifinals": "半决赛",
     "finals": "决赛",
     "won": "胜利",
-    "lost": "失败"
+    "lost": "失败",
+    "no_history_yet": "暂无比赛记录。"
   },
   "ApiState": {
     "loading": "加载中...",
@@ -230,7 +233,8 @@
     "online": "在线",
     "offline": "离线",
     "type_message": "输入消息",
-    "send": "发送"
+    "send": "发送",
+    "no_messages_yet": "还没有消息"
   },
   "ProfileContents": {
     "loading": "加载中...",

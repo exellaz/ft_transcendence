@@ -2,7 +2,7 @@ import React from "react";
 
 interface StatsBadgeProps {
   label: string;
-  value?: string | number;
+  value: number | null;
   className?: string;
 }
 
@@ -11,7 +11,7 @@ const StatsBadge: React.FC<StatsBadgeProps> = ({
   value,
   className = "",
 }) => {
-  const displayValue = value ?? "-";
+  const displayValue: number | string = value ?? "-";
 
   return (
     <div

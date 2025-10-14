@@ -14,6 +14,7 @@ import Messaging from "./Messaging";
 interface CascadeCardProps {
   userId: number;
   selectedUser: User;
+  friendshipId?: number;
   activeTab: string;
   onActionSuccess: () => void;
 }
@@ -21,6 +22,7 @@ interface CascadeCardProps {
 const CascadeCard: React.FC<CascadeCardProps> = ({
   userId,
   selectedUser,
+  friendshipId,
   activeTab,
   onActionSuccess,
 }) => {
@@ -113,7 +115,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   ) {
     children = (
       <div className="w-full h-full flex-col-between p-10">
-        <ProfileContents userId={selectedUser.id} />
+        <ProfileContents selectedId={selectedUser.id} />
         {activeTab === "friends" && (
           <div className="flex-row-center gap-6">
             <Button onClick={() => setShowProfile(false)}>
@@ -123,11 +125,6 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
               {translate("block")}
             </Button>
           </div>
-        )}
-        {activeTab === "requests" && (
-          <Button variant="red" onClick={() => handleActionClick("block")}>
-            {translate("block")}
-          </Button>
         )}
         {activeTab === "blocked" && (
           <Button variant="red" onClick={() => handleActionClick("unblock")}>
@@ -141,8 +138,9 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   else if (activeTab === "friends" && !showProfile) {
     children = (
       <Messaging
-        friendBasic={selectedUser}
-        friendId={selectedUser.id}
+        userId={userId}
+        selectedUser={selectedUser}
+        friendshipId={friendshipId!}
         onProfileClick={() => setShowProfile(true)}
       />
     );
