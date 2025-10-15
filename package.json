@@ -33,8 +33,8 @@
   "scripts": {
     "lint": "eslint backend shared frontend",
     "lint:fix": "eslint backend shared frontend --fix",
-    "format": "prettier --write backend shared frontend",
-    "format:check": "prettier --check backend shared frontend",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "lint:frontend": "eslint frontend/",
     "lint:backend": "eslint backend/",
     "lint:shared": "eslint shared/",
