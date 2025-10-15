@@ -262,7 +262,11 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                 key={user.id}
                 username={user.username}
                 avatarUrl={user.avatarUrl}
-                lastMessage={last.message}
+                lastMessage={
+                  last.message.length > 40
+                    ? last.message.slice(0, 40) + "..."
+                    : last.message
+                }
                 timestamp={last.timestamp}
                 online={user.status === "online"}
                 onClick={() =>
@@ -362,7 +366,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       onClose={handleClose}
       size={selectedUser ? "large" : "default"}
     >
-      <div className="w-full h-full flex flex-row gap-6">
+      <div className="w-full h-full flex flex-row gap-10">
         {/* Main View: Tabs and List */}
         <div className="flex-1 flex-col-center gap-6">
           {/* Tabs Header (fixed) */}
