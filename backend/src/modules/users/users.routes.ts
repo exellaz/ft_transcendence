@@ -9,9 +9,7 @@ import {
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 
-async function userRoutes(
-  fastify: FastifyInstance,
-) {
+async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
 
   // GET /users/:id/settings
@@ -82,20 +80,16 @@ async function userRoutes(
   // ============================ USER =================================
 
   // GET /users/:id (Get single user)
-  fastify.get(
-    "/users/:id",
-    { schema: getUserByIdSchema },
-    async (request) => {
-      const { id } = request.params as { id: string };
-      const user = await fastify.db.user.findUnique({
-        where: { id: Number(id) },
-        select: userPublicSelect,
-      });
-      if (!user) throw new ApiError("User not found", 404);
+  fastify.get("/users/:id", { schema: getUserByIdSchema }, async (request) => {
+    const { id } = request.params as { id: string };
+    const user = await fastify.db.user.findUnique({
+      where: { id: Number(id) },
+      select: userPublicSelect,
+    });
+    if (!user) throw new ApiError("User not found", 404);
 
-      return ok(user); // 200 OK
-    },
-  );
+    return ok(user); // 200 OK
+  });
 
   // PATCH /users/:id  (update single user)
   fastify.patch(

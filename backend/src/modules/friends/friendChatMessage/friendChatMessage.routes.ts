@@ -1,9 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 
-async function friendChatMessageRoutes(
-  fastify: FastifyInstance,
-) {
+async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId
   fastify.get("/friendChatMessages/:friendshipId", async (request) => {
     const { friendshipId } = request.params as { friendshipId: string };

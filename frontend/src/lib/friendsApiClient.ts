@@ -141,7 +141,7 @@ export async function getAllFriendChatMessages({
 
 // GET /friendChatMessages/:friendshipId/lastMessage
 export async function getLastFriendChatMessage({
-  friendshipId
+  friendshipId,
 }: GetLastFriendChatMessageRequest): Promise<GetLastFriendChatMessageResponse> {
   const res = await fetch(
     `${API_BASE}/friendChatMessages/${friendshipId}/lastMessage`,

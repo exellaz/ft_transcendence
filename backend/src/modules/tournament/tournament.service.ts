@@ -39,12 +39,12 @@ export async function createTournament() {
       data: tournament,
     };
   } catch (error) {
-    console.error('Error creating tournament:', error);
+    console.error("Error creating tournament:", error);
 
     // ❌ Return standardized error response
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -59,12 +59,11 @@ export async function createTournament() {
  */
 export async function createTournamentPlayer(p: TournamentPlayerInput) {
   try {
-
     const tournamentPlayer = await prisma.tournamentPlayer.create({
       data: {
         tournamentId: p.tournamentId,
         userId: p.userId,
-        ranking: p.ranking,     
+        ranking: p.ranking,
       },
     });
 
@@ -74,12 +73,12 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       data: tournamentPlayer,
     };
   } catch (error) {
-    console.error('Error creating tournamentPlayer:', error);
+    console.error("Error creating tournamentPlayer:", error);
 
     // ❌ Return standardized error response
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -94,7 +93,7 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
  * @note Performs extensive validation: players must be different, winner must be one of the players,
  *       scores must be non-negative and not tied, winner must match score result,
  *       players must exist and belong to the specified tournament
- */export async function createTournamentMatch(m: TournamentMatchInput) {
+ */ export async function createTournamentMatch(m: TournamentMatchInput) {
   try {
     if (m.player1Id === m.player2Id)
       throw new Error("A player cannot play against themselves");
@@ -104,7 +103,8 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       throw new Error("Scores must be non-negative");
     if (m.player1Score === m.player2Score)
       throw new Error("Scores cannot be tied");
-    const actualWinner = m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
+    const actualWinner =
+      m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
     if (m.winnerId !== actualWinner)
       throw new Error("Winner does not match score result");
 
@@ -114,7 +114,10 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
     });
     if (p1 === undefined || p2 === undefined)
       throw new Error("Both players must exist");
-    if (p1.tournamentId !== p2.tournamentId || p1.tournamentId !== m.tournamentId) {
+    if (
+      p1.tournamentId !== p2.tournamentId ||
+      p1.tournamentId !== m.tournamentId
+    ) {
       throw new Error("Players must belong to the same tournament");
     }
 
@@ -126,7 +129,7 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
         player2Id: m.player2Id,
         winnerId: m.winnerId,
         player1Score: m.player1Score,
-        player2Score: m.player2Score,   
+        player2Score: m.player2Score,
       },
     });
 
@@ -136,12 +139,12 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       data: tournamentMatch,
     };
   } catch (error) {
-    console.error('Error creating tournamentMatch:', error);
+    console.error("Error creating tournamentMatch:", error);
 
     // ❌ Return standardized error response
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

@@ -49,9 +49,7 @@ const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
                 size={players.length > 2 ? 60 : 120}
               />
               <span
-                className={
-                  `${getUserColor(player.id)}`
-                }
+                className={`${getUserColor(player.id)}`}
                 title={player.username}
               >
                 {player.username.length > 7

@@ -33,7 +33,7 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ selectedId }) => {
   } = useApiQuery<User>(
     () => getUserById({ id: selectedId }),
     [open],
-    selectedId !== 0
+    selectedId !== 0,
   );
 
   // API query for tournament stats data
@@ -45,52 +45,55 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ selectedId }) => {
   } = useApiQuery<TournamentStats>(
     () => getTournamentStatsRequest({ id: selectedId }),
     [open],
-    selectedId !== 0
+    selectedId !== 0,
   );
-  
+
   let contents: React.ReactNode;
-  
-    if (userLoading || statsLoading) contents = <LoadingState />;
-    else if (userError) contents = <ErrorState error={userError} onRetry={refetchUser} />;
-    else if (statsError) contents = <ErrorState error={statsError} onRetry={refetchStats} />;
-    else if (!user || !stats) contents = <NotFoundState />;
-    else
-      contents = (<>
-      <div className="w-full flex-row-center gap-6">
-        <div>
-          <Avatar src={user.avatarUrl} size={100} />
+
+  if (userLoading || statsLoading) contents = <LoadingState />;
+  else if (userError)
+    contents = <ErrorState error={userError} onRetry={refetchUser} />;
+  else if (statsError)
+    contents = <ErrorState error={statsError} onRetry={refetchStats} />;
+  else if (!user || !stats) contents = <NotFoundState />;
+  else
+    contents = (
+      <>
+        <div className="w-full flex-row-center gap-6">
+          <div>
+            <Avatar src={user.avatarUrl} size={100} />
+          </div>
+          <div className="flex flex-col text-white text-xl">
+            <p className="font-bold" title={user.username}>
+              {user.username.length > 10
+                ? user.username.slice(0, 10) + "…"
+                : user.username}
+            </p>
+            <p>ID: {user.id}</p>
+            <p>
+              {translate("joined")}: {formatDate(user.joinedAt)}
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col text-white text-xl">
-          <p className="font-bold" title={user.username}>
-            {user.username.length > 10
-              ? user.username.slice(0, 10) + "…"
-              : user.username}
-          </p>
-          <p>ID: {user.id}</p>
-          <p>
-            {translate("joined")}: {formatDate(user.joinedAt)}
-          </p>
+        <Medals
+          gold={stats.firstPlace}
+          silver={stats.secondPlace}
+          bronze={stats.thirdPlace}
+        />
+        <div className="w-full flex justify-around">
+          <StatsBadge
+            className="w-[40%]"
+            label={translate("tournaments_played")}
+            value={stats.completedTournaments}
+          />
+          <StatsBadge
+            className="w-[40%]"
+            label={translate("average_ranking")}
+            value={stats.averageRanking}
+          />
         </div>
-      </div>
-      <Medals
-        gold={stats.firstPlace}
-        silver={stats.secondPlace}
-        bronze={stats.thirdPlace}
-      />
-      <div className="w-full flex justify-around">
-        <StatsBadge
-          className="w-[40%]"
-          label={translate("tournaments_played")}
-          value={stats.completedTournaments}
-        />
-        <StatsBadge
-          className="w-[40%]"
-          label={translate("average_ranking")}
-          value={stats.averageRanking}
-        />
-      </div>
-    </>
-  );
+      </>
+    );
   return contents;
 };
 

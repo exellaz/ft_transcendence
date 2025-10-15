@@ -45,7 +45,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   } = useApiQuery<TournamentStats>(
     () => getTournamentStatsRequest({ id: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API query for tournament history data
@@ -57,7 +57,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   } = useApiQuery<TournamentHistory[]>(
     () => getTournamentHistoryRequest({ id: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   function handleClose() {

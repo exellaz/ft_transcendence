@@ -161,7 +161,6 @@ async function seed({ userCount }: SeedOptions) {
   }
 
   console.log("✅ Seeding complete!");
-
 }
 
 seed({
