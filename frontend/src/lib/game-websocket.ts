@@ -109,14 +109,20 @@ export function useGameRoomWebSocket({
                 //console.log("game_over => msg.playerLeft.clientId: ", leftPlayerId); ////debug
                 //console.log("game_over => clientId: ", clientId); ////debug
                 if (leftPlayerId[0] === clientId)
+                {
+                    setGameOver(msg.canLeave);
                     navigate("/roomList");
+                }
             }
             else if (winner === "right")
             {
                 //console.log("game_over => msg.playerRight.clientId: ", rightPlayerId); ////debug
                 //console.log("game_over => clientId: ", clientId); ////debug
                 if (rightPlayerId[0] === clientId)
+                {
+                    setGameOver(msg.canLeave);
                     navigate("/roomList");
+                }
             }
         }
         setGameOver(msg.canLeave);

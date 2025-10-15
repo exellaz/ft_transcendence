@@ -15,7 +15,7 @@ export async function startTournamentCountdown(
   client: Map<WebSocket, { tournamentId: number; playerId: number }>
 ) {
   const tournament = tournaments.get(tournamentId);
-  if (!tournament || tournament.countdownTimer) return;
+  if (!tournament || tournament.countdownTimer || tournament.started) return;
 
   //create tournament to database
   const TournamentLobbyDb = await createTournament();
@@ -29,6 +29,7 @@ export async function startTournamentCountdown(
 
   // Helper function to start the tournament immediately
   const startTournamentNow = () => {
+    if (tournament.started) return;
     clearInterval(tournament.countdownTimer);
     tournament.countdownTimer = undefined;
     tournament.countdownRemaining = undefined;
@@ -41,7 +42,7 @@ export async function startTournamentCountdown(
     for (let i = 0; i < shuffled.length; i += 2) {
       const pair = shuffled.slice(i, i + 2);
       const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb.data);
-      console.log("Tournament game room created:", room);
+    //  console.log("Tournament game room created:", room); ////debug
 
       // Assign WebSocket clients to the game room
       for (const [ws, info] of client.entries()) {
@@ -138,6 +139,7 @@ export function createGameRoom(
             console.log ("Game result: ", result);
             console.log ("===============================================");
             await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
+            tournaments.delete(tournamentId);
         }
 
     }
