@@ -68,7 +68,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /users/:id/tournament-history  - tournament history + matches
-  app.get("/users/:id/tournament-history", async (request, response) => {
+  app.get("/users/:id/tournament-history", async (request) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
@@ -131,7 +131,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /users/:id/tournament-stats
-  app.get("/users/:id/tournament-stats", async (request, response) => {
+  app.get("/users/:id/tournament-stats", async (request) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 

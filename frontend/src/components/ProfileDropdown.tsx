@@ -3,9 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useApiQuery } from "../hooks/useApi";
 import { getUserById } from "../lib/usersApiClient";
 import { useNavigate } from "react-router-dom";
-// TODO: Remove mock data import when integrating real API
-// import type { ProfileDropdownInfo } from "../types/apiInterfaces";
-// import { mockProfileDropdownInfo } from "../data/mockUsers";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
@@ -30,20 +27,23 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
 
   // API query for user data
+  // unset userId will be temporarily assigned 0,
+  // so only call the API if userId !== 0
   const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [userId],
+    userId !== 0
   );
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Listen for user info updates
+  // listen for user info updates
   useEffect(() => {
     const handleUserUpdate = () => {
       refetch(); // Refresh profile data
     };
 
-    // Listen for custom events (you'll dispatch this from BasicInfoPopup)
+    // event will dispatch from BasicInfoPopup
     window.addEventListener("userUpdated", handleUserUpdate);
 
     return () => {
@@ -87,18 +87,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       },
     },
   ];
-
-  // TODO: Delete when API is integrated
-  // const [user, setUser] = useState<ProfileDropdownInfo | null>(null);
-  // function getProfileDropdownById(
-  //   userId: number,
-  //   data: ProfileDropdownInfo[]
-  // ): ProfileDropdownInfo | undefined {
-  //   return data.find((user) => user.id === userId);
-  // }
-  // useEffect(() => {
-  //   setUser(getProfileDropdownById(userId, mockProfileDropdownInfo) || null);
-  // }, [userId]);
 
   return (
     <div className="fixed top-10 right-10 z-20">

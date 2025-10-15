@@ -51,8 +51,9 @@ export interface GetAcceptedFriendshipsResponse
 
 // POST /friendships
 export interface CreateFriendshipRequest {
-  requesterId: number;
-  accepterUsername: string;
+	requesterId: number;
+  accepterId?: number;
+	accepterUsername?: string;
 }
 
 export interface CreateFriendshipResponse extends ApiResponse<Friendship> {}
@@ -106,3 +107,11 @@ export interface GetAllFriendChatMessagesRequest {
 
 export interface GetAllFriendChatMessagesResponse
   extends ApiResponse<FriendChatMessage[]> {}
+
+// GET /friendChatMessages/:friendshipId/lastMessage
+export interface GetLastFriendChatMessageRequest {
+  friendshipId: number;
+}
+
+export interface GetLastFriendChatMessageResponse
+  extends ApiResponse<FriendChatMessage> {}

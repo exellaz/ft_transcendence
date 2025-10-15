@@ -16,7 +16,7 @@ interface ButtonProps {
     | "dropdown"
     | "send"
     | "mapSelector";
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   className?: string;
   icon?: React.ReactNode;

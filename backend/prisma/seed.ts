@@ -1,12 +1,11 @@
 import {
   FriendshipStatus,
   PrismaClient,
-  RoundType,
   TournamentPlayer,
   TournamentStatus,
 } from "@prisma/client";
 import { hashPassword } from "../src/modules/users/users.service";
-import fs, { readFileSync } from "fs";
+import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -114,7 +113,6 @@ async function seed({ userCount }: SeedOptions) {
   for (const tournamentData of data.tournaments) {
     const tournament = await prisma.tournament.create({
       data: {
-        id: tournamentData.id,
         status: TournamentStatus.COMPLETED,
       },
     });
@@ -163,23 +161,7 @@ async function seed({ userCount }: SeedOptions) {
   }
 
   console.log("✅ Seeding complete!");
-  await prisma.$disconnect();
-}
 
-// Helper: randomly select two distinct players
-function getTwoDistinct<T>(arr: T[]): [T, T] {
-  const first = arr[Math.floor(Math.random() * arr.length)];
-  let second = arr[Math.floor(Math.random() * arr.length)];
-  while (second === first) {
-    second = arr[Math.floor(Math.random() * arr.length)];
-  }
-  return [first, second];
-}
-
-// Helper: random round type
-function randomRound(): RoundType {
-  const rounds = Object.values(RoundType);
-  return rounds[Math.floor(Math.random() * rounds.length)];
 }
 
 seed({

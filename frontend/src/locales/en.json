@@ -158,7 +158,9 @@
     "header": "My Profile",
     "header_other": "Profile",
     "add_friend": "Add Friend",
-    "block": "Block"
+    "friend": "Friend",
+    "request_sent": "Request Sent",
+    "blocked": "Blocked"
   },
   "SettingsPopup": {
     "header": "Settings",
@@ -190,7 +192,8 @@
     "semifinals": "Semifinals",
     "finals": "Finals",
     "won": "Won",
-    "lost": "Lost"
+    "lost": "Lost",
+    "no_history_yet": "No tournament history yet."
   },
   "ApiState": {
     "loading": "Loading...",
@@ -232,7 +235,8 @@
     "online": "Online",
     "offline": "Offline",
     "type_message": "Type a message",
-    "send": "Send"
+    "send": "Send",
+    "no_messages_yet": "No messages yet."
   },
   "ProfileContents": {
     "loading": "Loading...",
