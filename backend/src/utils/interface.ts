@@ -20,7 +20,7 @@ export interface TournamentLobby {
   players: TournamentPlayerWs[];
   matches?: TournamentMatch[];
   started: boolean;
-  stage: "quarterfinals" | "semifinals" | "finals";
+  stage: "QF" | "SF" | "F";
   countdownTimer?: NodeJS.Timeout | undefined;
   countdownRemaining?: number | undefined;
   maxPlayer: number;

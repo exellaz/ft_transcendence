@@ -64,7 +64,7 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       data: {
         tournamentId: p.tournamentId,
         userId: p.userId,
-        ranking: p.ranking,     
+        ranking: p.ranking,
       },
     });
 
@@ -102,11 +102,11 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       throw new Error("Winner must be one of the players");
     if (m.player1Score < 0 || m.player2Score < 0)
       throw new Error("Scores must be non-negative");
-    if (m.player1Score === m.player2Score)
-      throw new Error("Scores cannot be tied");
-    const actualWinner = m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
-    if (m.winnerId !== actualWinner)
-      throw new Error("Winner does not match score result");
+    //if (m.player1Score === m.player2Score)
+    //  throw new Error("Scores cannot be tied");
+    //const actualWinner = m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
+    //if (m.winnerId !== actualWinner)
+    //  throw new Error("Winner does not match score result");
 
     const [p1, p2] = await prisma.tournamentPlayer.findMany({
       where: { id: { in: [m.player1Id, m.player2Id] } },
@@ -126,7 +126,7 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
         player2Id: m.player2Id,
         winnerId: m.winnerId,
         player1Score: m.player1Score,
-        player2Score: m.player2Score,   
+        player2Score: m.player2Score,
       },
     });
 

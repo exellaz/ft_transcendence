@@ -1,13 +1,14 @@
 import { tournaments } from "./tournament.routes";
 import { rooms, roomEndGame, generateRoomId, startRoomLoop } from "../room/room";
 import { PongGame } from "@shared/game/pong.ts";
-import { playerInfo, Room } from "../../utils/interface";
+import { playerInfo, Room, TournamentLobby } from "../../utils/interface";
 import WebSocket from "ws";
 import { TournamentMatch } from "../../utils/interface";
 import { clear } from "console";
+import { createTournament, createTournamentMatch, createTournamentPlayer } from "./tournament.service";
 
 // Start tournament countdown and manage tournament progression
-export function startTournamentCountdown(
+export async function startTournamentCountdown(
   tournamentId: number,
   broadcast: (msg: string) => void,
   countdownTime: number,
@@ -15,6 +16,16 @@ export function startTournamentCountdown(
 ) {
   const tournament = tournaments.get(tournamentId);
   if (!tournament || tournament.countdownTimer) return;
+
+  //create tournament to database
+  const TournamentLobbyDb = await createTournament();
+  if (TournamentLobbyDb.success && TournamentLobbyDb.data)
+          console.log("Tournament created: ", TournamentLobbyDb.data);
+  else
+  {
+      console.log("Tournament creation failed: ", TournamentLobbyDb.error);
+      return;
+  }
 
   // Helper function to start the tournament immediately
   const startTournamentNow = () => {
@@ -29,7 +40,7 @@ export function startTournamentCountdown(
 
     for (let i = 0; i < shuffled.length; i += 2) {
       const pair = shuffled.slice(i, i + 2);
-      const room = createGameRoom(tournamentId, pair);
+      const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb.data);
       console.log("Tournament game room created:", room);
 
       // Assign WebSocket clients to the game room
@@ -101,7 +112,9 @@ export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg:
 // Create a game room for a pair of players in the tournament
 export function createGameRoom(
 	tournamentId: number,
-	playerPair: { id: number, username: string, spriteUrl: string }[]
+	playerPair: { id: number, username: string, spriteUrl: string }[],
+    tournamentInfo: TournamentLobby,
+	TournamentLobbyDb: { id: number, status: string, createdAt: Date}
 ) {
 	const roomId = generateRoomId();
 	const roomName = `Tournament ${tournamentId} - Room ${roomId}`;
@@ -113,20 +126,26 @@ export function createGameRoom(
 		ballSpeed: 1,
 		ballSize: 1,
 		paddleSpeed: 1,
-		scorePoint: 1,
+		scorePoint: 5,
 		map: "stadium",
 	  },
-	  (winner) => {
+	  async (winner) => {
 		const room = rooms.get(roomId);
 		if (!room) return;
-		roomEndGame(room, true, winner);
-	  }
-	);
+		const result = roomEndGame(room, true, winner);
+		if (result) {
+            console.log ("===============================================");
+            console.log ("Game result: ", result);
+            console.log ("===============================================");
+            await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
+        }
+    }
+  );
 
-	// Ensure both players are defined
-	if (!playerPair[0] || !playerPair[1]) {
-		throw new Error("playerPair must contain two defined players");
-	}
+  // Ensure both players are defined
+  if (!playerPair[0] || !playerPair[1]) {
+    throw new Error("playerPair must contain two defined players");
+  }
 
 	// Define player info for both players
 	const leftPlayer: playerInfo = {
@@ -184,4 +203,59 @@ export function createGameRoom(
 	console.log(`Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`);
 
 	return newRoom;
+}
+
+async function saveMatchResult(
+    result: { leftPlayerId: number; rightPlayerId: number; scoreLeft: number; scoreRight: number; winnerId: string | number | "draw"; duration: number; },
+    TournamentLobbyDb: { id: number, status: string, createdAt: Date},
+    playerPair: { id: number, username: string, spriteUrl: string }[],
+    tournamentInfo: TournamentLobby
+) {
+    const createdPlayer: { success: boolean; data?: { id: number, tournamentId: number, userId: number, ranking: number }; error?: string }[] = [];
+    for (const player of playerPair) {
+        const TournamentPlayer = await createTournamentPlayer({
+            tournamentId: TournamentLobbyDb.id,
+            userId: parseInt(player.id.toString()),
+            ranking: 0,
+        });
+        if (TournamentPlayer.success && TournamentPlayer.data)
+        {
+            console.log("Tournament player created: ", TournamentPlayer.data);
+            createdPlayer.push({
+                success: true,
+                data: {
+                    ...TournamentPlayer.data,
+                    ranking: TournamentPlayer.data.ranking ?? 0 // Ensure ranking is a number
+                }
+            });
+        }
+        else
+        {
+            console.log(`tournament player creation failed: `, TournamentPlayer.error);
+            return;
+        }
+    }
+    for (let i = 0; i < createdPlayer.length; i++) {
+        const player1 = createdPlayer[i];
+        const player2 = createdPlayer[i + 1];
+        if (!player2 || !player1) continue;
+        const matchResult = await createTournamentMatch({
+            tournamentId: TournamentLobbyDb.id,
+            round: tournamentInfo?.stage ?? "unknown", // Provide the round value, adjust as needed
+            player1Id: player1.data!.id,
+            player2Id: player2.data!.id,
+            winnerId:
+                result.winnerId === "draw"
+                    ? -1
+                    : result.winnerId === result.leftPlayerId
+                        ? player1.data!.id
+                        : player2.data!.id,
+            player1Score: result.scoreLeft,
+            player2Score: result.scoreRight,
+        });
+        if (matchResult.success && matchResult.data)
+            console.log(`tournament match created: `, matchResult.data);
+        else
+            console.log(`tournament match creation failed: `, matchResult.error);
+    }
 }

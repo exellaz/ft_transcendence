@@ -1,4 +1,4 @@
-import { Room, GameSettings } from "../../utils/interface";
+import { Room, GameSettings, TournamentLobby } from "../../utils/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
 
@@ -174,18 +174,18 @@ export function roomEndGame(
     canLeave: true,
   });
 
-  const leftPLayer = room.gameState.teams.left
-    .map((p) => p.playerName)
+  const leftPlayer = room.gameState.teams.left
+    .map((p) => p.clientId)
     .join(", ");
   const rightPlayer = room.gameState.teams.right
-    .map((p) => p.playerName)
+    .map((p) => p.clientId)
     .join(", ");
 
   console.log("====================== GAME OVER ==================");
-  console.log(`Left team: [${leftPLayer}], Right team: [${rightPlayer}]`);
+  console.log(`Left team: [${leftPlayer}], Right team: [${rightPlayer}]`);
   console.log(`Room ${room.id}`);
   console.log(
-    `Winner: ${winner} => ${winner === "left" ? leftPLayer : winner === "right" ? rightPlayer : ""}`,
+    `Winner: ${winner} => ${winner === "left" ? leftPlayer : winner === "right" ? rightPlayer : ""}`,
   );
   console.log(
     `Final Score - Left: ${room.game.scoreLeft}, Right: ${room.game.scoreRight}`,
@@ -201,6 +201,12 @@ export function roomEndGame(
     rooms.delete(roomId);
   }
 
-  // Save match result to database
-  // saveMatchResult(room, room.duration);
+  return {
+    leftPlayerId: parseInt(leftPlayer),
+    rightPlayerId: parseInt(rightPlayer),
+    winnerId: winner === "left" ? parseInt(leftPlayer) : winner === "right" ? parseInt(rightPlayer) : "draw",
+    scoreLeft: room.game.scoreLeft,
+    scoreRight: room.game.scoreRight,
+    duration: room.duration,
+  }
 }
