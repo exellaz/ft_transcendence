@@ -111,7 +111,7 @@ async function userRoutes(fastify: FastifyInstance) {
         throw new ApiError("No fields to update", 400);
 
       try {
-        const updatedUser = await fastify.dwb.user.update({
+        const updatedUser = await fastify.db.user.update({
           where: { id: Number(id) }, // id is a number in SQLite schema usually
           data,
           select: userPublicSelect,
