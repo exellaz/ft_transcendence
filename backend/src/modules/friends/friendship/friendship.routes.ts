@@ -122,12 +122,25 @@ async function friendshipRoutes(fastify: FastifyInstance) {
       };
 
       try {
-        const acceptedUser = await fastify.db.user.findFirst({
-          where: { username: accepterUsername },
-        });
+        let finalAccepterId = accepterId;
 
-        const accepterId = acceptedUser.id;
-        if (requesterId === accepterId) {
+        if (!finalAccepterId) {
+          if (!accepterUsername) {
+            throw new ApiError(
+              "Either accepterId or accepterUsername must be provided",
+              400,
+            );
+          }
+
+          const acceptedUser = await fastify.db.user.findFirst({
+            where: { username: accepterUsername },
+          });
+          if (!acceptedUser) throw new ApiError("User not found", 404);
+
+          finalAccepterId = acceptedUser.id;
+        }
+
+        if (requesterId === finalAccepterId) {
           throw new ApiError("User cannot friend themselves", 400);
         }
 
@@ -135,8 +148,8 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         const inverseFriendship = await fastify.db.friendship.findFirst({
           where: {
             OR: [
-              { requesterId: requesterId, accepterId: accepterId },
-              { requesterId: accepterId, accepterId: requesterId },
+              { requesterId: requesterId, accepterId: finalAccepterId },
+              { requesterId: finalAccepterId, accepterId: requesterId },
             ],
           },
         });

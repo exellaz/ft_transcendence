@@ -14,6 +14,7 @@ import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blocked
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
 import errorHandler from "./plugins/errorHandler";
+import testRoutes from "./modules/test/test.routes";
 
 const app = Fastify({
   logger: true,
@@ -38,6 +39,7 @@ app.register(roomWsRoutes);
 app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
+app.register(testRoutes);
 
 // Global error handler (call after all routes/plugins)
 // app.setErrorHandler((error, request, reply) => {

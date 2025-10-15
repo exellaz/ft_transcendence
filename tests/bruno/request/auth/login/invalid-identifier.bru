@@ -10,10 +10,17 @@ post {
   auth: none
 }
 
+script:pre-request {
+  const userId = Math.random().toString(36).substring(2, 8);
+
+  bru.setVar('identifier', `nonexist${userId}`);
+  bru.setVar('password', 'SomePassword123!');
+}
+
 body:json {
   {
-    "identifier": "wrongusername",
-    "password": "{{testPassword}}"
+    "identifier": "{{identifier}}",
+    "password": "{{password}}"
   }
 }
 

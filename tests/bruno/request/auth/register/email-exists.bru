@@ -10,27 +10,52 @@ post {
   auth: none
 }
 
+script:pre-request {
+  const userId = Math.random().toString(36).substring(2, 8);
+  const baseUrl = bru.getEnvVar('baseUrl');
+
+  bru.setVar('email', `dup${userId}@test.com`);
+  bru.setVar('username1', `user_${userId}a`);
+  bru.setVar('username2', `user_${userId}b`);
+  bru.setVar('password', 'Test123!');
+
+  const firstUser = await axios.post(`${baseUrl}/auth/register`, {
+    email: `dup${userId}@test.com`,
+    username: `user_${userId}a`,
+    password: 'Test123!'
+  }, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 5000
+  });
+
+  if (firstUser.status === 201) {
+    console.log(`✅ Created initial user user_${userId}a for duplicate email test`);
+  }
+}
+
 body:json {
   {
-    "username": "uniqueuser",
-    "email": "{{testEmail}}",
-    "password": "{{testPassword}}"
+    "email": "{{email}}",
+    "username": "{{username2}}",
+    "password": "{{password}}"
   }
 }
 
 tests {
-  test("should return 409 conflict status", function() {
-    expect(res.getStatus()).to.equal(409);
+  test("should return 409 status for duplicate email", function() {
+    expect(res.status).to.equal(409);
+    expect(res.body.success).to.be.false;
   });
-  
-  test("should have error response structure", function() {
-    const body = res.getBody();
-    expect(body).to.have.property('success', false);
-    expect(body).to.have.property('error');
-    expect(body.error).to.include('email');
-  });
-}
 
-settings {
-  encodeUrl: false
+  test("should return proper error response", function() {
+    expect(res.body.error).to.be.a('string');
+    expect(res.body.errorCode).to.equal('EMAIL_ALREADY_EXISTS');
+    expect(res.body).to.not.have.property('data');
+  });
+
+  test("should follow ApiResponse error pattern", function() {
+    expect(res.body).to.have.property('success', false);
+    expect(res.body).to.have.property('error');
+    expect(res.body).to.have.property('errorCode');
+  });
 }

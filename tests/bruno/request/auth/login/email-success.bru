@@ -10,10 +10,33 @@ post {
   auth: none
 }
 
+script:pre-request {
+  const axios = require("axios");
+  const baseUrl = bru.getEnvVar('baseUrl');
+  const userId = Math.random().toString(36).substring(2, 8);
+
+  bru.setVar('email', `login${userId}@test.com`);
+  bru.setVar('username', `login${userId}`);
+  bru.setVar('password', 'LoginPass123!');
+
+  const registerResponse = await axios.post(`${baseUrl}/auth/register`, {
+    email: `login${userId}@test.com`,
+    username: `login${userId}`,
+    password: 'LoginPass123!'
+  }, {
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 5000
+  });
+
+  if (registerResponse.status === 201) {
+    console.log(`✅ Created user login${userId} for email login test`);
+  }
+}
+
 body:json {
   {
-    "identifier": "{{testEmail}}",
-    "password": "{{testPassword}}"
+    "identifier": "{{email}}",
+    "password": "{{password}}"
   }
 }
 
@@ -21,24 +44,24 @@ tests {
   test("should return 200 status", function() {
     expect(res.getStatus()).to.equal(200);
   });
-  
+
   test("should have success response structure", function() {
     const body = res.getBody();
     expect(body).to.have.property('success', true);
     expect(body).to.have.property('data');
   });
-  
+
   test("should return user data and token", function() {
     const { data } = res.getBody();
     expect(data).to.have.property('token');
     expect(data).to.have.property('user');
-  
+
     const { user } = data;
     expect(user).to.have.property('id');
-    expect(user).to.have.property('email', bru.getEnvVar('testEmail'));
+    expect(user).to.have.property('email', bru.getVar('email'));
     expect(user).to.not.have.property('password');
   });
-  
+
   test("should update auth token", function() {
     const { data } = res.getBody();
     bru.setEnvVar('authToken', data.token);
