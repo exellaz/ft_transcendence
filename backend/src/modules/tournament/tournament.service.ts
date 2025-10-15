@@ -94,7 +94,8 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
  * @note Performs extensive validation: players must be different, winner must be one of the players,
  *       scores must be non-negative and not tied, winner must match score result,
  *       players must exist and belong to the specified tournament
- */export async function createTournamentMatch(m: TournamentMatchInput) {
+ */
+export async function createTournamentMatch(m: TournamentMatchInput) {
   try {
     if (m.player1Id === m.player2Id)
       throw new Error("A player cannot play against themselves");
@@ -102,11 +103,11 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       throw new Error("Winner must be one of the players");
     if (m.player1Score < 0 || m.player2Score < 0)
       throw new Error("Scores must be non-negative");
-    //if (m.player1Score === m.player2Score)
-    //  throw new Error("Scores cannot be tied");
-    //const actualWinner = m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
-    //if (m.winnerId !== actualWinner)
-    //  throw new Error("Winner does not match score result");
+    // if (m.player1Score === m.player2Score)
+    //   throw new Error("Scores cannot be tied");
+    // const actualWinner = m.player1Score > m.player2Score ? m.player1Id : m.player2Id;
+    // if (m.winnerId !== actualWinner)
+    //   throw new Error("Winner does not match score result");
 
     const [p1, p2] = await prisma.tournamentPlayer.findMany({
       where: { id: { in: [m.player1Id, m.player2Id] } },
@@ -139,6 +140,51 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
     console.error('Error creating tournamentMatch:', error);
 
     // ❌ Return standardized error response
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+// update tournament status
+export async function updateTournamentStatus(status: TournamentStatus, tournamentId: number) {
+  try {
+    const updatedTournament = await prisma.tournament.update({
+      where: { id: tournamentId },
+      data: { status },
+    });
+
+    return {
+      success: true,
+      data: updatedTournament,
+    };
+  } catch (error) {
+    console.error('Error updating tournament status:', error);
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+
+// update tournamentPlayer ranking
+export async function updateTournamentPlayerRanking(ranking: number, tournamentPlayerId: number) {
+  try {
+    const updatedTournamentPlayer = await prisma.tournamentPlayer.update({
+      where: { id: tournamentPlayerId },
+      data: { ranking },
+    });
+
+    return {
+      success: true,
+      data: updatedTournamentPlayer,
+    };
+  } catch (error) {
+    console.error('Error updating tournament player ranking:', error);
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

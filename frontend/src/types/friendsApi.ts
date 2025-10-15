@@ -107,3 +107,11 @@ export interface GetAllFriendChatMessagesRequest {
 
 export interface GetAllFriendChatMessagesResponse
   extends ApiResponse<FriendChatMessage[]> {}
+
+// GET /friendChatMessages/:friendshipId/lastMessage
+export interface GetLastFriendChatMessageRequest {
+  friendshipId: number;
+}
+
+export interface GetLastFriendChatMessageResponse
+  extends ApiResponse<FriendChatMessage> {}

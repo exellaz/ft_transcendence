@@ -13,6 +13,8 @@ import type {
   GetAllFriendChatMessagesResponse,
   GetBlockedFriendshipsRequest,
   GetBlockedFriendshipsResponse,
+  GetLastFriendChatMessageRequest,
+  GetLastFriendChatMessageResponse,
   GetPendingFriendshipsRequest,
   GetPendingFriendshipsResponse,
   UpdateFriendshipRequest,
@@ -133,6 +135,20 @@ export async function getAllFriendChatMessages({
   const res = await fetch(`${API_BASE}/friendChatMessages/${friendshipId}`, {
     method: "GET",
   });
+
+  return res.json();
+}
+
+// GET /friendChatMessages/:friendshipId/lastMessage
+export async function getLastFriendChatMessage({
+  friendshipId
+}: GetLastFriendChatMessageRequest): Promise<GetLastFriendChatMessageResponse> {
+  const res = await fetch(
+    `${API_BASE}/friendChatMessages/${friendshipId}/lastMessage`,
+    {
+      method: "GET",
+    },
+  );
 
   return res.json();
 }
