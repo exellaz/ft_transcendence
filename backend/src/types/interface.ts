@@ -19,6 +19,15 @@ export interface TournamentLobby {
   name: string;
   players: TournamentPlayerWs[];
   matches?: TournamentMatch[];
+  playerMap?: Map<number, number>;
+  result?: {
+    playerId: number | null;
+    stage: "QF" | "SF" | "F";
+    scoreLeft: number;
+    scoreRight: number;
+    winnerId: number | null;
+    duration: number;
+  }[];
   started: boolean;
   stage: "QF" | "SF" | "F";
   countdownTimer?: NodeJS.Timeout | undefined;

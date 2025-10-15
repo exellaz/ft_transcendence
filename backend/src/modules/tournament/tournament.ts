@@ -4,8 +4,7 @@ import { PongGame } from "@shared/game/pong.ts";
 import { playerInfo, Room, TournamentLobby } from "../../types/interface";
 import WebSocket from "ws";
 import { TournamentMatch } from "../../types/interface";
-import { clear } from "console";
-import { createTournament, createTournamentMatch, createTournamentPlayer } from "./tournament.service";
+import { createTournament, createTournamentMatch, createTournamentPlayer, updateTournamentPlayerRanking } from "./tournament.service";
 
 // Start tournament countdown and manage tournament progression
 export async function startTournamentCountdown(
@@ -139,7 +138,7 @@ export function createGameRoom(
             console.log ("Game result: ", result);
             console.log ("===============================================");
             await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
-            tournaments.delete(tournamentId);
+            //tournaments.delete(tournamentId);
         }
 
     }
@@ -260,5 +259,102 @@ async function saveMatchResult(
             console.log(`tournament match created: `, matchResult.data);
         else
             console.log(`tournament match creation failed: `, matchResult.error);
+    }
+
+    //after save match result, update player rank
+    const resultCopy = {
+        playerId: result.winnerId === "draw" ? null : (typeof result.winnerId === "number" ? result.winnerId : null),
+        stage: tournamentInfo.stage,
+        scoreLeft: result.scoreLeft,
+        scoreRight: result.scoreRight,
+        winnerId: result.winnerId === "draw" ? null : (typeof result.winnerId === "number" ? result.winnerId : null),
+        duration: result.duration,
+    }
+
+    const t = tournaments.get(tournamentInfo.id);
+    if (!t) return;
+
+    t.playerMap = t.playerMap || new Map<number, number>();
+
+    for (const p of createdPlayer) {
+        if(p.data)
+            t.playerMap.set(p.data.userId, p.data.id);
+    }
+
+    t.result = t.result || [];
+    t.result.push(resultCopy);
+
+    //tournamentInfo.stage === "QF" ? 2 : 0;
+    const TotalMatches =
+        tournamentInfo.stage === "QF" ? 4 :
+        tournamentInfo.stage === "SF" ? 2 :
+        tournamentInfo.stage === "F" ? 1 : 0;
+
+    const finishedMatches = t.result.filter(r => r.stage === tournamentInfo.stage).length;
+
+    if (finishedMatches === TotalMatches) {
+        console.log(`Tournament ${tournamentInfo.id} stage ${tournamentInfo.stage} completed.`);
+        await handleNextRound(t, tournamentInfo.stage);
+    }
+}
+
+async function handleNextRound(tournament: TournamentLobby, currentStage: "QF" | "SF" | "F") {
+    const ThisRoundResult = tournament.result?.filter(r => r.stage === currentStage);
+    const winner = [];
+    const loser = [];
+
+    for (const match of ThisRoundResult ?? []) {
+        const matchInfo = tournament.matches?.find(m =>
+            m.players.some(p => p.id === match.winnerId)
+        );
+
+        if (!matchInfo || !matchInfo.players[0] || !matchInfo.players[1]) continue;
+
+        const leftId = matchInfo.players[0].id;
+        const rightId = matchInfo.players[1].id;
+
+        if (match.winnerId === leftId) {
+            winner.push({
+                id: leftId,
+                username:matchInfo.players[0].username,
+                spriteUrl: matchInfo.players[0].spriteUrl
+            });
+            loser.push({ id: rightId, duration: match.duration });
+        } else if (match.winnerId === rightId) {
+            winner.push({
+                id: rightId,
+                username:matchInfo.players[1].username,
+                spriteUrl: matchInfo.players[1].spriteUrl
+            });
+            loser.push({ id: leftId, duration: match.duration });
+        }
+
+        loser.sort((a, b) => a.duration - b.duration);
+
+        const stageRankMap = {
+            "QF": [5, 8],
+            "SF": [3, 4],
+            "F": [1, 2],
+        };
+
+        const [minRank, maxRank] = stageRankMap[currentStage] ?? [0, 0];
+        const rankedLosers = loser.map((p, i) => ({
+            playerId: p.id,
+            rank: (minRank ?? 0) + i,
+        }));
+
+        for (const rl of rankedLosers) {
+            if (!tournament.playerMap) return;
+            const tournamentPlayerId = tournament.playerMap.get(rl.playerId);
+            if (!tournamentPlayerId) {
+                console.warn(`No player ID found for user ${rl.playerId}`);
+                continue;
+            }
+
+            console.log(`Update player id ${tournamentPlayerId} (${rl.playerId}) ranking to ${rl.rank}`);
+            await updateTournamentPlayerRanking(rl.rank, tournamentPlayerId);
+        }
+        //TODO :: handle next round
+        //TODO :: current tournament not yet delete
     }
 }

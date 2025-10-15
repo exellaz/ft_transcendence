@@ -33,7 +33,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
       stage: "QF",
       countdownTimer: undefined,
       countdownRemaining: undefined,
-      maxPlayer: 2, //? change max players for testing
+      maxPlayer: 8, //? change max players for testing
     };
 
     tournaments.set(tournamentId, tournament);
