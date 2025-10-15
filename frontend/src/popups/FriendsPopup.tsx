@@ -491,6 +491,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         {/* Extended View: Cascade Card */}
         {selectedUser && (
           <CascadeCard
+            key={selectedUser.id} // <-- forces remount on user change
             userId={userId}
             selectedUser={selectedUser}
             friendshipId={(selectedUser as UserWithFriendshipId).friendshipId}
