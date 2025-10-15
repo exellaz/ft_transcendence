@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { User } from "../types/usersApi";
 import { useApiQuery } from "../hooks/useApi";
@@ -29,7 +29,22 @@ const Messaging: React.FC<MessagingProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`Messaging.${key}`);
-  const [input, setInput] = useState("");
+  const [localMessages, setLocalMessages] = useState<FriendChatMessage[]>([]);
+  // message in input bar
+  const [message, setMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // limit user's message length
+  const MESSAGE_LIMIT = 200;
+
+  // Auto-scroll to the bottom when chatMessages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      // scrollTop is the number of pixels the content is scrolled vertically.
+      // scrollHeight is the total height of the content inside the container.
+      // Setting scrollTop = scrollHeight means the scroll bar moves to the very bottom, showing the latest message.
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [localMessages]); // Runs every time messages change
 
   // API query for message list
   const {
@@ -42,6 +57,24 @@ const Messaging: React.FC<MessagingProps> = ({
     [open, selectedUser],
     true
   );
+
+  useEffect(() => {
+    if (messages) setLocalMessages(messages);
+  }, [messages]);
+
+  // Handler to send message
+  const handleSendMessage = () => {
+    if (message.trim() === "" || message.length > MESSAGE_LIMIT) return;
+    const newMsg: FriendChatMessage = {
+      id: Date.now(), // TODO: replace with real ID from backend
+      friendshipId: friendshipId,
+      senderId: userId,
+      message: message,
+      timestamp: new Date(),
+    };
+    setLocalMessages([...localMessages, newMsg]);
+    setMessage("");
+  };
 
   let messagesContent: React.ReactNode;
   if (loading) {
@@ -61,7 +94,7 @@ const Messaging: React.FC<MessagingProps> = ({
   } else {
     messagesContent = (
       <div className="flex flex-col gap-4">
-        {messages?.map((msg) => (
+        {localMessages?.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${
@@ -104,11 +137,16 @@ const Messaging: React.FC<MessagingProps> = ({
             selectedUser.status === "online" ? "bg-green-500" : "bg-red-500"
           }`}
         >
-          {selectedUser.status === "online" ? translate("online") : translate("offline")}
+          {selectedUser.status === "online"
+            ? translate("online")
+            : translate("offline")}
         </span>
       </div>
       {/* Messages */}
-      <div className="h-full overflow-y-auto scrollbar-hide p-4">
+      <div
+        className="h-full overflow-y-auto scrollbar-hide p-4"
+        ref={messagesEndRef}
+      >
         {messagesContent}
       </div>
       {/* Input Bar */}
@@ -117,12 +155,24 @@ const Messaging: React.FC<MessagingProps> = ({
           type="text"
           className="flex-1 rounded-lg bg-input-gray text-white px-3 py-2 outline-none"
           placeholder={translate("type_message")}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSendMessage();
+            }
+          }}
+          maxLength={MESSAGE_LIMIT + 50}
         />
-        <Button variant="send" onClick={() => {}}>
-          {translate("send")}
-        </Button>
+        {message.length <= MESSAGE_LIMIT ? (
+          <Button variant="send" onClick={handleSendMessage}>
+            {translate("send")}
+          </Button>
+        ) : (
+          <span className="text-red-500 font-bold">
+            {message.length}/{MESSAGE_LIMIT}
+          </span>
+        )}
       </div>
     </div>
   );

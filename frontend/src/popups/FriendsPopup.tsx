@@ -259,7 +259,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             };
             return (
               <FriendTile
-                key={user.id}
+                key={user.username}
                 username={user.username}
                 avatarUrl={user.avatarUrl}
                 lastMessage={
@@ -305,7 +305,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       <div className="flex-col-center gap-4 p-1">
         {requests.map((user) => (
           <FriendRequestTile
-            key={user.id}
+            key={user.username}
             username={user.username}
             avatarUrl={user.avatarUrl}
             onAccept={() => handleAcceptRequest(user.id)}
@@ -345,7 +345,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       <div className="grid grid-cols-3 gap-4 p-1">
         {blocked.map((user) => (
           <BlockedTile
-            key={user.id}
+            key={user.username}
             username={user.username}
             avatarUrl={user.avatarUrl}
             onClick={() =>
@@ -373,6 +373,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           <div className="flex-1 flex-row-center gap-6 border-b border-yellow-400">
             {tabs.map((tab) => (
               <button
+                key={tab}
                 className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${
                   activeTab === tab
                     ? "text-yellow-400 border-b-4 border-yellow-400"
