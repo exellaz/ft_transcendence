@@ -10,30 +10,6 @@ post {
   auth: none
 }
 
-script:pre-request {
-  const axios = require("axios");
-  const baseUrl = bru.getEnvVar('baseUrl');
-    try {
-      const resetResponse = await axios.post(`${baseUrl}/test/reset-db`, {}, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 5000
-    });
-
-    if (resetResponse.status === 200) {
-      console.log('Database reset successful:', resetResponse.data.data.deletedUsers, 'users deleted');
-    }
-  } catch (error) {
-    console.warn('Database reset failed:', error.message);
-    console.log('Continuing with test - ensure backend is running');
-  }
-
-  const userId = Math.random().toString(36).substring(2, 8);
-
-  bru.setVar('email', `${userId}@test.com`);
-  bru.setVar('username', `user_${userId}`);
-  bru.setVar('password', 'Test123!');
-}
-
 body:json {
   {
     "email": "{{email}}",
@@ -42,13 +18,21 @@ body:json {
   }
 }
 
+script:pre-request {
+  const userId = Math.random().toString(36).substring(2, 8);
+  
+  bru.setVar('email', `${userId}@test.com`);
+  bru.setVar('username', `user_${userId}`);
+  bru.setVar('password', 'Test123!');
+}
+
 tests {
   test("should return 201 status and success response", function() {
     expect(res.status).to.equal(201);
     expect(res.body.success).to.be.true;
     expect(res.body).to.have.property('data');
   });
-
+  
   test("should return user with correct credentials and defaults", function() {
     expect(res.body.data.user.email).to.equal(bru.getVar('email'));
     expect(res.body.data.user.username).to.equal(bru.getVar('username'));
@@ -56,13 +40,13 @@ tests {
     expect(res.body.data.user.status).to.equal('offline');
     expect(res.body.data.user.avatarUrl).to.equal('/assets/yellow-ghost.png');
   });
-
+  
   test("should return valid JWT token", function() {
     expect(res.body.data.token).to.be.a('string');
     expect(res.body.data.token.split('.')).to.have.length(3);
     expect(res.body.data.token.length).to.be.greaterThan(50);
   });
-
+  
   test("should follow security and API patterns", function() {
     expect(res.body.data.user).to.not.have.property('password');
     expect(res.body).to.not.have.property('error');
