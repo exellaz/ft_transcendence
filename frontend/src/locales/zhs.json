@@ -234,7 +234,7 @@
     "offline": "离线",
     "type_message": "输入消息",
     "send": "发送",
-    "no_messages_yet": "还没有消息"
+    "no_messages_yet": "还没有消息。"
   },
   "ProfileContents": {
     "loading": "加载中...",
@@ -279,6 +279,7 @@
     "back": "返回",
     "no_friends_yet": "还没有朋友。",
     "no_new_requests": "没有新的请求。",
-    "no_blocked_users": "没有被屏蔽的用户。"
+    "no_blocked_users": "没有被屏蔽的用户。",
+    "no_messages_yet": "还没有消息。"
   }
 }

@@ -234,7 +234,7 @@
     "offline": "離線",
     "type_message": "輸入訊息",
     "send": "發送",
-    "no_messages_yet": "還沒有訊息"
+    "no_messages_yet": "還沒有訊息。"
   },
   "ProfileContents": {
     "loading": "載入中...",
@@ -279,6 +279,7 @@
     "back": "返回",
     "no_friends_yet": "還沒有朋友。",
     "no_new_requests": "沒有新的請求。",
-    "no_blocked_users": "沒有被封鎖的用戶。"
+    "no_blocked_users": "沒有被封鎖的用戶。",
+    "no_messages_yet": "還沒有訊息。"
   }
 }

@@ -281,6 +281,7 @@
     "back": "Back",
     "no_friends_yet": "No friends yet.",
     "no_new_requests": "No new requests.",
-    "no_blocked_users": "No blocked users."
+    "no_blocked_users": "No blocked users.",
+    "no_messages_yet": "No messages yet."
   }
 }
