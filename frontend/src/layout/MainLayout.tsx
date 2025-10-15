@@ -4,10 +4,11 @@ import { useUser } from "../context/UserProvider";
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
 
-import ProfilePopup from "../popups/ProfilePopup";
 import BasicInfoPopup from "../popups/BasicInfoPopup";
-import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 import FriendsPopup from "../popups/FriendsPopup";
+import HowToPlayPopup from "../popups/HowToPlayPopup";
+import ProfilePopup from "../popups/ProfilePopup";
+import TournamentStatsPopup from "../popups/TournamentStatsPopup";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showBasicInfo, setShowBasicInfo] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   const { user } = useUser();
   const userId = user?.id ?? 0;
@@ -29,6 +31,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         setShowBasicInfo={setShowBasicInfo}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
+        setShowHowToPlay={setShowHowToPlay}
         userId={userId}
       />
       {children}
@@ -51,6 +54,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         open={showFriends}
         onClose={() => setShowFriends(false)}
         userId={userId}
+      />
+      <HowToPlayPopup
+        open={showHowToPlay}
+        onClose={() => setShowHowToPlay(false)}
       />
     </Background>
   );

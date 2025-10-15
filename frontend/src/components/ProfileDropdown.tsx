@@ -13,6 +13,7 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
+  setShowHowToPlay: (open: boolean) => void;
   userId: number;
 }
 
@@ -21,6 +22,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
+  setShowHowToPlay,
   userId,
 }) => {
   const { t } = useTranslation();
@@ -78,6 +80,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       onClick: () => {
         setOpen(false);
         setShowFriends(true);
+      },
+    },
+    {
+      label: translate("how_to_play"),
+      onClick: () => {
+        setOpen(false);
+        setShowHowToPlay(true);
       },
     },
     {
