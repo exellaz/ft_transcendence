@@ -124,11 +124,14 @@ export class Padel extends GameObject {
 
     const scaleFactor = new Vector2D(0.48, 0.48);
 
+    const iris: string = SKIN_PATHS[this.player.skin as Skin].iris;
+    const eyes: string = SKIN_PATHS[this.player.skin as Skin].eyes;
+
     this.addChild(
       new ImageObject({
         scaleFactor: scaleFactor,
         sprite: new Sprite({
-          imagePath: "./assets/skins/components/eyes.png",
+          imagePath: eyes,
         }),
         isStatic: true,
         interpolate: new Interpolate({
@@ -147,7 +150,7 @@ export class Padel extends GameObject {
         scaleFactor: scaleFactor,
         isStatic: true,
         sprite: new Sprite({
-          imagePath: "./assets/skins/components/iris.png",
+          imagePath: iris,
         }),
         interpolate: new Interpolate({
           targetOffset: new Vector2D(
@@ -159,12 +162,6 @@ export class Padel extends GameObject {
         }),
       }),
     );
-
-    // this.addChild(new TrailSprite(this.game, this, new Sprite({
-    //     imagePath: "./assets/skins/components/iris.png",
-    //     size: new Vector2D(30, 12),
-    //     pos: new Point2D(irisOffset, -3)
-    // }), 250));
   }
 }
 export class PadelLabel extends Label {

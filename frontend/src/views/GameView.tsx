@@ -21,7 +21,7 @@ interface GameViewProps {
   mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
 }
 
-const SKIN_MAPPING = {
+const SKIN_MAPPING: Record<string, number> = {
   "/assets/yellow-ghost.png": 0,
   "/assets/green-ghost.png": 1,
   "/assets/blue-ghost.png": 2,
@@ -173,23 +173,18 @@ const GameView: React.FC<GameViewProps> = () => {
         height: canvas.height,
       });
 
-
       const settings = location.state?.gameSettings ?? {};
+      const game = new PongGame(false, settings, () => { }, 1);
+      
       const player1Settings = location.state?.player1 ?? {};
       const player2Settings = location.state?.player2 ?? {};
-
-      console.log("settings: ", location.state);
-      const game = new PongGame(false, settings, () => { }, 1);
-
-      console.log("player 1", SKIN_MAPPING[player1Settings.spriteUrl]);
-
 
       game.addPlayer(
         new Player({
           team: 0,
           name: "Player1",
           id: 0,
-          skin: SKIN_MAPPING[player1Settings.spriteUrl]
+          skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0
         })
       );
 
@@ -198,7 +193,7 @@ const GameView: React.FC<GameViewProps> = () => {
           team: 1,
           name: "Player2",
           id: 1,
-          skin: SKIN_MAPPING[player2Settings.spriteUrl]
+          skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0
         })
       );
 
@@ -241,7 +236,7 @@ const GameView: React.FC<GameViewProps> = () => {
           if (keysPressed.has("ArrowDown")) game.movePaddle("ArrowDown", 1);
           if (keysPressed.has("ArrowUp")) game.movePaddle("ArrowUp", 1);
 
-          game.update({ deltaOverride: FIXED_TIMESTEP }); // optional: pass delta if needed
+          game.update({ deltaOverride: FIXED_TIMESTEP });
           accumulator -= FIXED_TIMESTEP;
         }
 
