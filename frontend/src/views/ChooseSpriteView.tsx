@@ -26,6 +26,7 @@ async function handleJoinTournament(user: User | null, navigate: any) {
   // 3. If no suitable tournament, create one
   if (!tournament) {
     tournament = await createTournamentLobby("Weekend Cup");
+    console.log("Created new tournament:", tournament);
     if (!tournament) {
       alert("Failed to create tournament");
       return;

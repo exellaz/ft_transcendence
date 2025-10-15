@@ -116,7 +116,7 @@ export function createGameRoom(
     tournamentInfo: TournamentLobby,
 	TournamentLobbyDb: { id: number, status: string, createdAt: Date}
 ) {
-	const roomId = generateRoomId();
+	const roomId = parseInt("1111" + generateRoomId());
 	const roomName = `Tournament ${tournamentId} - Room ${roomId}`;
 
 	// Initialize Pong game instance
@@ -126,7 +126,7 @@ export function createGameRoom(
 		ballSpeed: 1,
 		ballSize: 1,
 		paddleSpeed: 1,
-		scorePoint: 5,
+		scorePoint: 1,
 		map: "stadium",
 	  },
 	  async (winner) => {
@@ -139,6 +139,7 @@ export function createGameRoom(
             console.log ("===============================================");
             await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
         }
+
     }
   );
 

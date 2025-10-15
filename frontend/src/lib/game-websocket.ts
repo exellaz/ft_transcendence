@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type { playerInfo } from "../../../backend/src/types/interface";
+
 
 // game structure
 interface UseGameWebSocketParams {
@@ -74,6 +77,7 @@ export function useGameRoomWebSocket({
   playerSprite,
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
+  const navigate = useNavigate();
   console.log("allinfo:");
   console.log("roomId:", roomId);
   console.log("clientId:", clientId);
@@ -89,8 +93,32 @@ export function useGameRoomWebSocket({
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log("Game WebSocket message received:", msg); //// debug
+    //  console.log("Game WebSocket message received:", msg); //// debug
       if (msg.type === "game_over") {
+        //console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
+        if (roomId.toString().startsWith("1111") === true)
+        {
+            const leftPlayerId = msg.playerLeft.map((p: playerInfo) => p.clientId);
+            const rightPlayerId = msg.playerRight.map((p: playerInfo) => p.clientId);
+            const winner = msg.result.winner;
+
+            //console.log("Tournament game over"); ////debug
+            //console.log("Winner is: ", winner); ////debug
+            if (winner === "left")
+            {
+                //console.log("game_over => msg.playerLeft.clientId: ", leftPlayerId); ////debug
+                //console.log("game_over => clientId: ", clientId); ////debug
+                if (leftPlayerId[0] === clientId)
+                    navigate("/roomList");
+            }
+            else if (winner === "right")
+            {
+                //console.log("game_over => msg.playerRight.clientId: ", rightPlayerId); ////debug
+                //console.log("game_over => clientId: ", clientId); ////debug
+                if (rightPlayerId[0] === clientId)
+                    navigate("/roomList");
+            }
+        }
         setGameOver(msg.canLeave);
       }
     };

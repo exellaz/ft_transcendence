@@ -11,7 +11,7 @@ import { TournamentPlayerWs, TournamentLobby } from "src/types/interface";
 export const tournaments = new Map<number, TournamentLobby>();
 
 function generateTournamentId(): number {
-  return parseInt("9" + generateRoomId());
+  return parseInt("111" + generateRoomId());
 }
 
 export default async function tournamentRoutes(app: FastifyInstance) {

@@ -1,4 +1,4 @@
-import type { Room } from "../../../backend/src/utils/interface";
+import type { Room } from "../../../backend/src/types/interface";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 //const API_URL = `/api`;

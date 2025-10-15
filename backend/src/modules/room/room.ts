@@ -172,6 +172,9 @@ export function roomEndGame(
   broadcast(room, {
     type: "game_over",
     canLeave: true,
+    result: room.result,
+    playerLeft: room.gameState.teams.left,
+    playerRight: room.gameState.teams.right,
   });
 
   const leftPlayer = room.gameState.teams.left
