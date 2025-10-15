@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { tournaments } from "./tournament.routes";
 import { startTournamentCountdown, cancelTournamentCountdown } from "./tournament";
-import { TournamentPlayerWs } from "../../utils/interface";
+import { TournamentPlayerWs } from "../../types/interface";
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 

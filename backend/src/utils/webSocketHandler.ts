@@ -1,4 +1,4 @@
-import type { playerInfo, Room } from "../utils/interface";
+import type { playerInfo, Room } from "../types/interface";
 import { rooms } from "../modules/room/room";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { broadcast, cancelCountdown } from "./utils";

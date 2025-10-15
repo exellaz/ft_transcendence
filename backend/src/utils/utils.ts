@@ -4,7 +4,7 @@ import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
-import { BroadcastMessage, WSContext, playerInfo, Room } from "./interface";
+import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interface";
 
 /**
  * @brief Validate WebSocket connection parameters

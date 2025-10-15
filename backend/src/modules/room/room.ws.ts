@@ -1,6 +1,6 @@
 import { WebSocketHandler } from "../../utils/webSocketHandler";
 import { validateConnection } from "../../utils/utils";
-import type { playerInfo } from "../../utils/interface";
+import type { playerInfo } from "../../types/interface";
 import { startRoomLoop, roomStartGame } from "./room";
 import { createLiveChatMessage } from "../../modules/chat/liveChat";
 import {

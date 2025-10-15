@@ -1,4 +1,4 @@
-import { liveChatMessage } from "../../utils/interface";
+import { liveChatMessage } from "../../types/interface";
 
 /**
  * @brief Creates a new chat message

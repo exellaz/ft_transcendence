@@ -1,4 +1,4 @@
-import { Room, GameSettings, TournamentLobby } from "../../utils/interface";
+import { Room, GameSettings, TournamentLobby } from "../../types/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
 

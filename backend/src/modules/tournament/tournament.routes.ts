@@ -6,7 +6,7 @@ import {
 import { generateRoomId } from "../room/room";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
-import { TournamentPlayerWs, TournamentLobby } from "src/utils/interface";
+import { TournamentPlayerWs, TournamentLobby } from "src/types/interface";
 
 export const tournaments = new Map<number, TournamentLobby>();
 

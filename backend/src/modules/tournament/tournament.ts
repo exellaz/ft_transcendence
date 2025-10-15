@@ -1,9 +1,9 @@
 import { tournaments } from "./tournament.routes";
 import { rooms, roomEndGame, generateRoomId, startRoomLoop } from "../room/room";
 import { PongGame } from "@shared/game/pong.ts";
-import { playerInfo, Room, TournamentLobby } from "../../utils/interface";
+import { playerInfo, Room, TournamentLobby } from "../../types/interface";
 import WebSocket from "ws";
-import { TournamentMatch } from "../../utils/interface";
+import { TournamentMatch } from "../../types/interface";
 import { clear } from "console";
 import { createTournament, createTournamentMatch, createTournamentPlayer } from "./tournament.service";
 
