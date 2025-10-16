@@ -9,9 +9,7 @@ import {
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 
-async function userRoutes(
-  fastify: FastifyInstance,
-) {
+async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
 
   // GET /users/:id/settings
@@ -81,47 +79,17 @@ async function userRoutes(
 
   // ============================ USER =================================
 
-  // POST /users (Create User)
-  fastify.post("/users", async (request) => {
-    const { username, email, password } = request.body as {
-      username: string;
-      email: string;
-      password: string;
-    };
-    try {
-      const user = await fastify.db.user.create({
-        data: {
-          username,
-          email,
-          password,
-          settings: { create: {} }, // use all @default values
-        },
-      });
-      return ok(user);
-    } catch (err: any) {
-      if (err.code === "P2002")
-        // Prisma unique constraint violation
-        throw new ApiError("Username or Email already exists", 400);
-
-      throw err; // let Fastify handle other errors
-    }
-  });
-
   // GET /users/:id (Get single user)
-  fastify.get(
-    "/users/:id",
-    { schema: getUserByIdSchema },
-    async (request) => {
-      const { id } = request.params as { id: string };
-      const user = await fastify.db.user.findUnique({
-        where: { id: Number(id) },
-        select: userPublicSelect,
-      });
-      if (!user) throw new ApiError("User not found", 404);
+  fastify.get("/users/:id", { schema: getUserByIdSchema }, async (request) => {
+    const { id } = request.params as { id: string };
+    const user = await fastify.db.user.findUnique({
+      where: { id: Number(id) },
+      select: userPublicSelect,
+    });
+    if (!user) throw new ApiError("User not found", 404);
 
-      return ok(user); // 200 OK
-    },
-  );
+    return ok(user); // 200 OK
+  });
 
   // PATCH /users/:id  (update single user)
   fastify.patch(

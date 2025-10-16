@@ -40,7 +40,7 @@ const Messaging: React.FC<MessagingProps> = ({
   } = useApiQuery<FriendChatMessage[]>(
     () => getAllFriendChatMessages({ friendshipId: friendshipId }),
     [open, selectedUser],
-    true
+    true,
   );
 
   let messagesContent: React.ReactNode;
@@ -104,7 +104,9 @@ const Messaging: React.FC<MessagingProps> = ({
             selectedUser.status === "online" ? "bg-green-500" : "bg-red-500"
           }`}
         >
-          {selectedUser.status === "online" ? translate("online") : translate("offline")}
+          {selectedUser.status === "online"
+            ? translate("online")
+            : translate("offline")}
         </span>
       </div>
       {/* Messages */}

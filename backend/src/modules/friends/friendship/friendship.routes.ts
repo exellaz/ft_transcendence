@@ -1,19 +1,13 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
-import {
-  BlockedFriendship,
-  FriendshipStatus,
-  Prisma,
-} from "@prisma/client";
+import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import {
   createFriendshipSchema,
   getFriendShipsByUserIdSchema,
 } from "./friendship.schema";
 
-async function friendshipRoutes(
-  fastify: FastifyInstance,
-) {
+async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:3/pending (get friends that send friend request to u)
   fastify.get(
     "/friendships/:userId/pending",
@@ -34,7 +28,7 @@ async function friendshipRoutes(
       });
 
       return ok(requesters);
-    }
+    },
   );
 
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
@@ -95,7 +89,7 @@ async function friendshipRoutes(
 
       // Build a set of all user IDs that are blocked (in either direction).
       const blockedIds = new Set(
-        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId))
+        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId)),
       );
 
       /**
@@ -113,7 +107,7 @@ async function friendshipRoutes(
         }));
 
       return ok(formatted);
-    }
+    },
   );
 
   // POST /friendships
@@ -134,7 +128,7 @@ async function friendshipRoutes(
           if (!accepterUsername) {
             throw new ApiError(
               "Either accepterId or accepterUsername must be provided",
-              400
+              400,
             );
           }
 
@@ -176,102 +170,96 @@ async function friendshipRoutes(
         if (err.code === "P2003") throw new ApiError("User not found", 404);
         throw err;
       }
-    }
+    },
   );
 
   // PATCH /friendships/:requesterId/:accepterId
-  fastify.patch(
-    "/friendships/:requesterId/:accepterId",
-    async (request) => {
-      const { requesterId, accepterId } = request.params as {
-        requesterId: string;
-        accepterId: string;
-      };
-      const { status } = request.body as {
-        status?: FriendshipStatus;
-      };
+  fastify.patch("/friendships/:requesterId/:accepterId", async (request) => {
+    const { requesterId, accepterId } = request.params as {
+      requesterId: string;
+      accepterId: string;
+    };
+    const { status } = request.body as {
+      status?: FriendshipStatus;
+    };
 
-      if (status === undefined) throw new ApiError("No fields to update", 400);
+    if (status === undefined) throw new ApiError("No fields to update", 400);
 
-      try {
-        // find the friendship in either direction
-        const friendship = await fastify.db.friendship.findFirst({
-          where: {
-            OR: [
-              {
-                requesterId: Number(requesterId),
-                accepterId: Number(accepterId),
-              },
-              {
-                requesterId: Number(accepterId),
-                accepterId: Number(requesterId),
-              },
-            ],
-          },
-        });
+    try {
+      // find the friendship in either direction
+      const friendship = await fastify.db.friendship.findFirst({
+        where: {
+          OR: [
+            {
+              requesterId: Number(requesterId),
+              accepterId: Number(accepterId),
+            },
+            {
+              requesterId: Number(accepterId),
+              accepterId: Number(requesterId),
+            },
+          ],
+        },
+      });
 
-        if (!friendship) throw new ApiError("Friendship not found", 404);
+      if (!friendship) throw new ApiError("Friendship not found", 404);
 
-        // update by friendship ID
-        const updatedFriendship = await fastify.db.friendship.update({
-          where: { id: friendship.id },
-          data: { status },
-        });
+      // update by friendship ID
+      const updatedFriendship = await fastify.db.friendship.update({
+        where: { id: friendship.id },
+        data: { status },
+      });
 
-        return ok(updatedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("Friendship not found", 404);
+      return ok(updatedFriendship);
+    } catch (err: any) {
+      if (err.code === "P2025")
+        // Prisma "record not found"
+        throw new ApiError("Friendship not found", 404);
 
-        throw err; // let Fastify handle other errors
-      }
+      throw err; // let Fastify handle other errors
     }
-  );
+  });
 
   // DELETE /friendships/:requesterId/:accepterId
-  fastify.delete(
-    "/friendships/:requesterId/:accepterId",
-    async (request) => {
-      const { requesterId, accepterId } = request.params as {
-        requesterId: string;
-        accepterId: string;
-      };
+  fastify.delete("/friendships/:requesterId/:accepterId", async (request) => {
+    const { requesterId, accepterId } = request.params as {
+      requesterId: string;
+      accepterId: string;
+    };
 
-      try {
-        // find the friendship in either direction
-        const friendship = await fastify.db.friendship.findFirst({
-          where: {
-            OR: [
-              {
-                requesterId: Number(requesterId),
-                accepterId: Number(accepterId),
-              },
-              {
-                requesterId: Number(accepterId),
-                accepterId: Number(requesterId),
-              },
-            ],
-          },
-        });
+    try {
+      // find the friendship in either direction
+      const friendship = await fastify.db.friendship.findFirst({
+        where: {
+          OR: [
+            {
+              requesterId: Number(requesterId),
+              accepterId: Number(accepterId),
+            },
+            {
+              requesterId: Number(accepterId),
+              accepterId: Number(requesterId),
+            },
+          ],
+        },
+      });
 
-        if (!friendship) throw new ApiError("Friendship not found", 404);
+      if (!friendship) throw new ApiError("Friendship not found", 404);
 
-        // update by friendship ID
-        const deletedFriendship = await fastify.db.friendship.delete({
-          where: { id: friendship.id },
-        });
+      // update by friendship ID
+      const deletedFriendship = await fastify.db.friendship.delete({
+        where: { id: friendship.id },
+      });
 
-        return ok(deletedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("Friendship not found", 404);
+      return ok(deletedFriendship);
+    } catch (err: any) {
+      if (err.code === "P2025")
+        // Prisma "record not found"
+        throw new ApiError("Friendship not found", 404);
 
-        throw err; // let Fastify handle other errors
-      }
+      throw err; // let Fastify handle other errors
     }
-  );
+  });
 }
 
 export default friendshipRoutes;

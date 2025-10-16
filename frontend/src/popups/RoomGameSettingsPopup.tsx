@@ -13,7 +13,11 @@ interface PopupProps {
   roomId: string;
 }
 
-const RoomGameSettingsPopup: React.FC<PopupProps> = ({ open, onClose, roomId }) => {
+const RoomGameSettingsPopup: React.FC<PopupProps> = ({
+  open,
+  onClose,
+  roomId,
+}) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameSettingsPopup.${key}`);
 

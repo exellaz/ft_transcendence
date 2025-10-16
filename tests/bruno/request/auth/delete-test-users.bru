@@ -1,17 +1,13 @@
 meta {
-  name: get-all-users
+  name: delete-test-users
   type: http
   seq: 3
 }
 
-get {
-  url: {{baseUrl}}/users
+post {
+  url: {{baseUrl}}/test/reset-db
   body: none
   auth: inherit
-}
-
-assert {
-  res.status: eq 200
 }
 
 settings {

@@ -2,9 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 import { userPublicSelect } from "../../users/users.select";
 
-async function blockedFriendshipRoutes(
-  fastify: FastifyInstance,
-) {
+async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)
   fastify.get("/blockedFriendships/:userId", async (request) => {
     const { userId } = request.params as { userId: string };

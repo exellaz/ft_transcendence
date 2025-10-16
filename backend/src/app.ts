@@ -13,9 +13,11 @@ import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
+import errorHandler from "./plugins/errorHandler";
+import testRoutes from "./modules/test/test.routes";
 
 const app = Fastify({
-  //  logger: true
+  logger: true,
 });
 await app.register(websocketPlugin);
 
@@ -23,6 +25,8 @@ app.register(fastifyCors, {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // allow your methods
 });
+
+await app.register(errorHandler);
 
 app.register(dbConnector);
 app.register(userRoutes);
@@ -35,20 +39,21 @@ app.register(roomWsRoutes);
 app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
+app.register(testRoutes);
 
 // Global error handler (call after all routes/plugins)
-app.setErrorHandler((error, request, reply) => {
-  if (error instanceof ApiError) {
-    return reply.status(error.statusCode).send(fail(error.message));
-  }
+// app.setErrorHandler((error, request, reply) => {
+//   if (error instanceof ApiError) {
+//     return reply.status(error.statusCode).send(fail(error.message));
+//   }
 
-  // Fastify validation errors (AJV)
-  if ((error as any).validation)
-    return reply
-      .status(400)
-      .send(fail(error.message || "Invalid request parameters"));
+//   // Fastify validation errors (AJV)
+//   if ((error as any).validation)
+//     return reply
+//       .status(400)
+//       .send(fail(error.message || "Invalid request parameters"));
 
-  return reply.status(500).send(fail(error.message || "Internal server error"));
-});
+//   return reply.status(500).send(fail(error.message || "Internal server error"));
+// }};
 
 export default app;
