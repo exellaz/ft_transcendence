@@ -26,6 +26,7 @@ const LiveChat: React.FC<{
   const { t } = useTranslation();
   const translate = (key: string) => t(`LiveChat.${key}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const MESSAGE_LIMIT = 200;
 
   // Auto-scroll to the bottom when chatMessages change
   useEffect(() => {
@@ -41,7 +42,7 @@ const LiveChat: React.FC<{
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.id === -1) return "System"; // System messages
     const player = players.find(
-      (p: WaitingTournamentPlayer) => p.id === msg.id,
+      (p: WaitingTournamentPlayer) => p.id === msg.id
     ); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };
@@ -75,16 +76,23 @@ const LiveChat: React.FC<{
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && message.length <= MESSAGE_LIMIT) {
               onSendMessage();
             }
           }}
+          maxLength={MESSAGE_LIMIT + 50}
           placeholder="Type a message..."
           className="flex-1 bg-input-gray rounded-lg text-white px-3 py-2 outline-none"
         />
-        <Button variant="send" onClick={onSendMessage}>
-          {translate("send")}
-        </Button>
+        {message.length <= MESSAGE_LIMIT ? (
+          <Button variant="send" onClick={onSendMessage}>
+            {translate("send")}
+          </Button>
+        ) : (
+          <span className="text-red-500 font-bold">
+            {message.length}/{MESSAGE_LIMIT}
+          </span>
+        )}
       </div>
     </div>
   );

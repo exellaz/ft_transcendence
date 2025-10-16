@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiMutation } from "../hooks/useApi";
 import {
@@ -147,7 +147,7 @@ const CascadeCard: React.FC<CascadeCardProps> = ({
   }
 
   return (
-    <div className="flex-1 border-gray-300 border-3 rounded-3xl">
+    <div className="w-[400px] border-gray-300 border-3 rounded-3xl">
       {children}
     </div>
   );

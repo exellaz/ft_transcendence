@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import {
@@ -6,11 +6,13 @@ import {
   deleteFriendship,
   getAcceptedFriendshipsByUserId,
   getBlockedFriendshipsByUserId,
+  getLastFriendChatMessage,
   getPendingFriendshipsByUserId,
   updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
 import type { UserWithFriendshipId } from "../types/friendsApi";
+import { formatTimestamp } from "../utils/date";
 
 import {
   LoadingState,
@@ -61,6 +63,59 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     [open],
     userId !== 0,
   );
+
+  type LastMessage = {
+    message: string;
+    timestamp: string;
+  };
+  const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
+    {}
+  );
+
+  // secondary API call to fetch last message for each friend
+  useEffect(() => {
+    if (!friends || friends.length === 0) return;
+
+    let isMounted = true;
+
+    const fetchLastMessages = async () => {
+      const results: Record<number, LastMessage> = {};
+
+      // run all API calls in parallel
+      // friends.map(...) creates an array of promises
+      // Promise.all([...]) takes that array of promises and runs them all concurrently,
+      // then waits for all of them to finish.
+      await Promise.all(
+        friends.map(async (friend) => {
+          try {
+            const res = await getLastFriendChatMessage({
+              friendshipId: friend.friendshipId,
+            });
+            if (res.success && res.data) {
+              results[friend.friendshipId] = {
+                message: res.data.message,
+                timestamp: formatTimestamp(res.data.timestamp),
+              };
+            }
+          } catch (err) {
+            console.error(
+              "Error fetching last message for",
+              friend.username,
+              err
+            );
+          }
+        })
+      );
+
+      if (isMounted) setLastMessages(results);
+    };
+
+    fetchLastMessages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [friends]);
 
   // API query for friend requests list
   const {
@@ -197,22 +252,32 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           .filter((user) =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase()),
           )
-          .map((user) => (
-            <FriendTile
-              key={user.id}
-              username={user.username}
-              avatarUrl={user.avatarUrl}
-              lastMessage={"user.lastMessage"}
-              timestamp={"user.lastMessageTimestamp"}
-              online={user.status === "online"}
-              onClick={() =>
-                selectedUser === user
-                  ? setSelectedUser(null)
-                  : setSelectedUser(user)
-              }
-              active={selectedUser === user}
-            />
-          ))}
+          .map((user) => {
+            const last = lastMessages[user.friendshipId] ?? {
+              message: translate("no_messages_yet"),
+              timestamp: "",
+            };
+            return (
+              <FriendTile
+                key={user.username}
+                username={user.username}
+                avatarUrl={user.avatarUrl}
+                lastMessage={
+                  last.message.length > 40
+                    ? last.message.slice(0, 40) + "..."
+                    : last.message
+                }
+                timestamp={last.timestamp}
+                online={user.status === "online"}
+                onClick={() =>
+                  selectedUser === user
+                    ? setSelectedUser(null)
+                    : setSelectedUser(user)
+                }
+                active={selectedUser === user}
+              />
+            );
+          })}
       </div>
     );
   }
@@ -240,7 +305,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       <div className="flex-col-center gap-4 p-1">
         {requests.map((user) => (
           <FriendRequestTile
-            key={user.id}
+            key={user.username}
             username={user.username}
             avatarUrl={user.avatarUrl}
             onAccept={() => handleAcceptRequest(user.id)}
@@ -280,7 +345,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       <div className="grid grid-cols-3 gap-4 p-1">
         {blocked.map((user) => (
           <BlockedTile
-            key={user.id}
+            key={user.username}
             username={user.username}
             avatarUrl={user.avatarUrl}
             onClick={() =>
@@ -301,13 +366,14 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       onClose={handleClose}
       size={selectedUser ? "large" : "default"}
     >
-      <div className="w-full h-full flex flex-row gap-6">
+      <div className="w-full h-full flex flex-row gap-10">
         {/* Main View: Tabs and List */}
         <div className="flex-1 flex-col-center gap-6">
           {/* Tabs Header (fixed) */}
           <div className="flex-1 flex-row-center gap-6 border-b border-yellow-400">
             {tabs.map((tab) => (
               <button
+                key={tab}
                 className={`text-lg font-bold pb-2 px-4 transition-colors cursor-pointer ${
                   activeTab === tab
                     ? "text-yellow-400 border-b-4 border-yellow-400"
@@ -425,6 +491,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         {/* Extended View: Cascade Card */}
         {selectedUser && (
           <CascadeCard
+            key={selectedUser.id} // <-- forces remount on user change
             userId={userId}
             selectedUser={selectedUser}
             friendshipId={(selectedUser as UserWithFriendshipId).friendshipId}
