@@ -1,16 +1,34 @@
-import { FriendshipStatus, PrismaClient } from "@prisma/client";
+import {
+  FriendshipStatus,
+  PrismaClient,
+  TournamentPlayer,
+  TournamentStatus,
+} from "@prisma/client";
 import { hashPassword } from "../src/modules/users/users.service";
+import { readFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 const prisma = new PrismaClient();
 
-async function main() {
-  await prisma.user.deleteMany();
-  // reset the sequence manually (id start from 1)
-  await prisma.$executeRawUnsafe(
-    `DELETE FROM sqlite_sequence WHERE name='users';`,
-  );
+interface SeedOptions {
+  userCount: number;
+}
 
-  let num = 10; // 👈 set how many users you want
-  for (let i = 1; i <= num; i++) {
+async function seed({ userCount }: SeedOptions) {
+  await prisma.user.deleteMany();
+  await prisma.userSettings.deleteMany();
+  await prisma.friendship.deleteMany();
+  await prisma.blockedFriendship.deleteMany();
+  await prisma.friendChatMessage.deleteMany();
+  await prisma.tournament.deleteMany();
+  await prisma.tournamentMatch.deleteMany();
+  await prisma.tournamentPlayer.deleteMany();
+
+  // reset the sequence manually (id start from 1)
+  await prisma.$executeRawUnsafe(`DELETE FROM sqlite_sequence;`);
+
+  for (let i = 1; i <= userCount; i++) {
     const password = await hashPassword("Password1");
 
     await prisma.user.create({
@@ -24,12 +42,12 @@ async function main() {
       },
     });
   }
-  console.log(`✅ Seeded ${num} users`);
+  console.log(`✅ Seeded ${userCount} users`);
 
-  num = 7;
+  const friendshipCount = userCount - 2; // reserve last user for bruno test create-friendship
   const statuses: FriendshipStatus[] = ["accepted", "pending"];
 
-  for (let i = 1; i <= num; i++) {
+  for (let i = 1; i <= friendshipCount; i++) {
     const status = statuses[(i - 1) % statuses.length]; // rotate statuses
     await prisma.friendship.create({
       data: {
@@ -41,12 +59,12 @@ async function main() {
   }
 
   console.log(
-    `✅ Seeded ${num} friendships equally across accepted and pending`,
+    `✅ Seeded ${friendshipCount} friendships equally across accepted and pending`,
   );
 
-  num = 6;
+  const blockedFriendshipCount = 4;
 
-  for (let i = 1; i <= num; i++) {
+  for (let i = 1; i <= blockedFriendshipCount; i++) {
     await prisma.blockedFriendship.create({
       data: {
         blockerId: 1,
@@ -55,7 +73,7 @@ async function main() {
     });
   }
 
-  console.log(`✅ Seeded ${num} blocked friendships`);
+  console.log(`✅ Seeded ${blockedFriendshipCount} blocked friendships`);
 
   // --- SEED FRIEND CHAT MESSAGES ---
   const acceptedFriendships = await prisma.friendship.findMany({
@@ -84,9 +102,70 @@ async function main() {
   console.log(
     `✅ Seeded ${acceptedFriendships.length * messagesPerFriendship} friend chat messages`,
   );
+
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const filePath = path.join(__dirname, "mockTournamentData.json");
+  const raw = readFileSync(filePath, "utf-8");
+  const data = JSON.parse(raw);
+  console.log(`🌱 Seeding ${data.tournaments.length} tournaments...`);
+
+  for (const tournamentData of data.tournaments) {
+    const tournament = await prisma.tournament.create({
+      data: {
+        status: TournamentStatus.COMPLETED,
+      },
+    });
+
+    console.log(`🏆 Created Tournament ${tournament.id}`);
+
+    // Create Players
+    const players: TournamentPlayer[] = [];
+    for (const p of tournamentData.players) {
+      const player = await prisma.tournamentPlayer.create({
+        data: {
+          tournamentId: tournament.id,
+          userId: p.userId,
+          ranking: p.ranking,
+        },
+      });
+      players.push(player);
+    }
+    console.log(
+      `👥 Created ${players.length} players for Tournament ${tournament.id}`,
+    );
+
+    // Create Matches
+    for (const m of tournamentData.matches) {
+      const p1 = players[m.player1Index - 1];
+      const p2 = players[m.player2Index - 1];
+
+      const winner = m.player1Score > m.player2Score ? p1 : p2;
+
+      await prisma.tournamentMatch.create({
+        data: {
+          tournamentId: tournament.id,
+          round: m.round,
+          player1Id: p1.id,
+          player2Id: p2.id,
+          winnerId: winner.id,
+          player1Score: m.player1Score,
+          player2Score: m.player2Score,
+        },
+      });
+    }
+
+    console.log(
+      `⚔️ Created ${tournamentData.matches.length} matches for Tournament ${tournament.id}`,
+    );
+  }
+
+  console.log("✅ Seeding complete!");
 }
 
-main()
+seed({
+  userCount: 10, // must be > 2
+})
   .catch((e) => {
     console.error(e);
   })

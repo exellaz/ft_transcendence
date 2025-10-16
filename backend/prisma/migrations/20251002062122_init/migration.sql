@@ -6,12 +6,12 @@ CREATE TABLE "new_users" (
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "avatar_url" TEXT NOT NULL DEFAULT '/assets/default_avatar',
+    "avatar_url" TEXT NOT NULL DEFAULT '/assets/yellow-ghost.png',
     "status" TEXT NOT NULL DEFAULT 'offline',
     "joined_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-INSERT INTO "new_users" ("avatar_url", "email", "id", "joined_at", "password", "status", "updated_at", "username") SELECT coalesce("avatar_url", '/assets/default_avatar') AS "avatar_url", "email", "id", "joined_at", "password", "status", "updated_at", "username" FROM "users";
+INSERT INTO "new_users" ("avatar_url", "email", "id", "joined_at", "password", "status", "updated_at", "username") SELECT coalesce("avatar_url", '/assets/yellow-ghost.png') AS "avatar_url", "email", "id", "joined_at", "password", "status", "updated_at", "username" FROM "users";
 DROP TABLE "users";
 ALTER TABLE "new_users" RENAME TO "users";
 CREATE UNIQUE INDEX "users_username_key" ON "users"("username");

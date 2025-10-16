@@ -23,13 +23,14 @@ export const createFriendshipSchema = {
     properties: {
       requesterId: { type: "integer", minimum: 1 },
       accepterId: { type: "integer", minimum: 1 },
+      accepterUsername: { type: "string" },
       status: {
         type: "string",
         enum: ["pending", "accepted", "blocked"], // Prisma enum
         default: "pending",
       },
     },
-    required: ["requesterId", "accepterId"],
+    required: ["requesterId"],
     additionalProperties: false, // disallow extra fields
   },
 };

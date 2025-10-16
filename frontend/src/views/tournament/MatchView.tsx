@@ -23,14 +23,6 @@ const MatchView: React.FC = () => {
   );
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // TODO: Fetch real data based on tournamentId
-  // React.useEffect(() => {
-  //   // Replace with real API calls
-  // fetch(`/api/tournament/${tournamentId}/match/${stage}/player/${id}`)
-  //   .then((res) => res.json())
-  //   .then(setPlayers);
-  // }, [tournamentId, stage, id]);
-
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
     setPlayers(mockMatchPlayers[1]);
@@ -94,8 +86,8 @@ const MatchView: React.FC = () => {
         <ProfilePopup
           open={true}
           onClose={() => setSelectedId(null)}
-          userId={selectedId}
-          variant="other"
+          selectedId={selectedId}
+          variant={selectedId === userId ? "self" : "other"}
         />
       )}
     </Background>

@@ -12,6 +12,10 @@
   --color-bronze: #ea9b58;
 }
 
+.icon-btn {
+  @apply cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95;
+}
+
 /* hide scrollbar */
 .scrollbar-hide {
   scrollbar-width: none; /* Firefox */

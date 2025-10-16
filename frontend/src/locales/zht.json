@@ -49,6 +49,12 @@
     "room_is_full": "房間已滿",
     "close": "關閉"
   },
+  "LocalGameView": {
+    "change_sprite": "更換角色",
+    "local_game": "本地遊戲",
+    "game_settings": "遊戲設定",
+    "start": "開始"
+  },
   "LoginView": {
     "username_or_email": "用戶名 / 電子郵件",
     "password": "密碼",
@@ -154,7 +160,9 @@
     "header": "我的資料",
     "header_other": "資料",
     "add_friend": "新增好友",
-    "block": "封鎖"
+    "friend": "好友",
+    "request_sent": "已送出",
+    "blocked": "已封鎖"
   },
   "SettingsPopup": {
     "header": "設定",
@@ -186,7 +194,8 @@
     "semifinals": "準決賽",
     "finals": "決賽",
     "won": "勝利",
-    "lost": "失敗"
+    "lost": "失敗",
+    "no_history_yet": "尚無比賽紀錄。"
   },
   "ApiState": {
     "loading": "載入中...",
@@ -224,7 +233,8 @@
     "online": "在線",
     "offline": "離線",
     "type_message": "輸入訊息",
-    "send": "發送"
+    "send": "發送",
+    "no_messages_yet": "還沒有訊息。"
   },
   "ProfileContents": {
     "loading": "載入中...",
@@ -238,6 +248,7 @@
     "basic_info": "基本資訊",
     "tournament_stats": "錦標賽統計",
     "friends": "好友",
+    "how_to_play": "如何遊玩",
     "log_out": "登出"
   },
   "ReadyPlayers": {
@@ -255,7 +266,7 @@
     "game_settings": "遊戲設定",
     "invite_friends": "邀請好友"
   },
-  "SocialHub": {
+  "FriendsPopup": {
     "tabs": {
       "friends": "好友",
       "requests": "請求",
@@ -265,7 +276,33 @@
     "search_friend": "搜尋好友",
     "enter_friend_username": "輸入好友用戶名",
     "friend_added": "好友已新增。",
-    "username_not_exist": "用戶名不存在。",
-    "back": "返回"
+    "user_not_exist": "用戶不存在。",
+    "back": "返回",
+    "no_friends_yet": "還沒有朋友。",
+    "no_new_requests": "沒有新的請求。",
+    "no_blocked_users": "沒有被封鎖的用戶。",
+    "no_messages_yet": "還沒有訊息。"
+  },
+  "HowToPlayPopup": {
+    "header": "如何遊玩",
+    "objective_title": "目標",
+    "objective_text": [
+      "目標很簡單——將球擊過對方的球拍以獲得分數。每場比賽從發球開始。使用你的球拍反彈球並巧妙地擊敗對手。先取得五分的玩家贏得比賽。"
+    ],
+    "controls_title": "操作方式",
+    "controls_text": [
+      "使用上下方向鍵移動你的球拍。在本地模式下，玩家1使用W / S鍵，玩家2使用上下方向鍵。"
+    ],
+    "tournament_title": "錦標賽模式",
+    "tournament_text": [
+      "參加結構化的單人淘汰賽，賽事將進行至四強賽、準決賽和決賽。",
+      "勝者晉級下一輪，每輪失敗的玩家將根據比賽時長進行排名。較快落敗將導致排名較低。",
+      "所有錦標賽遊戲都會記錄玩家排名和比賽歷史。"
+    ],
+    "custom_title": "自訂模式",
+    "custom_text": [
+      "享受休閒玩法並擁有完整的自訂選項。可建立或加入單人和雙人房間，與朋友同樂或與隨機玩家配對。",
+      "* 注意：本地模式僅支援單人比賽。"
+    ]
   }
 }

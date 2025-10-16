@@ -32,7 +32,7 @@ const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
   return (
     <>
       <TournamentHeader>{translate("choose_sprite")}</TournamentHeader>
-      <div className="grid grid-cols-4 gap-6">
+      <div className="w-full grid grid-cols-4 gap-4">
         {ghostSprites.map((sprite) => (
           <button
             key={sprite.name}

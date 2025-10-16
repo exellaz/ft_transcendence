@@ -31,17 +31,6 @@ const TournamentLobbyView: React.FC = () => {
   );
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 
-  // TODO: Fetch real data based on tournamentId
-  // React.useEffect(() => {
-  //   // Replace with real API calls
-  //   fetch(`/api/players?tournamentId=${tournamentId}`)
-  //     .then((res) => res.json())
-  //     .then(setPlayers);
-  //   fetch(`/api/messages?tournamentId=${tournamentId}`)
-  //     .then((res) => res.json())
-  //     .then(setChatMessages);
-  // }, [tournamentId]);
-
   // TODO: Remove mock data when integrating real API
   React.useEffect(() => {
     setPlayers(mockWaitingTournamentPlayers["t1"]);

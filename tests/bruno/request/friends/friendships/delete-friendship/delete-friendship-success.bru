@@ -5,18 +5,18 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/friendships/1/9
+  url: {{baseUrl}}/friendships/1/10
   body: none
   auth: inherit
-}
-
-settings {
-  encodeUrl: true
 }
 
 assert {
   res.status: eq 200
   res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
 }
 
 docs {

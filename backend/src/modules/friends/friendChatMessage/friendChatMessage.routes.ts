@@ -1,12 +1,9 @@
-import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 
-async function friendChatMessageRoutes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions,
-) {
+async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId
-  fastify.get("/friendChatMessages/:friendshipId", async (request, reply) => {
+  fastify.get("/friendChatMessages/:friendshipId", async (request) => {
     const { friendshipId } = request.params as { friendshipId: string };
 
     const friendChatMessages = await fastify.db.friendChatMessage.findMany({
@@ -19,6 +16,24 @@ async function friendChatMessageRoutes(
 
     return ok(friendChatMessages); // only the 3 fields
   });
+
+  // GET /friendChatMessages/:friendshipId/lastMessage
+  fastify.get(
+    "/friendChatMessages/:friendshipId/lastMessage",
+    async (request, reply) => {
+      const { friendshipId } = request.params as { friendshipId: string };
+
+      const lastMessage = await fastify.db.friendChatMessage.findFirst({
+        where: { friendshipId: Number(friendshipId) },
+        orderBy: { timestamp: "desc" }, // sort timestamp in descending order
+      });
+
+      if (!lastMessage)
+        throw new ApiError("No messages found for this friendship", 404);
+
+      return ok(lastMessage); // only the 3 fields
+    },
+  );
 }
 
 export default friendChatMessageRoutes;

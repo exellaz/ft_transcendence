@@ -6,12 +6,17 @@ import type { ApiResponse } from "../types/apiResponse";
 export function useApiQuery<T>(
   apiCall: () => Promise<ApiResponse<T>>,
   dependencies: React.DependencyList = [],
+  enabled: boolean,
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // prevent premature or undefined API calls
+    // e.g. userId must be set correctly before enabled is toggled true
+    if (!enabled) return;
+
     let isMounted = true;
 
     const fetchData = async () => {
@@ -54,6 +59,7 @@ export function useApiQuery<T>(
   }, dependencies);
 
   const refetch = () => {
+    if (!enabled) return;
     setLoading(true);
     setError(null);
     const fetchData = async () => {

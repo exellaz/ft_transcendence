@@ -23,6 +23,6 @@ lerna-debug.log*
 *.sln
 *.sw?
 
-.github
+.github/instructions
 tests/bruno/environments/*.bru
 subject.md

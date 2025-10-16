@@ -52,7 +52,8 @@ export interface GetAcceptedFriendshipsResponse
 // POST /friendships
 export interface CreateFriendshipRequest {
   requesterId: number;
-  accepterId: number;
+  accepterId?: number;
+  accepterUsername?: string;
 }
 
 export interface CreateFriendshipResponse extends ApiResponse<Friendship> {}
@@ -79,8 +80,7 @@ export interface GetBlockedFriendshipsRequest {
   userId: number;
 }
 
-export interface GetBlockedFriendshipsResponse
-  extends ApiResponse<BlockedFriendship[]> {}
+export interface GetBlockedFriendshipsResponse extends ApiResponse<User[]> {}
 
 // POST /blockedFriendships
 export interface CreateBlockedFriendshipRequest {
@@ -107,3 +107,11 @@ export interface GetAllFriendChatMessagesRequest {
 
 export interface GetAllFriendChatMessagesResponse
   extends ApiResponse<FriendChatMessage[]> {}
+
+// GET /friendChatMessages/:friendshipId/lastMessage
+export interface GetLastFriendChatMessageRequest {
+  friendshipId: number;
+}
+
+export interface GetLastFriendChatMessageResponse
+  extends ApiResponse<FriendChatMessage> {}

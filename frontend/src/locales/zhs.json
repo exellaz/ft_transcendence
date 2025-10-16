@@ -49,6 +49,12 @@
     "room_is_full": "房间已满",
     "close": "关闭"
   },
+  "LocalGameView": {
+    "change_sprite": "更换角色",
+    "local_game": "本地游戏",
+    "game_settings": "游戏设置",
+    "start": "开始"
+  },
   "LoginView": {
     "username_or_email": "用户名 / 电子邮件",
     "password": "密码",
@@ -154,7 +160,9 @@
     "header": "我的资料",
     "header_other": "资料",
     "add_friend": "添加好友",
-    "block": "屏蔽"
+    "friend": "好友",
+    "request_sent": "已发送",
+    "blocked": "已封锁"
   },
   "SettingsPopup": {
     "header": "设置",
@@ -186,7 +194,8 @@
     "semifinals": "半决赛",
     "finals": "决赛",
     "won": "胜利",
-    "lost": "失败"
+    "lost": "失败",
+    "no_history_yet": "暂无比赛记录。"
   },
   "ApiState": {
     "loading": "加载中...",
@@ -224,7 +233,8 @@
     "online": "在线",
     "offline": "离线",
     "type_message": "输入消息",
-    "send": "发送"
+    "send": "发送",
+    "no_messages_yet": "还没有消息。"
   },
   "ProfileContents": {
     "loading": "加载中...",
@@ -238,6 +248,7 @@
     "basic_info": "基本信息",
     "tournament_stats": "锦标赛统计",
     "friends": "好友",
+    "how_to_play": "如何玩",
     "log_out": "登出"
   },
   "ReadyPlayers": {
@@ -255,7 +266,7 @@
     "game_settings": "游戏设置",
     "invite_friends": "邀请好友"
   },
-  "SocialHub": {
+  "FriendsPopup": {
     "tabs": {
       "friends": "好友",
       "requests": "请求",
@@ -265,7 +276,33 @@
     "search_friend": "搜索好友",
     "enter_friend_username": "输入好友用户名",
     "friend_added": "好友已添加。",
-    "username_not_exist": "用户名不存在。",
-    "back": "返回"
+    "user_not_exist": "用户不存在。",
+    "back": "返回",
+    "no_friends_yet": "还没有朋友。",
+    "no_new_requests": "没有新的请求。",
+    "no_blocked_users": "没有被屏蔽的用户。",
+    "no_messages_yet": "还没有消息。"
+  },
+  "HowToPlayPopup": {
+    "header": "如何玩",
+    "objective_title": "目标",
+    "objective_text": [
+      "目标很简单——将球击过对方的球拍以得分。每场比赛从发球开始。使用你的球拍反弹球并巧妙地击败对手。先获得五分的玩家获胜。"
+    ],
+    "controls_title": "操作方法",
+    "controls_text": [
+      "使用上下方向键移动你的球拍。在本地模式下，玩家1使用W / S键，玩家2使用上下方向键。"
+    ],
+    "tournament_title": "锦标赛模式",
+    "tournament_text": [
+      "在结构化的单人淘汰赛中竞争，比赛将经历四分之一决赛、半决赛和决赛。",
+      "获胜者将晋级下一轮，每轮中失败的玩家将根据比赛时长进行排名。较快失败将导致排名较低。",
+      "所有锦标赛游戏都会记录玩家排名和比赛历史。"
+    ],
+    "custom_title": "自定义模式",
+    "custom_text": [
+      "享受休闲玩法并拥有完整的自定义选项。创建或加入单人和双人房间，与朋友一起玩或与随机玩家匹配。",
+      "* 注意：本地模式仅支持单人比赛。"
+    ]
   }
 }
