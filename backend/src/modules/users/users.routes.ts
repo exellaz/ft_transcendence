@@ -163,11 +163,9 @@ async function userRoutes(fastify: FastifyInstance) {
     return ok(users); // even if empty array, success response
   });
 
-  fastify.get("/users/me", { preHandler: authenticate },
-    async (request) => {
-      return ok({ user: request.user });
-    }
-  );
+  fastify.get("/users/me", { preHandler: authenticate }, async (request) => {
+    return ok({ user: request.user });
+  });
 }
 
 export default userRoutes;
