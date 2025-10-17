@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { User } from "../types/usersApi";
+import { decodeJWT, isTokenValid } from "../utils/jwt";
 
 interface UserContextType {
   user: User | null;
@@ -11,27 +12,24 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-function decodeJWT(token: string) {
-  try {
-    // atob takes a Base64-encoded string as input and returns the original string.
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
-}
-
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    if (token) {
+    if (token && isTokenValid(token)) {
       // TODO: Validate token in backend
       const payload = decodeJWT(token);
-      // Number() conversion necessary because JWT payload is string
       if (payload?.userId) {
+        // Number() conversion necessary because JWT payload is string
         setUser({ id: Number(payload.userId) } as User);
+      } else {
+        setUser(null);
       }
+    } else {
+      // remove stale tokens
+      if (token) localStorage.removeItem("authToken");
+      setUser(null);
     }
   }, []);
 
@@ -40,7 +38,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
-  const isAuthenticated = !!user;
+  // compute authenticated from token validity (not solely from user state)
+  // important because user state may be null before useEffect is run, which can
+  // result in race conditions or UI flicker when logged in user is being redirected.
+  const isAuthenticated = isTokenValid(localStorage.getItem("authToken"));
 
   return (
     <UserContext.Provider value={{ user, setUser, isAuthenticated, logout }}>

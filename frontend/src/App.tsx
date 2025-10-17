@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-
-import BouncingSprites from "./components/BouncingSprites";
+import RequireAuth from "./components/RequireAuth";
+import RedirectIfAuth from "./components/RedirectIfAuth";
 
 import AdvanceView from "./views/tournament/AdvanceView";
 import ChooseSpriteView from "./views/ChooseSpriteView";
@@ -18,6 +18,8 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
+
+import BouncingSprites from "./components/BouncingSprites";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
 // including BouncingSprites at the App level ensures animation consistency
@@ -44,21 +46,24 @@ const App: React.FC = () => {
       <BrowserRouter>
         <PreLoginWrapper>
           <Routes>
-            <Route path="/" element={<LoginView />} />
-            <Route path="/login" element={<LoginView />} />
-            <Route path="/signup" element={<SignUpView />} />
-            <Route path="/signup-success" element={<SignUpSuccessView />} />
-            <Route path="/main-menu" element={<MainMenuView />} />
-            <Route path="/custom" element={<CustomModeView />} />
-            <Route path="/local-game" element={<LocalGameView />} />
-            <Route path="/choose-sprite" element={<ChooseSpriteView />} />
-            <Route path="/tournament" element={<TournamentLobbyView />} />
-            <Route path="/match" element={<MatchView />} />
-            <Route path="/game" element={<GameView />} />
-            <Route path="/advance" element={<AdvanceView />} />
-            <Route path="/results" element={<ResultsView />} />
-            <Route path="/singles-room/:roomId" element={<SinglesRoomView />} />
-            <Route path="/doubles-room/:roomId" element={<DoublesRoomView />} />
+             {/* Pre-login routes - redirect away if already authenticated */}
+            <Route path="/" element={<RedirectIfAuth><LoginView /></RedirectIfAuth>} />
+            <Route path="/login" element={<RedirectIfAuth><LoginView /></RedirectIfAuth>} />
+            <Route path="/signup" element={<RedirectIfAuth><SignUpView /></RedirectIfAuth>} />
+            <Route path="/signup-success" element={<RedirectIfAuth><SignUpSuccessView /></RedirectIfAuth>} />
+            {/* Protected routes - require a valid JWT */}
+            <Route path="/main-menu" element={<RequireAuth><MainMenuView /></RequireAuth>} />
+            <Route path="/custom" element={<RequireAuth><CustomModeView /></RequireAuth>} />
+            <Route path="/local-game" element={<RequireAuth><LocalGameView /></RequireAuth>} />
+            <Route path="/choose-sprite" element={<RequireAuth><ChooseSpriteView /></RequireAuth>} />
+            <Route path="/tournament" element={<RequireAuth><TournamentLobbyView /></RequireAuth>} />
+            <Route path="/match" element={<RequireAuth><MatchView /></RequireAuth>} />
+            <Route path="/game" element={<RequireAuth><GameView /></RequireAuth>} />
+            <Route path="/advance" element={<RequireAuth><AdvanceView /></RequireAuth>} />
+            <Route path="/results" element={<RequireAuth><ResultsView /></RequireAuth>} />
+            <Route path="/singles-room/:roomId" element={<RequireAuth><SinglesRoomView /></RequireAuth>} />
+            <Route path="/doubles-room/:roomId" element={<RequireAuth><DoublesRoomView /></RequireAuth>} />
+            {/* Miscellaneous routes */}
             <Route path="/test" element={<TestView />} />
           </Routes>
         </PreLoginWrapper>
