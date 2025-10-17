@@ -114,7 +114,12 @@ export const patchUserByIdSchema = {
   body: {
     type: "object",
     properties: {
-      username: { type: "string" },
+      username: {
+        type: "string",
+        minLength: 2,
+        maxLength: 15,
+        pattern: "^[a-zA-Z0-9_-]+$",
+      },      
       avatarUrl: { type: "string" },
     },
     additionalProperties: false,
