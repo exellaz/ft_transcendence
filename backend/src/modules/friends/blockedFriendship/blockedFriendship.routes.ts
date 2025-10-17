@@ -1,10 +1,13 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 import { userPublicSelect } from "../../users/users.select";
+import { deleteBlockedFriendshipSchema, getBlockedFriendShipsByUserIdSchema, postBlockedFriendshipSchema } from "./blockedFriendship.schema";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)
-  fastify.get("/blockedFriendships/:userId", async (request) => {
+  fastify.get("/blockedFriendships/:userId", 
+    { schema: getBlockedFriendShipsByUserIdSchema}, 
+    async (request) => {
     const { userId } = request.params as { userId: string };
 
     const blockedFriendships = await fastify.db.blockedFriendship.findMany({
@@ -28,7 +31,9 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   });
 
   // POST /blockedFriendships
-  fastify.post("/blockedFriendships", async (request) => {
+  fastify.post("/blockedFriendships", 
+    { schema: postBlockedFriendshipSchema },
+    async (request) => {
     const { blockerId, blockedId } = request.body as {
       blockerId: number;
       blockedId: number;
@@ -71,6 +76,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
   fastify.delete(
     "/blockedFriendships/:blockerId/:blockedId",
+    { schema: deleteBlockedFriendshipSchema },
     async (request) => {
       const { blockerId, blockedId } = request.params as {
         blockerId: string;

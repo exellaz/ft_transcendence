@@ -50,7 +50,7 @@ export const friendshipResponseSchema = {
 
 // GET /friendships/:userId
 export const getFriendShipsByUserIdSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Get all friendships for a user",
   
   params: {
@@ -65,7 +65,7 @@ export const getFriendShipsByUserIdSchema = {
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
 export const getPendingFriendShipsByUserIdSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Get all pending friend requests for a user",
 
   params: {
@@ -86,7 +86,7 @@ export const getPendingFriendShipsByUserIdSchema = {
 
 // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
 export const getAcceptedFriendShipsByUserIdSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Get all accepted friends for a user",
 
   params: {
@@ -108,7 +108,7 @@ export const getAcceptedFriendShipsByUserIdSchema = {
 
 // POST /friendships
 export const createFriendshipSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Create a new friendship",
 
   body: {
@@ -137,7 +137,7 @@ export const createFriendshipSchema = {
 
 // PATCH /friendships/:requesterId/:accepterId
 export const updateFriendshipSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Update an existing friendship",
 
   params: {
@@ -170,9 +170,9 @@ export const updateFriendshipSchema = {
 
 // DELETE /friendships/:requesterId/:accepterId
 export const deleteFriendshipSchema = {
-  tags: ["friends"], // <- groups under "user" tag in Swagger
+  tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Delete a friendship",
-  
+
   params: {
     type: "object",
     properties: {

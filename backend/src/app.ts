@@ -48,7 +48,9 @@ app.register(fastifySwagger, {
     tags: [
       { name: "user", description: "User related end-points" },
       { name: "auth", description: "Auth related end-points" },
-      { name: "friends", description: "Friends related end-points" },
+      { name: "friendships", description: "Friends related end-points" },
+      { name: "blockedFriendships", description: "Blocked Friends related end-points" },
+
     ],
   },
 });
