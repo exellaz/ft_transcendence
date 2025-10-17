@@ -14,7 +14,7 @@ import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
 import { createRoomAPI, fetchRooms } from "../lib/requestBackend.api";
-import type { listRoomsResponse, Room } from "../../../backend/src/utils/interface";
+import type { listRoomsResponse, Room } from "../../../backend/src/types/interface";
 /**
  * @brief casual game
  * - Create private room

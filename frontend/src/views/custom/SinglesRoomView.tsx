@@ -43,6 +43,10 @@ const SinglesRoomView: React.FC = () => {
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
+  const [canConnect, setCanConnect] = useState<boolean>(false);
+  const [checkingNetwork, setCheckingNetwork] = useState<boolean>(true);
+  const [roomErrorLocal, setRoomError] = useState<string | null>(null);
+  const alertRef = React.useRef<boolean>(false);
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -122,6 +126,28 @@ const SinglesRoomView: React.FC = () => {
       });
   }, [roomId, navigate]);
 
+  // perform network check before attempting to auto-connect sockets
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      // navigator is a function available in browsers to check online status
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        if (!mounted || alertRef.current) return;
+		alertRef.current = true;
+        setCheckingNetwork(false);
+        setCanConnect(false);
+		setRoomError("offline_error");
+        return;
+      }
+      if (!mounted || alertRef.current) return;
+      setCheckingNetwork(false);
+      setCanConnect(true);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [roomId, navigate]);
+
   //-------------------------------- Websockets --------------------------------
 
   //live chat websocket
@@ -156,13 +182,11 @@ const SinglesRoomView: React.FC = () => {
       avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
     },
     setRoomInfo,
-  });
+  },
+  { autoConnect: canConnect && !checkingNetwork }
+  );
 
-  //  if (!roomInfo || !userInfo) {
-  //    return <div>Loading...</div>; // or a spinner
-  //  }
-  // -------------------------------- Effect --------------------------------
-
+// -------------------------------- Effect --------------------------------
   //navigate to game view if game started
   React.useEffect(() => {
     //when count down finish delay 1 sec to start game
@@ -186,6 +210,20 @@ const SinglesRoomView: React.FC = () => {
     console.log("rightTeam:", rightTeam); //// debug
     setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
+
+// ---------------------------------- helper functions ----------------------------------
+  const currentRoomError = roomErrorLocal ?? roomError;
+  function renderRoomErrorText(): string | null {
+	if (!currentRoomError) return null;
+
+	if (currentRoomError === "Room is full") {
+		return translate("room_is_full");
+	} else if (currentRoomError === "offline_error") {
+		return translate("offline_error");
+	} else {
+		return currentRoomError;
+	}
+  }
 
   return (
     <>
@@ -302,8 +340,8 @@ const SinglesRoomView: React.FC = () => {
             </Card>
           </div>
 
-          {/* error popup for if room is full */}
-          {roomError && (
+          {/* error popup */}
+          {currentRoomError && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               {/* Background image using your Background component */}
               <Background variant="grass">
@@ -312,13 +350,12 @@ const SinglesRoomView: React.FC = () => {
                 {/* Popup content */}
                 <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
                   <p className="text-center text-white text-2xl px-4">
-                    {roomError === "Room is full"
-                      ? translate("room_is_full")
-                      : roomError}
+                    {renderRoomErrorText()}
                   </p>
                   <Button
                     variant="red"
                     onClick={() => {
+					  setRoomError(null);
                       onLeave();
                       navigate("/main-menu");
                     }}

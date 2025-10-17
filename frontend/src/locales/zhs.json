@@ -35,6 +35,7 @@
     "join_doubles_game": "加入双人游戏？",
     "room_not_found": "房间未找到",
     "room_is_full": "房间已满",
+	"offline_error": "你处于离线状态。请检查你的连接。",
     "close": "关闭"
   },
   "DoublesRoomView": {
@@ -47,6 +48,7 @@
     "leave_room": "离开房间",
     "leave_confirmation": "你确定要离开房间吗？",
     "room_is_full": "房间已满",
+	"offline_error": "你处于离线状态。请检查你的连接。",
     "close": "关闭"
   },
   "LocalGameView": {
@@ -110,6 +112,7 @@
     "leave_confirmation": "你确定要离开房间吗？",
     "room_is_full": "房间已满",
     "unknown_error": "未知错误",
+	"offline_error": "你处于离线状态。请检查你的连接。",
     "close": "关闭"
   },
   "TournamentLobbyView": {

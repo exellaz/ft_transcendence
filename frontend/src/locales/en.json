@@ -31,6 +31,7 @@
     "join_doubles_game": "Join a doubles game?",
     "room_not_found": "Room not found",
     "room_is_full": "Room is full",
+	"offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "DoublesRoomView": {
@@ -45,6 +46,7 @@
     "room_is_full": "Room is full",
     "room_not_found": "Room not found",
     "unknown_error": "Unknown error",
+	"offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "LocalGameView": {
@@ -107,7 +109,8 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
-    "unknown_error": "未知錯誤",
+    "unknown_error": "Unknown error",
+	"offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "TournamentLobbyView": {

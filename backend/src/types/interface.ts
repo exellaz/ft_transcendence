@@ -53,10 +53,11 @@ export interface playerInfo {
   clientId: number; // client id
   playerName: string; // player username
   role: string; // "left" or "right"
-  team: "left" | "right"; // team side
+  team: "left" | "right" | "spectator"; // team side
   leader: boolean; // whether the player is the leader
   spriteUrl: string; // URL of the player's sprite
   ready: boolean; // whether the player is ready
+  online: boolean; // whether the player is online
 }
 
 /**
@@ -135,6 +136,7 @@ export type BroadcastMessage =
     | roleUpdate
     | roomPrivacyUpdate
     | roleUpdateReadyStatus
+	| playerOfflineStatus
     ;
 
 /**
@@ -185,4 +187,10 @@ export interface roomPrivacyUpdate {
     data: {
         type: string;
     };
+}
+
+export interface playerOfflineStatus {
+	type: "playerOffline";
+	clientId: number;
+	playerName: string;
 }

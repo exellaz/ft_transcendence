@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { determineSide } from "./requestBackend.api";
-import type { playerInfo } from "../../../backend/src/utils/interface";
+import type { playerInfo } from "../../../backend/src/types/interface";
 
 // room structure
 export interface UseRoomWebSocketParams {
@@ -34,11 +34,11 @@ export function useRoomWebSocket({
   leaderId,
   player,
   setRoomInfo,
-}: UseRoomWebSocketParams) {
+}: UseRoomWebSocketParams, options?: { autoConnect?: boolean }) {
   const [statusText, setStatusText] = useState("Connecting to room..."); // e.g., "Room MyRoom [id: 1234]"
   const [playerText, setPlayerText] = useState("Waiting for players..."); // e.g., "You are: Player1 [id: abc123] (left_player1)"
-  const [leftTeamHtml, setLeftTeamHtml] = useState("waiting left team..."); // HTML content for left team
-  const [rightTeamHtml, setRightTeamHtml] = useState("waiting right team..."); // HTML content for right team
+  const [leftTeamHtml, setLeftTeamHtml] = useState<string | playerInfo[]>("waiting left team..."); // HTML content for left team
+  const [rightTeamHtml, setRightTeamHtml] = useState<string | playerInfo[]>("waiting right team..."); // HTML content for right team
   const [isLeader, setIsLeader] = useState(false); // Whether the current client is the leader
   const [role, setRole] = useState<string>("spectator"); // e.g., "left_player1", "right_player2", "spectator"
   const [ready, setReady] = useState(false); // Whether the player is ready
@@ -47,8 +47,10 @@ export function useRoomWebSocket({
   const [countdown, setCountdown] = useState<number | null>(null);
   const [roomError, setRoomError] = useState<string | null>(null); // Error message if room cannot be joined
   const socketRef = useRef<WebSocket | null>(null);
+  const autoConnect = options?.autoConnect ?? true;
 
   useEffect(() => {
+	if (!autoConnect) return;
     //TODO replace with JWT
 
     async function connect() {
@@ -71,6 +73,16 @@ export function useRoomWebSocket({
       // open connection
       ws.onopen = () => {
         console.log("Room ws connected"); ////debug
+
+		//if browser reports offline, close the connection
+		if (typeof navigator !== "undefined" && !navigator.onLine) {
+			setRoomError("offline_error");
+			ws.close(1000, "offline");
+			return;
+		}
+		//send handshake to confirm player is online
+		ws.send(JSON.stringify({ type: "confirmJoin", clientId: player.id }));
+
         setStatusText(`Room ${roomName} [id: ${roomId}]`); //? can be remove
       };
 
@@ -85,6 +97,13 @@ export function useRoomWebSocket({
             console.error("Invalid JSON:", ev.data);
             return;
           }
+
+		  // respond to handshake ping
+		  if (data && data.type === "handshakePing") {
+			ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
+			return;
+		  }
+
           // handle error message from server
           if (data.type === "error") {
             console.warn("Cannot join room:", data.message);
@@ -108,6 +127,7 @@ export function useRoomWebSocket({
             "countdown",
             "countdownCancel",
             "roomPrivacyUpdate",
+			"playerOffline",
           ];
           if (!allowedTypes.includes(data.type)) {
             if (data.type === "chat") return;
@@ -222,16 +242,36 @@ export function useRoomWebSocket({
             );
             console.log("Room privacy updated:", data.data); ////debug
           }
-        } catch (err) {
-          console.error("Invalid room message:", err);
-          ws.close(1000, "server error");
-        }
+		  if (data.type === "playerOffline") {
+			const goneId = data.clientId;
+			setLeftTeamHtml((prev) =>
+				Array.isArray(prev)
+					? prev.map((p) => (p.clientId === goneId ? { ...p, online: false } : p))
+					: prev
+			);
+			setRightTeamHtml((prev) =>
+				Array.isArray(prev)
+					? prev.map((p) => (p.clientId === goneId ? { ...p, online: false } : p))
+					: prev
+			);
+		}
+	} catch (err) {
+		console.error("Invalid room message:", err);
+		ws.close(1000, "server error");
+	}
       };
 
       // close connection
       ws.onclose = () => {
         console.log("Room ws disconnected");
+		setRoomError("offline_error");
+		setCanStart(false);
+		setReady(false);
       };
+
+	  ws.onclose = () => {
+		console.log("Room ws disconnected");
+	  }
 
       ws.onerror = (e) => {
         console.error("Room ws error", e);
@@ -248,23 +288,52 @@ export function useRoomWebSocket({
 
   function onSwitch() {
     if (!socketRef.current) return;
+	if ((socketRef.current.readyState !== WebSocket.OPEN || (typeof navigator !== "undefined" && !navigator.onLine))) {
+		setRoomError("offline_error");
+		return;
+	}
     if (ready && !isLeader) return;
     const newSide = role.startsWith("left") ? "right" : "left";
-    socketRef.current.send(
-      JSON.stringify({ type: "switchSide", side: newSide }),
-    );
+	try {
+		socketRef.current.send(JSON.stringify({ type: "switchSide", side: newSide }));
+	} catch (err) {
+		setRoomError("offline_error");
+	}
   }
 
   function onReady() {
     if (!socketRef.current || isLeader) return;
+	// require online + ws open before toggling
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setRoomError("offline_error");
+      return;
+    }
+    if (socketRef.current.readyState !== WebSocket.OPEN) {
+      setRoomError("offline_error");
+      return;
+    }
+
     const newReady = !ready;
     setReady(newReady);
-    socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
+	try {
+		socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
+	} catch (err) {
+		setRoomError("offline_error");
+	}
   }
 
   function onStartBtn() {
     if (!isLeader || !socketRef.current) return;
-    socketRef.current.send(JSON.stringify({ type: "start", start: true }));
+	if ((socketRef.current.readyState !== WebSocket.OPEN || (typeof navigator !== "undefined" && !navigator.onLine))) {
+		setRoomError("offline_error");
+		return;
+	}
+
+	try {
+		socketRef.current.send(JSON.stringify({ type: "start", start: true }));
+	} catch (err) {
+		setRoomError("offline_error");
+	}
   }
 
   function onLeave() {

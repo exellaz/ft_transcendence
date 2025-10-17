@@ -16,15 +16,7 @@ interface IWebSocketHandler {
     preferredSide: string,
     playerName: string,
     playerSprite: string,
-  ): {
-    id: number;
-    role: string;
-    playerName: string;
-    team: string;
-    leader: boolean;
-    spriteUrl: string;
-    ready: boolean;
-  };
+  ): playerInfo;
   handleDisconnect(
     socket: WSWebSocket,
     room: Room,
@@ -50,132 +42,129 @@ export class WebSocketHandler implements IWebSocketHandler {
     preferredSide: string,
     playerName: string,
     playerSprite: string,
-  ): {
-    id: number;
-    role: string;
-    playerName: string;
-    team: string;
-    leader: boolean;
-    spriteUrl: string;
-    ready: boolean;
-  } {
+  ): playerInfo {
     // Add socket to room if present
     if (socket) {
-      room.sockets.set(socket, clientId);
-      room.clients.add(socket);
+    	room.sockets.set(socket, clientId);
+    	room.clients.add(socket);
     }
 
     //---- check if the client already has a playerinfo ----
     let player = room.clientRoles.get(clientId);
     //assign the info if not exist
     if (!player) {
-      let roleStr: string;
+    	let roleStr: string;
 
-      // assign player side according preferred side
-      const totalPlayers =
-        room.gameState.teams.left.length + room.gameState.teams.right.length;
-      if (totalPlayers >= room.teamSize * 2) {
-        console.log(
-          `Room ${room.name} [${room.id}] is full. Rejecting player ${playerName} [${clientId}]`,
-        );
-        if (socket) {
-          socket.send(
-            JSON.stringify({
-              type: "error",
-              message: "Room is full",
-            }),
-          );
-          socket.close(1000, "Room full");
-        }
-        return {
-          id: clientId,
-          role: "spectator",
-          playerName,
-          team: "spectator",
-          leader: false,
-          spriteUrl: playerSprite,
-          ready: false,
-        };
-      }
-      if (
-        preferredSide === "left" &&
-        room.gameState.teams.left.length < room.teamSize
-      ) {
-        roleStr = `left_player${room.gameState.teams.left.length + 1}`;
-        room.gameState.teams.left.push({
-          clientId,
-          role: roleStr,
-          playerName,
-          team: "left",
-          leader: clientId === room.leaderId,
-          spriteUrl: playerSprite,
-          ready: clientId === room.leaderId, // leader is always ready
-        }); // add playerName to playerInfo
-      } else if (
-        preferredSide === "right" &&
-        room.gameState.teams.right.length < room.teamSize
-      ) {
-        roleStr = `right_player${room.gameState.teams.right.length + 1}`;
-        room.gameState.teams.right.push({
-          clientId,
-          role: roleStr,
-          playerName,
-          team: "right",
-          leader: clientId === room.leaderId,
-          spriteUrl: playerSprite,
-          ready: clientId === room.leaderId, // leader is always ready
-        }); // add playerName to playerInfo
-      } else {
-        roleStr = "spectator";
-      }
+      	// assign player side according preferred side
+      	const totalPlayers = room.gameState.teams.left.length + room.gameState.teams.right.length;
+      	if (totalPlayers >= room.teamSize * 2) {
+      	  	console.log(`Room ${room.name} [${room.id}] is full. Rejecting player ${playerName} [${clientId}]`);
+      	  	if (socket) {
+      	  		socket.send(
+      	  			JSON.stringify({
+      	  				type: "error",
+      	  				message: "Room is full",
+      	  			}),
+      	  		);
+      	  		socket.close(1000, "Room full");
+      	  	}
 
-      // assign the player id and role to the map
-      player = {
-        clientId,
-        role: roleStr,
-        playerName,
-        team: roleStr.startsWith("left") ? "left" : "right",
-        leader: clientId === room.leaderId,
-        spriteUrl: playerSprite,
-        ready: clientId === room.leaderId, // leader is always ready
-      };
-      room.clientRoles.set(clientId, player);
+			return {
+      	  		clientId: clientId,
+      	  		role: "spectator",
+      	  		playerName,
+      	  		team: "spectator",
+      	  		leader: false,
+      	  		spriteUrl: playerSprite,
+      	  		ready: false,
+				online: false,
+      	  	};
+      	}
 
-      if (socket) {
-        //notify to the client about his
-        const playerInfo = room.clientRoles.get(clientId);
-        socket.send(
-          JSON.stringify({
-            type: "roleUpdate",
-            gameState: room.gameState,
-            newPlayer: playerInfo,
-            isSpectator: roleStr === "spectator",
-            leaderId: room.leaderId,
-          }),
-        );
+    	if (
+    	  preferredSide === "left" &&
+    	  room.gameState.teams.left.length < room.teamSize
+    	) {
+    		roleStr = `left_player${room.gameState.teams.left.length + 1}`;
+    		room.gameState.teams.left.push({
+    			clientId,
+    			role: roleStr,
+    			playerName,
+    			team: "left",
+    			leader: clientId === room.leaderId,
+    			spriteUrl: playerSprite,
+    			ready: clientId === room.leaderId,
+				online: true,
+    		});
+    	} else if (
+    	  preferredSide === "right" &&
+    	  room.gameState.teams.right.length < room.teamSize
+    	) {
+    		roleStr = `right_player${room.gameState.teams.right.length + 1}`;
+    		room.gameState.teams.right.push({
+    			clientId,
+    			role: roleStr,
+    			playerName,
+    			team: "right",
+    			leader: clientId === room.leaderId,
+    			spriteUrl: playerSprite,
+    			ready: clientId === room.leaderId, // leader is always ready
+    			online: true,
+    		}); // add playerName to playerInfo
+    	} else {
+    		roleStr = "spectator";
+    	}
 
-        // notify to all in the room about role
-        console.log("Player role assigned:", playerInfo);
-        broadcast(
-          room,
-          createLiveChatMessage(-1, "system", `${playerName} joined the game.`),
-        );
-        broadcast(room, {
-          type: "roleUpdate",
-          newPlayer: playerInfo,
-          gameState: room.gameState,
-          leaderId: room.leaderId,
-        });
-      }
+    	// assign the player id and role to the map
+    	player = {
+    		clientId,
+    		role: roleStr,
+    		playerName,
+    		team: roleStr.startsWith("left") ? "left" : "right",
+    		leader: clientId === room.leaderId,
+    		spriteUrl: playerSprite,
+    		ready: clientId === room.leaderId, // leader is always ready
+    		online: true,
+    	};
+    	room.clientRoles.set(clientId, player);
+
+      	if (socket) {
+      		//notify to the client about his
+      		const playerInfo = room.clientRoles.get(clientId);
+      		socket.send(
+      		  	JSON.stringify({
+      		  		type: "roleUpdate",
+      		  		gameState: room.gameState,
+      		  		newPlayer: playerInfo,
+      		  		isSpectator: roleStr === "spectator",
+      		  		leaderId: room.leaderId,
+      		  	}),
+      		);
+
+      	  	// notify to all in the room about role
+      	  	console.log("Player role assigned:", playerInfo);
+      	  	broadcast(
+      	  		room,
+      	  		createLiveChatMessage(-1, "system", `${playerName} joined the game.`),
+      	  	);
+      	  	broadcast(room, {
+      	  		type: "roleUpdate",
+      	  		newPlayer: playerInfo,
+      	  		gameState: room.gameState,
+      	  		leaderId: room.leaderId,
+      	  	});
+      	}
     }
+
     return {
-      id: clientId,
-      role: player.role,
-      playerName: player.playerName,
-      team: player.team,
-      leader: player.leader,
-      spriteUrl: player.spriteUrl,
-      ready: player.ready,
+    	clientId: clientId,
+    	role: player.role,
+    	playerName: player.playerName,
+    	team: player.team,
+    	leader: player.leader,
+    	spriteUrl: player.spriteUrl,
+    	ready: player.ready,
+		online: player.online,
     };
   }
 
@@ -202,6 +191,25 @@ export class WebSocketHandler implements IWebSocketHandler {
     // ---- Remove socket and client from room ----
     room.sockets.delete(socket);
     room.clients.delete(socket);
+
+	//mark offline and update the team status
+	player.online = false;
+	room.gameState.teams.left = room.gameState.teams.left.map(
+		(p: playerInfo) =>
+			(p.clientId === clientId) ? { ...p, online: false } : p,
+	);
+	room.gameState.teams.right = room.gameState.teams.right.map(
+		(p: playerInfo) =>
+			(p.clientId === clientId) ? { ...p, online: false } : p,
+	);
+
+	//! broadcast offline status (so clients can show disconnected indicator)
+    broadcast(room, {
+      type: "playerOffline",
+      clientId,
+      playerName: player.playerName,
+    });
+
 
     // --- handle leader leaving ---
     if (clientId === room.leaderId && room.game.state !== 3) {

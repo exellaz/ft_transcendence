@@ -43,6 +43,9 @@ const DoublesRoomView: React.FC = () => {
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
+  const [canConnect, setCanConnect] = React.useState(false);
+  const [checkingNetwork, setCheckingNetwork] = React.useState(true);
+  const alertRef = React.useRef(false);
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -122,6 +125,30 @@ const DoublesRoomView: React.FC = () => {
       });
   }, [roomId, navigate]);
 
+  // perform network check before attempting to auto-connect sockets
+  React.useEffect(() => {
+	let mounted = true;
+	(async () => {
+	  // navigator is a function available in browsers to check online status
+	  if (typeof navigator !== "undefined" && !navigator.onLine) {
+		if (!mounted || alertRef.current) return;
+		alertRef.current = true;
+		setCheckingNetwork(false);
+		setCanConnect(false);
+		// show error and navigate away
+		alert("You appear to be offline. Cannot join room.");
+		navigate("/main-menu");
+		return;
+	  }
+	  if (!mounted || alertRef.current) return;
+	  setCheckingNetwork(false);
+	  setCanConnect(true);
+	})();
+	return () => {
+	  mounted = false;
+	};
+  }, [roomId, navigate]);
+
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
   const { chatMessages, message, setMessage, handleSendMsg } =
@@ -155,7 +182,9 @@ const DoublesRoomView: React.FC = () => {
       avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
     },
     setRoomInfo,
-  });
+  },
+  { autoConnect: canConnect && !checkingNetwork }
+  );
 
   // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
@@ -181,6 +210,19 @@ const DoublesRoomView: React.FC = () => {
     console.log("rightTeam:", rightTeam); //// debug
     setPlayers([...leftTeam, ...rightTeam]);
   }, [leftTeamHtml, rightTeamHtml]);
+
+// ---------------------------------- helper functions ----------------------------------
+  function renderRoomErrorText(): string | null {
+	if (!roomError) return null;
+
+	if (roomError === "Room is full") {
+		return translate("room_is_full");
+	} else if (roomError === "offline_error") {
+		return translate("offline_error");
+	} else {
+		return roomError;
+	}
+  }
 
   return (
     <>
@@ -302,7 +344,7 @@ const DoublesRoomView: React.FC = () => {
             </Card>
           </div>
 
-          {/* error popup for if room is full */}
+          {/* error popup */}
           {roomError && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               {/* Background image using your Background component */}
@@ -312,9 +354,7 @@ const DoublesRoomView: React.FC = () => {
                 {/* Popup content */}
                 <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
                   <p className="text-center text-white text-2xl px-4">
-                    {roomError === "Room is full"
-                      ? translate("room_is_full")
-                      : roomError}
+                    {renderRoomErrorText()}
                   </p>
                   <Button
                     variant="red"

@@ -20,19 +20,20 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     const context = validateConnection(socket, req);
     // console.log("Websocket connection context: ", context); //// debug
     if (!context) return; // Invalid connection, already closed in validateConnection
+	const { clientId, roomId, room, side, playerName, playerSprite } = context;
 
-    // step 1: Assign role to client (player, spectator, etc.)
-    const { clientId, roomId, room, side, playerName, playerSprite } = context;
-    const player = wsHandler.assignRole(
-      room,
-      clientId,
-      socket,
-      roomId,
-      side as string,
-      playerName,
-      playerSprite,
-    );
-    //  console.log("Websocket assign role response: ", player); //// debug
+	//wait client to send initial data within timeout
+	let player = null as playerInfo | null;
+	let expectingPong = false;
+	let pongTimer: NodeJS.Timeout | null = null;
+	const HANDSHAKE_MS = 500; //? 2 seconds
+	const handshakeTimeout = setTimeout(() => {
+		if (!player) {
+			console.log("Handshake timeout for client:", clientId);
+			socket.close(1003, "Handshake timeout: did not receive initial data");
+		}
+
+	}, HANDSHAKE_MS);
 
     // step 2: handle incoming messages from clients
     socket.on("message", (raw: WebSocket.Data) => {
@@ -44,6 +45,58 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           socket.close(1003, "Invalid JSON");
           return;
         }
+
+		if (!player) {
+			if (msg && msg.type === "confirmJoin") {
+				const incomingId = (typeof msg.clientId === "number") ? msg.clientId : null;
+				if (incomingId !== clientId) {
+					console.warn(`Client ${clientId} sent mismatched clientId ${incomingId} in handshake.`);
+					socket.close(1003, "Mismatched clientId in handshake");
+					return;
+				}
+
+				expectingPong = true;
+				socket.send(JSON.stringify({ type: "handshakePing" }));
+
+				const PONG_TIMEOUT_MS = 500; //? 0.5 seconds for tight handshake
+				pongTimer = setTimeout(() => {
+					if (expectingPong) {
+						console.log("Handshake pong timeout for client:", clientId);
+						socket.close(1003, "Handshake pong timeout");
+					}
+				}, PONG_TIMEOUT_MS);
+
+				return;
+			}
+
+			if (expectingPong && msg && msg.type === "handshakePong") {
+				const pongId = (typeof msg.clientId === "number") ? msg.clientId : null;
+				if (pongId !== clientId) {
+					console.warn(`Client ${clientId} sent mismatched clientId ${pongId} in handshake pong.`);
+					socket.close(1003, "Mismatched clientId in handshake pong");
+					return;
+				}
+
+				expectingPong = false;
+				if (pongTimer) {
+					clearTimeout(pongTimer);
+					pongTimer = null;
+				}
+				clearTimeout(handshakeTimeout);
+
+				player = wsHandler.assignRole(
+				  room,
+				  clientId,
+				  socket,
+				  roomId,
+				  side as string,
+				  playerName,
+				  playerSprite,
+				);
+				// console.log("Websocket assign role response: ", player); //// debug
+				return;
+			}
+		}
 
         // --- validation ---
         if (typeof msg !== "object" || msg === null) {
@@ -64,8 +117,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
         // --- handle message ---
         //get certain clientId from socket
-        const clientId = room.sockets.get(socket);
-        if (!clientId) return;
+        const socketClientId = room.sockets.get(socket);
+        if (!socketClientId) return;
 
         if (msg.type === "switchSide") {
           if (
@@ -78,7 +131,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             return;
           }
 
-          if (player.ready && clientId !== room.leaderId) {
+		  if (!player) return;
+          if (player.ready && socketClientId !== room.leaderId) {
             socket.send(
               JSON.stringify({
                 type: "error",
@@ -86,7 +140,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               }),
             );
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`,
+              `Player ${player.playerName} (${player.role}) [${player.clientId}] fail to switch side when ready in room (${room.name}) [${room.id}]`,
             );
             return;
           }
@@ -99,6 +153,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           if (newRole) player.role = newRole;
           return;
         }
+
         if (msg.type === "ready") {
           if (
             typeof msg.ready !== "boolean" ||
@@ -186,9 +241,10 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           }
 
           if (msg.start === true) {
+			if (!player) return;
             //execute the start (leader only)
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.id}] started the game in room (${room.name}) [${room.id}]`,
+              `Player ${player.playerName} (${player.role}) [${player.clientId}] started the game in room (${room.name}) [${room.id}]`,
             );
             const { canStart } = updateCanStart(room);
             broadcast(room, {
@@ -221,8 +277,9 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           room.private = msg.private;
 
           // broadcast to all players in room
+		  if (!player) return;
           console.log(
-            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.id}]`,
+            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.clientId}]`,
           );
           broadcast(room, {
             type: "roomPrivacyUpdate",
