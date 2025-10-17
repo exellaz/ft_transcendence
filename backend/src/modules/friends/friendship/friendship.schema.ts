@@ -1,6 +1,6 @@
 // GET /friendships/:userId
 export const getFriendShipsByUserIdSchema = {
-  tags: ['friends'], // <- groups under "user" tag in Swagger
+  tags: ["friends"], // <- groups under "user" tag in Swagger
   params: {
     type: "object",
     properties: {
@@ -19,7 +19,7 @@ export const getFriendShipsByUserIdSchema = {
 
 // POST /friendships
 export const createFriendshipSchema = {
-  tags: ['friends'], // <- groups under "user" tag in Swagger
+  tags: ["friends"], // <- groups under "user" tag in Swagger
   body: {
     type: "object",
     properties: {

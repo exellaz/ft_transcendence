@@ -15,8 +15,8 @@ import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendC
 import tournamentRoutes from "./modules/tournament/tournament.routes";
 import errorHandler from "./plugins/errorHandler";
 import testRoutes from "./modules/test/test.routes";
-import fastifySwagger from '@fastify/swagger'
-import fastifySwaggerUi from '@fastify/swagger-ui'
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 
 const app = Fastify({
   logger: true,
@@ -33,31 +33,30 @@ app.register(dbConnector);
 
 app.register(fastifySwagger, {
   openapi: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'Test swagger',
-      description: 'Testing the Fastify swagger API',
-      version: '0.1.0'
+      title: "Test swagger",
+      description: "Testing the Fastify swagger API",
+      version: "0.1.0",
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server'
-      }
+        url: "http://localhost:3000",
+        description: "Development server",
+      },
     ],
     tags: [
-      { name: 'user', description: 'User related end-points' },
-      { name: 'auth', description: 'Auth related end-points' },
-      { name: 'friends', description: 'Friends related end-points' }
-
+      { name: "user", description: "User related end-points" },
+      { name: "auth", description: "Auth related end-points" },
+      { name: "friends", description: "Friends related end-points" },
     ],
-  }
-})
-      
+  },
+});
+
 app.register(fastifySwaggerUi, {
-  routePrefix: '/docs', // visit http://localhost:3000/docs
-})
-  
+  routePrefix: "/docs", // visit http://localhost:3000/docs
+});
+
 app.register(userRoutes);
 app.register(authRoutes);
 app.register(friendshipRoutes);
@@ -69,6 +68,5 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(testRoutes);
-            
+
 export default app;
-            
