@@ -1,10 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../utils/response";
-import { postUserRegisterSchema } from "../users/users.schema";
 import { hashPassword, generateAuthToken } from "../users/users.service";
 import { userPublicSelect } from "../users/users.select";
-import { postUserLoginSchema } from "../users/users.schema";
 import { verifyPassword } from "../users/users.service";
+import { postUserLoginSchema, postUserRegisterSchema } from "./auth.schema";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(

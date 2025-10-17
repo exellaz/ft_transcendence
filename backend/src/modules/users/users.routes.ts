@@ -4,6 +4,7 @@ import {
   deleteUserByIdSchema,
   getUserByIdSchema,
   getUserSettingsByIdSchema,
+  getUsersSchema,
   patchUserByIdSchema,
   patchUserSettingsByIdSchema,
 } from "./users.schema";
@@ -152,8 +153,10 @@ async function userRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // READ (all users)
-  fastify.get("/users", async () => {
+  // GET /users - get all users
+  fastify.get("/users",
+    { schema: getUsersSchema },
+    async () => {
     const users = await fastify.db.user.findMany({
       select: userPublicSelect,
     });
