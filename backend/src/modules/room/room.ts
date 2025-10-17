@@ -199,6 +199,20 @@ export function roomEndGame(
   console.log("===================================================");
 
   const roomId = room.id;
+
+  // Close all sockets and clean up room
+  try {
+	for (const socket of Array.from(room.sockets.keys())) {
+	  try {
+		console.log("[room] closing socket for game end:", room.id);
+		socket.close(1000, "game ended");
+	  } catch (e) { console.error("error closing socket:", e); }
+	  room.sockets.clear();
+	  room.clients.clear();
+    }
+  } catch (e) {
+	  console.error("[room] error during socket closing for game end:", e);
+  }
   if (rooms.has(roomId)) {
     console.log(`Deleted room ${roomId} after game end.`);
     rooms.delete(roomId);

@@ -50,6 +50,29 @@ export function useRoomWebSocket({
   const autoConnect = options?.autoConnect ?? true;
 
   useEffect(() => {
+	function handleOnline() {
+		console.warn("[room-websocket] navigator online");
+	}
+	function handleOffline() {
+		console.warn("[room-websocket] navigator offline, closing ws");
+		setRoomError("offline_error");
+		try {
+			socketRef.current?.close(1000, "offline");
+		} catch {}
+	}
+	if (typeof window !== "undefined" && window.addEventListener) {
+		window.addEventListener("online", handleOnline);
+		window.addEventListener("offline", handleOffline);
+	}
+	return () => {
+		if (typeof window !== "undefined" && window.removeEventListener) {
+			window.removeEventListener("online", handleOnline);
+			window.removeEventListener("offline", handleOffline);
+		}
+	};
+  }, []);
+
+  useEffect(() => {
 	if (!autoConnect) return;
 	if (!player.id || player.id < 0) return;
 	if (!roomId || roomId < 0) return;
@@ -72,16 +95,30 @@ export function useRoomWebSocket({
       );
       socketRef.current = ws;
 
+	  const HEARTBEAT_THRESHOLD = 10000;
+	  const HEARTBEAT_CHECK = 2000; //2 seconds
+	  const lastHeartbeat = { time: Date.now() };
+	  const watchdog = setInterval(() => {
+		try {
+			if (!ws || ws.readyState !== WebSocket.OPEN) return;
+			const age = Date.now() - lastHeartbeat.time;
+			if (age > HEARTBEAT_THRESHOLD) {
+				console.warn(`[room-websocket] heartbeat timeout (${age}ms), closing ws`);
+				setRoomError("offline_error");
+				ws.close(1000, "heartbeat timeout");
+			}
+		} catch (e) {}
+	  }, HEARTBEAT_CHECK);
+
+	  const clearWatchdog = () => {
+		try {
+			clearInterval(watchdog);
+		} catch {}
+	  }
+
       // open connection
       ws.onopen = () => {
         console.log("Room ws connected"); ////debug
-
-		//if browser reports offline, close the connection
-		if (typeof navigator !== "undefined" && !navigator.onLine) {
-			setRoomError("offline_error");
-			ws.close(1000, "offline");
-			return;
-		}
 
         setStatusText(`Room ${roomName} [id: ${roomId}]`); //? can be remove
       };
@@ -100,13 +137,16 @@ export function useRoomWebSocket({
 
 		  // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
 		  if (data && data.type === "handshakePing") {
+			console.log("[room-websocket] received handshakePing"); ////debug
 			ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
+			lastHeartbeat.time = Date.now();
 			return;
 		  }
 		  // recieve heartbeat from server and send ack back
 		  if (data && data.type === "heartbeat") {
-
+			console.log(`[room.ws] received heartbeat, sending heartbeatAck client=${player.id}`); ////debug
 			ws.send(JSON.stringify({ type: "heartbeatAck", clientId: player.id }));
+			lastHeartbeat.time = Date.now();
 			return;
 		  }
 
@@ -270,6 +310,7 @@ export function useRoomWebSocket({
       // close connection
       ws.onclose = () => {
         console.log("Room ws disconnected");
+		clearWatchdog();
 		setRoomError("offline_error");
 		setCanStart(false);
 		setReady(false);
@@ -282,7 +323,8 @@ export function useRoomWebSocket({
 
       // clean up on unmount
       return () => {
-        if (ws) ws.close();
+        try { if (ws) ws.close(); } catch {}
+		clearWatchdog();
       };
     }
     connect();
@@ -290,10 +332,6 @@ export function useRoomWebSocket({
 
   function onSwitch() {
     if (!socketRef.current) return;
-	if (typeof navigator !== "undefined" && !navigator.onLine) {
-		setRoomError("offline_error");
-		return;
-	}
 	if (socketRef.current.readyState !== WebSocket.OPEN) {
 		setRoomError("offline_error");
 		return;
@@ -305,11 +343,6 @@ export function useRoomWebSocket({
 
   function onReady() {
     if (!socketRef.current || isLeader) return;
-	// require online + ws open before toggling
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setRoomError("offline_error");
-      return;
-    }
     if (socketRef.current.readyState !== WebSocket.OPEN) {
       setRoomError("offline_error");
       return;
@@ -322,11 +355,6 @@ export function useRoomWebSocket({
 
   function onStartBtn() {
     if (!isLeader || !socketRef.current) return;
-	if (typeof navigator !== "undefined" && !navigator.onLine) {
-		setRoomError("offline_error");
-		console.warn("offline detected when starting game");
-		return;
-	}
 	if (socketRef.current.readyState !== WebSocket.OPEN) {
 		setRoomError("offline_error");
 		return;

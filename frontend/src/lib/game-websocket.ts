@@ -91,6 +91,13 @@ export function useGameRoomWebSocket({
         `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
     );
 
+	ws.onopen = () => {
+	  console.log("Game Room ws connected");
+	};
+	ws.onclose = () => {
+	  console.log("Game Room ws disconnected");
+	}
+
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
     //  console.log("Game WebSocket message received:", msg); //// debug
@@ -106,6 +113,8 @@ export function useGameRoomWebSocket({
 	  }
 
 	  if (msg.type === "game_over") {
+		//close the websocket after game over
+		try { ws.close(1000, "game over"); } catch {}
         //console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
         if (roomId.toString().startsWith("1111") === true)
         {
@@ -141,7 +150,9 @@ export function useGameRoomWebSocket({
     };
 
     // close socket when component unmount
-    return () => ws.close();
+    return () => {
+		try { ws.close(); } catch {}
+	}
   }, [roomId, clientId, initialRole, roomName]); //re-run effect if any of these change
 
   return {

@@ -31,7 +31,6 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 		leader: boolean;
 		spriteUrl: string;
 		ready: boolean;
-		inGame?: boolean;
 	};
 	let player: PlayerRole | null = null;
 	let expectingPong = true;
@@ -92,10 +91,11 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 			const HEARTBEAT_ACK_MS = 3000;
 			heartbeatInterval = setInterval(() => {
 				try {
+					console.log(`[room.ws] send heartbeat -> client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
 					socket.send(JSON.stringify({ type: "heartbeat" }));
 					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 					heartbeatTimeout = setTimeout(() => {
-						// console.log("Heartbeat ack timeout for client:", clientId); //// debug : check heartbeat
+						console.log(`[room.ws] heartbeat ack timeout -> client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
 						socket.close(1003, "Heartbeat timeout: no ack from client");
 					}, HEARTBEAT_ACK_MS);
 				} catch (err) {
@@ -110,6 +110,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
 		//  also treat heartbeat ack
 		if (player && msg && msg.type === "heartbeatAck") {
+			console.log(`[room.ws] received heartbeat ack <- client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
 			if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 			return;
 		}
@@ -125,7 +126,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
 
         // --- allow type ---
-        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy", "enterGame"];
+        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy"];
         if (!allowedTypes.includes(msg.type)) {
           socket.close(1003, `unsupported message type ${msg.type}`);
           return;
@@ -304,13 +305,6 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             },
           });
         }
-
-		if (msg.type === "enterGame") {
-			if (player && typeof msg.clientId === "number" && msg.clientId === clientId) {
-				player.inGame = true;
-				console.log(`Player ${player.playerName} (${player.role}) [${player.id}] entered the game in room (${room.name}) [${room.id}]`);
-			}
-		}
       } catch (err) {
         console.error("unexpected error in room wsmessage handling:", err);
         socket.close(1011, "server error");
@@ -326,10 +320,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 	  	if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 	  } catch {}
 
-	  // if player enter game, ignore disconnect
-	  if (player && player.inGame) return;
-
-	  if (room.game.state === 3 || room.game.state === 2) return;
+	  if (room.game.state === 3) return;
       wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
   });
