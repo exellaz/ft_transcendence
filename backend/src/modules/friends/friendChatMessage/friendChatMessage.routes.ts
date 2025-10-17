@@ -15,7 +15,7 @@ async function friendChatMessageRoutes(fastify: FastifyInstance) {
     });
 
     if (!friendChatMessages)
-      throw new ApiError("friendChatMessages not found", 404);
+      throw ApiError.notFound("Friend chat messages not found", "FRIEND_CHAT_MESSAGES_NOT_FOUND");
 
     return ok(friendChatMessages); // only the 3 fields
   });
@@ -33,7 +33,7 @@ async function friendChatMessageRoutes(fastify: FastifyInstance) {
       });
 
       if (!lastMessage)
-        throw new ApiError("No messages found for this friendship", 404);
+        throw ApiError.notFound("Friend chat messages not found", "FRIEND_CHAT_MESSAGES_NOT_FOUND");
 
       return ok(lastMessage); // only the 3 fields
     },

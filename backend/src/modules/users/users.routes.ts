@@ -26,7 +26,7 @@ async function userRoutes(fastify: FastifyInstance) {
         select: userSettingsPublicSelect,
       });
 
-      if (!settings) throw new ApiError("User settings not found", 404);
+      if (!settings) throw ApiError.notFound("User settings not found", "USER_SETTINGS_NOT_FOUND");
 
       return ok(settings); // only the 3 fields
     },
@@ -49,7 +49,7 @@ async function userRoutes(fastify: FastifyInstance) {
       if (language !== undefined) data.language = language;
 
       if (Object.keys(data).length === 0)
-        throw new ApiError("No fields to update", 400);
+        throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");
 
       try {
         const updatedSettings = await fastify.db.userSettings.update({
@@ -62,7 +62,7 @@ async function userRoutes(fastify: FastifyInstance) {
       } catch (err: any) {
         if (err.code === "P2025")
           // Prisma "record not found"
-          throw new ApiError("User not found", 404);
+          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
 
         throw err; // let Fastify handle other errors
       }
@@ -87,7 +87,7 @@ async function userRoutes(fastify: FastifyInstance) {
       where: { id: Number(id) },
       select: userPublicSelect,
     });
-    if (!user) throw new ApiError("User not found", 404);
+    if (!user) throw ApiError.notFound("User not found", "USER_NOT_FOUND");
 
     return ok(user); // 200 OK
   });
@@ -109,7 +109,7 @@ async function userRoutes(fastify: FastifyInstance) {
       if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
       if (Object.keys(data).length === 0)
-        throw new ApiError("No fields to update", 400);
+        throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS"); 
 
       try {
         const updatedUser = await fastify.db.user.update({
@@ -122,10 +122,10 @@ async function userRoutes(fastify: FastifyInstance) {
       } catch (err: any) {
         if (err.code === "P2025")
           // Prisma "record not found"
-          throw new ApiError("User not found", 404);
+          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
         else if (err.code === "P2002")
           // Prisma unique constraint violation
-          throw new ApiError("Username already exists", 400);
+          throw ApiError.conflict("Username already exists", "USERNAME_CONFLICT");
 
         throw err; // let Fastify handle other errors
       }
@@ -146,7 +146,7 @@ async function userRoutes(fastify: FastifyInstance) {
 
         return ok(user);
       } catch (err: any) {
-        if (err.code === "P2025") throw new ApiError("User not found", 404);
+        if (err.code === "P2025") throw ApiError.notFound("User not found", "USER_NOT_FOUND");
         console.log("ERRORRRR", err);
         throw err;
       }

@@ -23,7 +23,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
     });
 
     if (!blockedFriendships)
-      throw new ApiError("Blocked Friendships not found", 404);
+      throw ApiError.notFound("Blocked Friendships not found", "BLOCKED_FRIENDSHIPS_NOT_FOUND");
 
     type BlockedFriendship = (typeof blockedFriendships)[number];
 
@@ -40,7 +40,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
     };
 
     if (blockerId === blockedId) {
-      throw new ApiError("User cannot block themselves", 400);
+      throw ApiError.badRequest("User cannot block themselves", "CANNOT_BLOCK_SELF");
     }
 
     try {
@@ -57,7 +57,7 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
 
       if (!friendship) {
         console.log("TESTT", friendship);
-        throw new ApiError("Friendship not found", 404);
+        throw ApiError.notFound("Friendship not found", "FRIENDSHIP_NOT_FOUND");
       }
 
       const blockedFriendship = await fastify.db.blockedFriendship.create({
@@ -67,8 +67,9 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
       return ok(blockedFriendship);
     } catch (err: any) {
       if (err.code === "P2002")
-        throw new ApiError("blocked Friendship already exists", 400);
-      if (err.code === "P2003") throw new ApiError("User not found", 404);
+        throw ApiError.conflict("blocked Friendship already exists", "BLOCKED_FRIENDSHIP_CONFLICT");
+      if (err.code === "P2003") 
+        throw ApiError.notFound("User not found", "USER_NOT_FOUND");
       throw err;
     }
   });
@@ -98,11 +99,8 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
         return ok(deletedBlockedFriendship);
       } catch (err: any) {
         if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError(
-            "Blocked Friendship not found OR Current User is not the blocker",
-            404,
-          );
+          // Blocked Friendship not found OR Current User is not the blocker
+          throw ApiError.notFound("Blocked Friendship not found", "BLOCKED_FRIENDSHIP_NOT_FOUND");
 
         throw err; // let Fastify handle other errors
       }
