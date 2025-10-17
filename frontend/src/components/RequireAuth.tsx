@@ -21,7 +21,7 @@ export default function RequireAuth({
       setShouldRedirect(true);
     }
   }, [valid, logout]);
-  
+
   // replace prevents adding a new history entry
   if (!valid && shouldRedirect) return <Navigate to="/login" replace />;
   if (!valid) return null; // avoid flicker while effect runs
