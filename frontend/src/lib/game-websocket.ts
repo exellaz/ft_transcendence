@@ -91,10 +91,6 @@ export function useGameRoomWebSocket({
         `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
     );
 
-	ws.onopen = () => {
-		ws.send(JSON.stringify({ type: "confirmJoin", clientId: clientId }));
-	};
-
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
     //  console.log("Game WebSocket message received:", msg); //// debug

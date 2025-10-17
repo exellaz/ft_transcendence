@@ -51,6 +51,8 @@ export function useRoomWebSocket({
 
   useEffect(() => {
 	if (!autoConnect) return;
+	if (!player.id || player.id < 0) return;
+	if (!roomId || roomId < 0) return;
     //TODO replace with JWT
 
     async function connect() {
@@ -80,8 +82,6 @@ export function useRoomWebSocket({
 			ws.close(1000, "offline");
 			return;
 		}
-		//send handshake to confirm player is online
-		ws.send(JSON.stringify({ type: "confirmJoin", clientId: player.id }));
 
         setStatusText(`Room ${roomName} [id: ${roomId}]`); //? can be remove
       };
@@ -274,10 +274,6 @@ export function useRoomWebSocket({
 		setCanStart(false);
 		setReady(false);
       };
-
-	  ws.onclose = () => {
-		console.log("Room ws disconnected");
-	  }
 
       ws.onerror = (e) => {
         console.error("Room ws error", e);
