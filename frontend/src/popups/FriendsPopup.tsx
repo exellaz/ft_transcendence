@@ -69,7 +69,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     timestamp: string;
   };
   const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
-    {}
+    {},
   );
 
   // secondary API call to fetch last message for each friend
@@ -101,10 +101,10 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             console.error(
               "Error fetching last message for",
               friend.username,
-              err
+              err,
             );
           }
-        })
+        }),
       );
 
       if (isMounted) setLastMessages(results);

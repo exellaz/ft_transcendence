@@ -46,23 +46,128 @@ const App: React.FC = () => {
       <BrowserRouter>
         <PreLoginWrapper>
           <Routes>
-             {/* Pre-login routes - redirect away if already authenticated */}
-            <Route path="/" element={<RedirectIfAuth><LoginView /></RedirectIfAuth>} />
-            <Route path="/login" element={<RedirectIfAuth><LoginView /></RedirectIfAuth>} />
-            <Route path="/signup" element={<RedirectIfAuth><SignUpView /></RedirectIfAuth>} />
-            <Route path="/signup-success" element={<RedirectIfAuth><SignUpSuccessView /></RedirectIfAuth>} />
+            {/* Pre-login routes - redirect away if already authenticated */}
+            <Route
+              path="/"
+              element={
+                <RedirectIfAuth>
+                  <LoginView />
+                </RedirectIfAuth>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <RedirectIfAuth>
+                  <LoginView />
+                </RedirectIfAuth>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <RedirectIfAuth>
+                  <SignUpView />
+                </RedirectIfAuth>
+              }
+            />
+            <Route
+              path="/signup-success"
+              element={
+                <RedirectIfAuth>
+                  <SignUpSuccessView />
+                </RedirectIfAuth>
+              }
+            />
             {/* Protected routes - require a valid JWT */}
-            <Route path="/main-menu" element={<RequireAuth><MainMenuView /></RequireAuth>} />
-            <Route path="/custom" element={<RequireAuth><CustomModeView /></RequireAuth>} />
-            <Route path="/local-game" element={<RequireAuth><LocalGameView /></RequireAuth>} />
-            <Route path="/choose-sprite" element={<RequireAuth><ChooseSpriteView /></RequireAuth>} />
-            <Route path="/tournament" element={<RequireAuth><TournamentLobbyView /></RequireAuth>} />
-            <Route path="/match" element={<RequireAuth><MatchView /></RequireAuth>} />
-            <Route path="/game" element={<RequireAuth><GameView /></RequireAuth>} />
-            <Route path="/advance" element={<RequireAuth><AdvanceView /></RequireAuth>} />
-            <Route path="/results" element={<RequireAuth><ResultsView /></RequireAuth>} />
-            <Route path="/singles-room/:roomId" element={<RequireAuth><SinglesRoomView /></RequireAuth>} />
-            <Route path="/doubles-room/:roomId" element={<RequireAuth><DoublesRoomView /></RequireAuth>} />
+            <Route
+              path="/main-menu"
+              element={
+                <RequireAuth>
+                  <MainMenuView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/custom"
+              element={
+                <RequireAuth>
+                  <CustomModeView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/local-game"
+              element={
+                <RequireAuth>
+                  <LocalGameView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/choose-sprite"
+              element={
+                <RequireAuth>
+                  <ChooseSpriteView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/tournament"
+              element={
+                <RequireAuth>
+                  <TournamentLobbyView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/match"
+              element={
+                <RequireAuth>
+                  <MatchView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/game"
+              element={
+                <RequireAuth>
+                  <GameView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/advance"
+              element={
+                <RequireAuth>
+                  <AdvanceView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/results"
+              element={
+                <RequireAuth>
+                  <ResultsView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/singles-room/:roomId"
+              element={
+                <RequireAuth>
+                  <SinglesRoomView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/doubles-room/:roomId"
+              element={
+                <RequireAuth>
+                  <DoublesRoomView />
+                </RequireAuth>
+              }
+            />
             {/* Miscellaneous routes */}
             <Route path="/test" element={<TestView />} />
           </Routes>

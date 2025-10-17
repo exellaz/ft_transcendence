@@ -42,7 +42,7 @@ const LiveChat: React.FC<{
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.id === -1) return "System"; // System messages
     const player = players.find(
-      (p: WaitingTournamentPlayer) => p.id === msg.id
+      (p: WaitingTournamentPlayer) => p.id === msg.id,
     ); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };

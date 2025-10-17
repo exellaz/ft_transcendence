@@ -3,7 +3,11 @@ import { Navigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
 import { isTokenValid } from "../utils/jwt";
 
-export default function RequireAuth({ children }: { children: React.ReactNode }) {
+export default function RequireAuth({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { logout } = useUser();
 
   const token = localStorage.getItem("authToken");
