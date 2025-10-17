@@ -38,7 +38,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [userId],
-    userId !== 0
+    userId !== 0,
   );
 
   // listen for user info updates
