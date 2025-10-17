@@ -11,6 +11,7 @@ export const errorResponseSchema = {
 
 // GET /users/:id
 export const getUserByIdSchema = {
+  tags: ['user'], // <- groups under "user" tag in Swagger
   params: {
     type: "object",
     properties: {
@@ -69,6 +70,7 @@ export const getUserByIdSchema = {
 
 // PATCH /users/:id
 export const patchUserByIdSchema = {
+  tags: ['user'], // <- groups under "user" tag in Swagger
   params: {
     type: "object",
     properties: {
@@ -80,6 +82,7 @@ export const patchUserByIdSchema = {
 
 // DELETE /users/:id
 export const deleteUserByIdSchema = {
+  tags: ['user'], // <- groups under "user" tag in Swagger
   params: {
     type: "object",
     properties: {
@@ -91,6 +94,9 @@ export const deleteUserByIdSchema = {
 
 // GET /users/:id/settings
 export const getUserSettingsByIdSchema = {
+  tags: ['user'], // <- groups under "user" tag in Swagger
+  summary: 'Get user settings by user ID',
+  description: 'Retrieve the settings (public fields) for a specific user by ID',
   params: {
     type: "object",
     properties: {
@@ -102,6 +108,7 @@ export const getUserSettingsByIdSchema = {
 
 // PATCH /users/:id/settings  (update single user settings)
 export const patchUserSettingsByIdSchema = {
+  tags: ['user'], // <- groups under "user" tag in Swagger
   params: {
     type: "object",
     properties: {
@@ -113,6 +120,7 @@ export const patchUserSettingsByIdSchema = {
 
 // POST /auth/register
 export const postUserRegisterSchema = {
+  tags: ['auth'], // <- groups under "user" tag in Swagger
   body: {
     type: "object",
     properties: {
@@ -179,6 +187,7 @@ export const postUserRegisterSchema = {
 
 // POST /auth/login
 export const postUserLoginSchema = {
+  tags: ['auth'], // <- groups under "user" tag in Swagger
   body: {
     type: "object",
     properties: {
