@@ -1,11 +1,14 @@
 // ------------------------------ Auth Schemas ------------------------------
 
-import { errorResponseSchema, successResponseSchema } from "src/utils/common-schemas.";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "src/utils/common-schemas.";
 import { userResponseSchema } from "../users/users.schema";
 
 // POST /auth/register
 export const postUserRegisterSchema = {
-  tags: ['auth'],
+  tags: ["auth"],
   body: {
     type: "object",
     properties: {
@@ -43,7 +46,7 @@ export const postUserRegisterSchema = {
 
 // POST /auth/login
 export const postUserLoginSchema = {
-  tags: ['auth'],
+  tags: ["auth"],
   body: {
     type: "object",
     properties: {

@@ -70,4 +70,3 @@ app.register(friendChatMessageRoutes);
 app.register(testRoutes);
 
 export default app;
-            
