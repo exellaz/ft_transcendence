@@ -192,6 +192,17 @@ const SinglesRoomView: React.FC = () => {
     //when count down finish delay 1 sec to start game
     if (countdown === 0) {
       const timer = setTimeout(() => {
+		//let server know that player has entered the game
+		try {
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				socket.send(
+					JSON.stringify({
+						type: "enterGame",
+						clientId: userInfo?.id,
+					}),
+				);
+			}
+		} catch {}
         sessionStorage.setItem(
           "playerSide",
           role.startsWith("left") ? "left" : "right",
@@ -204,11 +215,42 @@ const SinglesRoomView: React.FC = () => {
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-    const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
-    console.log("leftTeam:", leftTeam); //// debug
-    const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
-    console.log("rightTeam:", rightTeam); //// debug
-    setPlayers([...leftTeam, ...rightTeam]);
+    // const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
+    // console.log("leftTeam:", leftTeam); //// debug
+    // const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
+    // console.log("rightTeam:", rightTeam); //// debug
+    // setPlayers([...leftTeam, ...rightTeam]);
+	type RemotePlayer = {
+		clientId?: number;
+		id?: number;
+		username?: string;
+		playerName?: string;
+		spriteUrl: string;
+		avatarUrl?: string;
+		role?: string;
+		team?: "left" | "right" | "spectator";
+		leader?: boolean;
+		ready?: boolean;
+		online?: boolean;
+	};
+	const leftTeam = Array.isArray(leftTeamHtml)
+		? (leftTeamHtml as unknown as RemotePlayer[])
+		: [];
+	console.log("leftTeam:", leftTeam); //// debug
+	const rightTeam = Array.isArray(rightTeamHtml)
+		? (rightTeamHtml as unknown as RemotePlayer[])
+		: [];
+	console.log("rightTeam:", rightTeam); //// debug
+	const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
+		leader: !!p.leader,
+		id: p.id || -1,
+		username: p.username || p.playerName || "Unknown",
+		spriteUrl: p.spriteUrl || p.avatarUrl || "../../assets/green-ghost.png",
+		team: p.team === "left" ? "left" : p.team === "right" ? "right" : "right",
+		ready: !!p.ready,
+	});
+
+	setPlayers([...leftTeam.map(mapToWaiting), ...rightTeam.map(mapToWaiting)]);
   }, [leftTeamHtml, rightTeamHtml]);
 
 // ---------------------------------- helper functions ----------------------------------
@@ -355,7 +397,7 @@ const SinglesRoomView: React.FC = () => {
                   <Button
                     variant="red"
                     onClick={() => {
-					  setRoomError(null);
+					setRoomError(null);
                       onLeave();
                       navigate("/main-menu");
                     }}

@@ -16,7 +16,16 @@ interface IWebSocketHandler {
     preferredSide: string,
     playerName: string,
     playerSprite: string,
-  ): playerInfo;
+  ): {
+	id: number;
+	role: string;
+	playerName: string;
+	team: string;
+	leader: boolean;
+	spriteUrl: string;
+	ready: boolean;
+	online: boolean;
+  };
   handleDisconnect(
     socket: WSWebSocket,
     room: Room,
@@ -42,7 +51,16 @@ export class WebSocketHandler implements IWebSocketHandler {
     preferredSide: string,
     playerName: string,
     playerSprite: string,
-  ): playerInfo {
+  ): {
+	id: number;
+	role: string;
+	playerName: string;
+	team: string;
+	leader: boolean;
+	spriteUrl: string;
+	ready: boolean;
+	online: boolean;
+  } {
     // Add socket to room if present
     if (socket) {
     	room.sockets.set(socket, clientId);
@@ -70,7 +88,7 @@ export class WebSocketHandler implements IWebSocketHandler {
       	  	}
 
 			return {
-      	  		clientId: clientId,
+      	  		id: clientId,
       	  		role: "spectator",
       	  		playerName,
       	  		team: "spectator",
@@ -157,7 +175,7 @@ export class WebSocketHandler implements IWebSocketHandler {
     }
 
     return {
-    	clientId: clientId,
+    	id: clientId,
     	role: player.role,
     	playerName: player.playerName,
     	team: player.team,
@@ -204,11 +222,13 @@ export class WebSocketHandler implements IWebSocketHandler {
 	);
 
 	//! broadcast offline status (so clients can show disconnected indicator)
-    broadcast(room, {
-      type: "playerOffline",
-      clientId,
-      playerName: player.playerName,
-    });
+	if (room.game.state !== 2 && room.game.state !== 3) {
+    	broadcast(room, {
+    	  type: "playerOffline",
+    	  clientId,
+    	  playerName: player.playerName,
+    	});
+	}
 
 
     // --- handle leader leaving ---

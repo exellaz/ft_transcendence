@@ -22,18 +22,37 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
 
-	//wait client to send initial data within timeout
-	let player = null as playerInfo | null;
-	let expectingPong = false;
+	//wait client to be reachable before assigning role
+	type PlayerRole = {
+		id: number;
+		role: string;
+		playerName: string;
+		team: string;
+		leader: boolean;
+		spriteUrl: string;
+		ready: boolean;
+		inGame?: boolean;
+	};
+	let player: PlayerRole | null = null;
+	let expectingPong = true;
 	let pongTimer: NodeJS.Timeout | null = null;
-	const HANDSHAKE_MS = 500; //? 2 seconds
-	const handshakeTimeout = setTimeout(() => {
-		if (!player) {
-			console.log("Handshake timeout for client:", clientId);
-			socket.close(1003, "Handshake timeout: did not receive initial data");
-		}
+	let heartbeatInterval: NodeJS.Timeout | null = null;
+	let heartbeatTimeout: NodeJS.Timeout | null = null;
+	const HANDSHAKE_MS = 1500; //? 1.5 seconds
 
-	}, HANDSHAKE_MS);
+	// start server-initiate hanshake ping immediately
+	try {
+		socket.send(JSON.stringify({ type: "handshakePing" }));
+		pongTimer = setTimeout(() => {
+			if (expectingPong) {
+				console.log("Handshake timeout for client:", clientId);
+				socket.close(1003, "Handshake timeout: did not receive initial data");
+			}
+		}, HANDSHAKE_MS);
+	} catch (err) {
+		console.error("Error sending handshake ping:", err);
+		socket.close(1011, "server error");
+	}
 
     // step 2: handle incoming messages from clients
     socket.on("message", (raw: WebSocket.Data) => {
@@ -46,56 +65,53 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           return;
         }
 
-		if (!player) {
-			if (msg && msg.type === "confirmJoin") {
-				const incomingId = (typeof msg.clientId === "number") ? msg.clientId : null;
-				if (incomingId !== clientId) {
-					console.warn(`Client ${clientId} sent mismatched clientId ${incomingId} in handshake.`);
-					socket.close(1003, "Mismatched clientId in handshake");
-					return;
-				}
-
-				expectingPong = true;
-				socket.send(JSON.stringify({ type: "handshakePing" }));
-
-				const PONG_TIMEOUT_MS = 500; //? 0.5 seconds for tight handshake
-				pongTimer = setTimeout(() => {
-					if (expectingPong) {
-						console.log("Handshake pong timeout for client:", clientId);
-						socket.close(1003, "Handshake pong timeout");
-					}
-				}, PONG_TIMEOUT_MS);
-
+		// First: handle initial hanshake pong (server -> client handshake)
+		if (!player && expectingPong && msg && msg.type === "handshakePong") {
+			const pongId = (typeof msg.clientId === "number") ? msg.clientId : null;
+			if (pongId !== clientId) {
+				console.log(`Handshake pong clientId mismatch: expected ${clientId}, got ${pongId}`);
+				socket.close(1003, "Handshake error: clientId mismatch");
 				return;
 			}
+			expectingPong = false;
+			if (pongTimer) clearTimeout(pongTimer);
 
-			if (expectingPong && msg && msg.type === "handshakePong") {
-				const pongId = (typeof msg.clientId === "number") ? msg.clientId : null;
-				if (pongId !== clientId) {
-					console.warn(`Client ${clientId} sent mismatched clientId ${pongId} in handshake pong.`);
-					socket.close(1003, "Mismatched clientId in handshake pong");
-					return;
+			//now safe assign player role
+			player = wsHandler.assignRole(
+				room,
+				clientId,
+				socket,
+				roomId,
+				side as string,
+				playerName,
+				playerSprite,
+			);
+
+			// start a periodic server heartbeat to check client connectivity
+			const HEARTBEAT_MS = 5000;
+			const HEARTBEAT_ACK_MS = 3000;
+			heartbeatInterval = setInterval(() => {
+				try {
+					socket.send(JSON.stringify({ type: "heartbeat" }));
+					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+					heartbeatTimeout = setTimeout(() => {
+						// console.log("Heartbeat ack timeout for client:", clientId); //// debug : check heartbeat
+						socket.close(1003, "Heartbeat timeout: no ack from client");
+					}, HEARTBEAT_ACK_MS);
+				} catch (err) {
+					console.error("Error sending heartbeat:", err);
+					socket.close(1011, "server error");
 				}
+			}, HEARTBEAT_MS);
+			return;
+		}
 
-				expectingPong = false;
-				if (pongTimer) {
-					clearTimeout(pongTimer);
-					pongTimer = null;
-				}
-				clearTimeout(handshakeTimeout);
+		if (!player && expectingPong) return; // still waiting for handshake pong
 
-				player = wsHandler.assignRole(
-				  room,
-				  clientId,
-				  socket,
-				  roomId,
-				  side as string,
-				  playerName,
-				  playerSprite,
-				);
-				// console.log("Websocket assign role response: ", player); //// debug
-				return;
-			}
+		//  also treat heartbeat ack
+		if (player && msg && msg.type === "heartbeatAck") {
+			if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+			return;
 		}
 
         // --- validation ---
@@ -109,7 +125,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
 
         // --- allow type ---
-        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy"];
+        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy", "enterGame"];
         if (!allowedTypes.includes(msg.type)) {
           socket.close(1003, `unsupported message type ${msg.type}`);
           return;
@@ -140,7 +156,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               }),
             );
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.clientId}] fail to switch side when ready in room (${room.name}) [${room.id}]`,
+              `Player ${player.playerName} (${player.role}) [${player.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`,
             );
             return;
           }
@@ -244,7 +260,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 			if (!player) return;
             //execute the start (leader only)
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.clientId}] started the game in room (${room.name}) [${room.id}]`,
+              `Player ${player.playerName} (${player.role}) [${player.id}] started the game in room (${room.name}) [${room.id}]`,
             );
             const { canStart } = updateCanStart(room);
             broadcast(room, {
@@ -279,7 +295,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           // broadcast to all players in room
 		  if (!player) return;
           console.log(
-            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.clientId}]`,
+            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.id}]`,
           );
           broadcast(room, {
             type: "roomPrivacyUpdate",
@@ -288,6 +304,13 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             },
           });
         }
+
+		if (msg.type === "enterGame") {
+			if (player && typeof msg.clientId === "number" && msg.clientId === clientId) {
+				player.inGame = true;
+				console.log(`Player ${player.playerName} (${player.role}) [${player.id}] entered the game in room (${room.name}) [${room.id}]`);
+			}
+		}
       } catch (err) {
         console.error("unexpected error in room wsmessage handling:", err);
         socket.close(1011, "server error");
@@ -296,7 +319,17 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
     // Step 3: handle client disconnect
     socket.on("close", () => {
-      if (room.game.state === 3) return;
+	  //cleanup heartbeat timers
+	  try {
+	  	if (pongTimer) clearTimeout(pongTimer);
+	  	if (heartbeatInterval) clearInterval(heartbeatInterval);
+	  	if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+	  } catch {}
+
+	  // if player enter game, ignore disconnect
+	  if (player && player.inGame) return;
+
+	  if (room.game.state === 3 || room.game.state === 2) return;
       wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
   });

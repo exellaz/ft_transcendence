@@ -91,10 +91,25 @@ export function useGameRoomWebSocket({
         `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
     );
 
+	ws.onopen = () => {
+		ws.send(JSON.stringify({ type: "confirmJoin", clientId: clientId }));
+	};
+
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
     //  console.log("Game WebSocket message received:", msg); //// debug
-      if (msg.type === "game_over") {
+
+	  if (msg && msg.type === "handshakePing") {
+		ws.send(JSON.stringify({ type: "handshakePong", clientId: clientId }));
+		return;
+	  }
+
+	  if (msg && msg.type === "heartbeat") {
+		ws.send(JSON.stringify({ type: "heartbeatAck", clientId: clientId }));
+		return;
+	  }
+
+	  if (msg.type === "game_over") {
         //console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
         if (roomId.toString().startsWith("1111") === true)
         {

@@ -98,9 +98,15 @@ export function useRoomWebSocket({
             return;
           }
 
-		  // respond to handshake ping
+		  // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
 		  if (data && data.type === "handshakePing") {
 			ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
+			return;
+		  }
+		  // recieve heartbeat from server and send ack back
+		  if (data && data.type === "heartbeat") {
+
+			ws.send(JSON.stringify({ type: "heartbeatAck", clientId: player.id }));
 			return;
 		  }
 
@@ -288,17 +294,17 @@ export function useRoomWebSocket({
 
   function onSwitch() {
     if (!socketRef.current) return;
-	if ((socketRef.current.readyState !== WebSocket.OPEN || (typeof navigator !== "undefined" && !navigator.onLine))) {
+	if (typeof navigator !== "undefined" && !navigator.onLine) {
+		setRoomError("offline_error");
+		return;
+	}
+	if (socketRef.current.readyState !== WebSocket.OPEN) {
 		setRoomError("offline_error");
 		return;
 	}
     if (ready && !isLeader) return;
     const newSide = role.startsWith("left") ? "right" : "left";
-	try {
-		socketRef.current.send(JSON.stringify({ type: "switchSide", side: newSide }));
-	} catch (err) {
-		setRoomError("offline_error");
-	}
+	socketRef.current.send(JSON.stringify({ type: "switchSide", side: newSide }));
   }
 
   function onReady() {
@@ -315,25 +321,22 @@ export function useRoomWebSocket({
 
     const newReady = !ready;
     setReady(newReady);
-	try {
-		socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
-	} catch (err) {
-		setRoomError("offline_error");
-	}
+	socketRef.current.send(JSON.stringify({ type: "ready", ready: newReady }));
   }
 
   function onStartBtn() {
     if (!isLeader || !socketRef.current) return;
-	if ((socketRef.current.readyState !== WebSocket.OPEN || (typeof navigator !== "undefined" && !navigator.onLine))) {
+	if (typeof navigator !== "undefined" && !navigator.onLine) {
+		setRoomError("offline_error");
+		console.warn("offline detected when starting game");
+		return;
+	}
+	if (socketRef.current.readyState !== WebSocket.OPEN) {
 		setRoomError("offline_error");
 		return;
 	}
+	socketRef.current.send(JSON.stringify({ type: "start", start: true }));
 
-	try {
-		socketRef.current.send(JSON.stringify({ type: "start", start: true }));
-	} catch (err) {
-		setRoomError("offline_error");
-	}
   }
 
   function onLeave() {
