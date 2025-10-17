@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/response.ts";
-import { authConfig } from "../config/authConfig.ts";
-import { getUserById } from "../userModel.ts";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 const AuthErrors = {
@@ -26,6 +24,13 @@ declare module "fastify" {
   }
 }
 
+interface JWTPayload {
+  userId: number;
+  email?: string;
+  iat?: number;
+  exp?: number;
+}
+
 export async function authenticate(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -33,27 +38,28 @@ export async function authenticate(
   const authHeader = (request.headers.authorization || "") as string;
   if (!authHeader.startsWith("Bearer ")) {
     request.log.warn(`Authentication failed: ${AuthErrors.MISSING_BEARER}`);
-    throw new ApiError("Missing or invalid Authorization header", 401);
+    throw ApiError.unauthorized("Missing or invalid Authorization header", AuthErrors.MISSING_BEARER);
   }
 
   const token = authHeader.slice(7).trim();
+
+  if (!token) {
+    request.log.warn(`Authentication failed: Empty token`);
+    throw ApiError.unauthorized("Empty authentication token", AuthErrors.MALFORMED_TOKEN);
+  }
+
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       request.log.error("JWT_SECRET not configured");
-      throw new ApiError("Authentication configuration error", 500);
+      throw ApiError.internal("Authentication configuration error", "CONFIG_ERROR");
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: number;
-      email?: string;
-      iat?: number;
-      exp?: number;
-    };
+    const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
 
     if (!decoded.userId) {
       request.log.warn(`Authentication failed: ${AuthErrors.MALFORMED_TOKEN}`);
-      throw new ApiError("Invalid token format", 401);
+      throw ApiError.unauthorized("Invalid token format", AuthErrors.MALFORMED_TOKEN);
     }
 
     const user = await request.server.db.user.findUnique({
@@ -72,30 +78,42 @@ export async function authenticate(
       request.log.warn(
         `Authentication failed: ${AuthErrors.USER_NOT_FOUND} - userId: ${decoded.userId}`,
       );
-      throw new ApiError("User not found", 401);
+      throw ApiError.unauthorized("User not found", AuthErrors.USER_NOT_FOUND);
     }
     request.user = user;
-    return;
   } catch (err) {
     if (err instanceof ApiError) {
       throw err;
     }
     if (err && typeof err === "object" && "name" in err) {
-      if (err.name === "TokenExpiredError") {
-        request.log.warn(`Authentication failed: ${AuthErrors.TOKEN_EXPIRED}`);
-        throw new ApiError("Token expired", 401);
-      } else if (err.name === "JsonWebTokenError") {
-        request.log.warn(`Authentication failed: ${AuthErrors.INVALID_TOKEN}`);
-        throw new ApiError("Invalid token", 401);
+      const jwtError = err as jwt.JsonWebTokenError;
+
+      switch (jwtError.name) {
+        case "TokenExpiredError":
+          request.log.warn(`Authentication failed: ${AuthErrors.TOKEN_EXPIRED}`);
+          throw ApiError.unauthorized("Token expired", AuthErrors.TOKEN_EXPIRED);
+
+        case "JsonWebTokenError":
+          request.log.warn(`Authentication failed: ${AuthErrors.INVALID_TOKEN}`);
+          throw ApiError.unauthorized("Invalid token", AuthErrors.INVALID_TOKEN);
+
+        case "NotBeforeError":
+          request.log.warn(`Authentication failed: Token not active yet`);
+          throw ApiError.unauthorized("Token not yet valid", AuthErrors.INVALID_TOKEN);
+
+        default:
+          request.log.warn(`Authentication failed: Unknown JWT error - ${jwtError.name}`);
+          throw ApiError.unauthorized("Token validation failed", AuthErrors.INVALID_TOKEN);
+        }
       }
-    }
-    request.log.error(`Authentication failed: Unknown error - ${String(err)}`);
-    throw new ApiError("Unauthorized", 401);
+
+    request.log.error(`Authentication failed: Unexpected error - ${String(err)}`);
+    throw ApiError.unauthorized("Authentication failed", AuthErrors.INVALID_TOKEN);
   }
 }
 
 export function requireOwnership(userId: number, requestUserId: number) {
   if (userId !== requestUserId) {
-    throw new ApiError("Access denied", 403);
+    throw ApiError.forbidden("Access denied: insufficient permissions", "ACCESS_DENIED");
   }
 }

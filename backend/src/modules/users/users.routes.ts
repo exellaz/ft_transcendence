@@ -8,6 +8,8 @@ import {
   patchUserSettingsByIdSchema,
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
+import { request } from "http";
+import { authenticate } from "../../plugins/authenticate";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -160,6 +162,12 @@ async function userRoutes(fastify: FastifyInstance) {
 
     return ok(users); // even if empty array, success response
   });
+
+  fastify.get("/users/me", { preHandler: authenticate },
+    async (request) => {
+      return ok({ user: request.user });
+    }
+  );
 }
 
 export default userRoutes;
