@@ -4,14 +4,18 @@ import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import {
   createFriendshipSchema,
+  deleteFriendshipSchema,
+  getAcceptedFriendShipsByUserIdSchema,
   getFriendShipsByUserIdSchema,
+  getPendingFriendShipsByUserIdSchema,
+  updateFriendshipSchema,
 } from "./friendship.schema";
 
 async function friendshipRoutes(fastify: FastifyInstance) {
-  // GET /friendships/:3/pending (get friends that send friend request to u)
+  // GET /friendships/:userId/pending (get friends that send friend request to u)
   fastify.get(
     "/friendships/:userId/pending",
-    { schema: getFriendShipsByUserIdSchema },
+    { schema: getPendingFriendShipsByUserIdSchema },
     async (request) => {
       const { userId } = request.params as { userId: string };
 
@@ -34,7 +38,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
   fastify.get(
     "/friendships/:userId/accepted",
-    { schema: getFriendShipsByUserIdSchema },
+    { schema: getAcceptedFriendShipsByUserIdSchema },
     async (request) => {
       const { userId } = request.params as { userId: string };
       const uid = Number(userId);
@@ -174,7 +178,9 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   );
 
   // PATCH /friendships/:requesterId/:accepterId
-  fastify.patch("/friendships/:requesterId/:accepterId", async (request) => {
+  fastify.patch("/friendships/:requesterId/:accepterId", 
+    { schema: updateFriendshipSchema },
+    async (request) => {
     const { requesterId, accepterId } = request.params as {
       requesterId: string;
       accepterId: string;
@@ -221,7 +227,9 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   });
 
   // DELETE /friendships/:requesterId/:accepterId
-  fastify.delete("/friendships/:requesterId/:accepterId", async (request) => {
+  fastify.delete("/friendships/:requesterId/:accepterId", 
+    { schema: deleteFriendshipSchema },
+    async (request) => {
     const { requesterId, accepterId } = request.params as {
       requesterId: string;
       accepterId: string;
