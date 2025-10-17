@@ -53,8 +53,9 @@ export class GameTeam {
     }
 
     if (this.game.teamSize === 1) {
-      	const paddleDistanceFromCenter = 400;
-      	this.playerPositions[0]!.x = paddleDistanceFromCenter * (this.team === Team.TEAM_LEFT ? -1 : 1);
+      const paddleDistanceFromCenter = 400;
+      this.playerPositions[0]!.x =
+        paddleDistanceFromCenter * (this.team === Team.TEAM_LEFT ? -1 : 1);
     }
   }
 
@@ -116,8 +117,7 @@ class GameTitle extends OnScreenLabel {
   }
 
   private alternate(arr: string[]) {
-    if (!arr.includes(this.text)) 
-      this.text = arr[arr.length - 1]!;
+    if (!arr.includes(this.text)) this.text = arr[arr.length - 1]!;
     const current = this.text;
     const index = arr.indexOf(current);
     const nextIndex = (index + 1) % arr.length;
@@ -168,7 +168,7 @@ enum GameState {
   STARTING = 1,
   STARTED = 2,
   GAMEOVER = 3,
-  ENDED = 4
+  ENDED = 4,
 }
 
 export class PongGame {
@@ -176,7 +176,6 @@ export class PongGame {
 
   static globalId: number = 0;
   public id: number = -1;
-
 
   private onGameEnd?: (winner: "left" | "right" | "draw") => void;
 
@@ -188,7 +187,6 @@ export class PongGame {
   public delta: number = 0;
   public onScreenTitle!: GameTitle;
   public ball!: Ball;
-
 
   private lastFrameTime: number = performance.now();
   private ballSpawnCooldown = 0.5;
@@ -205,8 +203,12 @@ export class PongGame {
   public isClient: boolean = false;
 
   // --- getters for score ---
-  public get scoreLeft(): number { return this.teamLeft.score; }
-  public get scoreRight(): number { return this.teamRight.score; }
+  public get scoreLeft(): number {
+    return this.teamLeft.score;
+  }
+  public get scoreRight(): number {
+    return this.teamRight.score;
+  }
 
   // --- force end the game with specified winner ---
   forceEnd(winner: "left" | "right" | "draw") {
@@ -274,7 +276,7 @@ export class PongGame {
   }
 
   teamWins(team: GameTeam) {
-    console.log("team wins!", )
+    console.log("team wins!");
     this.state = GameState.GAMEOVER;
     this.winningTeam = team;
 
@@ -293,7 +295,7 @@ export class PongGame {
     this.delta = (now - this.lastFrameTime) / 1000; // delta in seconds
     this.lastFrameTime = now;
     this.world.update();
-  
+
     if (
       this.state === GameState.LOADING &&
       this.players.size === this.teamSize * 2
@@ -306,8 +308,7 @@ export class PongGame {
   exportState(includeStaticObjects: boolean = false) {
     let state = this.world.exportState(includeStaticObjects);
     state["type"] = includeStaticObjects ? "full" : "partial";
-    if (!includeStaticObjects) 
-      delete state["components"];
+    if (!includeStaticObjects) delete state["components"];
 
     return state;
   }
@@ -315,8 +316,7 @@ export class PongGame {
   onHitGoal(team: Team) {
     team === Team.TEAM_LEFT ? this.teamRight.win() : this.teamLeft.win();
 
-    if (this.state == GameState.GAMEOVER) 
-      return;
+    if (this.state == GameState.GAMEOVER) return;
 
     this.world.addTimer(this.ballSpawnCooldown, () => {
       this.ball.start(team);
@@ -344,7 +344,7 @@ export class PongGame {
 
     this.world.viewport.camera = this.world.camera;
 
-    if(this.teamSize === 1) {
+    if (this.teamSize === 1) {
       this.world.camera.isFixed = true;
     }
 
@@ -583,8 +583,6 @@ export class PongGame {
       settings.paddleSpeed ?? 1
     ]!;
 
-    
-
     console.log("incoming settings", settings);
     console.log("final settings", this.gameSettings);
   }
@@ -605,16 +603,16 @@ export class PongGame {
     isClient: boolean,
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
-    teamSize: number = 1
+    teamSize: number = 1,
   ) {
     PongGame.globalId++;
     this.teamSize = teamSize;
     this.initSettings(incomingSettings);
     this.onGameEnd = onGameEnd ?? (() => {});
-    
+
     if (isClient) return;
-    
-    this.is2v2 = (teamSize === 1);
+
+    this.is2v2 = teamSize === 1;
     this.world.game = this;
     this.id = PongGame.globalId;
     this.isClient = isClient;

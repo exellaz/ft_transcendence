@@ -50,15 +50,14 @@ export class Padel extends GameObject {
     this.addComponent(new HitBox({}));
     Object.assign(this, params);
 
-    this.skinPath = this.skinPath = SKIN_PATHS[
-      (params.player?.skin ?? Skin.ghost_dark) as Skin
-    ].base;
+    this.skinPath = this.skinPath =
+      SKIN_PATHS[(params.player?.skin ?? Skin.ghost_dark) as Skin].base;
   }
 
   moveUp() {
     this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
   }
-  
+
   moveDown() {
     this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
   }

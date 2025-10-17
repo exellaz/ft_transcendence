@@ -64,7 +64,6 @@ export interface Room {
   countdownRemaining?: number | null; // Remaining seconds in the countdown
 }
 
-
 export interface GameSettings {
   ballSpeed?: number;
   ballSize?: number;
@@ -124,7 +123,7 @@ export function createRoom(
     (winner) => {
       roomEndGame(room, false, winner);
     },
-    teamSize
+    teamSize,
   );
 
   const room: Room = {
@@ -165,7 +164,6 @@ export function createRoom(
   return room;
 }
 
-
 const ENABLE_FPS_CAP: boolean = false;
 const FPS_CAP: number = 60;
 
@@ -188,9 +186,8 @@ export function startRoomLoop(room: Room) {
     // --- Game logic ---
     room.game.update(room);
 
-
     sendAccumulator += room.game.delta * 1000; // convert to ms
-    
+
     function broadcast(room: Room) {
       const rawOutput = room.game.exportState(false);
       const output = JSON.stringify({
@@ -202,13 +199,17 @@ export function startRoomLoop(room: Room) {
         },
       });
 
-      for (const paddle of [...room.game.teamLeft.getPaddles(), ...room.game.teamRight.getPaddles()]) {
+      for (const paddle of [
+        ...room.game.teamLeft.getPaddles(),
+        ...room.game.teamRight.getPaddles(),
+      ]) {
         paddle.player.socket.send(output);
       }
     }
 
     if (ENABLE_FPS_CAP) {
-      if (sendAccumulator >= 1000 / FPS_CAP) { // send at 30fps
+      if (sendAccumulator >= 1000 / FPS_CAP) {
+        // send at 30fps
         sendAccumulator = 0;
         broadcast(room);
       }
@@ -223,11 +224,12 @@ export function startRoomLoop(room: Room) {
     const memory = process.memoryUsage();
     const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
 
-    if (Math.random() < 0.05) { // log ~5% of frames to avoid spamming
+    if (Math.random() < 0.05) {
+      // log ~5% of frames to avoid spamming
       console.log(
         `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
-        `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
-        `Load: ${cpu.map(v => v.toFixed(2)).join(", ")}`
+          `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
+          `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
       );
     }
   }, 1000 / 55);

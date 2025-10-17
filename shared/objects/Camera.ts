@@ -25,8 +25,7 @@ export class Camera extends GameObject {
     this.position = startingPos;
 
     this.onUpdate = () => {
-      if (this.isFixed) 
-        return;
+      if (this.isFixed) return;
       this.position.x += 0.01;
 
       if (this.target) {
@@ -49,9 +48,14 @@ export class Camera extends GameObject {
 
       if (this.shakeValue.x < 0) this.shakeValue = new Vector2D(0, 0);
 
-
-      const rightX = lastElem(this.game!.teamRight.playerPositions).x - (this.game!.world.viewport.width / 2) + 200;
-      const leftX = lastElem(this.game!.teamLeft.playerPositions).x + (this.game!.world.viewport.width / 2) - 200;
+      const rightX =
+        lastElem(this.game!.teamRight.playerPositions).x -
+        this.game!.world.viewport.width / 2 +
+        200;
+      const leftX =
+        lastElem(this.game!.teamLeft.playerPositions).x +
+        this.game!.world.viewport.width / 2 -
+        200;
       if (this.position.x > rightX) {
         this.position.x = rightX;
       }

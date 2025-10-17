@@ -30,7 +30,7 @@ const SKIN_MAPPING: Record<string, number> = {
   "/assets/starry-ghost.png": 5,
   "/assets/white-ghost.png": 6,
   "/assets/42-ghost.png": 7,
-}
+};
 
 const GameView: React.FC<GameViewProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -46,7 +46,6 @@ const GameView: React.FC<GameViewProps> = () => {
   const location = useLocation();
   const mode = location.pathname === "/local-game-view" ? "local" : "remote";
 
-
   if (mode === "remote") {
     // TODO: Replace with actual JWT
     // console.log("useUser() returned:", user);
@@ -56,7 +55,6 @@ const GameView: React.FC<GameViewProps> = () => {
     // }
     // Fetch user info when the component mounts
     React.useEffect(() => {
-
       console.log("mode used: ", mode);
 
       if (!user) return; // Ensure `user` is available
@@ -95,7 +93,7 @@ const GameView: React.FC<GameViewProps> = () => {
       initialRole,
       playerName,
       playerSprite,
-      callback: () => { },
+      callback: () => {},
     };
 
     const { socket } = useGameWebSocket(params);
@@ -128,7 +126,11 @@ const GameView: React.FC<GameViewProps> = () => {
             {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
           </TournamentHeader>
           <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas ref={canvasRef} width={1000} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            <canvas
+              ref={canvasRef}
+              width={1000}
+              height={500}
+              className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
             />
           </div>
           {gameOver && (
@@ -152,11 +154,9 @@ const GameView: React.FC<GameViewProps> = () => {
         </div>
       </Background>
     );
-  }
-
-  else if (mode === "local") {
+  } else if (mode === "local") {
     const location = useLocation();
-    const state = location.state
+    const state = location.state;
 
     console.log("state", state);
 
@@ -174,8 +174,8 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const settings = location.state?.gameSettings ?? {};
-      const game = new PongGame(false, settings, () => { }, 1);
-      
+      const game = new PongGame(false, settings, () => {}, 1);
+
       const player1Settings = location.state?.player1 ?? {};
       const player2Settings = location.state?.player2 ?? {};
 
@@ -184,8 +184,8 @@ const GameView: React.FC<GameViewProps> = () => {
           team: 0,
           name: "Player1",
           id: 0,
-          skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0
-        })
+          skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
+        }),
       );
 
       game.addPlayer(
@@ -193,8 +193,8 @@ const GameView: React.FC<GameViewProps> = () => {
           team: 1,
           name: "Player2",
           id: 1,
-          skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0
-        })
+          skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
+        }),
       );
 
       // --- ✅ Track pressed keys for smooth motion ---
@@ -246,7 +246,7 @@ const GameView: React.FC<GameViewProps> = () => {
         viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
 
         const renderList = Array.from(game.world.gameObjects.values()).sort(
-          (a, b) => a.zIndex - b.zIndex
+          (a, b) => a.zIndex - b.zIndex,
         );
         for (const obj of renderList) {
           updateObjectClient(obj);
@@ -271,7 +271,11 @@ const GameView: React.FC<GameViewProps> = () => {
             {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
           </TournamentHeader>
           <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas ref={canvasRef} width={1200} height={500} className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+            <canvas
+              ref={canvasRef}
+              width={1200}
+              height={500}
+              className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
             />
           </div>
           {/* ✅ Back to Lobby Button */}
@@ -295,7 +299,6 @@ const GameView: React.FC<GameViewProps> = () => {
       </Background>
     );
   }
-
 };
 
 export default GameView;

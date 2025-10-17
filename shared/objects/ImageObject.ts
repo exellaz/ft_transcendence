@@ -37,7 +37,7 @@ export class ImageObject extends GameObject {
   clientUpdate(): void {
     if (this.sprite !== undefined && this.sprite !== null && !this.loaded) {
       this.sprite.init();
-      return ;
+      return;
     }
 
     this.scale = new Vector2D(this.sprite!.width, this.sprite!.height).multiply(

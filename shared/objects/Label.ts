@@ -26,9 +26,9 @@ export class Label extends GameObject {
   public hAlign: HorizontalAlign = HorizontalAlign.Middle;
 
   constructor(params: Partial<Label>) {
-    super({ 
-      game: params.game!, 
-      name: "label" 
+    super({
+      game: params.game!,
+      name: "label",
     });
     Object.assign(this, params);
   }

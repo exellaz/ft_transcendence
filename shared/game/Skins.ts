@@ -14,7 +14,7 @@ interface SkinDefinition {
   base: string;
   iris: string;
   arrow: string;
-  eyes:string;
+  eyes: string;
 }
 
 export const SKIN_BASE_PATH = "assets/skins";

@@ -14,7 +14,6 @@ import GameSettingsPopup, {
 
 import { useNavigate } from "react-router-dom";
 
-
 interface Player {
   name: string;
   spriteUrl: string;
@@ -108,7 +107,7 @@ const LocalGameView: React.FC = () => {
               player2,
               gameSettings,
             };
-            navigate("/local-game-view", { state: gameDetails});
+            navigate("/local-game-view", { state: gameDetails });
           }}
         >
           {translate("start")}

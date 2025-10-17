@@ -34,7 +34,6 @@ function compile(
     settings,
   };
 
-
   return JSON.stringify(output);
 }
 

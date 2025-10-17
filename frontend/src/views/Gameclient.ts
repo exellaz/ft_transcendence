@@ -1,5 +1,3 @@
-
-
 import { Sprite } from "@shared/objects/Sprite";
 import { HitBox } from "@shared/objects/HitBox";
 import { Glow } from "@shared/objects/Glow";
@@ -15,7 +13,6 @@ import { PongGame, Team } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
-
 
 function isArrowKey(e: KeyboardEvent): boolean {
   return e.key === "ArrowUp" || e.key === "ArrowDown";
@@ -77,8 +74,7 @@ function revive(obj: any): any {
 
 function genericUpdate(obj: Record<string, any>, params: Record<string, any>) {
   for (const key in params) {
-    if (key === "parent" || key === "children")
-      continue;
+    if (key === "parent" || key === "children") continue;
 
     const value = params[key];
 
@@ -102,8 +98,7 @@ function genericUpdate(obj: Record<string, any>, params: Record<string, any>) {
 
     // -- assign primitive or different value --
     else {
-      if (key === "id") 
-        continue;
+      if (key === "id") continue;
       obj[key] = value;
     }
   }
@@ -226,7 +221,6 @@ export class GameClient {
       });
     }
 
-
     this.websocketRef.onmessage = (event) => {
       const data = JSON.parse(event.data);
       this.data = data;
@@ -252,12 +246,11 @@ export class GameClient {
     window.addEventListener("keyup", this.handleKey);
 
     let lastKeyTime = 0;
-    document.addEventListener('keydown', e => {
+    document.addEventListener("keydown", (e) => {
       const t = performance.now();
       console.log("Input delay since last key:", t - lastKeyTime);
       lastKeyTime = t;
     });
-
 
     this.canvas = canvasRef;
     if (!this.canvas) return;

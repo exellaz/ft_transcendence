@@ -95,7 +95,7 @@ export class GameWorld {
       if (
         obj.isStatic === true && // if only exports once
         !includeStaticObjects
-        )
+      )
         return;
 
       let exportedObject = obj.export(includeStaticObjects);
