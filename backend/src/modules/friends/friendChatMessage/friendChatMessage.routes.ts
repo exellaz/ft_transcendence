@@ -1,9 +1,12 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
+import { getFriendChatMessagesByFriendshipIdSchema, getLastFriendChatMessageByFriendshipIdSchema } from "./friendChatMessage.schema";
 
 async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId
-  fastify.get("/friendChatMessages/:friendshipId", async (request) => {
+  fastify.get("/friendChatMessages/:friendshipId", 
+    { schema: getFriendChatMessagesByFriendshipIdSchema },
+    async (request) => {
     const { friendshipId } = request.params as { friendshipId: string };
 
     const friendChatMessages = await fastify.db.friendChatMessage.findMany({
@@ -20,6 +23,7 @@ async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId/lastMessage
   fastify.get(
     "/friendChatMessages/:friendshipId/lastMessage",
+    { schema: getLastFriendChatMessageByFriendshipIdSchema },
     async (request, reply) => {
       const { friendshipId } = request.params as { friendshipId: string };
 
