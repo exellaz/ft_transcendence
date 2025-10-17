@@ -168,6 +168,7 @@ enum GameState {
   STARTING = 1,
   STARTED = 2,
   GAMEOVER = 3,
+  ENDED = 4
 }
 
 export class PongGame {
@@ -212,6 +213,8 @@ export class PongGame {
     //set game to gameover state
     this.state = GameState.GAMEOVER;
 
+    console.log("game ending abruptly due to player disconnection");
+
     //check who to win
     if (winner === "left") {
       this.winningTeam = this.teamLeft;
@@ -230,6 +233,8 @@ export class PongGame {
         this.onScreenTitle.text = `${winnerPlayer?.name ?? winner.toUpperCase()} Wins!`;
       }
     }
+
+    this.state = GameState.ENDED;
 
     // Trigger the standard onGameEnd after short delay
     setTimeout(() => {
