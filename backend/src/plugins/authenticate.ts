@@ -10,20 +10,6 @@ const AuthErrors = {
   MALFORMED_TOKEN: "MALFORMED_TOKEN",
 } as const;
 
-declare module "fastify" {
-  interface FastifyRequest {
-    user?: {
-      id: number;
-      username: string;
-      email: string;
-      avatarUrl: string | null;
-      status: string;
-      joinedAt: Date;
-      updatedAt: Date;
-    };
-  }
-}
-
 interface JWTPayload {
   userId: number;
   email?: string;
