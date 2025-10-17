@@ -51,6 +51,7 @@ app.register(fastifySwagger, {
       { name: "friendships", description: "Friends related end-points" },
       { name: "blockedFriendships", description: "Blocked Friends related end-points" },
       { name: "friendChatMessages", description: "Friend Chat Message related end-points" },
+      { name: "tournaments", description: "Tournament related end-points" },
 
     ],
   },

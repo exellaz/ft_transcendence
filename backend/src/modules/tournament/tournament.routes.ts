@@ -2,6 +2,8 @@ import { FastifyInstance } from "fastify";
 import { generateRoomId } from "../room/room";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
+import { get } from "http";
+import { getUserTournamentHistorySchema, getUserTournamentStatsSchema } from "./tournament.schema";
 
 interface tournament {
   id: number;
@@ -68,7 +70,9 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /users/:id/tournament-history  - tournament history + matches
-  app.get("/users/:id/tournament-history", async (request) => {
+  app.get("/users/:id/tournament-history", 
+    { schema: getUserTournamentHistorySchema },
+    async (request) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
@@ -131,7 +135,9 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /users/:id/tournament-stats
-  app.get("/users/:id/tournament-stats", async (request) => {
+  app.get("/users/:id/tournament-stats",
+    { schema: getUserTournamentStatsSchema },
+    async (request) => {
     const { id } = request.params as { id: string };
     const userId = Number(id);
 
