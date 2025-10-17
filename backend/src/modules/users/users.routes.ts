@@ -154,9 +154,7 @@ async function userRoutes(fastify: FastifyInstance) {
   );
 
   // GET /users - get all users
-  fastify.get("/users",
-    { schema: getUsersSchema },
-    async () => {
+  fastify.get("/users", { schema: getUsersSchema }, async () => {
     const users = await fastify.db.user.findMany({
       select: userPublicSelect,
     });

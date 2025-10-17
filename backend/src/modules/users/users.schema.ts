@@ -1,11 +1,14 @@
-import { successResponseSchema, errorResponseSchema } from "src/utils/common-schemas.";
+import {
+  successResponseSchema,
+  errorResponseSchema,
+} from "src/utils/common-schemas.";
 
 export const idParamSchema = {
   type: "object",
   properties: {
     id: { type: "integer", minimum: 1 },
   },
-  required: ["id"]
+  required: ["id"],
 };
 
 export const userResponseSchema = {
@@ -35,21 +38,24 @@ export const userSettingsResponseSchema = {
   type: "object",
   properties: {
     userId: { type: "integer" },
-    language: { type: "string", enum: ["english", "simplified_chinese", "traditional_chinese"] }
+    language: {
+      type: "string",
+      enum: ["english", "simplified_chinese", "traditional_chinese"],
+    },
   },
   required: ["userId", "language"],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // ------------------------------ User Settings Schemas ------------------------------
 
 // GET /users/:id/settings
 export const getUserSettingsByIdSchema = {
-  tags: ['user'],
-  summary: 'Get user settings by user ID',
-  
+  tags: ["user"],
+  summary: "Get user settings by user ID",
+
   params: idParamSchema,
-  
+
   response: {
     200: successResponseSchema(userSettingsResponseSchema),
     404: errorResponseSchema,
@@ -59,17 +65,20 @@ export const getUserSettingsByIdSchema = {
 
 // PATCH /users/:id/settings  (update single user settings)
 export const patchUserSettingsByIdSchema = {
-  tags: ['user'],
-  summary: 'Update user settings by user ID',
+  tags: ["user"],
+  summary: "Update user settings by user ID",
 
   params: idParamSchema,
 
   body: {
     type: "object",
     properties: {
-      language: { type: "string", enum: ["english", "simplified_chinese", "traditional_chinese"] }
+      language: {
+        type: "string",
+        enum: ["english", "simplified_chinese", "traditional_chinese"],
+      },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
 
   response: {
@@ -83,8 +92,8 @@ export const patchUserSettingsByIdSchema = {
 
 // GET /users/:id
 export const getUserByIdSchema = {
-  tags: ['user'],
-  summary: 'Get a single user by their ID',
+  tags: ["user"],
+  summary: "Get a single user by their ID",
 
   params: idParamSchema,
 
@@ -97,8 +106,8 @@ export const getUserByIdSchema = {
 
 // PATCH /users/:id
 export const patchUserByIdSchema = {
-  tags: ['user'],
-  summary: 'Update a user by their ID',
+  tags: ["user"],
+  summary: "Update a user by their ID",
 
   params: idParamSchema,
 
@@ -108,20 +117,20 @@ export const patchUserByIdSchema = {
       username: { type: "string" },
       avatarUrl: { type: "string" },
     },
-    additionalProperties: false
+    additionalProperties: false,
   },
 
   response: {
     200: successResponseSchema(userResponseSchema),
     404: errorResponseSchema,
     400: errorResponseSchema,
-  }
+  },
 };
 
 // DELETE /users/:id
 export const deleteUserByIdSchema = {
-  tags: ['user'],
-  summary: 'Delete a user by their ID',
+  tags: ["user"],
+  summary: "Delete a user by their ID",
 
   params: {
     type: "object",
@@ -134,18 +143,18 @@ export const deleteUserByIdSchema = {
   response: {
     200: successResponseSchema(userResponseSchema),
     404: errorResponseSchema,
-  }
+  },
 };
 
 // GET /users - get all users
 export const getUsersSchema = {
-  tags: ['user'],
-  summary: 'Get all users',
+  tags: ["user"],
+  summary: "Get all users",
 
   response: {
     200: successResponseSchema({
-      type: 'array',
-      items: userResponseSchema
+      type: "array",
+      items: userResponseSchema,
     }),
     400: errorResponseSchema,
   },
