@@ -1,5 +1,8 @@
 import { userResponseSchema } from "src/modules/users/users.schema";
-import { errorResponseSchema, successResponseSchema } from "src/utils/common-schemas.";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "src/utils/common-schemas.";
 
 export const userWithFriendshipResponseSchema = {
   type: "object",
@@ -11,7 +14,7 @@ export const userWithFriendshipResponseSchema = {
     status: { type: "string", enum: ["online", "offline"] },
     joinedAt: { type: "string", format: "date-time" },
     updatedAt: { type: "string", format: "date-time" },
-    friendshipId: { type: "integer" }
+    friendshipId: { type: "integer" },
   },
   required: [
     "id",
@@ -52,7 +55,7 @@ export const friendshipResponseSchema = {
 export const getFriendShipsByUserIdSchema = {
   tags: ["friendships"], // <- groups under "user" tag in Swagger
   summary: "Get all friendships for a user",
-  
+
   params: {
     type: "object",
     properties: {
@@ -60,7 +63,6 @@ export const getFriendShipsByUserIdSchema = {
     },
     required: ["userId"],
   },
-
 };
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
@@ -134,7 +136,6 @@ export const createFriendshipSchema = {
   },
 };
 
-
 // PATCH /friendships/:requesterId/:accepterId
 export const updateFriendshipSchema = {
   tags: ["friendships"], // <- groups under "user" tag in Swagger
@@ -166,7 +167,6 @@ export const updateFriendshipSchema = {
     404: errorResponseSchema,
   },
 };
-
 
 // DELETE /friendships/:requesterId/:accepterId
 export const deleteFriendshipSchema = {

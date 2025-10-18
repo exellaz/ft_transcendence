@@ -1,4 +1,7 @@
-import { errorResponseSchema, successResponseSchema } from "src/utils/common-schemas.";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "src/utils/common-schemas.";
 
 export const friendChatMessageResponseSchema = {
   type: "object",
@@ -9,30 +12,23 @@ export const friendChatMessageResponseSchema = {
     message: { type: "string" },
     timestamp: { type: "string", format: "date-time" },
   },
-  required: [
-    "id",
-    "friendshipId",
-    "senderId",
-    "message",
-    "timestamp",
-  ],
+  required: ["id", "friendshipId", "senderId", "message", "timestamp"],
   additionalProperties: false,
 };
-
 
 // GET /friendChatMessages/:friendshipId
 export const getFriendChatMessagesByFriendshipIdSchema = {
   tags: ["friendChatMessages"],
   summary: "Get all chat messages for a specific friendship",
-  
+
   params: {
     type: "object",
     properties: {
-    friendshipId: { type: "integer", minimum: 1 },
+      friendshipId: { type: "integer", minimum: 1 },
     },
     required: ["friendshipId"],
   },
-  
+
   response: {
     200: successResponseSchema({
       type: "array",
@@ -44,18 +40,18 @@ export const getFriendChatMessagesByFriendshipIdSchema = {
 };
 
 // GET /friendChatMessages/:friendshipId/lastMessage
-export  const getLastFriendChatMessageByFriendshipIdSchema = {
+export const getLastFriendChatMessageByFriendshipIdSchema = {
   tags: ["friendChatMessages"],
   summary: "Get the last chat message for a specific friendship",
-  
+
   params: {
     type: "object",
     properties: {
-    friendshipId: { type: "integer", minimum: 1 },
+      friendshipId: { type: "integer", minimum: 1 },
     },
     required: ["friendshipId"],
   },
-  
+
   response: {
     200: successResponseSchema(friendChatMessageResponseSchema),
     404: errorResponseSchema,

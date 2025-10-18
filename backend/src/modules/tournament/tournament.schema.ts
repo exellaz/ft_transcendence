@@ -1,4 +1,7 @@
-import { errorResponseSchema, successResponseSchema } from "src/utils/common-schemas.";
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "src/utils/common-schemas.";
 
 // Match schema within a tournament
 export const tournamentMatchSchema = {
@@ -7,10 +10,10 @@ export const tournamentMatchSchema = {
     round: { type: "string" },
     opponentUsername: { type: "string" },
     score: { type: "string" },
-    result: { type: "string", enum: ["win", "lose"] }
+    result: { type: "string", enum: ["win", "lose"] },
   },
   required: ["round", "opponentUsername", "score", "result"],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // Single tournament entry schema
@@ -20,19 +23,19 @@ export const tournamentEntrySchema = {
     tournamentId: { type: "integer" },
     date: { type: "string", format: "date" },
     ranking: { type: "integer" },
-    matches: { 
-      type: "array", 
-      items: tournamentMatchSchema
-    }
+    matches: {
+      type: "array",
+      items: tournamentMatchSchema,
+    },
   },
   required: ["tournamentId", "date", "ranking", "matches"],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // Tournament history array schema
 export const tournamentHistorySchema = {
   type: "array",
-  items: tournamentEntrySchema
+  items: tournamentEntrySchema,
 };
 
 // ------------------------------- Tournament Schemas ------------------------------
@@ -58,22 +61,21 @@ export const getUserTournamentStatsSchema = {
         secondPlace: { type: "integer" },
         thirdPlace: { type: "integer" },
         completedTournaments: { type: "integer" },
-        averageRanking: { type: "integer" }
+        averageRanking: { type: "integer" },
       },
       required: [
         "firstPlace",
-        "secondPlace", 
+        "secondPlace",
         "thirdPlace",
         "completedTournaments",
-        "averageRanking"
+        "averageRanking",
       ],
-      additionalProperties: false
+      additionalProperties: false,
     }),
     404: errorResponseSchema,
     400: errorResponseSchema,
   },
-};  
-
+};
 
 // GET /users/:id/tournament-stats
 export const getUserTournamentHistorySchema = {

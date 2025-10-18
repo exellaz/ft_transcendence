@@ -1,6 +1,8 @@
 import { userResponseSchema } from "src/modules/users/users.schema";
-import { errorResponseSchema, successResponseSchema } from "src/utils/common-schemas.";
-
+import {
+  errorResponseSchema,
+  successResponseSchema,
+} from "src/utils/common-schemas.";
 
 export const blockedFriendshipResponseSchema = {
   type: "object",
@@ -9,14 +11,8 @@ export const blockedFriendshipResponseSchema = {
     blockerId: { type: "integer" },
     blockedId: { type: "integer" },
     createdAt: { type: "string", format: "date-time" },
-
   },
-  required: [
-    "id",
-    "blockerId",
-    "blockedId",
-    "createdAt",
-  ],
+  required: ["id", "blockerId", "blockedId", "createdAt"],
   additionalProperties: false,
 };
 
@@ -26,15 +22,15 @@ export const blockedFriendshipResponseSchema = {
 export const getBlockedFriendShipsByUserIdSchema = {
   tags: ["blockedFriendships"],
   summary: "Get all blocked friendships for a user",
-  
+
   params: {
     type: "object",
     properties: {
-    userId: { type: "integer", minimum: 1 },
+      userId: { type: "integer", minimum: 1 },
     },
     required: ["userId"],
   },
-  
+
   response: {
     200: successResponseSchema({
       type: "array",
