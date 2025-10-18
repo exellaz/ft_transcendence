@@ -263,8 +263,32 @@ export function handlePlayerDisconnect(
   clientId: number,
   gracePeriod: number,
 ) {
+  const player = room.clientRoles.get(clientId);
+  if (player) {
+    player.online = false;
+
+   //update team status
+   room.gameState.teams.left = room.gameState.teams.left.map(
+     (p: playerInfo) => (p.clientId === clientId ? { ...p, online: false } : p),
+   );
+   room.gameState.teams.right = room.gameState.teams.right.map(
+     (p: playerInfo) => (p.clientId === clientId ? { ...p, online: false } : p),
+   );
+
+   //broadcast to all players about disconnection
+   broadcast(room, {
+     type: "playerOffline",
+     clientId,
+     playerName: player.playerName,
+   });
+  }
+
   // start time for end game
   setTimeout(() => {
+    //check if player reconnect during grace period
+    const currentPlayer = room.clientRoles.get(clientId);
+    if (currentPlayer && currentPlayer.online) return;
+
     // remove from teams and paddles
     room.gameState.teams.left = room.gameState.teams.left.filter(
       (p) => p.clientId !== clientId,

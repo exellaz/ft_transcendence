@@ -49,6 +49,27 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     room.sockets.set(socket, clientId);
     room.clients.add(socket);
 
+    //add heartbeat
+    let heartbeatInterval: NodeJS.Timeout;
+    let isAlive = true;
+
+    function startHeartbeat() {
+      heartbeatInterval = setInterval(() => {
+        if (!isAlive) {
+          console.log(`Player ${playerName} [${clientId}] heartbeat failed - terminating connection`);
+          socket.terminate();
+          return;
+        }
+
+        isAlive = false;
+        socket.ping();
+      }, 30000); // Send ping every 30 seconds
+    }
+
+    socket.on("pong", () => {
+        isAlive = true;
+    });
+
     console.log("player sprite: ", playerSprite);
     console.log("player name: ", playerName);
 
@@ -133,6 +154,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     socket.on("close", () => {
       //0 loading, 1 countdown, 2 started, 3 ended
       // console.log("pong game state: ", room.game.state); ////debug
+
+      //clean heartbeat
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+
       //if game still loading or game ended, ignore
       if (room.game.state === 0 || room.game.state === 3) return;
 
@@ -155,5 +180,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const GRACE_PERIOD = 3000;
       handlePlayerDisconnect(room, clientId, GRACE_PERIOD);
     });
+
+    startHeartbeat();
   });
 }

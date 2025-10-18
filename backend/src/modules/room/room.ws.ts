@@ -37,7 +37,23 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 	let pongTimer: NodeJS.Timeout | null = null;
 	let heartbeatInterval: NodeJS.Timeout | null = null;
 	let heartbeatTimeout: NodeJS.Timeout | null = null;
+    let isAlive = true;
+    let missedHeartbeats = 0;
+    let isConnectionClosed = false;
+    const MAX_MISSED_HEARTBEATS = 3;
 	const HANDSHAKE_MS = 1500; //? 1.5 seconds
+
+    function cleanupTimer() {
+        isConnectionClosed = true;
+
+        try {
+            if (pongTimer) clearTimeout(pongTimer);
+            if (heartbeatInterval) clearInterval(heartbeatInterval);
+            if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+        } catch (err) {
+            console.error("Error during cleanup timers:", err);
+        }
+    }
 
 	// start server-initiate hanshake ping immediately
 	try {
@@ -45,11 +61,13 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 		pongTimer = setTimeout(() => {
 			if (expectingPong) {
 				console.log("Handshake timeout for client:", clientId);
-				socket.close(1003, "Handshake timeout: did not receive initial data");
+				cleanupTimer();
+                socket.close(1003, "Handshake timeout: did not receive initial data");
 			}
 		}, HANDSHAKE_MS);
 	} catch (err) {
 		console.error("Error sending handshake ping:", err);
+        cleanupTimer();
 		socket.close(1011, "server error");
 	}
 
@@ -69,7 +87,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 			const pongId = (typeof msg.clientId === "number") ? msg.clientId : null;
 			if (pongId !== clientId) {
 				console.log(`Handshake pong clientId mismatch: expected ${clientId}, got ${pongId}`);
-				socket.close(1003, "Handshake error: clientId mismatch");
+				cleanupTimer();
+                socket.close(1003, "Handshake error: clientId mismatch");
 				return;
 			}
 			expectingPong = false;
@@ -90,17 +109,30 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 			const HEARTBEAT_MS = 1000;
 			const RECEIVED_HEARTBEAT_MS = 2000;
 			heartbeatInterval = setInterval(() => {
+                if (!isAlive) {
+                    missedHeartbeats++;
+                    console.log(`Room WebSocket: Player ${clientId} missed heartbeat ${missedHeartbeats}/${MAX_MISSED_HEARTBEATS}`);
+                }
+                if (missedHeartbeats >= MAX_MISSED_HEARTBEATS) {
+                    console.log(`Room WebSocket: Player ${clientId} exceeded missed heartbeats. Terminating connection.`);
+                    cleanupTimer();
+                    socket.close(1003, "Heartbeat timeout: no response from client");
+                    return;
+                }
+                isAlive = false;
 				try {
 					console.log(`[room.ws] send heartbeat -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 					socket.send(JSON.stringify({ type: "heartbeat" }));
 					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 					heartbeatTimeout = setTimeout(() => {
 						console.log(`[room.ws] heartbeat ack timeout -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
-						socket.close(1003, "Heartbeat timeout: no ack from client");
+						cleanupTimer();
+                        socket.close(1003, "Heartbeat timeout: no ack from client");
 					}, RECEIVED_HEARTBEAT_MS); // wait for client heartbeat
 				} catch (err) {
 					console.error("Error sending heartbeat:", err);
-					socket.close(1011, "server error");
+					cleanupTimer();
+                    socket.close(1011, "server error");
 				}
 			}, HEARTBEAT_MS); // send heartbeat to client
 			return;
@@ -110,8 +142,13 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
 		//  also treat heartbeat ack
 		if (player && msg && msg.type === "returnHeartbeat") {
+            isAlive = true;
+            missedHeartbeats = 0;
 			console.log(`[room.ws] received heartbeat <- client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
-			if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
+			if (heartbeatTimeout) {
+                clearTimeout(heartbeatTimeout);
+                heartbeatTimeout = null;
+            }
 			return;
 		}
 
@@ -307,6 +344,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
       } catch (err) {
         console.error("unexpected error in room wsmessage handling:", err);
+        cleanupTimer();
         socket.close(1011, "server error");
       }
     });
@@ -314,11 +352,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     // Step 3: handle client disconnect
     socket.on("close", () => {
 	  //cleanup heartbeat timers
-	  try {
-	  	if (pongTimer) clearTimeout(pongTimer);
-	  	if (heartbeatInterval) clearInterval(heartbeatInterval);
-	  	if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
-	  } catch {}
+	  cleanupTimer();
 
 	  if (room.game.state === 3) return;
       wsHandler.handleDisconnect(socket, room, clientId, room.id);

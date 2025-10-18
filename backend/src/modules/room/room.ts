@@ -7,7 +7,7 @@ export const DEFAULT_SETTING: GameSettings = {
   ballSpeed: 1,
   ballSize: 1,
   paddleSpeed: 1,
-  scorePoint: 1,
+  scorePoint: 5,
   map: "stadium",
 };
 

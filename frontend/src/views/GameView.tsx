@@ -132,6 +132,7 @@ class GameClient {
   static globalId = 0;
   private isFullStateProcessed: boolean = false;
   private keysPressed: Record<string, boolean> = {};
+  private isOnline: boolean = true;
 
   handleKey(e: KeyboardEvent) {
     if (!isArrowKey(e)) return;
@@ -211,7 +212,15 @@ class GameClient {
       }
     };
 
-    // this.websocketRef.onclose = () => console.log("❌ Disconnected"); ////debug
+    this.websocketRef.onclose = (event) => {
+       console.log("❌ Disconnected", event.code, event.reason); ////debug
+
+       if (event.code === 1000 && event.reason === "offline") {
+        console.log("player went offline");
+        this.isOnline = false;
+        return;
+       }
+    };
 
     this.handleKey = this.handleKey.bind(this);
     // -- KEYBOARD --
@@ -234,11 +243,18 @@ class GameClient {
     this.loop = this.loop.bind(this);
   }
 
+  //? delete
+  handleOfflineDisconnect() {
+    this.isOnline = false;
+    this.destroy();
+  }
+
   start() {
     this.loop();
   }
 
   loop() {
+    if (!this.isOnline || !navigator.onLine) return;
     // console.log("looping client", this.id); ////debug
     if (this.websocketRef?.readyState === WebSocket.OPEN) {
       if (this.keysPressed["ArrowUp"]) {
@@ -369,6 +385,8 @@ class GameClient {
 
 const GameView: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [delayForGameOver, setDelayForGameOver] = useState(false);
   useBlockLeave();
 //  const { t } = useTranslation();
 //  const translate = (key: string) => t(`GameView.${key}`);panel-1-6
@@ -407,6 +425,43 @@ const GameView: React.FC = () => {
     fetchUserInfo();
   }, [user]);
 
+  React.useEffect(() => {
+    function handleOnline() {
+        setIsOnline(true);
+        setDelayForGameOver(false);
+        console.log("Player is back online");
+    }
+
+    function handleOffline() {
+        setIsOnline(false);
+        setDelayForGameOver(true);
+
+        setTimeout(() => {
+            if (!navigator.onLine) {
+                console.log("player offline, navigate to main menu");
+                sessionStorage.removeItem("playerSide");
+                sessionStorage.removeItem("RoomId");
+                sessionStorage.removeItem("RoomLeaderId");
+                sessionStorage.removeItem("RoomName");
+                sessionStorage.removeItem("RoomType");
+                navigate("/main-menu");
+            }
+        }, 5000); //wait 5 second to confirm player is still offline
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("online", handleOnline);
+      window.addEventListener("offline", handleOffline);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+      }
+    };
+  }, [navigate]);
+
   // console.log("user loaded", user); ////debug
   const roomId = Number(sessionStorage.getItem("RoomId") || "1");
   const roomName = sessionStorage.getItem("RoomName") || "Room 1";
@@ -437,7 +492,22 @@ const GameView: React.FC = () => {
   const { socket } = useGameWebSocket(params);
   // console.log("socket has been create: ", socket); ////debug
 
-  const { gameOver } = useGameRoomWebSocket(params);
+  const { gameOver } = useGameRoomWebSocket({
+    ...params,
+    isOffline: delayForGameOver,
+  });
+
+  React.useEffect(() => {
+    if (gameOver && delayForGameOver) {
+        console.log("received game over while offline, navigate to main menu");
+        sessionStorage.removeItem("playerSide");
+        sessionStorage.removeItem("RoomId");
+        sessionStorage.removeItem("RoomLeaderId");
+        sessionStorage.removeItem("RoomName");
+        sessionStorage.removeItem("RoomType");
+        navigate("/main-menu");
+    }
+  }, [gameOver, delayForGameOver, navigate]);
 
   useEffect(() => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
