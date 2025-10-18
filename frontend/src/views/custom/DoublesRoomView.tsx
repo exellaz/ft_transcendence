@@ -44,29 +44,6 @@ const DoublesRoomView: React.FC = () => {
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
   const [canConnect, setCanConnect] = React.useState(false);
-  const [checkingNetwork, setCheckingNetwork] = React.useState(true);
-  const alertRef = React.useRef(false);
-
-  //function to toggle private and public room
-  const handleTogglePrivacy = () => {
-    if (!roomInfo || !isLeader || !socket) return;
-
-    // Determine the new privacy status
-    const newPrivate = roomInfo.type === "public"; // true → make private
-
-    // Send WebSocket message to backend
-    socket?.send(
-      JSON.stringify({
-        type: "togglePrivacy",
-        private: newPrivate,
-      }),
-    );
-
-    // Optimistically update the UI
-    setRoomInfo((prev) =>
-      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
-    );
-  };
 
   // prevent player from reloading the page
   React.useEffect (() => {
@@ -125,29 +102,13 @@ const DoublesRoomView: React.FC = () => {
       });
   }, [roomId, navigate]);
 
-  // perform network check before attempting to auto-connect sockets
+  // perform network check before attempting to connect socket
   React.useEffect(() => {
-	let mounted = true;
-	(async () => {
-	  // navigator is a function available in browsers to check online status
-	  if (typeof navigator !== "undefined" && !navigator.onLine) {
-		if (!mounted || alertRef.current) return;
-		alertRef.current = true;
-		setCheckingNetwork(false);
-		setCanConnect(false);
-		// show error and navigate away
-		alert("You appear to be offline. Cannot join room.");
-		navigate("/main-menu");
-		return;
-	  }
-	  if (!mounted || alertRef.current) return;
-	  setCheckingNetwork(false);
-	  setCanConnect(true);
-	})();
-	return () => {
-	  mounted = false;
-	};
-  }, [roomId, navigate]);
+    const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+    if (isOnline) {
+        setCanConnect(true);
+    }
+  }, []);
 
   //-------------------------------- Websockets --------------------------------
   //live chat websocket
@@ -183,7 +144,7 @@ const DoublesRoomView: React.FC = () => {
     },
     setRoomInfo,
   },
-  { autoConnect: canConnect && !checkingNetwork }
+  { autoConnect: canConnect }
   );
 
   // -------------------------------- Effect --------------------------------
@@ -204,11 +165,37 @@ const DoublesRoomView: React.FC = () => {
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-    const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
+    type RemotePlayer = {
+        clientId?: number;
+        id?: number;
+        username?: string;
+        playerName?: string;
+        spriteUrl: string;
+        avatarUrl?: string;
+        role?: string;
+        team?: "left" | "right" | "spectator";
+        leader?: boolean;
+        ready?: boolean;
+        online?: boolean;
+    };
+    const leftTeam = Array.isArray(leftTeamHtml)
+        ? (leftTeamHtml as unknown as RemotePlayer[])
+        : [];
     console.log("leftTeam:", leftTeam); //// debug
-    const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
+    const rightTeam = Array.isArray(rightTeamHtml)
+        ? (rightTeamHtml as unknown as RemotePlayer[])
+        : [];
     console.log("rightTeam:", rightTeam); //// debug
-    setPlayers([...leftTeam, ...rightTeam]);
+    const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
+        leader: !!p.leader,
+        id: p.id || -1,
+        username: p.username || p.playerName || "Unknown",
+        spriteUrl: p.spriteUrl || p.avatarUrl || "../../assets/green-ghost.png",
+        team: p.team === "left" ? "left" : p.team === "right" ? "right" : "right",
+        ready: !!p.ready,
+    });
+
+    setPlayers([...leftTeam.map(mapToWaiting), ...rightTeam.map(mapToWaiting)]);
   }, [leftTeamHtml, rightTeamHtml]);
 
 // ---------------------------------- helper functions ----------------------------------
@@ -224,6 +211,28 @@ const DoublesRoomView: React.FC = () => {
 	}
   }
 
+  //function to toggle private and public room
+  const handleTogglePrivacy = () => {
+    if (!roomInfo || !isLeader || !socket) return;
+
+    // Determine the new privacy status
+    const newPrivate = roomInfo.type === "public"; // true → make private
+
+    // Send WebSocket message to backend
+    socket?.send(
+      JSON.stringify({
+        type: "togglePrivacy",
+        private: newPrivate,
+      }),
+    );
+
+    // Optimistically update the UI
+    setRoomInfo((prev) =>
+      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
+    );
+  };
+
+// -------------------------------- Render --------------------------------
   return (
     <>
       {!roomId ? (

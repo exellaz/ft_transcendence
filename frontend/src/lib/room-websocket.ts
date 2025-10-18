@@ -95,27 +95,6 @@ export function useRoomWebSocket({
       );
       socketRef.current = ws;
 
-	  const HEARTBEAT_THRESHOLD = 10000;
-	  const HEARTBEAT_CHECK = 2000; //2 seconds
-	  const lastHeartbeat = { time: Date.now() };
-	  const watchdog = setInterval(() => {
-		try {
-			if (!ws || ws.readyState !== WebSocket.OPEN) return;
-			const age = Date.now() - lastHeartbeat.time;
-			if (age > HEARTBEAT_THRESHOLD) {
-				console.warn(`[room-websocket] heartbeat timeout (${age}ms), closing ws`);
-				setRoomError("offline_error");
-				ws.close(1000, "heartbeat timeout");
-			}
-		} catch (e) {}
-	  }, HEARTBEAT_CHECK);
-
-	  const clearWatchdog = () => {
-		try {
-			clearInterval(watchdog);
-		} catch {}
-	  }
-
       // open connection
       ws.onopen = () => {
         console.log("Room ws connected"); ////debug
@@ -139,14 +118,12 @@ export function useRoomWebSocket({
 		  if (data && data.type === "handshakePing") {
 			console.log("[room-websocket] received handshakePing"); ////debug
 			ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
-			lastHeartbeat.time = Date.now();
 			return;
 		  }
 		  // recieve heartbeat from server and send ack back
 		  if (data && data.type === "heartbeat") {
-			console.log(`[room.ws] received heartbeat, sending heartbeatAck client=${player.id}`); ////debug
-			ws.send(JSON.stringify({ type: "heartbeatAck", clientId: player.id }));
-			lastHeartbeat.time = Date.now();
+			console.log(`[room.ws] received heartbeat, sending returnHeartbeat client=${player.id}`); ////debug
+			ws.send(JSON.stringify({ type: "returnHeartbeat", clientId: player.id }));
 			return;
 		  }
 
@@ -310,7 +287,6 @@ export function useRoomWebSocket({
       // close connection
       ws.onclose = () => {
         console.log("Room ws disconnected");
-		clearWatchdog();
 		setRoomError("offline_error");
 		setCanStart(false);
 		setReady(false);
@@ -324,7 +300,6 @@ export function useRoomWebSocket({
       // clean up on unmount
       return () => {
         try { if (ws) ws.close(); } catch {}
-		clearWatchdog();
       };
     }
     connect();

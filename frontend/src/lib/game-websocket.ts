@@ -108,7 +108,7 @@ export function useGameRoomWebSocket({
 	  }
 
 	  if (msg && msg.type === "heartbeat") {
-		ws.send(JSON.stringify({ type: "heartbeatAck", clientId: clientId }));
+		ws.send(JSON.stringify({ type: "returnHeartbeat", clientId: clientId }));
 		return;
 	  }
 

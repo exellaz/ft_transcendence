@@ -44,29 +44,6 @@ const SinglesRoomView: React.FC = () => {
   const { user } = useUser();
   const [userInfo, setUserinfo] = useState<User | null>(null);
   const [canConnect, setCanConnect] = useState<boolean>(false);
-  const [checkingNetwork, setCheckingNetwork] = useState<boolean>(true);
-  const alertRef = React.useRef<boolean>(false);
-
-  //function to toggle private and public room
-  const handleTogglePrivacy = () => {
-    if (!roomInfo || !isLeader || !socket) return;
-
-    // Determine the new privacy status
-    const newPrivate = roomInfo.type === "public"; // true → make private
-
-    // Send WebSocket message to backend
-    socket?.send(
-      JSON.stringify({
-        type: "togglePrivacy",
-        private: newPrivate,
-      }),
-    );
-
-    // Optimistically update the UI
-    setRoomInfo((prev) =>
-      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
-    );
-  };
 
   // prevent player from reloading the page
   React.useEffect (() => {
@@ -127,25 +104,11 @@ const SinglesRoomView: React.FC = () => {
 
   // perform network check before attempting to connect socket
   React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      // navigator is a function available in browsers to check online statusof the browser
-      if (typeof navigator !== "undefined" && navigator.onLine === false) {
-        if (!mounted || alertRef.current) return;
-		alertRef.current = true;
-        setCheckingNetwork(false);
-        setCanConnect(false);
-        return;
-      }
-	  // check server reachability by pinging an endpoint
-      if (!mounted || alertRef.current) return;
-      setCheckingNetwork(false);
-      setCanConnect(true);
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [roomId, navigate]);
+    const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+    if (isOnline) {
+        setCanConnect(true);
+    }
+  }, []);
 
   //-------------------------------- Websockets --------------------------------
 
@@ -182,7 +145,7 @@ const SinglesRoomView: React.FC = () => {
     },
     setRoomInfo,
   },
-  { autoConnect: canConnect && !checkingNetwork }
+  { autoConnect: canConnect }
   );
 
 // -------------------------------- Effect --------------------------------
@@ -203,11 +166,6 @@ const SinglesRoomView: React.FC = () => {
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-    // const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
-    // console.log("leftTeam:", leftTeam); //// debug
-    // const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
-    // console.log("rightTeam:", rightTeam); //// debug
-    // setPlayers([...leftTeam, ...rightTeam]);
 	type RemotePlayer = {
 		clientId?: number;
 		id?: number;
@@ -254,6 +212,29 @@ const SinglesRoomView: React.FC = () => {
 	}
   }
 
+
+  //function to toggle private and public room
+  const handleTogglePrivacy = () => {
+    if (!roomInfo || !isLeader || !socket) return;
+
+    // Determine the new privacy status
+    const newPrivate = roomInfo.type === "public"; // true → make private
+
+    // Send WebSocket message to backend
+    socket?.send(
+      JSON.stringify({
+        type: "togglePrivacy",
+        private: newPrivate,
+      }),
+    );
+
+    // Optimistically update the UI
+    setRoomInfo((prev) =>
+      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
+    );
+  };
+
+//-------------------------------------- Render -------------------------------------
   return (
     <>
       {!roomId ? (

@@ -87,30 +87,30 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 			);
 
 			// start a periodic server heartbeat to check client connectivity
-			const HEARTBEAT_MS = 5000;
-			const HEARTBEAT_ACK_MS = 3000;
+			const HEARTBEAT_MS = 1000;
+			const RECEIVED_HEARTBEAT_MS = 2000;
 			heartbeatInterval = setInterval(() => {
 				try {
-					console.log(`[room.ws] send heartbeat -> client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
+					console.log(`[room.ws] send heartbeat -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 					socket.send(JSON.stringify({ type: "heartbeat" }));
 					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 					heartbeatTimeout = setTimeout(() => {
-						console.log(`[room.ws] heartbeat ack timeout -> client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
+						console.log(`[room.ws] heartbeat ack timeout -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 						socket.close(1003, "Heartbeat timeout: no ack from client");
-					}, HEARTBEAT_ACK_MS);
+					}, RECEIVED_HEARTBEAT_MS); // wait for client heartbeat
 				} catch (err) {
 					console.error("Error sending heartbeat:", err);
 					socket.close(1011, "server error");
 				}
-			}, HEARTBEAT_MS);
+			}, HEARTBEAT_MS); // send heartbeat to client
 			return;
 		}
 
 		if (!player && expectingPong) return; // still waiting for handshake pong
 
 		//  also treat heartbeat ack
-		if (player && msg && msg.type === "heartbeatAck") {
-			console.log(`[room.ws] received heartbeat ack <- client=${clientId} time=${new Date().toLocaleTimeString()}`); ////debug
+		if (player && msg && msg.type === "returnHeartbeat") {
+			console.log(`[room.ws] received heartbeat <- client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 			if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 			return;
 		}
