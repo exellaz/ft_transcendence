@@ -55,6 +55,10 @@
     "game_settings": "Game Settings",
     "start": "Start"
   },
+  "GameView": {
+	"offline_error": "You are offline. Please check your connection.",
+	"close": "close"
+  },
   "LoginView": {
     "username_or_email": "Username / Email",
     "password": "Password",

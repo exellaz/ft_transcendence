@@ -57,6 +57,10 @@
     "game_settings": "遊戲設定",
     "start": "開始"
   },
+  "GameView": {
+	"offline_error": "你處於離線狀態。請檢查你的連接。",
+	"close": "關閉"
+  },
   "LoginView": {
     "username_or_email": "用戶名 / 電子郵件",
     "password": "密碼",

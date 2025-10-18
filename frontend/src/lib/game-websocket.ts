@@ -13,6 +13,7 @@ interface UseGameWebSocketParams {
   playerSprite: string;
   callback: (socket: WebSocket) => void;
   isOffline?: boolean;
+  onError?: (msg: string) => void;
 }
 
 /**
@@ -32,13 +33,14 @@ export function useGameWebSocket({
   playerName,
   playerSprite,
   isOffline = false,
+  onError,
 }: UseGameWebSocketParams) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
         if (!navigator.onLine && !isOffline) {
-            navigate("/main-menu");
+            onError?.("offline_error");
         return;
     }
 
@@ -54,7 +56,7 @@ export function useGameWebSocket({
             } catch (err) {
                 console.error("Error closing websocket: ", err);
             }
-            navigate("/main-menu");
+            onError?.("offline_error");
         }
     }
 

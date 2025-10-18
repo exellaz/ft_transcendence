@@ -385,11 +385,12 @@ class GameClient {
 
 const GameView: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [delayForGameOver, setDelayForGameOver] = useState(false);
+  const [roomError, setRoomError] = useState(false);
+  const [disconnectMessage, setDisconnectMessage] = useState("");
   useBlockLeave();
-//  const { t } = useTranslation();
-//  const translate = (key: string) => t(`GameView.${key}`);panel-1-6
+ const { t } = useTranslation();
+ const translate = (key: string) => t(`GameView.${key}`);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals" | "custom">(
     "quarterfinals",
   );
@@ -427,24 +428,18 @@ const GameView: React.FC = () => {
 
   React.useEffect(() => {
     function handleOnline() {
-        setIsOnline(true);
         setDelayForGameOver(false);
         console.log("Player is back online");
     }
 
     function handleOffline() {
-        setIsOnline(false);
         setDelayForGameOver(true);
 
         setTimeout(() => {
             if (!navigator.onLine) {
                 console.log("player offline, navigate to main menu");
-                sessionStorage.removeItem("playerSide");
-                sessionStorage.removeItem("RoomId");
-                sessionStorage.removeItem("RoomLeaderId");
-                sessionStorage.removeItem("RoomName");
-                sessionStorage.removeItem("RoomType");
-                navigate("/main-menu");
+				setDisconnectMessage("offline_error");
+				setRoomError(true);
             }
         }, 5000); //wait 5 second to confirm player is still offline
     }
@@ -486,6 +481,10 @@ const GameView: React.FC = () => {
     playerName,
     playerSprite,
     callback: () => {},
+	onError: (msg: string) => {
+		setDisconnectMessage(msg);
+		setRoomError(true);
+	},
   };
   // console.log("params", params); ////debug
 
@@ -497,15 +496,12 @@ const GameView: React.FC = () => {
     isOffline: delayForGameOver,
   });
 
+// -------------------------------- Effect --------------------------------
   React.useEffect(() => {
     if (gameOver && delayForGameOver) {
         console.log("received game over while offline, navigate to main menu");
-        sessionStorage.removeItem("playerSide");
-        sessionStorage.removeItem("RoomId");
-        sessionStorage.removeItem("RoomLeaderId");
-        sessionStorage.removeItem("RoomName");
-        sessionStorage.removeItem("RoomType");
-        navigate("/main-menu");
+        setDisconnectMessage("offline_error");
+		setRoomError(true);
     }
   }, [gameOver, delayForGameOver, navigate]);
 
@@ -533,8 +529,17 @@ const GameView: React.FC = () => {
     };
   }, [socket]);
 
-//  setStage("custom");
+// -------------------------------- Helper Functions --------------------------------
+  function renderRoomErrorText(): string | null {
+  if (!disconnectMessage) return null;
 
+  if (disconnectMessage === "offline_error")
+    return translate("offline_error");
+
+  return null;
+  }
+
+// -------------------------------- Render --------------------------------
   return (
     <Background variant="plain">
       <div className="w-full h-full flex-col-center gap-10 px-25">
@@ -567,6 +572,32 @@ const GameView: React.FC = () => {
             </Button>
           </div>
         )}
+
+		{/* error popup */}
+		{roomError && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              {/* Background image using your Background component */}
+              <Background variant="grass">
+                {/* Optional dark overlay on top of the background */}
+                <div className="absolute inset-0 bg-black opacity-70"></div>
+                {/* Popup content */}
+                <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+                  <p className="text-center text-white text-2xl px-4">
+                    {renderRoomErrorText()}
+                  </p>
+                  <Button
+                    variant="red"
+                    onClick={() => {
+                      navigate("/main-menu");
+                    }}
+                  >
+                    {translate("close")}
+                  </Button>
+                </div>
+              </Background>
+            </div>
+          )}
+
       </div>
     </Background>
   );

@@ -91,7 +91,12 @@ const CustomModeView: React.FC = () => {
     }
 
     //if had room, navigate to it
-    const roomIdToUse = room.id || room.roomId;
+    const roomIdToUse = room.id || room.roomId || "";
+	if (!roomIdToUse || roomIdToUse === "") {
+		setRoomError(translate("room_not_found"));
+		return;
+	}
+	sessionStorage.setItem("RoomId", roomIdToUse);
     navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
