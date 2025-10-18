@@ -37,7 +37,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameView.${key}`);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    "quarterfinals"
+    "quarterfinals",
   );
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -179,7 +179,7 @@ const GameView: React.FC<GameViewProps> = () => {
           name: "Player1",
           id: 0,
           skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
-        })
+        }),
       );
 
       game.addPlayer(
@@ -188,7 +188,7 @@ const GameView: React.FC<GameViewProps> = () => {
           name: "Player2",
           id: 1,
           skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
-        })
+        }),
       );
 
       // --- ✅ Track pressed keys for smooth motion ---
@@ -240,7 +240,7 @@ const GameView: React.FC<GameViewProps> = () => {
         viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
 
         const renderList = Array.from(game.world.gameObjects.values()).sort(
-          (a, b) => a.zIndex - b.zIndex
+          (a, b) => a.zIndex - b.zIndex,
         );
         for (const obj of renderList) {
           updateObjectClient(obj);
