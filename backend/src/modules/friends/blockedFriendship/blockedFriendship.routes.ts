@@ -6,6 +6,7 @@ import {
   getBlockedFriendShipsByUserIdSchema,
   postBlockedFriendshipSchema,
 } from "./blockedFriendship.schema";
+import { Prisma } from "@prisma/client";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)
@@ -81,14 +82,16 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
         });
 
         return ok(blockedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2002")
-          throw ApiError.conflict(
-            "blocked Friendship already exists",
-            "BLOCKED_FRIENDSHIP_CONFLICT",
-          );
-        if (err.code === "P2003")
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2002")
+            throw ApiError.conflict(
+              "blocked Friendship already exists",
+              "BLOCKED_FRIENDSHIP_CONFLICT",
+            );
+          if (err.code === "P2003")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
         throw err;
       }
     },
@@ -117,14 +120,15 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
           });
 
         return ok(deletedBlockedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Blocked Friendship not found OR Current User is not the blocker
-          throw ApiError.notFound(
-            "Blocked Friendship not found",
-            "BLOCKED_FRIENDSHIP_NOT_FOUND",
-          );
-
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            // Blocked Friendship not found OR Current User is not the blocker
+            throw ApiError.notFound(
+              "Blocked Friendship not found",
+              "BLOCKED_FRIENDSHIP_NOT_FOUND",
+            );
+        }
         throw err; // let Fastify handle other errors
       }
     },

@@ -6,7 +6,6 @@ import {
   createFriendshipSchema,
   deleteFriendshipSchema,
   getAcceptedFriendShipsByUserIdSchema,
-  getFriendShipsByUserIdSchema,
   getPendingFriendShipsByUserIdSchema,
   updateFriendshipSchema,
 } from "./friendship.schema";
@@ -118,7 +117,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   fastify.post(
     "/friendships",
     { schema: createFriendshipSchema },
-    async (request, reply) => {
+    async (request) => {
       const { requesterId, accepterId, accepterUsername } = request.body as {
         requesterId: number;
         accepterId?: number;
@@ -175,15 +174,17 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           },
         });
         return ok(friendship);
-      } catch (err: any) {
-        if (err.code === "P2002")
-          throw ApiError.conflict(
-            "Friendship already exists",
-            "FRIENDSHIP_CONFLICT",
-          );
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2002")
+            throw ApiError.conflict(
+              "Friendship already exists",
+              "FRIENDSHIP_CONFLICT",
+            );
 
-        if (err.code === "P2003")
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+          if (err.code === "P2003")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
         throw err;
       }
     },
@@ -235,13 +236,14 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         });
 
         return ok(updatedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          throw ApiError.notFound(
-            "Friendship not found",
-            "FRIENDSHIP_NOT_FOUND",
-          );
-
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound(
+              "Friendship not found",
+              "FRIENDSHIP_NOT_FOUND",
+            );
+        }
         throw err; // let Fastify handle other errors
       }
     },
@@ -286,13 +288,14 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         });
 
         return ok(deletedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          throw ApiError.notFound(
-            "Friendship not found",
-            "FRIENDSHIP_NOT_FOUND",
-          );
-
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound(
+              "Friendship not found",
+              "FRIENDSHIP_NOT_FOUND",
+            );
+        }
         throw err; // let Fastify handle other errors
       }
     },

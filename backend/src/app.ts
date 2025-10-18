@@ -8,7 +8,6 @@ import gameWsRoute from "./modules/game/game.ws";
 import roomWsRoutes from "./modules/room/room.ws";
 import liveChatRoutes from "./modules/chat/liveChat.ws";
 import roomRoutes from "./modules/room/room.routes";
-import { fail, ApiError } from "./utils/response";
 import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";

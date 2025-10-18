@@ -9,6 +9,7 @@ import {
   patchUserSettingsByIdSchema,
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
+import { Prisma } from "@prisma/client";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -48,8 +49,11 @@ async function userRoutes(fastify: FastifyInstance) {
         language?: string;
       };
 
+      interface UserSettingsPatchData {
+        language?: string;
+      }
       // Build update object dynamically
-      const data: any = {};
+      const data: UserSettingsPatchData = {};
       if (language !== undefined) data.language = language;
 
       if (Object.keys(data).length === 0)
@@ -63,10 +67,12 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(updatedSettings);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            // Prisma "record not found"
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
 
         throw err; // let Fastify handle other errors
       }
@@ -107,8 +113,12 @@ async function userRoutes(fastify: FastifyInstance) {
         avatarUrl?: string;
       };
 
+      interface UserPatchData {
+        username?: string;
+        avatarUrl?: string;
+      }
       // Build update object dynamically
-      const data: any = {};
+      const data: UserPatchData = {};
       if (username !== undefined) data.username = username;
       if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
@@ -123,16 +133,18 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(updatedUser);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
-        else if (err.code === "P2002")
-          // Prisma unique constraint violation
-          throw ApiError.conflict(
-            "Username already exists",
-            "USERNAME_CONFLICT",
-          );
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            // Prisma "record not found"
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+          else if (err.code === "P2002")
+            // Prisma unique constraint violation
+            throw ApiError.conflict(
+              "Username already exists",
+              "USERNAME_CONFLICT",
+            );
+        }
 
         throw err; // let Fastify handle other errors
       }
@@ -152,10 +164,12 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(user);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
-        console.log("ERRORRRR", err);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+          console.log("ERRORRRR", err);
+        }
         throw err;
       }
     },

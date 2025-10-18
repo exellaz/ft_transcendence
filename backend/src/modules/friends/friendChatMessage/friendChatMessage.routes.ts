@@ -32,7 +32,7 @@ async function friendChatMessageRoutes(fastify: FastifyInstance) {
   fastify.get(
     "/friendChatMessages/:friendshipId/lastMessage",
     { schema: getLastFriendChatMessageByFriendshipIdSchema },
-    async (request, reply) => {
+    async (request) => {
       const { friendshipId } = request.params as { friendshipId: string };
 
       const lastMessage = await fastify.db.friendChatMessage.findFirst({
