@@ -1,7 +1,6 @@
 import React, { useState, useParams, useRef, useEffect } from "react";
 import { useTranslation, withSSR } from "react-i18next";
 import Background from "../components/Background";
-import TournamentHeader from "../components/TournamentHeader";
 import { getUserById } from "../lib/usersApiClient";
 import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
@@ -38,7 +37,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`GameView.${key}`);
   const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    "quarterfinals",
+    "quarterfinals"
   );
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -122,17 +121,12 @@ const GameView: React.FC<GameViewProps> = () => {
     return (
       <Background variant="plain">
         <div className="w-full h-full flex-col-center gap-10 px-25">
-          <TournamentHeader>
-            {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
-          </TournamentHeader>
-          <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas
-              ref={canvasRef}
-              width={1000}
-              height={500}
-              className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
-            />
-          </div>
+          <canvas
+            ref={canvasRef}
+            width={1000}
+            height={500}
+            className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+          />
           {gameOver && (
             <div>
               <Button
@@ -185,7 +179,7 @@ const GameView: React.FC<GameViewProps> = () => {
           name: "Player1",
           id: 0,
           skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
-        }),
+        })
       );
 
       game.addPlayer(
@@ -194,7 +188,7 @@ const GameView: React.FC<GameViewProps> = () => {
           name: "Player2",
           id: 1,
           skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
-        }),
+        })
       );
 
       // --- ✅ Track pressed keys for smooth motion ---
@@ -246,7 +240,7 @@ const GameView: React.FC<GameViewProps> = () => {
         viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
 
         const renderList = Array.from(game.world.gameObjects.values()).sort(
-          (a, b) => a.zIndex - b.zIndex,
+          (a, b) => a.zIndex - b.zIndex
         );
         for (const obj of renderList) {
           updateObjectClient(obj);
@@ -267,17 +261,12 @@ const GameView: React.FC<GameViewProps> = () => {
     return (
       <Background variant="plain">
         <div className="w-full h-full flex-col-center gap-10 px-25">
-          <TournamentHeader>
-            {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
-          </TournamentHeader>
-          <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
-            <canvas
-              ref={canvasRef}
-              width={1200}
-              height={500}
-              className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
-            />
-          </div>
+          <canvas
+            ref={canvasRef}
+            width={1200}
+            height={500}
+            className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+          />
           {/* ✅ Back to Lobby Button */}
           <div>
             <Button
