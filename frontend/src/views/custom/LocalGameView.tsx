@@ -12,6 +12,8 @@ import GameSettingsPopup, {
   type GameSettings,
 } from "../../popups/GameSettingsPopup";
 
+import { useNavigate } from "react-router-dom";
+
 interface Player {
   name: string;
   spriteUrl: string;
@@ -26,6 +28,8 @@ interface GameDetails {
 const LocalGameView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`LocalGameView.${key}`);
+
+  const navigate = useNavigate();
 
   const [player1, setPlayer1] = useState<Player>({
     name: "Player 1",
@@ -96,7 +100,19 @@ const LocalGameView: React.FC = () => {
           <Button onClick={() => setShowGameSettings(true)}>
             {translate("game_settings")}
           </Button>
-          <Button variant="green">{translate("start")}</Button>
+          <Button
+            variant="green"
+            onClick={() => {
+              const gameDetails: GameDetails = {
+                player1,
+                player2,
+                gameSettings,
+              };
+              navigate("/local-game-view", { state: gameDetails });
+            }}
+          >
+            {translate("start")}
+          </Button>
         </div>
       </Card>
       <ChooseSpritePopup

@@ -55,6 +55,7 @@ const App: React.FC = () => {
             <Route path="/tournament" element={<TournamentLobbyView />} />
             <Route path="/match" element={<MatchView />} />
             <Route path="/game" element={<GameView />} />
+            <Route path="/local-game-view" element={<GameView />} />
             <Route path="/advance" element={<AdvanceView />} />
             <Route path="/results" element={<ResultsView />} />
             <Route path="/singles-room/:roomId" element={<SinglesRoomView />} />

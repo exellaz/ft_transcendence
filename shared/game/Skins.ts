@@ -14,6 +14,7 @@ interface SkinDefinition {
   base: string;
   iris: string;
   arrow: string;
+  eyes: string;
 }
 
 export const SKIN_BASE_PATH = "assets/skins";
@@ -21,42 +22,50 @@ export const SKIN_BASE_PATH = "assets/skins";
 export const SKIN_PATHS: Record<Skin, SkinDefinition> = {
   [Skin.ghost_dark]: {
     base: `${SKIN_BASE_PATH}/ghost_dark.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_dark.png`,
   },
   [Skin.ghost_light]: {
     base: `${SKIN_BASE_PATH}/ghost_light.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_light.png`,
   },
   [Skin.ghost_blue]: {
     base: `${SKIN_BASE_PATH}/ghost_blue.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_blue.png`,
   },
   [Skin.ghost_green]: {
     base: `${SKIN_BASE_PATH}/ghost_green.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_green.png`,
   },
   [Skin.ghost_purple]: {
     base: `${SKIN_BASE_PATH}/ghost_purple.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_purple.png`,
   },
   [Skin.ghost_red]: {
     base: `${SKIN_BASE_PATH}/ghost_red.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_red.png`,
   },
   [Skin.ghost_yellow]: {
     base: `${SKIN_BASE_PATH}/ghost_yellow.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_yellow.png`,
   },
   [Skin.ghost_42]: {
     base: `${SKIN_BASE_PATH}/ghost_42.png`,
-    iris: "",
+    iris: `${SKIN_BASE_PATH}/components/iris2.png`,
+    eyes: `${SKIN_BASE_PATH}/components/eyes2.png`,
     arrow: `${SKIN_BASE_PATH}/arrows/arrow_42.png`,
   },
 };
