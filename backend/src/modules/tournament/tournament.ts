@@ -359,13 +359,14 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
     const stageRankMap: Record<string, [number, number]> = {
         "QF": [5, 8],
         "SF": [3, 4],
-        "F": [1, 2],
+        "F": [2, 2],
     };
-    const [minRank] = stageRankMap[currentStage] ?? [0, 0];
+    const minRank = stageRankMap[currentStage] ?? [0, 0];
+    const loserStartRank = minRank[0] || 0;
 
     const rankedLosers = losers.map((p, i) => ({
         playerId: p.id,
-        rank: (minRank ?? 0) + i,
+        rank: loserStartRank + i,
     }));
 
     // batch update DB and await completion
@@ -389,9 +390,25 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
     const nextStageMap: Record<string, string | null> = { "QF": "SF", "SF": "F", "F": null };
     const nextStage = nextStageMap[currentStage];
 
+    // If this was the final (no nextStage), also assign winner rank(s) (1, 2, ...)
+    if (!nextStage) {
+      const winnerRankPromises = winners.map(async (w, idx) => {
+        if (!tournament.playerMap) return;
+        const tournamentPlayerId = tournament.playerMap.get(w.id);
+        if (!tournamentPlayerId) {
+          console.warn(`No tournament player id for winner ${w.id} in tournament ${tournamentId}`);
+          return;
+        }
+        const winnerRank = idx + 1; // first winner = 1
+        console.log(`Update winner id ${tournamentPlayerId} (${w.id}) ranking to ${winnerRank}`);
+        return updateTournamentPlayerRanking(winnerRank, tournamentPlayerId);
+      });
+      await Promise.all(winnerRankPromises);
+    }
+
+    // If no next stage, finalize tournament
     if (!nextStage) {
         const winnerIds = winners.map((w) => w.id);
-        tournament.stage = nextStage as "SF" | "F";
         tournament.players = winners;                 // replace players with winners only
         tournament.matches = [];
         tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
@@ -418,7 +435,13 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
 
         console.log(`Tournament ${tournamentId} completed.`);
         //! optionally update tournament DB status here
-        updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
+        const updateTournamentDB = await updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
+        if (updateTournamentDB.success)
+            console.log("[ update tournament DB ] Tournament status updated to COMPLETED: ", updateTournamentDB.data);
+        else
+            console.log("[ update tournament DB ] Tournament status update failed: ", updateTournamentDB.error);
+        console.log(`[ update tournament DB ] Deleting tournament ${tournamentId} from memory.`);
+        tournaments.delete(tournamentId);
         return;
     }
 
@@ -449,6 +472,11 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
       }));
     }
 
+    const updateTournamentDB = await updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
+    if (updateTournamentDB.success)
+        console.log("[ update tournament DB ] Tournament status updated to COMPLETED: ", updateTournamentDB.data);
+    else
+        console.log("[ update tournament DB ] Tournament status update failed: ", updateTournamentDB.error);
     // optionally auto-start only after winners reconnect (clientMap empty now)
     return;
   }

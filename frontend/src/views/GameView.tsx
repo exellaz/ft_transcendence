@@ -25,7 +25,7 @@ import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button";
 import type { User } from "@/types/usersApi";
-import { getTournamentById, updateTournamentLobby } from "@/lib/requestBackend.api";
+import { createNextTournament, deleteTournament, getTournamentById, updateTournamentLobby } from "@/lib/requestBackend.api";
 
 function isArrowKey(e: KeyboardEvent): boolean {
   return e.key === "ArrowUp" || e.key === "ArrowDown";
@@ -510,7 +510,7 @@ const GameView: React.FC = () => {
     (async () => {
       try {
         const tournament = await getTournamentById(lastTournamentId);
-        const next = nextRoundFrom(tournament?.stage ?? null);
+        const next = nextRoundFromTournament(tournament);
         if (mounted) setHasNextStage(!!next);
       } catch (err) {
         if (mounted) setHasNextStage(null);
@@ -555,14 +555,17 @@ const GameView: React.FC = () => {
 //    }
 //  }, [isWinner, lastTournamentId, navigate]);
   // helper to map current -> next round
-  const nextRoundFrom = (current: string | null) => {
-    console.log("current stage:", current);
-    if (!current) return null;
-    const norm = current;
-    if (norm.includes("semi") || norm === "SF" || norm === "semifinals")
-      return { size: 4, code: "SF" };
-    if (norm.includes("final") || norm === "F" || norm === "finals")
-      return { size: 2, code: "F" };
+  const nextRoundFromTournament = (tournament: any) => {
+    if (!tournament) return null;
+    // prefer numeric maxPlayer if present (8 -> 4 -> 2)
+    const max = typeof tournament.maxPlayer === "number" ? tournament.maxPlayer : undefined;
+    if (max === 8) return { code: "SF", size: 4 };
+    if (max === 4) return { code: "F", size: 2 };
+
+    // fallback to stage string parsing
+    const stage = (tournament.stage || "").toString().toLowerCase();
+    if (stage.includes("quarter") || stage === "qf") return { code: "SF", size: 4 };
+    if (stage.includes("semi") || stage === "sf") return { code: "F", size: 2 };
     return null;
   };
 
@@ -579,16 +582,14 @@ const GameView: React.FC = () => {
     sessionStorage.removeItem("RoomType");
 
     // try to read current stage from session first, otherwise fetch tournament info
-    let currentStage: string | null = null;
+    let parentTournament = null;
     try {
-      const tournament = await getTournamentById(lastTournamentId);
-      currentStage = tournament?.stage ?? null;
+        parentTournament = await getTournamentById(lastTournamentId);
     } catch (err) {
-      console.error("failed to fetch tournament info:", err);
-      currentStage = null;
+        console.error("error fetching parent tournament info:", err);
+        parentTournament = null;
     }
-
-    const next = nextRoundFrom(currentStage);
+    const next = nextRoundFromTournament(parentTournament);
     if (!next) {
       console.log("no next round to navigate to");
       navigate("/main-menu");
@@ -597,14 +598,43 @@ const GameView: React.FC = () => {
     }
 
     try {
-      const res = await updateTournamentLobby(lastTournamentId, next.size, next.code);
-      if (res) {
-        navigate(`/tournament/${lastTournamentId}`);
-      } else {
-        console.error("failed to update tournament lobby before navigating to next round");
+      const res = await createNextTournament(next.code, lastTournamentId);
+
+      // navigate to the new tournament lobby if created
+      if (res && res.id) {
+        console.log(" [ move stage ] navigating to next tournament id:", res.id, res.stage);
+        navigate(`/tournament/${res.id}`);
+        setInterval(() => {
+            if (lastTournamentId) {
+                deleteTournament(lastTournamentId).catch((err) => console.log("error deleting old tournament:", err));
+            }
+        }, 10000); //delete old tournament after 5 seconds
+        return;
+      }
+
+      //fallback: navigate to parent tournament page
+      const parent = await getTournamentById(lastTournamentId);
+      if (parent && parent.nextTournamentId) {
+        const nextId = parent.nextTournamentId;
+        console.log(" [ move stage ] navigating to parent tournament id:", nextId);
+        navigate(`/tournament/${nextId}`);
+        return;
       }
     } catch (err) {
-      console.error("error updating tournament lobby:", err);
+      console.error("error creating next tournament:", err);
+
+      //fallback: navigate to parent tournament page
+      try {
+        const parent = await getTournamentById(lastTournamentId);
+        if (parent && parent.nextTournamentId) {
+          const nextId = parent.nextTournamentId;
+          console.log(" [ move stage ] navigating to parent tournament id:", nextId);
+          navigate(`/tournament/${nextId}`);
+          return;
+        }
+      } catch (err2) {
+        console.error("error during fallback navigation:", err2);
+      }
     } finally {
       setIsAdvancing(false);
     }
@@ -615,7 +645,7 @@ const GameView: React.FC = () => {
     if (!isWinner || !lastTournamentId) return;
     const timer = setTimeout(() => {
       goToNextRound();
-    }, 7000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, [isWinner, lastTournamentId]); // navigate is safe to omit here (stable)
 

@@ -52,35 +52,120 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     return res;
   });
 
-  app.patch("/update-tournament/:tournamentId", async (
-    req: FastifyRequest<{ Params: { tournamentId: string } }>,
-    reply: FastifyReply
-  ) => {
-    const tournamentId = parseInt(req.params.tournamentId);
-    const { maxPlayer, stage } = req.body as { maxPlayer?: number; stage: string; };
+  // POST /create-next-tournament - create a new tournament for next stage
+  app.post("/create-next-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
+    const { stage, parentId } = req.body as { stage: string, parentId?: number };
 
-    const tournament = tournaments.get(tournamentId);
+    if (typeof stage !== "string" || stage.trim() === "") {
+      return reply.status(400).send({ error: "Invalid tournament stage" });
+    }
+
+    //if parent id provide, return existing next tournament if already created
+    if (typeof parentId === "number") {
+        const parent = tournaments.get(parentId);
+        if (parent && parent.nextTournamentId) {
+            const existing = tournaments.get(parent.nextTournamentId);
+            if (existing) {
+                console.log(`[ create next tournament ] Reusing existing tournament: ${existing.id} for parent ${parentId}`); ////debug
+                return {
+                    id: existing.id,
+                    name: existing.name,
+                    players: existing.players,
+                    started: existing.started,
+                    stage: existing.stage,
+                    maxPlayer: existing.maxPlayer,
+                };
+            }
+        }
+    }
+
+    const tournamentId = generateTournamentId();
+
+    const tournament: TournamentLobby = {
+        id: tournamentId,
+        name: `Tournament ${tournamentId}`,
+        players: [],
+        started: false,
+        stage: stage as "SF" | "F",
+        countdownTimer: undefined,
+        countdownRemaining: undefined,
+        maxPlayer: stage === "SF" ? 4 : 2,
+    };
+
+    tournaments.set(tournamentId, tournament);
+
+    //link back to parent tournament if provided
+    if (typeof parentId === "number") {
+        const parent = tournaments.get(parentId);
+        if (parent) {
+            parent.nextTournamentId = tournamentId;
+            tournament.parentTournamentId = parentId;
+        }
+    }
+
+    console.log(`Tournament created: ${tournament.name} (${tournamentId})`);
+    const res = {
+        id: tournamentId,
+        name: tournament.name,
+        players: tournament.players,
+        started: tournament.started,
+        stage: tournament.stage,
+        maxPlayer: tournament.maxPlayer,
+    };
+
+    return res;
+  });
+
+  app.post("/delete-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
+    const { id } = req.body as { id: number };
+    if (typeof id !== "number") {
+        return reply.status(400).send({ error: "Invalid tournament id" });
+    }
+
+    const tournament = tournaments.get(id);
     if (!tournament) {
       return reply.status(404).send({ error: "Tournament not found" });
     }
 
-    if (stage && typeof stage === "string" && stage.trim() !== "") {
-      tournament.stage = stage as "QF" | "SF" | "F";
+    try {
+        tournaments.delete(id);
+        console.log(`[ remove inactive tournament lobby ]Tournament ${id} deleted`);
+        return { success: true };
+    } catch (error) {
+        console.error(`[ remove inactive tournament lobby ]Error deleting tournament ${id}:`, error);
+        return reply.status(500).send({ error: "Failed to delete tournament" });
     }
-
-    if (maxPlayer && typeof maxPlayer === "number") {
-      tournament.maxPlayer = maxPlayer;
-    }
-
-    return ({
-      id: tournament.id,
-      name: tournament.name,
-      players: tournament.players,
-      started: false,
-      stage: tournament.stage,
-      maxPlayer: tournament.maxPlayer,
-    });
   });
+
+//  app.patch("/update-tournament/:tournamentId", async (
+//    req: FastifyRequest<{ Params: { tournamentId: string } }>,
+//    reply: FastifyReply
+//  ) => {
+//    const tournamentId = parseInt(req.params.tournamentId);
+//    const { maxPlayer, stage } = req.body as { maxPlayer?: number; stage: string; };
+
+//    const tournament = tournaments.get(tournamentId);
+//    if (!tournament) {
+//      return reply.status(404).send({ error: "Tournament not found" });
+//    }
+
+//    if (stage && typeof stage === "string" && stage.trim() !== "") {
+//      tournament.stage = stage as "QF" | "SF" | "F";
+//    }
+
+//    if (maxPlayer && typeof maxPlayer === "number") {
+//      tournament.maxPlayer = maxPlayer;
+//    }
+
+//    return ({
+//      id: tournament.id,
+//      name: tournament.name,
+//      players: tournament.players,
+//      started: false,
+//      stage: tournament.stage,
+//      maxPlayer: tournament.maxPlayer,
+//    });
+//  });
 
   // GET /list-tournaments - list all tournaments
   app.get("/list-tournaments", async () => {

@@ -36,6 +36,9 @@ export interface TournamentLobby {
   broadcast?: (msg: string) => void;
   clientMap?: Map<WSWebSocket, { tournamentId: number; playerId: number; }>;
   allowedPlayers?: Set<number> | undefined;
+  nextTournamentId?: number;
+  parentTournamentId?: number;
+  dbId?: number;
 }
 
 export interface TournamentGameRoom {

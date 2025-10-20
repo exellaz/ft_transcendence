@@ -208,3 +208,33 @@ export async function getTournamentById(tournamentId: number) {
         return null;
     }
 }
+
+export async function createNextTournament(stage: string, parentId: number) {
+    try {
+        const res = await fetch(`${API_URL}/create-next-tournament`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ stage, parentId }),
+        });
+        if (!res.ok) throw new Error("Failed to create next tournament");
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to create next tournament:", error);
+        return null;
+    }
+}
+
+export async function deleteTournament(tournamentId: number) {
+    try {
+        const res = await fetch(`${API_URL}/delete-tournament`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: tournamentId }),
+        });
+        if (!res.ok) throw new Error("Failed to delete tournament");
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to delete tournament:", error);
+        return null;
+    }
+}
