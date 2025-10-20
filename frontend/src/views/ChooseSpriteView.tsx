@@ -11,6 +11,7 @@ import Background from "../components/Background";
 import Card from "../components/Card";
 import ChooseSpriteContents from "../components/ChooseSpriteContents";
 import { updateUserById } from "@/lib/usersApiClient";
+import type { TournamentLobby } from "../../../backend/src/types/interface";
 
 async function handleJoinTournament(user: User | null, navigate: any) {
   if (!user) return;
@@ -20,8 +21,11 @@ async function handleJoinTournament(user: User | null, navigate: any) {
 
   // 2. Find one that isn't full (max 8) and hasn't started
   let tournament = tournaments.find(
-    (t: any) => !t.started && t.players.length < 8,
-  );
+    (t: TournamentLobby) =>
+		!t.started &&
+		t.players.length < 8 &&
+		t.maxPlayer === 8,
+	);
 
   // 3. If no suitable tournament, create one
   if (!tournament) {

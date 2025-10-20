@@ -355,7 +355,7 @@ async function saveMatchResult(
     }
 
 	//update tournament result
-    t.result = [];
+    t.result = t.result || [];
     t.result.push(resultCopy);
 
     //check if need to handle next stage
