@@ -281,7 +281,7 @@ const CustomModeView: React.FC = () => {
         text={translate("create_local_game")}
         open={showCreateLocalGame}
         onClose={() => setShowCreateLocalGame(false)}
-        redirectPath="/local-game"
+        redirectPath="/local-game-setup"
       />
       <ConfirmationPopup
         text={translate("create_singles_game")}

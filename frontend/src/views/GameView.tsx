@@ -43,7 +43,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const mode = location.pathname === "/local-game-view" ? "local" : "remote";
+  const mode = location.pathname === "/local-game" ? "local" : "remote";
 
   if (mode === "remote") {
     // TODO: Replace with actual JWT
