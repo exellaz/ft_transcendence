@@ -1,6 +1,7 @@
-import { Room, GameSettings, TournamentLobby } from "../../types/interface";
+import { Room, GameSettings, TournamentLobby, gameOver } from "../../types/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
+import { tournaments } from "../tournament/tournament.routes";
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
@@ -112,7 +113,7 @@ export function startRoomLoop(room: Room) {
  */
 export function roomStartGame(room: Room) {
     room.startTime = new Date();
-    console.log(`room setting: ${JSON.stringify(room.setting)}`);
+    // console.log(`room setting: ${JSON.stringify(room.setting)}`); ////debug
     // room.game.resetBall(room, "left");
 }
 
@@ -169,15 +170,36 @@ export function roomEndGame(
   const ms = end.getTime() - start.getTime(); // milliseconds
   room.duration = ms; // store raw ms (number)
 
-  //braodcast everyone the game is ended
-  broadcast(room, {
-    type: "game_over",
-    canLeave: true,
-    result: room.result,
-    playerLeft: room.gameState.teams.left,
-    playerRight: room.gameState.teams.right,
-    tournamentId: tournamentId || 0,
-  });
+//   //braodcast everyone the game is ended
+//   broadcast(room, {
+//     type: "game_over",
+//     canLeave: true,
+//     result: room.result,
+//     playerLeft: room.gameState.teams.left,
+//     playerRight: room.gameState.teams.right,
+//     tournamentId: tournamentId || 0,
+//   });
+  //prepare game over payload and include next tournament info if available
+  const payload: gameOver = {
+	type: "game_over",
+	canLeave: true,
+	result: room.result,
+	playerLeft: room.gameState.teams.left,
+	playerRight: room.gameState.teams.right,
+	tournamentId: tournamentId || 0,
+  }
+
+  try {
+	const parent = tournaments.get(tournamentId || -1);
+	// console.log("roomEndGame: attaching next tournament info for tournamentId:", tournamentId, parent); ////debug
+	if (parent?.tournamentDb !== undefined) {
+		payload.tournamentDb = parent.tournamentDb || null;
+	}
+  } catch (e) {
+		console.error("roomEndGame: failed to attach next tournament info:", e);
+  }
+
+  broadcast(room, payload);
 
   const leftPlayer = room.gameState.teams.left
     .map((p) => p.clientId)

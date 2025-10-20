@@ -70,10 +70,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         isAlive = true;
     });
 
-    console.log("player sprite: ", playerSprite);
-    console.log("player name: ", playerName);
+    // console.log("player sprite: ", playerSprite); ////debug
+    // console.log("player name: ", playerName); ////debug
 
-    console.log("room setting", room.setting.ballSpeed);
+    // console.log("room setting", room.setting.ballSpeed); ////debug
 
     socket.on("error", (err) => {
       console.error("ws backend error: ", err);
@@ -102,7 +102,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
         if (msg.type === "ready") {
-          console.log("player added ", clientId);
+        //   console.log("player added ", clientId); ////debug
           room.game.addPlayer(
             new Player({
               id: clientId,
@@ -116,7 +116,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           //ensure the socket is up to date
           room.sockets.set(socket, clientId);
 
-          console.log("concluding handshake");
+        //   console.log("concluding handshake"); ////debug
           socket.send(
             JSON.stringify({
               type: "ready",
@@ -134,10 +134,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
             }
           }
         } else if (msg.type === "fetch_world") {
-          console.log("requested for full world");
+        //   console.log("requested for full world"); ////debug
 
           const output = compile(room.game, true, room.setting);
-          console.log(`compiled ${output.length} bytes`);
+        //   console.log(`compiled ${output.length} bytes`); ////debug
           socket.send(output);
         } else if (msg.type === "input") {
         //  console.log("received move input", msg.payload); ////debug

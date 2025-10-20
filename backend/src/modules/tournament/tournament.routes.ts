@@ -54,7 +54,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
 
   // POST /create-next-tournament - create a new tournament for next stage
   app.post("/create-next-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
-    const { stage, parentId } = req.body as { stage: string, parentId?: number };
+    const { stage, parentId, tournamentDb } = req.body as { stage: string, parentId?: number, tournamentDb?: { id: number; status: string; createdAt: Date } | null; };
 
     if (typeof stage !== "string" || stage.trim() === "") {
       return reply.status(400).send({ error: "Invalid tournament stage" });
@@ -66,15 +66,17 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         if (parent && parent.nextTournamentId) {
             const existing = tournaments.get(parent.nextTournamentId);
             if (existing) {
+				const res = {
+					id: existing.id,
+					name: existing.name,
+					players: existing.players,
+					started: existing.started,
+					stage: existing.stage,
+					maxPlayer: existing.maxPlayer,
+					tournamentDb: tournamentDb,
+				}
                 console.log(`[ create next tournament ] Reusing existing tournament: ${existing.id} for parent ${parentId}`); ////debug
-                return {
-                    id: existing.id,
-                    name: existing.name,
-                    players: existing.players,
-                    started: existing.started,
-                    stage: existing.stage,
-                    maxPlayer: existing.maxPlayer,
-                };
+                return res;
             }
         }
     }
@@ -90,6 +92,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         countdownTimer: undefined,
         countdownRemaining: undefined,
         maxPlayer: stage === "SF" ? 4 : 2,
+		tournamentDb: tournamentDb || null,
     };
 
     tournaments.set(tournamentId, tournament);
@@ -103,7 +106,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         }
     }
 
-    console.log(`Tournament created: ${tournament.name} (${tournamentId})`);
+    console.log(`Tournament next stage created: ${tournament.name} (${tournamentId})`);
     const res = {
         id: tournamentId,
         name: tournament.name,

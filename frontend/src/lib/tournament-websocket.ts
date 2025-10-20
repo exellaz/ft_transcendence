@@ -61,8 +61,8 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         return;
       }
 
-      // server sends a dedicated new-lobby message when advancing rounds
-      if (data.type === "tournamentNewLobby" || data.type === "tournamentNextRound") {
+      // server sends new tournament lobby info
+      if (data.type === "tournamentNewLobby") {
         setPlayers(Array.isArray(data.players) ? data.players : []);
         setStage(data.nextStage ?? data.stage ?? null);
         setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
@@ -71,16 +71,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         setLastLobbyData(data);
         // persist snapshot for quick render if navigation happens
         try { sessionStorage.setItem("lastTournamentLobby", JSON.stringify({ id: tournamentId, stage: data.nextStage ?? data.stage, players: data.players, maxPlayer: data.maxPlayer ?? null, countdown: data.countdown ?? null })); } catch {}
-        return;
-      }
-
-      // generic tournament update (used by PATCH endpoint)
-      if (data.type === "tournamentUpdated") {
-        setPlayers(Array.isArray(data.players) ? data.players : players);
-        setStage(data.stage ?? stage);
-        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : maxPlayer);
-        setLastLobbyData(data);
-        try { sessionStorage.setItem("lastTournamentLobby", JSON.stringify({ id: tournamentId, stage: data.stage, players: data.players, maxPlayer: data.maxPlayer ?? null })); } catch {}
         return;
       }
 
@@ -124,16 +114,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
 		sessionStorage.setItem("RoomId", data.roomId);
 		sessionStorage.setItem("RoomName", data.roomName);
 	  }
-
-      if (data.type === "lobbyData") {
-        const playersData = Array.isArray(data.players) ? data.players : [];
-        setPlayers(playersData);
-        setStarted(false);
-        setStage(data.stage ?? null);
-        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
-        setCountdown(typeof data.countdown === "number" ? data.countdown : null);
-        setLastLobbyData(data);
-      }
     };
 
     ws.onclose = () => {

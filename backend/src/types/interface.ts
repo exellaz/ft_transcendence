@@ -38,7 +38,7 @@ export interface TournamentLobby {
   allowedPlayers?: Set<number> | undefined;
   nextTournamentId?: number;
   parentTournamentId?: number;
-  dbId?: number;
+  tournamentDb?: { id: number; status: string; createdAt: Date } | null;
 }
 
 export interface TournamentGameRoom {
@@ -163,6 +163,7 @@ export interface gameOver {
     playerLeft: Room["gameState"]["teams"]["left"]
     playerRight: Room["gameState"]["teams"]["right"];
     tournamentId?: number;
+	tournamentDb?: { id: number; status: string; createdAt: Date } | null;
 };
 
 export interface countdown {

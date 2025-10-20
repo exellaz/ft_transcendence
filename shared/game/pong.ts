@@ -400,7 +400,7 @@ export class PongGame {
         if (this.onScreenTitle.text === "-") {
           this.onScreenTitle.text = "";
           this.state = GameState.STARTED;
-          console.log("started game"); ////debug
+        //   console.log("started game"); ////debug
           this.ball.start();
         }
       } else if (this.state === GameState.GAMEOVER) {
@@ -599,8 +599,8 @@ export class PongGame {
       settings.paddleSpeed ?? 1
     ];
 
-    console.log("incoming settings", settings);
-    console.log("final settings", this.gameSettings);
+    // console.log("incoming settings", settings); ////debug
+    // console.log("final settings", this.gameSettings); ////debug
   }
 
   //update setting from api setting change
@@ -639,7 +639,7 @@ export class PongGame {
     this.id = PongGame.globalId;
     this.isClient = isClient;
 
-    console.log("INITIALIZED");
+    // console.log("INITIALIZED"); ////debug
 
     this.loadMap(this.gameSettings.map);
   }

@@ -494,7 +494,7 @@ const GameView: React.FC = () => {
   const { socket } = useGameWebSocket(params);
   // console.log("socket has been create: ", socket); ////debug
 
-  const { gameOver, isWinner, lastTournamentId } = useGameRoomWebSocket({
+  const { gameOver, isWinner, lastTournamentId, tournamentDb } = useGameRoomWebSocket({
     ...params,
     isOffline: delayForGameOver,
   });
@@ -570,7 +570,7 @@ const GameView: React.FC = () => {
   };
 
   // extracted so both the auto-timer and the button use the same logic
-  const goToNextRound = async () => {
+  const goToNextRound = async (tournamentDb: { id: number; status: string; createdAt: Date } | null) => {
     if (!isWinner || !lastTournamentId || isAdvancing) return;
     setIsAdvancing(true);
 
@@ -598,7 +598,7 @@ const GameView: React.FC = () => {
     }
 
     try {
-      const res = await createNextTournament(next.code, lastTournamentId);
+      const res = await createNextTournament(next.code, lastTournamentId, tournamentDb);
 
       // navigate to the new tournament lobby if created
       if (res && res.id) {
@@ -608,7 +608,7 @@ const GameView: React.FC = () => {
             if (lastTournamentId) {
                 deleteTournament(lastTournamentId).catch((err) => console.log("error deleting old tournament:", err));
             }
-        }, 10000); //delete old tournament after 5 seconds
+        }, 10000); //delete old tournament after 10 seconds
         return;
       }
 
@@ -644,10 +644,10 @@ const GameView: React.FC = () => {
   React.useEffect(() => {
     if (!isWinner || !lastTournamentId) return;
     const timer = setTimeout(() => {
-      goToNextRound();
+      goToNextRound(tournamentDb);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [isWinner, lastTournamentId]); // navigate is safe to omit here (stable)
+  }, [isWinner, lastTournamentId, tournamentDb]); // navigate is safe to omit here (stable)
 
   React.useEffect(() => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {

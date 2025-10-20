@@ -209,12 +209,12 @@ export async function getTournamentById(tournamentId: number) {
     }
 }
 
-export async function createNextTournament(stage: string, parentId: number) {
+export async function createNextTournament(stage: string, parentId: number, tournamentDb: { id: number; status: string; createdAt: Date } | null) {
     try {
         const res = await fetch(`${API_URL}/create-next-tournament`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ stage, parentId }),
+            body: JSON.stringify({ stage, parentId, tournamentDb }),
         });
         if (!res.ok) throw new Error("Failed to create next tournament");
         return await res.json();

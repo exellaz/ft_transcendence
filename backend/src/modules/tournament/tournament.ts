@@ -6,7 +6,13 @@ import WebSocket from "ws";
 import { TournamentMatch } from "../../types/interface";
 import { createTournament, createTournamentMatch, createTournamentPlayer, updateTournamentPlayerRanking, updateTournamentStatus } from "./tournament.service";
 
-// Start tournament countdown and manage tournament progression
+/**
+ * @brief Start the countdown for a tournament.
+ * @param tournamentId - The ID of the tournament to start the countdown for.
+ * @param broadcast - Function to broadcast messages to tournament participants.
+ * @param countdownTime - The countdown time in seconds.
+ * @param client - Map of WebSocket clients connected to the tournament.
+*/
 export async function startTournamentCountdown(
   tournamentId: number,
   broadcast: (msg: string) => void,
@@ -33,14 +39,20 @@ export async function startTournamentCountdown(
   tournament.clientMap = client;
 
   //create tournament to database
-  const TournamentLobbyDb = await createTournament();
-  if (TournamentLobbyDb.success && TournamentLobbyDb.data)
-          console.log("Tournament created: ", TournamentLobbyDb.data);
-  else
-  {
-      console.log("Tournament creation failed: ", TournamentLobbyDb.error);
-      clearPlaceholder();
-      return;
+  let TournamentLobbyDb = tournament.tournamentDb;
+  if (!TournamentLobbyDb) {
+	const create = await createTournament();
+	if (create.success && create.data) {
+		console.log("[ tournament database ] Tournament created: ", create.data);
+		tournament.tournamentDb = create.data;
+		TournamentLobbyDb = create.data;
+	} else {
+		console.log("[ tournament database ] Tournament creation failed: ", create.error);
+		clearPlaceholder();
+		return;
+	}
+  } else {
+	console.log("[ tournament database ] Reuse tournament DB record: ", TournamentLobbyDb);
   }
 
   // Helper function to start the tournament immediately
@@ -57,7 +69,7 @@ export async function startTournamentCountdown(
 
     for (let i = 0; i < shuffled.length; i += 2) {
       const pair = shuffled.slice(i, i + 2);
-      const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb.data);
+      const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb);
 
       if (!room) continue;
     //  console.log("Tournament game room created:", room); ////debug
@@ -111,12 +123,16 @@ export async function startTournamentCountdown(
     } else {
       startTournamentNow();
     }
-  }, 1500);
+  }, 1000);
 
   console.log(`Tournament ${tournamentId} countdown started`);
 }
 
-// Cancel the tournament countdown
+/**
+ * @brief Cancel the ongoing countdown for a tournament.
+ * @param tournamentId - The ID of the tournament to cancel the countdown for.
+ * @param broadcast - Function to broadcast messages to tournament participants.
+ */
 export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg: string) => void) {
 	const tournament = tournaments.get(tournamentId);
 	if (!tournament || !tournament.countdownTimer) return;
@@ -128,7 +144,14 @@ export function cancelTournamentCountdown(tournamentId: number, broadcast: (msg:
 	console.log (`Tournament ${tournamentId} countdown cancelled`); //// debug
 }
 
-// Create a game room for a pair of players in the tournament
+/**
+ * @brief Create a game room for a tournament match.
+ * @param tournamentId - The ID of the tournament.
+ * @param playerPair - Array of two players participating in the match.
+ * @param tournamentInfo - Information about the tournament lobby.
+ * @param TournamentLobbyDb - Database record of the tournament lobby.
+ * @return The created game room.
+*/
 export function createGameRoom(
 	tournamentId: number,
 	playerPair: { id: number, username: string, spriteUrl: string }[],
@@ -145,7 +168,7 @@ export function createGameRoom(
 		ballSpeed: 1,
 		ballSize: 1,
 		paddleSpeed: 1,
-		scorePoint: 5,
+		scorePoint: 1, //? point to win
 		map: "stadium",
 	  },
 	  async (winner) => {
@@ -154,9 +177,9 @@ export function createGameRoom(
 
 		const result = roomEndGame(room, true, winner, tournamentId);
 		if (result) {
-            console.log ("===============================================");
-            console.log ("Game result: ", result);
-            console.log ("===============================================");
+            // console.log ("===============================================");
+            // console.log ("Game result: ", result);
+            // console.log ("==============================================="); ////debug
             await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
             //tournaments.delete(tournamentId);
         }
@@ -176,6 +199,7 @@ export function createGameRoom(
 		leader: false,
 		spriteUrl: playerPair[0].spriteUrl,
 		ready: true,
+		online: true,
 	}
 
 	const rightPlayer: playerInfo = {
@@ -186,9 +210,10 @@ export function createGameRoom(
 		leader: false,
 		spriteUrl: playerPair[1].spriteUrl,
 		ready: true,
+		online: true,
 	}
 
-	// Create the game room with both players
+	// Create the game room with both players and info
 	const newRoom: Room = {
 		id: roomId,
 		name: roomName,
@@ -197,7 +222,7 @@ export function createGameRoom(
 			ballSpeed: 1,
 			ballSize: 1,
 			paddleSpeed: 1,
-			scorePoint: 1,
+			scorePoint: 5,
 			map: "stadium"
 		},
 		gameState: {
@@ -217,30 +242,58 @@ export function createGameRoom(
 		leaderId: -1,
 		private: false,
 	};
-
 	rooms.set(roomId, newRoom);
-
 	console.log(`Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`);
-
 	return newRoom;
 }
 
+/**
+ * @brief Save the match result to the database and update tournament state.
+ * @param result - The result of the match.
+ * @param TournamentLobbyDb - Database record of the tournament lobby.
+ * @param playerPair - Array of two players who participated in the match.
+ * @param tournamentInfo - Information about the tournament lobby.
+*/
 async function saveMatchResult(
     result: { leftPlayerId: number; rightPlayerId: number; scoreLeft: number; scoreRight: number; winnerId: string | number | "draw"; duration: number; },
     TournamentLobbyDb: { id: number, status: string, createdAt: Date},
     playerPair: { id: number, username: string, spriteUrl: string }[],
     tournamentInfo: TournamentLobby
 ) {
+	const tournament = tournaments.get(tournamentInfo.id);
+	if (!tournament) return;
+	tournament.playerMap = tournament.playerMap || new Map<number, number>();
+
+	//build createdPlayer array by reusing existing players in playerMap if any
     const createdPlayer: { success: boolean; data?: { id: number, tournamentId: number, userId: number, ranking: number }; error?: string }[] = [];
     for (const player of playerPair) {
-        const TournamentPlayer = await createTournamentPlayer({
+		const userId = player.id;
+
+		//if player map has this user, reuse it avoid create tournament player DB again
+		const existingTournamentPlayerId = tournament.playerMap.get(userId);
+		if (existingTournamentPlayerId) {
+			console.log(`[ player tournament DB ]Reusing existing tournament player for user ${userId} with tournament player id ${existingTournamentPlayerId}`);
+			createdPlayer.push({
+				success: true,
+				data: {
+					id: existingTournamentPlayerId,
+					tournamentId: tournamentInfo.id,
+					userId: userId,
+					ranking: 0, //ranking will update later
+				}
+			});
+			continue;
+		}
+
+		//else create new tournament player DB record
+		const TournamentPlayer = await createTournamentPlayer({
             tournamentId: TournamentLobbyDb.id,
-            userId: parseInt(player.id.toString()),
+            userId: player.id,
             ranking: 0,
         });
         if (TournamentPlayer.success && TournamentPlayer.data)
         {
-            console.log("Tournament player created: ", TournamentPlayer.data);
+            console.log("[ player tournament DB ] Tournament player created: ", TournamentPlayer.data);
             createdPlayer.push({
                 success: true,
                 data: {
@@ -248,20 +301,23 @@ async function saveMatchResult(
                     ranking: TournamentPlayer.data.ranking ?? 0 // Ensure ranking is a number
                 }
             });
+			tournament.playerMap.set(userId, TournamentPlayer.data.id);
         }
         else
         {
-            console.log(`tournament player creation failed: `, TournamentPlayer.error);
+            console.log(`[ player tournament DB ] tournament player creation failed: `, TournamentPlayer.error);
             return;
         }
     }
+
+	//create match record in database
     for (let i = 0; i < createdPlayer.length; i++) {
         const player1 = createdPlayer[i];
         const player2 = createdPlayer[i + 1];
         if (!player2 || !player1) continue;
         const matchResult = await createTournamentMatch({
             tournamentId: TournamentLobbyDb.id,
-            round: tournamentInfo?.stage ?? "unknown", // Provide the round value, adjust as needed
+            round: tournamentInfo?.stage ?? "unknown",
             player1Id: player1.data!.id,
             player2Id: player2.data!.id,
             winnerId:
@@ -279,7 +335,7 @@ async function saveMatchResult(
             console.log(`tournament match creation failed: `, matchResult.error);
     }
 
-    //after save match result, update player rank
+    //after create player and save match result, update player rank
     const resultCopy = {
         playerId: result.winnerId === "draw" ? null : (typeof result.winnerId === "number" ? result.winnerId : null),
         stage: tournamentInfo.stage,
@@ -289,52 +345,54 @@ async function saveMatchResult(
         duration: result.duration,
     }
 
+	//update player map and tournament result
     const t = tournaments.get(tournamentInfo.id);
     if (!t) return;
-
     t.playerMap = t.playerMap || new Map<number, number>();
-
     for (const p of createdPlayer) {
         if(p.data)
             t.playerMap.set(p.data.userId, p.data.id);
     }
 
-    t.result = t.result || [];
+	//update tournament result
+    t.result = [];
     t.result.push(resultCopy);
 
-    //tournamentInfo.stage === "QF" ? 2 : 0;
+    //check if need to handle next stage
     const TotalMatches =
         tournamentInfo.stage === "QF" ? 4 :
         tournamentInfo.stage === "SF" ? 2 :
         tournamentInfo.stage === "F" ? 1 : 0;
-
     const finishedMatches = t.result.filter(r => r.stage === tournamentInfo.stage).length;
-
     if (finishedMatches === TotalMatches) {
         console.log(`Tournament ${tournamentInfo.id} stage ${tournamentInfo.stage} completed.`);
         await handleNextRound(tournamentInfo.id, tournamentInfo.stage, TournamentLobbyDb);
     }
 }
 
+/**
+ * @brief Handle the transition to the next round of the tournament.
+ * @param tournamentId - The ID of the tournament.
+ * @param currentStage - The current stage of the tournament ("QF", "SF", "F").
+ * @param TournamentLobbyDb - Database record of the tournament lobby.
+*/
 async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" | "F", TournamentLobbyDb: { id: number, status: string, createdAt: Date }) {
     const tournament = tournaments.get(tournamentId);
     if (!tournament) return;
 
+	//collect winners and losers and results from current stage
     const ThisRoundResult = tournament.result?.filter(r => r.stage === currentStage);
     const winners: { id: number; username: string; spriteUrl: string; ready: boolean }[] = [];
     const losers: { id: number; duration: number }[] = [];
 
-    // collect winners and losers from all matches first
+    // collect winners and losers from current stage
     for (const match of ThisRoundResult ?? []) {
         const matchInfo = tournament.matches?.find(m =>
             m.players.some(p => p.id === match.winnerId)
         );
-
         if (!matchInfo || !matchInfo.players[0] || !matchInfo.players[1]) continue;
-
         const leftId = matchInfo.players[0].id;
         const rightId = matchInfo.players[1].id;
-
         if (match.winnerId === leftId) {
             winners.push({
                 id: leftId,
@@ -354,7 +412,7 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
         }
     }
 
-    // now compute ranks for losers (after collecting all)
+    // now compute ranks for losers (after collecting)
     losers.sort((a, b) => a.duration - b.duration);
     const stageRankMap: Record<string, [number, number]> = {
         "QF": [5, 8],
@@ -364,12 +422,13 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
     const minRank = stageRankMap[currentStage] ?? [0, 0];
     const loserStartRank = minRank[0] || 0;
 
+	// assign ranks to losers
     const rankedLosers = losers.map((p, i) => ({
         playerId: p.id,
         rank: loserStartRank + i,
     }));
 
-    // batch update DB and await completion
+    //update the loser rankings in database before proceeding to next stage
     const updatePromises = rankedLosers.map(async (rl) => {
         if (!tournament.playerMap) {
             console.warn(`No playerMap for tournament ${tournamentId}; cannot update ranking for ${rl.playerId}`);
@@ -386,11 +445,11 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
 
     await Promise.all(updatePromises);
 
-    // decide next stage
+    //handle next stage
     const nextStageMap: Record<string, string | null> = { "QF": "SF", "SF": "F", "F": null };
     const nextStage = nextStageMap[currentStage];
 
-    // If this was the final (no nextStage), also assign winner rank(s) (1, 2, ...)
+    // If this was the final (no nextStage), update the rank of the winners
     if (!nextStage) {
       const winnerRankPromises = winners.map(async (w, idx) => {
         if (!tournament.playerMap) return;
@@ -409,7 +468,7 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
     // If no next stage, finalize tournament
     if (!nextStage) {
         const winnerIds = winners.map((w) => w.id);
-        tournament.players = winners;                 // replace players with winners only
+        tournament.players = winners;
         tournament.matches = [];
         tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
         tournament.started = false;
@@ -434,7 +493,6 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
         }
 
         console.log(`Tournament ${tournamentId} completed.`);
-        //! optionally update tournament DB status here
         const updateTournamentDB = await updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
         if (updateTournamentDB.success)
             console.log("[ update tournament DB ] Tournament status updated to COMPLETED: ", updateTournamentDB.data);
@@ -471,12 +529,5 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
         maxPlayer: tournament.maxPlayer ?? winners.length,
       }));
     }
-
-    const updateTournamentDB = await updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
-    if (updateTournamentDB.success)
-        console.log("[ update tournament DB ] Tournament status updated to COMPLETED: ", updateTournamentDB.data);
-    else
-        console.log("[ update tournament DB ] Tournament status update failed: ", updateTournamentDB.error);
-    // optionally auto-start only after winners reconnect (clientMap empty now)
     return;
   }

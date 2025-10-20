@@ -135,6 +135,7 @@ export function useGameRoomWebSocket({
   const [gameOver, setGameOver] = useState(false);
   const [isWinner, setIsWinner] = useState(false);
   const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
+  const [tournamentDb, setTournamentDb] = useState<{ id: number; status: string; createdAt: Date } | null>(null);
   const navigate = useNavigate();
   console.log("allinfo:");
   console.log("roomId:", roomId);
@@ -177,9 +178,10 @@ export function useGameRoomWebSocket({
 	  }
 
 	  if (msg.type === "game_over") {
+		console.log("==================================================== Game over message received:", msg); //// debug
         //isCleanUp = true;
 
-        console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
+        // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
         const isTournamentRoom = roomId.toString().startsWith("1111");
         setGameOver(!!msg.canLeave);
         if (isTournamentRoom) {
@@ -188,6 +190,7 @@ export function useGameRoomWebSocket({
                 const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
                 const winnerSide = msg.result?.winner;
                 const tournamentIdFromMsg = msg.tournamentId ?? null;
+				setTournamentDb(msg.tournamentDb || null);
                 setLastTournamentId(tournamentIdFromMsg);
 
                 let winnerClientIds: number | null = null;
@@ -251,5 +254,6 @@ export function useGameRoomWebSocket({
     gameOver,
     isWinner,
     lastTournamentId,
+	tournamentDb,
   };
 }
