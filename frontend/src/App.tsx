@@ -97,10 +97,18 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/local-game"
+              path="/local-game-setup"
               element={
                 <RequireAuth>
                   <LocalGameView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/local-game"
+              element={
+                <RequireAuth>
+                  <GameView />
                 </RequireAuth>
               }
             />

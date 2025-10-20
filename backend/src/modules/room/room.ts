@@ -3,6 +3,10 @@ import { liveChatMessage } from "../chat/liveChat"; // import chat message type
 //import { saveMatchResult } from "../../plugins/database";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
+import { writeFileSync } from "fs";
+import pako from "pako";
+import os from "os";
+import { performance } from "perf_hooks";
 
 export interface playerInfo {
   clientId: number; // client id
@@ -70,10 +74,10 @@ export interface GameSettings {
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
-  ballSpeed: 0,
+  ballSpeed: 1,
   ballSize: 2,
-  paddleSpeed: 0,
-  scorePoint: 1,
+  paddleSpeed: 1,
+  scorePoint: 3,
   map: "mansion",
 };
 
@@ -119,6 +123,7 @@ export function createRoom(
     (winner) => {
       roomEndGame(room, false, winner);
     },
+    teamSize,
   );
 
   const room: Room = {
@@ -159,30 +164,76 @@ export function createRoom(
   return room;
 }
 
+const ENABLE_FPS_CAP: boolean = false;
+const FPS_CAP: number = 60;
+
+let lastLoopTime = performance.now();
+
 /**
  * @brief start the game loop for a room
  * @param room Room object
  */
 export function startRoomLoop(room: Room) {
-  // if loop already running, do nothing
   if (room.loopHandle) return;
-
   roomStartGame(room);
+  let sendAccumulator = 0;
 
-  // Start the game loop at 60 FPS
   room.loopHandle = setInterval(() => {
-    // If room has no players, stop loop
-    if (room.clients.size === 0) {
-      clearInterval(room.loopHandle!);
-      room.loopHandle = null;
-      rooms.delete(room.id);
-      console.log(`Room ${room.id} deleted due to no players.`); //? is it from DC ?
-      return;
-    }
-    room.game.update(room);
-  }, 1000 / 60);
-}
+    const loopStart = performance.now();
+    const loopDelta = loopStart - lastLoopTime;
+    lastLoopTime = loopStart;
 
+    // --- Game logic ---
+    room.game.update(room);
+
+    sendAccumulator += room.game.delta * 1000; // convert to ms
+
+    function broadcast(room: Room) {
+      const rawOutput = room.game.exportState(false);
+      const output = JSON.stringify({
+        state: rawOutput,
+        metadata: {
+          timestamp: Date.now(),
+          delta: room.game.delta,
+          fps: room.game.fps,
+        },
+      });
+
+      for (const paddle of [
+        ...room.game.teamLeft.getPaddles(),
+        ...room.game.teamRight.getPaddles(),
+      ]) {
+        paddle.player.socket.send(output);
+      }
+    }
+
+    if (ENABLE_FPS_CAP) {
+      if (sendAccumulator >= 1000 / FPS_CAP) {
+        // send at 30fps
+        sendAccumulator = 0;
+        broadcast(room);
+      }
+    } else {
+      broadcast(room);
+    }
+
+    // --- PERFORMANCE METRICS ---
+    const loopEnd = performance.now();
+    const frameTime = loopEnd - loopStart;
+
+    const memory = process.memoryUsage();
+    const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
+
+    if (Math.random() < 0.05) {
+      // log ~5% of frames to avoid spamming
+      console.log(
+        `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
+          `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
+          `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
+      );
+    }
+  }, 1000 / 55);
+}
 /**
  * @brief start the game time use date for later calculate duration
  * @param room Room object
@@ -190,7 +241,6 @@ export function startRoomLoop(room: Room) {
 export function roomStartGame(room: Room) {
   if (!room.gameState.gameStarted) {
     room.startTime = new Date();
-    console.log(`room setting: ${JSON.stringify(room.setting)}`);
     // room.game.resetBall(room, "left");
   }
 }
