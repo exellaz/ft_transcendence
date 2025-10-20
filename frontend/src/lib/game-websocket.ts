@@ -34,6 +34,7 @@ export function useGameWebSocket({
   playerSprite,
   isOffline = false,
   onError,
+  callback,
 }: UseGameWebSocketParams) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
@@ -68,6 +69,28 @@ export function useGameWebSocket({
       console.log("Game ws connected");
       setSocket(ws);
       console.log("!created socket: ", socket);
+      try { callback?.(ws); } catch (err) {};
+    });
+
+    ws.addEventListener("message", (event) => {
+        try {
+            const msg = JSON.parse(event.data);
+            if (!msg) return;
+
+            if (msg.type === "getPlayerTeam") {
+                try { callback?.(ws); } catch (err) {};
+            }
+
+            if (msg.type === "tournamentNextRound") {
+                const players = msg.players as { id: number }[] | undefined;
+                if (Array.isArray(players) && players.some(p => p.id === clientId)) {
+                    navigate(`/tournament/${msg.tournamentId}`);
+                }
+                return;
+            }
+        } catch (err) {
+            console.error("Error handling WebSocket message:", err);
+        }
     });
 
     ws.onerror = (e) => {
@@ -110,6 +133,8 @@ export function useGameRoomWebSocket({
   isOffline = false,
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
+  const [isWinner, setIsWinner] = useState(false);
+  const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
   const navigate = useNavigate();
   console.log("allinfo:");
   console.log("roomId:", roomId);
@@ -152,40 +177,47 @@ export function useGameRoomWebSocket({
 	  }
 
 	  if (msg.type === "game_over") {
-        isCleanUp = true;
-		//close the websocket after game over
-		try { ws.close(1000, "game over"); } catch {}
-        //console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
-        if (roomId.toString().startsWith("1111") === true)
-        {
-            const leftPlayerId = msg.playerLeft.map((p: playerInfo) => p.clientId);
-            const rightPlayerId = msg.playerRight.map((p: playerInfo) => p.clientId);
-            const winner = msg.result.winner;
+        //isCleanUp = true;
 
-            //console.log("Tournament game over"); ////debug
-            //console.log("Winner is: ", winner); ////debug
-            if (winner === "left")
-            {
-                //console.log("game_over => msg.playerLeft.clientId: ", leftPlayerId); ////debug
-                //console.log("game_over => clientId: ", clientId); ////debug
-                if (leftPlayerId[0] === clientId)
-                {
-                    setGameOver(msg.canLeave);
-                    navigate("/roomList");
+        console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
+        const isTournamentRoom = roomId.toString().startsWith("1111");
+        setGameOver(!!msg.canLeave);
+        if (isTournamentRoom) {
+            try {
+                const leftId: number[] = Array.isArray(msg.playerLeft) ? msg.playerLeft.map((p: playerInfo) => p.clientId) : [];
+                const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
+                const winnerSide = msg.result?.winner;
+                const tournamentIdFromMsg = msg.tournamentId ?? null;
+                setLastTournamentId(tournamentIdFromMsg);
+
+                let winnerClientIds: number | null = null;
+                if (winnerSide === "left") winnerClientIds = leftId[0] || null;
+                else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
+
+                // if this client is the winner -> do not close the websocket
+                if (winnerClientIds === clientId) {
+                    console.log("you are the winner - waiting for tournament next-round");
+                    setIsWinner(true);
+                    ws.close(1000, "game over - winner");
+                    return;
                 }
-            }
-            else if (winner === "right")
-            {
-                //console.log("game_over => msg.playerRight.clientId: ", rightPlayerId); ////debug
-                //console.log("game_over => clientId: ", clientId); ////debug
-                if (rightPlayerId[0] === clientId)
-                {
-                    setGameOver(msg.canLeave);
-                    navigate("/roomList");
-                }
+
+                // loser: setGameOver and navigate to tournament page
+                setIsWinner(false);
+                try { ws.close(1000, "game over - loser"); } catch (err) {}
+                isCleanUp = true;
+                return;
+            } catch (err) {
+                // fallback: if parsing fails, close and leave
+                setIsWinner(false);
+                try { ws.close(1000, "game over"); } catch {}
+                isCleanUp = true;
+                return;
             }
         }
-        setGameOver(msg.canLeave);
+        try { ws.close(1000, "game over"); } catch {}
+        isCleanUp = true;
+        setIsWinner(false);
       }
     };
 
@@ -217,5 +249,7 @@ export function useGameRoomWebSocket({
 
   return {
     gameOver,
+    isWinner,
+    lastTournamentId,
   };
 }

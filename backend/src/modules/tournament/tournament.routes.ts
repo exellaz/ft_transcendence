@@ -52,6 +52,36 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     return res;
   });
 
+  app.patch("/update-tournament/:tournamentId", async (
+    req: FastifyRequest<{ Params: { tournamentId: string } }>,
+    reply: FastifyReply
+  ) => {
+    const tournamentId = parseInt(req.params.tournamentId);
+    const { maxPlayer, stage } = req.body as { maxPlayer?: number; stage: string; };
+
+    const tournament = tournaments.get(tournamentId);
+    if (!tournament) {
+      return reply.status(404).send({ error: "Tournament not found" });
+    }
+
+    if (stage && typeof stage === "string" && stage.trim() !== "") {
+      tournament.stage = stage as "QF" | "SF" | "F";
+    }
+
+    if (maxPlayer && typeof maxPlayer === "number") {
+      tournament.maxPlayer = maxPlayer;
+    }
+
+    return ({
+      id: tournament.id,
+      name: tournament.name,
+      players: tournament.players,
+      started: false,
+      stage: tournament.stage,
+      maxPlayer: tournament.maxPlayer,
+    });
+  });
+
   // GET /list-tournaments - list all tournaments
   app.get("/list-tournaments", async () => {
     const response = Array.from(tournaments.values()).map((tournament) => ({
@@ -71,28 +101,18 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     reply: FastifyReply
   ) => {
     const tournamentId = parseInt(req.params.tournamentId);
-    const { id, username, spriteUrl } = req.body as TournamentPlayerWs;
 
     const tournament = tournaments.get(tournamentId);
     if (!tournament) {
       return reply.status(404).send({ error: "Tournament not found" });
     }
-    if (tournament.players.length >= tournament.maxPlayer) {
-        return reply.status(400).send({ error: "Tournament is full" });
-    }
-
-    const alreadyJoined = tournament.players.find((p: TournamentPlayerWs) => p.id === id);
-    if (!alreadyJoined) {
-        tournament.players.push({ id, username, spriteUrl, ready: false });
-    }
-
 
     return {
       id: tournament.id,
       name: tournament.name,
       players: tournament.players.length,
       maxPlayer: tournament.maxPlayer,
-      started: tournament.started,
+      stage: tournament.stage,
     };
   });
 

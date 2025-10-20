@@ -33,6 +33,9 @@ export interface TournamentLobby {
   countdownTimer?: NodeJS.Timeout | undefined;
   countdownRemaining?: number | undefined;
   maxPlayer: number;
+  broadcast?: (msg: string) => void;
+  clientMap?: Map<WSWebSocket, { tournamentId: number; playerId: number; }>;
+  allowedPlayers?: Set<number> | undefined;
 }
 
 export interface TournamentGameRoom {
@@ -156,6 +159,7 @@ export interface gameOver {
     result: Room["result"];
     playerLeft: Room["gameState"]["teams"]["left"]
     playerRight: Room["gameState"]["teams"]["right"];
+    tournamentId?: number;
 };
 
 export interface countdown {

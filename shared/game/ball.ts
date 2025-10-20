@@ -103,7 +103,7 @@ export class Ball extends GameObject {
     this.hitbox = new HitBox({
       host: this,
       onCollide: (otherHitBox) => {
-        console.log("colliding");
+        //console.log("colliding"); ////debug
         const other = otherHitBox.host;
 
         if (!(other instanceof Padel)) {

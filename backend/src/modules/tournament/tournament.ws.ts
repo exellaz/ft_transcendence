@@ -3,6 +3,8 @@ import WebSocket from "ws";
 import { tournaments } from "./tournament.routes";
 import { startTournamentCountdown, cancelTournamentCountdown } from "./tournament";
 import { TournamentPlayerWs } from "../../types/interface";
+import { count } from "console";
+import { broadcast } from "src/utils/utils";
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 
@@ -31,15 +33,27 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             return;
         }
 
+        //reject player not in that set (the loser eliminated from tournament)
+        const allowed = tournament.allowedPlayers;
+        if (allowed && !allowed.has(playerId)) {
+            try {
+                socket.send(JSON.stringify({ type: "eliminated", tournamentId, message: "You have been eliminated from the tournament." }));
+            } catch {}
+            socket.close();
+            return;
+        }
+
+
         //add player to the tournament if not already present
         const exists = tournament.players.find((p: TournamentPlayerWs) => p.id === playerId);
         if (!exists) {
             tournament.players.push({ id: playerId, username: playerName, spriteUrl: playerSprite, ready: false });
 
             const broadcast = (msg: string) => {
+                const recipients = [];
                 for (const [ws, info] of client.entries()) {
                     if (info.tournamentId === tournamentId) {
-                        ws.send(msg);
+                        try { ws.send(msg); recipients.push(info.playerId); } catch {}
                     }
                 }
             }
@@ -49,7 +63,16 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             console.log (`Player ${playerName} joined tournament ${tournamentId}`); //// debug
 
             if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
-                startTournamentCountdown(tournamentId, broadcast, 10, client); //start 10 seconds countdown
+                // only start countdown automatically if all players are marked ready.
+                const allReady = tournament.players.length > 0 && tournament.players.every(p => p.ready === true);
+                if (allReady) {
+                    console.log("[ player join ] All players are ready, starting tournament immediately"); //// debug
+                    startTournamentCountdown(tournamentId, broadcast, 0, client); // immediate start when everyone is ready
+                } else {
+                    console.log("[ player join ] Not all players are ready, starting tournament with delay"); //// debug
+                    // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
+                    startTournamentCountdown(tournamentId, broadcast, 10, client);
+                }
             }
         }
 
@@ -107,6 +130,43 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                         // All players are ready, start the tournament
                         console.log(`All players are ready in tournament ${tournamentId}, starting tournament immediately`); //// debug
                         startTournamentCountdown(tournamentId, broadcast, 0, client);
+                    }
+                }
+
+                if (msg.type === "requestLobby") {
+                    try {
+                        socket.send(JSON.stringify({
+                            type: "lobbyData",
+                            tournamentId: tournamentId,
+                            players: tournament.players,
+                            started: tournament.started,
+                            stage: tournament.stage ?? null,
+                            maxPlayer: tournament.maxPlayer ?? null,
+                            countdown: typeof tournament.countdownRemaining === "number" ? tournament.countdownRemaining : null,
+                        }));
+                    } catch (err) {
+                        console.error("Error sending lobby data:", err);
+                    }
+
+                    const broadcast = (msg: string) => {
+                        for (const [ws, info] of client.entries()) {
+                            if (info.tournamentId === tournamentId) {
+                                try { ws.send(msg); } catch {}
+                            }
+                        }
+                    }
+
+                    if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
+                        // only start countdown automatically if all players are marked ready.
+                        const allReady = tournament.players.length > 0 && tournament.players.every(p => p.ready === true);
+                        if (allReady) {
+                            console.log("[ request data ] All players are ready, starting tournament immediately"); //// debug
+                            startTournamentCountdown(tournamentId, broadcast, 0, client); // immediate start when everyone is ready
+                        } else {
+                            console.log("[ request data ] Not all players are ready, starting tournament with delay"); //// debug
+                            // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
+                            startTournamentCountdown(tournamentId, broadcast, 10, client);
+                        }
                     }
                 }
             } catch (err) {

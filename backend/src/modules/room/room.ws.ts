@@ -121,11 +121,11 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
                 }
                 isAlive = false;
 				try {
-					console.log(`[room.ws] send heartbeat -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
+					//console.log(`[room.ws] send heartbeat -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 					socket.send(JSON.stringify({ type: "heartbeat" }));
 					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
 					heartbeatTimeout = setTimeout(() => {
-						console.log(`[room.ws] heartbeat ack timeout -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
+						//console.log(`[room.ws] heartbeat ack timeout -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 						cleanupTimer();
                         socket.close(1003, "Heartbeat timeout: no ack from client");
 					}, RECEIVED_HEARTBEAT_MS); // wait for client heartbeat
@@ -144,7 +144,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 		if (player && msg && msg.type === "returnHeartbeat") {
             isAlive = true;
             missedHeartbeats = 0;
-			console.log(`[room.ws] received heartbeat <- client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
+			//console.log(`[room.ws] received heartbeat <- client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
 			if (heartbeatTimeout) {
                 clearTimeout(heartbeatTimeout);
                 heartbeatTimeout = null;

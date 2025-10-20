@@ -168,6 +168,21 @@ export async function createTournamentLobby(name: string) {
   }
 }
 
+export async function updateTournamentLobby(tournamentId: number, maxPlayer: number, stage: string) {
+    try {
+        const res = await fetch(`${API_URL}/update-tournament/${tournamentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ maxPlayer, stage }),
+        });
+        if (!res.ok) throw new Error("Failed to update tournament");
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to update tournament:", error);
+        return null;
+    }
+}
+
 /**
  * @brief fetch the list of available tournaments from the backend
  * @return list of tournaments to client in JSON format
@@ -181,4 +196,15 @@ export async function fetchTournaments() {
     console.error("Failed to fetch tournaments:", error);
     return [];
   }
+}
+
+export async function getTournamentById(tournamentId: number) {
+    try {
+        const res = await fetch(`${API_URL}/tournament/${tournamentId}`);
+        if (!res.ok) throw new Error("Failed to fetch tournament");
+        return await res.json();
+    } catch (error) {
+        console.error("Failed to fetch tournament:", error);
+        return null;
+    }
 }

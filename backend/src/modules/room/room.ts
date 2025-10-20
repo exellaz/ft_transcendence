@@ -125,6 +125,7 @@ export function roomEndGame(
   room: Room,
   forced = false,
   overrideWinner?: "left" | "right" | "draw",
+  tournamentId?: number,
 ) {
   // If game already ended, do nothing
   if (room.result) return;
@@ -175,6 +176,7 @@ export function roomEndGame(
     result: room.result,
     playerLeft: room.gameState.teams.left,
     playerRight: room.gameState.teams.right,
+    tournamentId: tournamentId || 0,
   });
 
   const leftPlayer = room.gameState.teams.left
@@ -204,14 +206,14 @@ export function roomEndGame(
   try {
 	for (const socket of Array.from(room.sockets.keys())) {
 	  try {
-		console.log("[room] closing socket for game end:", room.id);
+		//console.log("[room] closing socket for game end:", room.id);
 		socket.close(1000, "game ended");
 	  } catch (e) { console.error("error closing socket:", e); }
 	  room.sockets.clear();
 	  room.clients.clear();
     }
   } catch (e) {
-	  console.error("[room] error during socket closing for game end:", e);
+	//  console.error("[room] error during socket closing for game end:", e);
   }
   if (rooms.has(roomId)) {
     console.log(`Deleted room ${roomId} after game end.`);

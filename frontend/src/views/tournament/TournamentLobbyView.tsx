@@ -21,57 +21,20 @@ const TournamentLobbyView: React.FC = () => {
   useBlockLeave();
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
-  const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    "quarterfinals",
-  );
-  const [showQuitTournament, setShowQuitTournament] = useState(false);
   const navigate = useNavigate();
   const { tournamentId: paramTournamentId } = useParams();
-  const tournamentId = parseInt(sessionStorage.getItem("tournamentId") || "");
-  console.log("Tournament ID:", tournamentId); ////debug
+  const tournamentId = Number(paramTournamentId ?? sessionStorage.getItem("tournamentId") ?? -1) || -1;
   const { user } = useUser();
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
-  console.log("User info in TournamentLobbyView:", userinfo); ////debug
+  const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
+//  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
+    //"quarterfinals",
+//  );
+  const [showQuitTournament, setShowQuitTournament] = useState(false);
+//  console.log("Tournament ID:", tournamentId); ////debug
+//  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
-  // prevent player from reloading the page
-  React.useEffect (() => {
-    if (sessionStorage.getItem("reloading") !== null) {
-        sessionStorage.removeItem("reloading");
-        navigate("/main-menu");
-        }
-  }, []);
-
-  // Fetch user info when the component mounts
-  React.useEffect(() => {
-    if (!user) return; // Ensure `user` is available
-
-    const fetchUserInfo = async () => {
-      try {
-        const response = await getUserById({ id: Number(user.id) }); // Call the API
-        if (response.success && response.data) {
-          console.log("Fetched user info:", response.data); ////debug
-          setUserinfo(response.data); // Store the user info
-        } else {
-          console.log("Failed to fetch user info"); // Handle API error
-        }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-        console.error("An error occurred while fetching user info"); // Handle fetch error
-      }
-    };
-
-    fetchUserInfo();
-  }, [user]);
-
-  //update session storage when paramTournamentId change
-  React.useEffect(() => {
-    if (paramTournamentId) {
-      sessionStorage.setItem("tournamentId", paramTournamentId);
-    }
-  }, [paramTournamentId]);
-
-  const {
+ const {
     chatMessages,
     message,
     setMessage,
@@ -90,7 +53,12 @@ const TournamentLobbyView: React.FC = () => {
     started,
     countdown,
     toggleReady,
-    onleave
+    onleave,
+    stage: wsStage,
+    maxPlayer,
+    eliminated,
+    lastLobbyData,
+    refreshLobby,
   } = useTournamentWebSocket({
     tournamentId,
     player: {
@@ -99,11 +67,93 @@ const TournamentLobbyView: React.FC = () => {
       avatarUrl: userinfo?.avatarUrl || "",
     }
   });
-  console.log ("Current players from WebSocket:", currentPlayer); ////debug
 
+  // Fetch user info when the component mounts
   React.useEffect(() => {
-    setPlayers(currentPlayer);
-  }, [currentPlayer]);
+    console.log("TournamentLobbyView init:", { user, tournamentId }); ////debug
+
+    //use context user if available
+    if (user) {
+        setUserinfo(user);
+        (async () => {
+          try {
+            const response = await getUserById({ id: Number(user.id) }); // Call the API
+            if (response.success && response.data) {
+            //  console.log("Fetched user info:", response.data); ////debug
+              setUserinfo(response.data); // Store the user info
+            }
+          } catch (err) {
+            console.error("Error fetching user info:", err);
+            console.error("An error occurred while fetching user info"); // Handle fetch error
+          }
+        })();
+        return;
+    }
+
+    //if no context user, navigate to main menu
+    console.warn("User context is not available"); ////debug
+    navigate("/main-menu");
+  }, [user, tournamentId, navigate]);
+
+  //update session storage when paramTournamentId change
+  React.useEffect(() => {
+    if (paramTournamentId) {
+      sessionStorage.setItem("tournamentId", paramTournamentId);
+    }
+  }, [paramTournamentId]);
+
+  // prevent player from reloading the page
+  React.useEffect (() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+        sessionStorage.removeItem("reloading");
+        navigate("/main-menu");
+        }
+  }, []);
+
+//  console.log ("Current players from WebSocket:", currentPlayer); ////debug
+
+//  React.useEffect(() => {
+//    setPlayers(currentPlayer);
+//  }, [currentPlayer]);
+  // prefer server snapshot when available (winners arriving) otherwise keep WS players
+  React.useEffect(() => {
+    console.log("[ lobby snapshot ]:", lastLobbyData?.players, "ws players:", currentPlayer);
+
+    //if (lastLobbyData && Array.isArray(lastLobbyData.players) && lastLobbyData.players.length > 0) {
+    //  setPlayers(lastLobbyData.players);
+    //  return;
+    //}
+
+    // if server sent an empty snapshot, ask the server for a fresh one and fallback to WS players shortly
+    if (lastLobbyData && Array.isArray(lastLobbyData.players) && lastLobbyData.players.length === 0) {
+      console.warn("Empty lobby snapshot received — requesting refresh");
+      try { refreshLobby?.(); } catch {}
+      // try persisted snapshot (from navigation) as immediate fallback
+      try {
+        const raw = sessionStorage.getItem("lastTournamentLobby");
+        if (raw) {
+          const snap = JSON.parse(raw);
+          if (snap?.id === tournamentId && Array.isArray(snap.players) && snap.players.length > 0) {
+            setPlayers(snap.players);
+            return;
+          }
+        }
+      } catch {}
+      // wait a short time for the server to reply, then use currentPlayer as fallback
+      const t = setTimeout(() => {
+        if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
+          setPlayers(currentPlayer);
+        }
+      }, 500); // small delay
+      return () => clearTimeout(t);
+    }
+
+    if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
+      setPlayers(currentPlayer);
+    } else {
+      setPlayers(lastLobbyData?.players ?? currentPlayer ?? []);
+    }
+  }, [currentPlayer, lastLobbyData, refreshLobby]);
 
   React.useEffect(() => {
     if (started) {
@@ -112,9 +162,9 @@ const TournamentLobbyView: React.FC = () => {
   }, [started]);
 
   let stageHeader;
-  if (stage === "quarterfinals") stageHeader = translate("quarterfinals");
-  else if (stage === "semifinals") stageHeader = translate("semifinals");
-  else if (stage === "finals") stageHeader = translate("finals");
+  if (wsStage === "QF") stageHeader = translate("quarterfinals");
+  else if (wsStage === "SF") stageHeader = translate("semifinals");
+  else if (wsStage === "F") stageHeader = translate("finals");
 
   return (
     <Background>
@@ -140,17 +190,23 @@ const TournamentLobbyView: React.FC = () => {
             {/* players ready status */}
             <ReadyPlayers players={players} />
 
-            {/* ready and leave button*/}
+            {/* ready and leave button */}
             <div className="flex-row-center gap-6">
-              <Button variant="green" onClick={toggleReady}>
-                {ready ? translate("Unready") : translate("ready")}
-              </Button>
-              {stage === "quarterfinals" && (
-                <Button
-                  variant="red"
-                  onClick={() => setShowQuitTournament(true)}
-                >
-                  {translate("quit")}
+              {!eliminated ? (
+                <>
+                  <Button variant="green" onClick={toggleReady}>
+                    {ready ? translate("Unready") : translate("ready")}
+                  </Button>
+                  {wsStage === "QF" && (
+                    <Button variant="red" onClick={() => setShowQuitTournament(true)}>
+                      {translate("quit")}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                // eliminated players get a direct back button
+                <Button variant="bigYellow" onClick={() => navigate("/main-menu")}>
+                  {translate("back_to_lobby") || "Back to Lobby"}
                 </Button>
               )}
             </div>

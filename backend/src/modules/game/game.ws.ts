@@ -97,7 +97,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         if (typeof msg.type !== "string")
           return closeSocket(socket, 1003, "Invalid message: missing type");
 
-        console.log(">>>> sprite :", playerSprite);
+        //console.log(">>>> sprite :", playerSprite); ////debug
 
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
@@ -140,7 +140,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           console.log(`compiled ${output.length} bytes`);
           socket.send(output);
         } else if (msg.type === "input") {
-          console.log("received move input", msg.payload);
+        //  console.log("received move input", msg.payload); ////debug
           room.game.movePaddle(msg["payload"]["key"], clientId);
         }
       } catch (err) {

@@ -25,6 +25,7 @@ import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button";
 import type { User } from "@/types/usersApi";
+import { getTournamentById, updateTournamentLobby } from "@/lib/requestBackend.api";
 
 function isArrowKey(e: KeyboardEvent): boolean {
   return e.key === "ArrowUp" || e.key === "ArrowDown";
@@ -388,6 +389,8 @@ const GameView: React.FC = () => {
   const [delayForGameOver, setDelayForGameOver] = useState(false);
   const [roomError, setRoomError] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState("");
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [hasNextStage, setHasNextStage] = useState<boolean | null>(null);
   useBlockLeave();
  const { t } = useTranslation();
  const translate = (key: string) => t(`GameView.${key}`);
@@ -491,21 +494,132 @@ const GameView: React.FC = () => {
   const { socket } = useGameWebSocket(params);
   // console.log("socket has been create: ", socket); ////debug
 
-  const { gameOver } = useGameRoomWebSocket({
+  const { gameOver, isWinner, lastTournamentId } = useGameRoomWebSocket({
     ...params,
     isOffline: delayForGameOver,
   });
 
 // -------------------------------- Effect --------------------------------
+  // determine if there is a next stage (used to change button text/action for final)
   React.useEffect(() => {
-    if (gameOver && delayForGameOver) {
-        console.log("received game over while offline, navigate to main menu");
-        setDisconnectMessage("offline_error");
-		setRoomError(true);
+    if (!lastTournamentId) {
+      setHasNextStage(null);
+      return;
     }
-  }, [gameOver, delayForGameOver, navigate]);
+    let mounted = true;
+    (async () => {
+      try {
+        const tournament = await getTournamentById(lastTournamentId);
+        const next = nextRoundFrom(tournament?.stage ?? null);
+        if (mounted) setHasNextStage(!!next);
+      } catch (err) {
+        if (mounted) setHasNextStage(null);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [lastTournamentId]);
 
-  useEffect(() => {
+//  React.useEffect(() => {
+//    if (gameOver && delayForGameOver) {
+//        console.log("received game over while offline, navigate to main menu");
+//        setDisconnectMessage("offline_error");
+//		setRoomError(true);
+//    }
+//  }, [gameOver, delayForGameOver, navigate]);
+
+//  // auto-navigate winners to the next-round lobby when server provides the tournament id
+//  React.useEffect(() => {
+//    if (isWinner && lastTournamentId) {
+//        setTimeout(() => {
+//            // clear room session storage (same as losers)
+//            sessionStorage.removeItem("playerSide");
+//            sessionStorage.removeItem("RoomId");
+//            sessionStorage.removeItem("RoomLeaderId");
+//            sessionStorage.removeItem("RoomName");
+//            sessionStorage.removeItem("RoomType");
+
+//            // navigate to tournament lobby (winners should be sent there)
+//            //navigate(`/tournament/${lastTournamentId}`);
+//              (async () => {
+//                  const res = await updateTournamentLobby(lastTournamentId, 4, "SF");
+//                  if (res) {
+//                      console.log("new tournament lobby updated, navigating to next round:", res);
+//                      navigate(`/tournament/${lastTournamentId}`);
+//                  } else {
+//                      console.error("failed to update tournament lobby before navigating to next round");
+//                  }
+//              })();
+//        }, 5000); //wait 3 seconds before navigating
+//    }
+//  }, [isWinner, lastTournamentId, navigate]);
+  // helper to map current -> next round
+  const nextRoundFrom = (current: string | null) => {
+    console.log("current stage:", current);
+    if (!current) return null;
+    const norm = current;
+    if (norm.includes("semi") || norm === "SF" || norm === "semifinals")
+      return { size: 4, code: "SF" };
+    if (norm.includes("final") || norm === "F" || norm === "finals")
+      return { size: 2, code: "F" };
+    return null;
+  };
+
+  // extracted so both the auto-timer and the button use the same logic
+  const goToNextRound = async () => {
+    if (!isWinner || !lastTournamentId || isAdvancing) return;
+    setIsAdvancing(true);
+
+    // clear room session storage (same as losers)
+    sessionStorage.removeItem("playerSide");
+    sessionStorage.removeItem("RoomId");
+    sessionStorage.removeItem("RoomLeaderId");
+    sessionStorage.removeItem("RoomName");
+    sessionStorage.removeItem("RoomType");
+
+    // try to read current stage from session first, otherwise fetch tournament info
+    let currentStage: string | null = null;
+    try {
+      const tournament = await getTournamentById(lastTournamentId);
+      currentStage = tournament?.stage ?? null;
+    } catch (err) {
+      console.error("failed to fetch tournament info:", err);
+      currentStage = null;
+    }
+
+    const next = nextRoundFrom(currentStage);
+    if (!next) {
+      console.log("no next round to navigate to");
+      navigate("/main-menu");
+      setIsAdvancing(false);
+      return;
+    }
+
+    try {
+      const res = await updateTournamentLobby(lastTournamentId, next.size, next.code);
+      if (res) {
+        navigate(`/tournament/${lastTournamentId}`);
+      } else {
+        console.error("failed to update tournament lobby before navigating to next round");
+      }
+    } catch (err) {
+      console.error("error updating tournament lobby:", err);
+    } finally {
+      setIsAdvancing(false);
+    }
+  };
+
+  // auto-navigate winners after a timeout (still possible, but user can click the button to jump early)
+  React.useEffect(() => {
+    if (!isWinner || !lastTournamentId) return;
+    const timer = setTimeout(() => {
+      goToNextRound();
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [isWinner, lastTournamentId]); // navigate is safe to omit here (stable)
+
+  React.useEffect(() => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       // console.log("waiting for socket connection..."); ////debug
       return;
@@ -554,7 +668,8 @@ const GameView: React.FC = () => {
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
         </div>
-        {gameOver && (
+
+        {gameOver && !isWinner && (
           <div>
             <Button
               variant="bigYellow"
@@ -569,6 +684,37 @@ const GameView: React.FC = () => {
               }}
             >
               Back to Lobby
+            </Button>
+          </div>
+        )}
+
+        {/* Winner: button adapts for final vs next-stage */}
+        {isWinner && lastTournamentId && (
+          <div className="flex items-center gap-4">
+            <Button
+              variant="bigYellow"
+              className="px-3 py-4 text-2xl"
+              onClick={() => {
+                if (hasNextStage === false) {
+                  // final finished — go back to tournament page / results (or main-menu)
+                  sessionStorage.removeItem("playerSide");
+                  sessionStorage.removeItem("RoomId");
+                  sessionStorage.removeItem("RoomLeaderId");
+                  sessionStorage.removeItem("RoomName");
+                  sessionStorage.removeItem("RoomType");
+                  navigate(`/tournament/${lastTournamentId}`);
+                  return;
+                }
+                // otherwise attempt to advance to next round
+                goToNextRound();
+              }}
+              disabled={isAdvancing || hasNextStage === null}
+            >
+              {isAdvancing
+                ? "Redirecting..."
+                : hasNextStage === false
+                ? "Back to Lobby"
+                : "Next Stage"}
             </Button>
           </div>
         )}

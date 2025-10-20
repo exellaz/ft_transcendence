@@ -22,6 +22,7 @@ export function useLiveChatWebSocket(
   const username = user.name;
 
   useEffect(() => {
+    if (!roomId || roomId <= 0 || !user?.id || user.id <= 0) return;
     if (socketRef.current) return; // already connected
 
     // create websocket connection with room id

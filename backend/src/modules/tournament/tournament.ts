@@ -4,7 +4,7 @@ import { PongGame } from "@shared/game/pong.ts";
 import { playerInfo, Room, TournamentLobby } from "../../types/interface";
 import WebSocket from "ws";
 import { TournamentMatch } from "../../types/interface";
-import { createTournament, createTournamentMatch, createTournamentPlayer, updateTournamentPlayerRanking } from "./tournament.service";
+import { createTournament, createTournamentMatch, createTournamentPlayer, updateTournamentPlayerRanking, updateTournamentStatus } from "./tournament.service";
 
 // Start tournament countdown and manage tournament progression
 export async function startTournamentCountdown(
@@ -14,7 +14,23 @@ export async function startTournamentCountdown(
   client: Map<WebSocket, { tournamentId: number; playerId: number }>
 ) {
   const tournament = tournaments.get(tournamentId);
-  if (!tournament || tournament.countdownTimer || tournament.started) return;
+  if (!tournament || tournament.started) return;
+
+  // Prevent concurrent starts: reserve a temporary timer as a lock while async setup runs.
+  // We use a placeholder timeout and overwrite it later with the real interval.
+  if (tournament.countdownTimer) return;
+  const placeholder = setTimeout(() => {}, 0);
+  tournament.countdownTimer = placeholder as unknown as NodeJS.Timeout;
+
+  // If anything fails before we set a real timer, clear the placeholder lock.
+  const clearPlaceholder = () => {
+    try { clearTimeout(placeholder); } catch {}
+    tournament.countdownTimer = undefined;
+  };
+
+  //store broadcast and client map om tournament so later steps can notify
+  tournament.broadcast = broadcast;
+  tournament.clientMap = client;
 
   //create tournament to database
   const TournamentLobbyDb = await createTournament();
@@ -23,6 +39,7 @@ export async function startTournamentCountdown(
   else
   {
       console.log("Tournament creation failed: ", TournamentLobbyDb.error);
+      clearPlaceholder();
       return;
   }
 
@@ -41,6 +58,8 @@ export async function startTournamentCountdown(
     for (let i = 0; i < shuffled.length; i += 2) {
       const pair = shuffled.slice(i, i + 2);
       const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb.data);
+
+      if (!room) continue;
     //  console.log("Tournament game room created:", room); ////debug
 
       // Assign WebSocket clients to the game room
@@ -92,7 +111,7 @@ export async function startTournamentCountdown(
     } else {
       startTournamentNow();
     }
-  }, 1000);
+  }, 1500);
 
   console.log(`Tournament ${tournamentId} countdown started`);
 }
@@ -126,13 +145,14 @@ export function createGameRoom(
 		ballSpeed: 1,
 		ballSize: 1,
 		paddleSpeed: 1,
-		scorePoint: 1,
+		scorePoint: 5,
 		map: "stadium",
 	  },
 	  async (winner) => {
 		const room = rooms.get(roomId);
 		if (!room) return;
-		const result = roomEndGame(room, true, winner);
+
+		const result = roomEndGame(room, true, winner, tournamentId);
 		if (result) {
             console.log ("===============================================");
             console.log ("Game result: ", result);
@@ -145,9 +165,7 @@ export function createGameRoom(
   );
 
   // Ensure both players are defined
-  if (!playerPair[0] || !playerPair[1]) {
-    throw new Error("playerPair must contain two defined players");
-  }
+  if (!playerPair[0] || !playerPair[1]) return;
 
 	// Define player info for both players
 	const leftPlayer: playerInfo = {
@@ -294,15 +312,19 @@ async function saveMatchResult(
 
     if (finishedMatches === TotalMatches) {
         console.log(`Tournament ${tournamentInfo.id} stage ${tournamentInfo.stage} completed.`);
-        await handleNextRound(t, tournamentInfo.stage);
+        await handleNextRound(tournamentInfo.id, tournamentInfo.stage, TournamentLobbyDb);
     }
 }
 
-async function handleNextRound(tournament: TournamentLobby, currentStage: "QF" | "SF" | "F") {
-    const ThisRoundResult = tournament.result?.filter(r => r.stage === currentStage);
-    const winner = [];
-    const loser = [];
+async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" | "F", TournamentLobbyDb: { id: number, status: string, createdAt: Date }) {
+    const tournament = tournaments.get(tournamentId);
+    if (!tournament) return;
 
+    const ThisRoundResult = tournament.result?.filter(r => r.stage === currentStage);
+    const winners: { id: number; username: string; spriteUrl: string; ready: boolean }[] = [];
+    const losers: { id: number; duration: number }[] = [];
+
+    // collect winners and losers from all matches first
     for (const match of ThisRoundResult ?? []) {
         const matchInfo = tournament.matches?.find(m =>
             m.players.some(p => p.id === match.winnerId)
@@ -314,47 +336,119 @@ async function handleNextRound(tournament: TournamentLobby, currentStage: "QF" |
         const rightId = matchInfo.players[1].id;
 
         if (match.winnerId === leftId) {
-            winner.push({
+            winners.push({
                 id: leftId,
-                username:matchInfo.players[0].username,
-                spriteUrl: matchInfo.players[0].spriteUrl
+                username: matchInfo.players[0].username,
+                spriteUrl: matchInfo.players[0].spriteUrl,
+                ready: false,
             });
-            loser.push({ id: rightId, duration: match.duration });
+            losers.push({ id: rightId, duration: match.duration ?? 0 });
         } else if (match.winnerId === rightId) {
-            winner.push({
+            winners.push({
                 id: rightId,
-                username:matchInfo.players[1].username,
-                spriteUrl: matchInfo.players[1].spriteUrl
+                username: matchInfo.players[1].username,
+                spriteUrl: matchInfo.players[1].spriteUrl,
+                ready: false,
             });
-            loser.push({ id: leftId, duration: match.duration });
+            losers.push({ id: leftId, duration: match.duration ?? 0 });
         }
-
-        loser.sort((a, b) => a.duration - b.duration);
-
-        const stageRankMap = {
-            "QF": [5, 8],
-            "SF": [3, 4],
-            "F": [1, 2],
-        };
-
-        const [minRank, maxRank] = stageRankMap[currentStage] ?? [0, 0];
-        const rankedLosers = loser.map((p, i) => ({
-            playerId: p.id,
-            rank: (minRank ?? 0) + i,
-        }));
-
-        for (const rl of rankedLosers) {
-            if (!tournament.playerMap) return;
-            const tournamentPlayerId = tournament.playerMap.get(rl.playerId);
-            if (!tournamentPlayerId) {
-                console.warn(`No player ID found for user ${rl.playerId}`);
-                continue;
-            }
-
-            console.log(`Update player id ${tournamentPlayerId} (${rl.playerId}) ranking to ${rl.rank}`);
-            await updateTournamentPlayerRanking(rl.rank, tournamentPlayerId);
-        }
-        //TODO :: handle next round
-        //TODO :: current tournament not yet delete
     }
-}
+
+    // now compute ranks for losers (after collecting all)
+    losers.sort((a, b) => a.duration - b.duration);
+    const stageRankMap: Record<string, [number, number]> = {
+        "QF": [5, 8],
+        "SF": [3, 4],
+        "F": [1, 2],
+    };
+    const [minRank] = stageRankMap[currentStage] ?? [0, 0];
+
+    const rankedLosers = losers.map((p, i) => ({
+        playerId: p.id,
+        rank: (minRank ?? 0) + i,
+    }));
+
+    // batch update DB and await completion
+    const updatePromises = rankedLosers.map(async (rl) => {
+        if (!tournament.playerMap) {
+            console.warn(`No playerMap for tournament ${tournamentId}; cannot update ranking for ${rl.playerId}`);
+            return;
+        }
+        const tournamentPlayerId = tournament.playerMap.get(rl.playerId);
+        if (!tournamentPlayerId) {
+            console.warn(`No tournament player id for user ${rl.playerId} in tournament ${tournamentId}`);
+            return;
+        }
+        console.log(`Update player id ${tournamentPlayerId} (${rl.playerId}) ranking to ${rl.rank}`);
+        return updateTournamentPlayerRanking(rl.rank, tournamentPlayerId);
+    });
+
+    await Promise.all(updatePromises);
+
+    // decide next stage
+    const nextStageMap: Record<string, string | null> = { "QF": "SF", "SF": "F", "F": null };
+    const nextStage = nextStageMap[currentStage];
+
+    if (!nextStage) {
+        const winnerIds = winners.map((w) => w.id);
+        tournament.stage = nextStage as "SF" | "F";
+        tournament.players = winners;                 // replace players with winners only
+        tournament.matches = [];
+        tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
+        tournament.started = false;
+
+        // reset client map so only winners' sockets get registered when they reconnect or are transferred
+        tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
+        // record allowed players so WS can reject eliminated re-joins
+        tournament.allowedPlayers = new Set<number>(winnerIds);
+
+        console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
+
+        // notify winners / clients
+        const bc = tournament.broadcast;
+        if (typeof bc === "function") {
+          bc(JSON.stringify({
+            type: "tournamentNewLobby",
+            tournamentId,
+            nextStage,
+            players: winners,
+            maxPlayer: tournament.maxPlayer ?? winners.length,
+          }));
+        }
+
+        console.log(`Tournament ${tournamentId} completed.`);
+        //! optionally update tournament DB status here
+        updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
+        return;
+    }
+
+    // --- IMPORTANT: create a NEW clean lobby for next round ---
+    const winnerIds = winners.map((w) => w.id);
+    tournament.stage = nextStage as "SF" | "F";
+    tournament.players = winners;                 // replace players with winners only
+    tournament.matches = [];
+    tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
+    tournament.started = false;
+
+    // reset client map so only winners' sockets get registered when they reconnect or are transferred
+    tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
+    // record allowed players so WS can reject eliminated re-joins
+    tournament.allowedPlayers = new Set<number>(winnerIds);
+
+    console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
+
+    // notify winners / clients
+    const bc = tournament.broadcast;
+    if (typeof bc === "function") {
+      bc(JSON.stringify({
+        type: "tournamentNewLobby",
+        tournamentId,
+        nextStage,
+        players: winners,
+        maxPlayer: tournament.maxPlayer ?? winners.length,
+      }));
+    }
+
+    // optionally auto-start only after winners reconnect (clientMap empty now)
+    return;
+  }

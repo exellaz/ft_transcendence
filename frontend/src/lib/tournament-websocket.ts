@@ -17,11 +17,30 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
   const wsRef = useRef<WebSocket | null>(null);
   const [started, setStarted] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  console.log("Tournament ID in useTournamentWebSocket:", tournamentId);
-  console.log("Player info in useTournamentWebSocket:", player);
+  const [stage, setStage] = useState<"QF" | "SF" | "F" | null>(null);
+  const [maxPlayer, setMaxPlayer] = useState<number | null>(null);
+  const [eliminated, setEliminated] = useState(false);
+  const [lastLobbyData, setLastLobbyData] = useState<any | null>(null);
+//  console.log("Tournament ID in useTournamentWebSocket:", tournamentId);
+//  console.log("Player info in useTournamentWebSocket:", player);
 
   useEffect(() => {
-    if (!tournamentId || player.id <= 0 || !player.username || !player.avatarUrl) return;
+    if (!tournamentId || tournamentId <= 0 || !player || player.id <= 0) return;
+
+    // hydrate from cached lobby snapshot if present (quick UI render for winners)
+    try {
+      const raw = sessionStorage.getItem("lastTournamentLobby");
+      if (raw) {
+        const snap = JSON.parse(raw);
+        if (snap?.id === tournamentId) {
+          setLastLobbyData(snap);
+          if (Array.isArray(snap.players)) setPlayers(snap.players);
+          if (snap.stage) setStage(snap.stage);
+          if (typeof snap.maxPlayer === "number") setMaxPlayer(snap.maxPlayer);
+          if (typeof snap.countdown === "number") setCountdown(snap.countdown);
+        }
+      }
+    } catch (err) { /* ignore parse errors */ }
 
     const ws = new WebSocket(
       `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}&playerId=${player.id}&name=${player.username}&avatar=${player.avatarUrl || ""}`,
@@ -29,7 +48,8 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     wsRef.current = ws;
 
     ws.onopen = () => {
-        console.log("Tournament WS connected");
+        console.log("Tournament WS connected", tournamentId, player.id);
+        try { ws.send(JSON.stringify({ type: "requestLobby" })); } catch {}
     };
 
     ws.onmessage = (event) => {
@@ -38,6 +58,37 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         data = JSON.parse(event.data);
       } catch {
         console.warn("invalid tournament ws msg:", event.data);
+        return;
+      }
+
+      // server sends a dedicated new-lobby message when advancing rounds
+      if (data.type === "tournamentNewLobby" || data.type === "tournamentNextRound") {
+        setPlayers(Array.isArray(data.players) ? data.players : []);
+        setStage(data.nextStage ?? data.stage ?? null);
+        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
+        setStarted(false);
+        setCountdown(typeof data.countdown === "number" ? data.countdown : null);
+        setLastLobbyData(data);
+        // persist snapshot for quick render if navigation happens
+        try { sessionStorage.setItem("lastTournamentLobby", JSON.stringify({ id: tournamentId, stage: data.nextStage ?? data.stage, players: data.players, maxPlayer: data.maxPlayer ?? null, countdown: data.countdown ?? null })); } catch {}
+        return;
+      }
+
+      // generic tournament update (used by PATCH endpoint)
+      if (data.type === "tournamentUpdated") {
+        setPlayers(Array.isArray(data.players) ? data.players : players);
+        setStage(data.stage ?? stage);
+        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : maxPlayer);
+        setLastLobbyData(data);
+        try { sessionStorage.setItem("lastTournamentLobby", JSON.stringify({ id: tournamentId, stage: data.stage, players: data.players, maxPlayer: data.maxPlayer ?? null })); } catch {}
+        return;
+      }
+
+      // eliminated: server tells this client it's no longer allowed in lobby
+      if (data.type === "eliminated") {
+        setEliminated(true);
+        // optionally update players list if server provided one
+        if (Array.isArray(data.players)) setPlayers(data.players);
         return;
       }
 
@@ -68,11 +119,21 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       }
 
 	  if (data.type === "getPlayerTeam") {
-		console.log("Received getPlayerTeam message:", data.roomId); ////debug
+		//console.log("Received getPlayerTeam message:", data.roomId); ////debug
 		sessionStorage.setItem("playerSide", data.team === "left" ? "left" : "right");
 		sessionStorage.setItem("RoomId", data.roomId);
 		sessionStorage.setItem("RoomName", data.roomName);
 	  }
+
+      if (data.type === "lobbyData") {
+        const playersData = Array.isArray(data.players) ? data.players : [];
+        setPlayers(playersData);
+        setStarted(false);
+        setStage(data.stage ?? null);
+        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
+        setCountdown(typeof data.countdown === "number" ? data.countdown : null);
+        setLastLobbyData(data);
+      }
     };
 
     ws.onclose = () => {
@@ -99,6 +160,13 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     });
   }
 
+  function refreshLobby() {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "requestLobby" }));
+    }
+  }
+
   function onleave() {
     try {
         wsRef.current?.close();
@@ -114,5 +182,10 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     countdown,
     toggleReady,
     onleave,
+    stage,
+    maxPlayer,
+    eliminated,
+    lastLobbyData,
+    refreshLobby,
   };
 }
