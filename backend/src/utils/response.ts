@@ -21,44 +21,30 @@ export class ApiError extends Error {
     this.errorCode = errorCode;
   }
 
-  static badRequest(
-    message = "Bad Request", 
-    errorCode = "BAD_REQUEST"
-  ) {
+  static badRequest(message = "Bad Request", errorCode = "BAD_REQUEST") {
     return new ApiError(message, 400, errorCode);
   }
 
-  static unauthorized(
-    message = "Unauthorized", 
-    errorCode = "UNAUTHORIZED"
-  ) {
+  static unauthorized(message = "Unauthorized", errorCode = "UNAUTHORIZED") {
     return new ApiError(message, 401, errorCode);
   }
 
-  static forbidden(
-    message = "Forbidden", 
-    errorCode = "ACCESS_DENIED"
-  ) {
+  static forbidden(message = "Forbidden", errorCode = "ACCESS_DENIED") {
     return new ApiError(message, 403, errorCode);
   }
 
-  static notFound(
-    message = "Resource not found", 
-    errorCode = "NOT_FOUND"
-  ) {
+  static notFound(message = "Resource not found", errorCode = "NOT_FOUND") {
     return new ApiError(message, 404, errorCode);
   }
 
-  static conflict(
-    message = "Conflict found", 
-    errorCode = "CONFLICT"
-  ) {
+  static conflict(message = "Conflict found", errorCode = "CONFLICT") {
     return new ApiError(message, 409, errorCode);
   }
 
   static validation(
-    message: "Validation error", 
-    errorCode = "VALIDATION_ERROR") {
+    message: "Validation error",
+    errorCode = "VALIDATION_ERROR",
+  ) {
     return new ApiError(message, 422, errorCode);
   }
 
