@@ -43,21 +43,13 @@ const SignUpView: React.FC = () => {
       if (field === "username") setUsernameStatus(null);
     };
 
+  // simple frontend validation mainly checking for empty fields and password match
   const validateForm = (): string | null => {
-    if (!formData.username.trim()) return "Username is required";
-    if (!formData.email.trim()) return "Email is required";
-    if (!formData.password) return "Password is required";
+    if (!formData.username.trim()) return translate("username_required");
+    if (!formData.email.trim()) return translate("email_required");
+    if (!formData.password) return translate("password_required");
     if (formData.password !== formData.confirmPassword)
-      return "Passwords do not match";
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return "Invalid email format";
-
-    // Password validation
-    if (formData.password.length < 8)
-      return "Password must be at least 8 characters long";
-
+      return translate("password_mismatch");
     return null;
   };
 
@@ -78,15 +70,34 @@ const SignUpView: React.FC = () => {
         password: formData.password,
       });
 
+      const errorMessages: Record<string, string> = {
+        USERNAME_INVALID: translate("username_invalid"),
+        USERNAME_TOO_SHORT: translate("username_too_short"),
+        USERNAME_TOO_LONG: translate("username_too_long"),
+        USERNAME_CONFLICT: translate("username_conflict"),
+        USERNAME_ALREADY_EXISTS: translate("username_already_exists"),
+        EMAIL_INVALID: translate("email_invalid"),
+        EMAIL_ALREADY_EXISTS: translate("email_already_exists"),
+        PASSWORD_TOO_WEAK: translate("password_too_weak"),
+        PASSWORD_TOO_SHORT: translate("password_too_short"),
+        PASSWORD_TOO_LONG: translate("password_too_long"),
+      };
+
       if (!response.success || !response.data) {
-        throw new Error(response.error || "Registration failed");
+        setError(
+          response.errorCode && typeof response.errorCode === "string"
+            ? errorMessages[response.errorCode] ||
+                translate("registration_failed")
+            : translate("registration_failed")
+        );
+        return;
       }
 
       // SUCCESS: Store token and redirect
       localStorage.setItem("authToken", response.data.token);
       navigate("/signup-success");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(translate("registration_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -102,6 +113,7 @@ const SignUpView: React.FC = () => {
           value={formData.username}
           onChange={handleInputChange("username")}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+          maxLength={30}
         />
 
         {usernameStatus && (
@@ -116,6 +128,7 @@ const SignUpView: React.FC = () => {
           icon={
             <img src="/assets/email.png" alt="email.png" className="w-10" />
           }
+          maxLength={254}
         />
 
         <Input
@@ -124,6 +137,7 @@ const SignUpView: React.FC = () => {
           value={formData.password}
           onChange={handleInputChange("password")}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+          maxLength={128}
         />
 
         <Input
@@ -132,12 +146,13 @@ const SignUpView: React.FC = () => {
           value={formData.confirmPassword}
           onChange={handleInputChange("confirmPassword")}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+          maxLength={128}
         />
 
         {error && <Status text={error} color="red" />}
 
         <Button onClick={handleSignUp} disabled={isLoading}>
-          {isLoading ? "Creating Account..." : translate("signup")}
+          {isLoading ? translate("creating_account") : translate("signup")}
         </Button>
       </Card>
     </PreLoginLayout>

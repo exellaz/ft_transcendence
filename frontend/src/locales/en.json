@@ -94,11 +94,27 @@
     "login": "LOGIN"
   },
   "SignUpView": {
+    "username_required": "Username is required",
+    "email_required": "Email is required",
+    "password_required": "Password is required",
+    "password_mismatch": "Passwords do not match",
+    "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
+    "username_too_short": "Username must be at least 2 characters long",
+    "username_too_long": "Username must be at most 15 characters long",
+    "username_conflict": "Username already exists",
+    "username_already_exists": "User with this username already exists",
+    "email_invalid": "Please enter a valid email address",
+    "email_already_exists": "User with this email already exists",
+    "password_too_weak": "Password must contain uppercase, lowercase, and numbers",
+    "password_too_short": "Password must be at least 8 characters long",
+    "password_too_long": "Password is too long",
+    "registration_failed": "Registration failed",
     "username": "Username",
     "username_available": "Username is available",
     "email": "Email",
     "password": "Password",
     "confirm_password": "Confirm password",
+    "creating_account": "Creating account...",
     "signup": "SIGN UP"
   },
   "SinglesRoomView": {
@@ -144,6 +160,23 @@
     "yes": "YES",
     "no": "NO"
   },
+  "FriendsPopup": {
+    "tabs": {
+      "friends": "Friends",
+      "requests": "Requests",
+      "blocked": "Blocked"
+    },
+    "add_friend": "Add Friend",
+    "search_friend": "Search friend",
+    "enter_friend_username": "Enter friend's username",
+    "friend_added": "Friend has been added.",
+    "user_not_exist": "User does not exist.",
+    "back": "Back",
+    "no_friends_yet": "No friends yet.",
+    "no_new_requests": "No new requests.",
+    "no_blocked_users": "No blocked users.",
+    "no_messages_yet": "No messages yet."
+  },
   "GameSettingsPopup": {
     "header": "Game Settings",
     "ball_speed": "Ball Speed",
@@ -157,6 +190,28 @@
     "fast": "Fast",
     "small": "Small",
     "big": "Big"
+  },
+  "HowToPlayPopup": {
+    "header": "How to Play",
+    "objective_title": "Objective",
+    "objective_text": [
+      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
+    ],
+    "controls_title": "Controls",
+    "controls_text": [
+      "Use the up and down arrow keys to move your paddle. In Local Mode, player 1 uses the W / S keys and player 2 uses the up / down arrow keys."
+    ],
+    "tournament_title": "Tournament Mode",
+    "tournament_text": [
+      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.",
+      "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
+      "Player ranking and match history are tracked for all tournament games."
+    ],
+    "custom_title": "Custom Mode",
+    "custom_text": [
+      "Enjoy casual play with full customization options. Create or join rooms for both singles and doubles matches. Play with friends or get matched with random players.",
+      "Note: Local Mode supports singles matches only."
+    ]
   },
   "ProfilePopup": {
     "header": "My Profile",
@@ -271,43 +326,5 @@
   "RoomLayout": {
     "game_settings": "Game Settings",
     "invite_friends": "Invite Friends"
-  },
-  "FriendsPopup": {
-    "tabs": {
-      "friends": "Friends",
-      "requests": "Requests",
-      "blocked": "Blocked"
-    },
-    "add_friend": "Add Friend",
-    "search_friend": "Search friend",
-    "enter_friend_username": "Enter friend's username",
-    "friend_added": "Friend has been added.",
-    "user_not_exist": "User does not exist.",
-    "back": "Back",
-    "no_friends_yet": "No friends yet.",
-    "no_new_requests": "No new requests.",
-    "no_blocked_users": "No blocked users.",
-    "no_messages_yet": "No messages yet."
-  },
-  "HowToPlayPopup": {
-    "header": "How to Play",
-    "objective_title": "Objective",
-    "objective_text": [
-      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
-    ],
-    "controls_title": "Controls",
-    "controls_text": [
-      "Use the up and down arrow keys to move your paddle. In Local Mode, player 1 uses the W / S keys and player 2 uses the up / down arrow keys."
-    ],
-    "tournament_title": "Tournament Mode",
-    "tournament_text": [
-      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.", "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
-      "Player ranking and match history are tracked for all tournament games."
-    ],
-    "custom_title": "Custom Mode",
-    "custom_text": [
-      "Enjoy casual play with full customization options. Create or join rooms for both singles and doubles matches. Play with friends or get matched with random players.",
-      "Note: Local Mode supports singles matches only."
-    ]
   }
 }

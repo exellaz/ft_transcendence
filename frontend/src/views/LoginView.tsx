@@ -107,6 +107,7 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("identifier")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+          maxLength={254}
         />
         <Input
           placeholder={translate("password")}
@@ -115,6 +116,7 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("password")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+          maxLength={128}
         />
         {error && <Status text={error} color="red" />}
         <Button variant="longYellow" onClick={handleLogin}>
