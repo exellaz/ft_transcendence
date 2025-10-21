@@ -74,7 +74,6 @@ const SignUpView: React.FC = () => {
         USERNAME_INVALID: translate("username_invalid"),
         USERNAME_TOO_SHORT: translate("username_too_short"),
         USERNAME_TOO_LONG: translate("username_too_long"),
-        USERNAME_CONFLICT: translate("username_conflict"),
         USERNAME_ALREADY_EXISTS: translate("username_already_exists"),
         EMAIL_INVALID: translate("email_invalid"),
         EMAIL_ALREADY_EXISTS: translate("email_already_exists"),

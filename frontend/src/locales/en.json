@@ -95,7 +95,6 @@
     "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
     "username_too_short": "Username must be at least 2 characters long",
     "username_too_long": "Username must be at most 15 characters long",
-    "username_conflict": "Username already exists",
     "username_already_exists": "User with this username already exists",
     "email_invalid": "Please enter a valid email address",
     "email_already_exists": "User with this email already exists",
@@ -134,7 +133,11 @@
     "quit_confirmation": "Are you sure you want to quit the tournament?"
   },
   "BasicInfoPopup": {
-    "loading": "Loading...",
+    "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
+    "username_too_short": "Username must be at least 2 characters long",
+    "username_too_long": "Username must be at most 15 characters long",
+    "username_conflict": "Username already exists",
+    "save_failed": "Failed to save changes",
     "header": "Basic Info",
     "joined": "Joined",
     "change_avatar": "Change Avatar",

@@ -93,7 +93,6 @@
     "username_invalid": "用户名只能包含字母、数字、下划线和连字符",
     "username_too_short": "用户名至少需要 2 个字符",
     "username_too_long": "用户名最多只能有 15 个字符",
-    "username_conflict": "用户名已存在",
     "username_already_exists": "该用户名已被使用",
     "email_invalid": "请输入有效的电子邮件地址",
     "email_already_exists": "该电子邮件已被使用",
@@ -132,7 +131,11 @@
     "quit_confirmation": "你确定要退出锦标赛吗？"
   },
   "BasicInfoPopup": {
-    "loading": "加载中...",
+    "username_invalid": "用户名只能包含字母、数字、下划线和连字符",
+    "username_too_short": "用户名至少需要 2 个字符",
+    "username_too_long": "用户名最多只能有 15 个字符",
+    "username_conflict": "用户名已存在",
+    "save_failed": "保存更改失败",
     "header": "基本信息",
     "joined": "加入时间",
     "change_avatar": "更换头像",

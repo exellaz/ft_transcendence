@@ -48,7 +48,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // Add friend state
   const [showAddFriendView, setShowAddFriendView] = useState(false);
-  const [friendId, setFriendId] = useState("");
+  const [friendUsername, setFriendUsername] = useState("");
   const [addFriendSuccess, setAddFriendSuccess] = useState(false);
   const [addFriendError, setAddFriendError] = useState<string | null>(null);
 
@@ -168,8 +168,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     }
   }
 
-  const handleFriendIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFriendId(e.target.value);
+  const handleFriendUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFriendUsername(e.target.value);
     if (addFriendError) setAddFriendError(null);
     if (addFriendSuccess) setAddFriendSuccess(false);
   };
@@ -179,7 +179,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     setAddFriendSuccess(false);
     setAddFriendError(null);
 
-    const trimmed = friendId.trim();
+    const trimmed = friendUsername.trim();
 
     // return if input is empty
     if (trimmed === "") {
@@ -412,8 +412,9 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                           {translate("enter_friend_username")}
                         </p>
                         <Input
-                          value={friendId}
-                          onChange={handleFriendIdChange}
+                          value={friendUsername}
+                          onChange={handleFriendUsernameChange}
+                          maxLength={30}
                         />
                         {addFriendSuccess && (
                           <Status
@@ -459,6 +460,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                             />
                           }
                           placeholder={translate("search_friend")}
+                          maxLength={30}
                         />
                         <Button
                           variant="yellow"
