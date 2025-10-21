@@ -8,27 +8,63 @@ import gameWsRoute from "./modules/game/game.ws";
 import roomWsRoutes from "./modules/room/room.ws";
 import liveChatRoutes from "./modules/chat/liveChat.ws";
 import roomRoutes from "./modules/room/room.routes";
-import { fail, ApiError } from "./utils/response";
 import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
 import errorHandler from "./plugins/errorHandler";
 import testRoutes from "./modules/test/test.routes";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 
 const app = Fastify({
   logger: true,
 });
-await app.register(websocketPlugin);
+app.register(websocketPlugin);
 
 app.register(fastifyCors, {
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // allow your methods
 });
 
-await app.register(errorHandler);
-
+app.register(errorHandler);
 app.register(dbConnector);
+
+app.register(fastifySwagger, {
+  openapi: {
+    openapi: "3.0.0",
+    info: {
+      title: "Test swagger",
+      description: "Testing the Fastify swagger API",
+      version: "0.1.0",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+        description: "Development server",
+      },
+    ],
+    tags: [
+      { name: "user", description: "User related end-points" },
+      { name: "auth", description: "Auth related end-points" },
+      { name: "friendships", description: "Friends related end-points" },
+      {
+        name: "blockedFriendships",
+        description: "Blocked Friends related end-points",
+      },
+      {
+        name: "friendChatMessages",
+        description: "Friend Chat Message related end-points",
+      },
+      { name: "tournaments", description: "Tournament related end-points" },
+    ],
+  },
+});
+
+app.register(fastifySwaggerUi, {
+  routePrefix: "/docs", // visit http://localhost:3000/docs
+});
+
 app.register(userRoutes);
 app.register(authRoutes);
 app.register(friendshipRoutes);
@@ -40,20 +76,5 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(testRoutes);
-
-// Global error handler (call after all routes/plugins)
-// app.setErrorHandler((error, request, reply) => {
-//   if (error instanceof ApiError) {
-//     return reply.status(error.statusCode).send(fail(error.message));
-//   }
-
-//   // Fastify validation errors (AJV)
-//   if ((error as any).validation)
-//     return reply
-//       .status(400)
-//       .send(fail(error.message || "Invalid request parameters"));
-
-//   return reply.status(500).send(fail(error.message || "Internal server error"));
-// }};
 
 export default app;

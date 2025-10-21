@@ -21,11 +21,11 @@ export class ApiError extends Error {
     this.errorCode = errorCode;
   }
 
-  static badRequest(message: string, errorCode?: string) {
+  static badRequest(message = "Bad Request", errorCode = "BAD_REQUEST") {
     return new ApiError(message, 400, errorCode);
   }
 
-  static unauthorized(message: string, errorCode?: string) {
+  static unauthorized(message = "Unauthorized", errorCode = "UNAUTHORIZED") {
     return new ApiError(message, 401, errorCode);
   }
 
@@ -37,17 +37,20 @@ export class ApiError extends Error {
     return new ApiError(message, 404, errorCode);
   }
 
-  static conflict(message: string, errorCode = "CONFLICT") {
+  static conflict(message = "Conflict found", errorCode = "CONFLICT") {
     return new ApiError(message, 409, errorCode);
   }
 
-  static validation(message: string, errorCode = "VALIDATION_ERROR") {
+  static validation(
+    message: "Validation error",
+    errorCode = "VALIDATION_ERROR",
+  ) {
     return new ApiError(message, 422, errorCode);
   }
 
   static internal(
     message = "Internal server error",
-    errorCode = "INTERNAL_ERROR",
+    errorCode = "INTERNAL_SERVER_ERROR",
   ) {
     return new ApiError(message, 500, errorCode);
   }

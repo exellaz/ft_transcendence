@@ -4,10 +4,12 @@ import {
   deleteUserByIdSchema,
   getUserByIdSchema,
   getUserSettingsByIdSchema,
+  getUsersSchema,
   patchUserByIdSchema,
   patchUserSettingsByIdSchema,
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
+import { Prisma } from "@prisma/client";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -25,7 +27,11 @@ async function userRoutes(fastify: FastifyInstance) {
         select: userSettingsPublicSelect,
       });
 
-      if (!settings) throw new ApiError("User settings not found", 404);
+      if (!settings)
+        throw ApiError.notFound(
+          "User settings not found",
+          "USER_SETTINGS_NOT_FOUND",
+        );
 
       return ok(settings); // only the 3 fields
     },
@@ -43,12 +49,15 @@ async function userRoutes(fastify: FastifyInstance) {
         language?: string;
       };
 
+      interface UserSettingsPatchData {
+        language?: string;
+      }
       // Build update object dynamically
-      const data: any = {};
+      const data: UserSettingsPatchData = {};
       if (language !== undefined) data.language = language;
 
       if (Object.keys(data).length === 0)
-        throw new ApiError("No fields to update", 400);
+        throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");
 
       try {
         const updatedSettings = await fastify.db.userSettings.update({
@@ -58,10 +67,12 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(updatedSettings);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("User not found", 404);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            // Prisma "record not found"
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
 
         throw err; // let Fastify handle other errors
       }
@@ -86,7 +97,7 @@ async function userRoutes(fastify: FastifyInstance) {
       where: { id: Number(id) },
       select: userPublicSelect,
     });
-    if (!user) throw new ApiError("User not found", 404);
+    if (!user) throw ApiError.notFound("User not found", "USER_NOT_FOUND");
 
     return ok(user); // 200 OK
   });
@@ -102,13 +113,17 @@ async function userRoutes(fastify: FastifyInstance) {
         avatarUrl?: string;
       };
 
+      interface UserPatchData {
+        username?: string;
+        avatarUrl?: string;
+      }
       // Build update object dynamically
-      const data: any = {};
+      const data: UserPatchData = {};
       if (username !== undefined) data.username = username;
       if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
       if (Object.keys(data).length === 0)
-        throw new ApiError("No fields to update", 400);
+        throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");
 
       try {
         const updatedUser = await fastify.db.user.update({
@@ -118,13 +133,18 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(updatedUser);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("User not found", 404);
-        else if (err.code === "P2002")
-          // Prisma unique constraint violation
-          throw new ApiError("Username already exists", 400);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            // Prisma "record not found"
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+          else if (err.code === "P2002")
+            // Prisma unique constraint violation
+            throw ApiError.conflict(
+              "Username already exists",
+              "USERNAME_CONFLICT",
+            );
+        }
 
         throw err; // let Fastify handle other errors
       }
@@ -144,16 +164,19 @@ async function userRoutes(fastify: FastifyInstance) {
         });
 
         return ok(user);
-      } catch (err: any) {
-        if (err.code === "P2025") throw new ApiError("User not found", 404);
-        console.log("ERRORRRR", err);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+          console.log("ERRORRRR", err);
+        }
         throw err;
       }
     },
   );
 
-  // READ (all users)
-  fastify.get("/users", async () => {
+  // GET /users - get all users
+  fastify.get("/users", { schema: getUsersSchema }, async () => {
     const users = await fastify.db.user.findMany({
       select: userPublicSelect,
     });
