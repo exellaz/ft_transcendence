@@ -27,6 +27,7 @@
     "fastify": "^5.6.0",
     "google-auth-library": "^10.3.0",
     "jsonwebtoken": "^9.0.2",
+    "pako": "^2.1.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {

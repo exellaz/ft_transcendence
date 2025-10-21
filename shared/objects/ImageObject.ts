@@ -6,7 +6,7 @@ import { Sprite } from "./Sprite.ts";
 import type { Viewport } from "./Viewport.ts";
 
 export class Interpolate {
-  public target: GameObject = null;
+  public target!: GameObject;
   public targetOffset: Vector2D = new Vector2D(0, 0);
   public clamp: Vector2D = new Vector2D(7, 7);
   public slowness: number = 2;
@@ -25,28 +25,26 @@ export class Interpolate {
 }
 
 export class ImageObject extends GameObject {
-  sprite: Sprite = null;
+  sprite: Sprite | null = null;
   scaleFactor: Vector2D = new Vector2D(1, 1);
   params;
 
   interpolate: Interpolate = new Interpolate({});
-
   private truePos: Point2D;
-
   loaded: boolean = false;
-
   className: string = "imageObject";
 
   clientUpdate(): void {
     if (this.sprite !== undefined && this.sprite !== null && !this.loaded) {
       this.sprite.init();
+      return;
     }
 
-    this.scale = new Vector2D(this.sprite.width, this.sprite.height).multiply(
+    this.scale = new Vector2D(this.sprite!.width, this.sprite!.height).multiply(
       this.scaleFactor,
     );
 
-    this.interpolate.target = this.parent;
+    this.interpolate.target = this.parent!;
 
     if (this.interpolate.target !== null) {
       const endPosition = this.interpolate.target.position.add(
@@ -80,8 +78,8 @@ export class ImageObject extends GameObject {
       onLoad: () => {
         this.loaded = true;
         this.scale = new Vector2D(
-          this.sprite.width,
-          this.sprite.height,
+          this.sprite!.width,
+          this.sprite!.height,
         ).multiply(this.scaleFactor);
       },
     });
@@ -93,7 +91,7 @@ export class ImageObject extends GameObject {
   }
 
   override draw(viewport: Viewport) {
-    this.sprite.draw(viewport);
+    this.sprite!.draw(viewport);
   }
 
   init() {}
@@ -104,7 +102,7 @@ export class ImageObject extends GameObject {
       {
         id: this.id,
         className: this.className,
-        STATIC_sprite: this.sprite.toJSON(exportStatic),
+        STATIC_sprite: this.sprite!.toJSON(exportStatic),
         STATIC_zIndex: this.zIndex,
         STATIC_position: this.position.export(),
         STATIC_scaleFactor: this.scaleFactor,

@@ -5,6 +5,7 @@ import { Viewport } from "../objects/Viewport.ts";
 import { HitBox } from "../objects/HitBox.ts";
 import { PeriodicTimer, Timer } from "../objects/Timer.ts";
 import { Arrow } from "./Padel.ts";
+import { Component } from "@shared/objects/Component.ts";
 
 export class GameWorld {
   gameObjects: Map<number, GameObject> = new Map();
@@ -19,21 +20,21 @@ export class GameWorld {
   }
 
   // cleqr all game objects from the world ( prevent ovelap issue )
-  clear(): void {
+  public clear(): void {
     if (this.gameObjects) {
       this.gameObjects.clear();
     }
   }
 
-  addTimer(durationSeconds: number, callback: () => void) {
+  public addTimer(durationSeconds: number, callback: () => void) {
     this.timers.push(new Timer(durationSeconds, callback));
   }
 
-  addPeriodicTimer(durationSeconds: number, callback: () => void) {
+  public addPeriodicTimer(durationSeconds: number, callback: () => void) {
     this.timers.push(new PeriodicTimer(durationSeconds, callback));
   }
 
-  addObject(object: GameObject) {
+  public addObject(object: GameObject) {
     this.gameObjects.set(object.id, object);
     object.game = this.game;
     object.init();
@@ -45,7 +46,7 @@ export class GameWorld {
     return object;
   }
 
-  checkCollisions() {
+  public checkCollisions() {
     const hitboxes: HitBox[] = [];
     for (const obj of this.gameObjects.values()) {
       for (const comp of obj.getComponents()) {
@@ -54,10 +55,11 @@ export class GameWorld {
         }
       }
     }
+
     for (let i = 0; i < hitboxes.length; i++) {
       for (let j = i + 1; j < hitboxes.length; j++) {
-        const a = hitboxes[i];
-        const b = hitboxes[j];
+        const a = hitboxes[i]!;
+        const b = hitboxes[j]!;
         if (a.isCollidingWith(b)) {
           a.isColliding = b.isColliding = true;
           a.onCollide?.(b);
@@ -69,7 +71,7 @@ export class GameWorld {
     }
   }
 
-  update() {
+  public update() {
     for (const object of this.gameObjects.values()) {
       object.update();
     }
@@ -84,9 +86,9 @@ export class GameWorld {
     const visited = new Set();
     const flatObjects: any[] = [];
 
-    const components = [];
+    const components: Component[] = [];
 
-    function flatten(obj) {
+    function flatten(obj: GameObject) {
       if (!obj || visited.has(obj.id)) return;
       visited.add(obj.id);
 
@@ -98,14 +100,13 @@ export class GameWorld {
 
       let exportedObject = obj.export(includeStaticObjects);
 
-      let keysWithId = [];
-
+      const componentIds = [];
       for (const [key, component] of obj.components) {
-        if (component.id) keysWithId.push(key);
+        if (component.id) componentIds.push(key);
       }
 
-      exportedObject.components = keysWithId;
-      if (keysWithId.length === 0 || !includeStaticObjects)
+      exportedObject.components = componentIds;
+      if (componentIds.length === 0 || !includeStaticObjects)
         delete exportedObject.components;
 
       flatObjects.push(exportedObject);
@@ -128,7 +129,7 @@ export class GameWorld {
       flatten(obj);
     }
 
-    const output = {
+    const output: Record<string, any> = {
       camera: {
         position: this.camera?.position,
       },
