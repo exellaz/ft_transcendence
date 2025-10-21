@@ -85,7 +85,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
     const isRequestSent = requests?.some((u) => u.id === userId);
 
     if (friendsLoading || requestsLoading || blockedLoading)
-      buttonText = t("common.loading");
+      buttonText = translate("loading");
     // isBlocked must be set before friends because friends can be blocked
     else if (isBlocked) buttonText = translate("blocked");
     else if (isFriend) buttonText = translate("friend");

@@ -1,10 +1,4 @@
 {
-  "common": {
-    "loading": "載入中...",
-    "username_required": "使用者名稱為必填項",
-    "username_length": "使用者名稱必須為2-15個字元",
-    "username_characters": "只允許字母、數字和底線"
-  },
   "AdvanceView": {
     "advancement": "晉級",
     "congratulations": "恭喜！",
@@ -212,6 +206,7 @@
     ]
   },
   "ProfilePopup": {
+    "loading": "載入中...",
     "header": "我的資料",
     "header_other": "資料",
     "add_friend": "新增好友",

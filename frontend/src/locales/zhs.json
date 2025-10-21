@@ -1,10 +1,4 @@
 {
-  "common": {
-    "loading": "加载中...",
-    "username_required": "用户名是必填项",
-    "username_length": "用户名必须为2-15个字符",
-    "username_characters": "只允许字母、数字和下划线"
-  },
   "AdvanceView": {
     "advancement": "晋级",
     "congratulations": "恭喜！",
@@ -212,6 +206,7 @@
     ]
   },
   "ProfilePopup": {
+    "loading": "加载中...",
     "header": "我的资料",
     "header_other": "资料",
     "add_friend": "添加好友",
