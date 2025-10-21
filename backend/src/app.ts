@@ -16,55 +16,16 @@ import errorHandler from "./plugins/errorHandler";
 import testRoutes from "./modules/test/test.routes";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
+import { corsOptions } from "./plugins/cors";
 
-const app = Fastify({
-  logger: true,
-});
+const app = Fastify({ logger: true });
 app.register(websocketPlugin);
-
-app.register(fastifyCors, {
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // allow your methods
-});
-
+app.register(fastifyCors, corsOptions);
 app.register(errorHandler);
 app.register(dbConnector);
-
-app.register(fastifySwagger, {
-  openapi: {
-    openapi: "3.0.0",
-    info: {
-      title: "Test swagger",
-      description: "Testing the Fastify swagger API",
-      version: "0.1.0",
-    },
-    servers: [
-      {
-        url: "http://localhost:3000",
-        description: "Development server",
-      },
-    ],
-    tags: [
-      { name: "user", description: "User related end-points" },
-      { name: "auth", description: "Auth related end-points" },
-      { name: "friendships", description: "Friends related end-points" },
-      {
-        name: "blockedFriendships",
-        description: "Blocked Friends related end-points",
-      },
-      {
-        name: "friendChatMessages",
-        description: "Friend Chat Message related end-points",
-      },
-      { name: "tournaments", description: "Tournament related end-points" },
-    ],
-  },
-});
-
-app.register(fastifySwaggerUi, {
-  routePrefix: "/docs", // visit http://localhost:3000/docs
-});
-
+app.register(fastifySwagger, swaggerOptions);
+app.register(fastifySwaggerUi, swaggerUiOptions);
 app.register(userRoutes);
 app.register(authRoutes);
 app.register(friendshipRoutes);
