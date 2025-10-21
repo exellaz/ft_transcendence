@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useApiQuery } from "../hooks/useApi";
 import { getUserById } from "../lib/usersApiClient";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
@@ -13,6 +14,7 @@ interface ProfileDropdownProps {
   setShowBasicInfo: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
+  setShowHowToPlay: (open: boolean) => void;
   userId: number;
 }
 
@@ -21,10 +23,14 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowBasicInfo,
   setShowFriends,
   setShowTournamentStats,
+  setShowHowToPlay,
   userId,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useUser();
 
   // API query for user data
   // unset userId will be temporarily assigned 0,
@@ -32,10 +38,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   const { data: user, refetch } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [userId],
-    userId !== 0
+    userId !== 0,
   );
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
   // listen for user info updates
   useEffect(() => {
@@ -81,8 +85,17 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       },
     },
     {
+      label: translate("how_to_play"),
+      onClick: () => {
+        setOpen(false);
+        setShowHowToPlay(true);
+      },
+    },
+    {
       label: translate("log_out"),
       onClick: () => {
+        logout();
+        setOpen(false);
         navigate("/login");
       },
     },

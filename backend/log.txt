@@ -1,0 +1,74 @@
+{
+  "camera": {
+    "position": {
+      "className": "Point2D",
+      "x": -101.30741499809399,
+      "y": 0
+    }
+  },
+  "bgColor": "#000000",
+  "gameObjects": [
+    {
+      "className": "ball",
+      "id": 0,
+      "position": {
+        "x": 0,
+        "y": -12.64
+      }
+    },
+    {
+      "id": 1,
+      "position": {
+        "x": -101.31,
+        "y": 0
+      },
+      "className": "camera"
+    },
+    {
+      "className": "OnScreenLabel",
+      "id": 2,
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "scale": {
+        "x": 9.837870413414663,
+        "y": 9.837870413414663
+      },
+      "text": "username2 Wins!"
+    },
+    {
+      "className": "label",
+      "id": 3,
+      "position": {
+        "x": -50,
+        "y": 20
+      },
+      "text": "0"
+    },
+    {
+      "className": "label",
+      "id": 4,
+      "position": {
+        "x": 50,
+        "y": 20
+      },
+      "text": "1"
+    },
+    {
+      "id": 9,
+      "position": {
+        "x": 250,
+        "y": 0
+      }
+    },
+    {
+      "id": 15,
+      "position": {
+        "x": -250,
+        "y": 91.33
+      }
+    }
+  ],
+  "type": "partial"
+}

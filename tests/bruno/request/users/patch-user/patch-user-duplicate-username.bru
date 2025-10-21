@@ -18,7 +18,7 @@ body:json {
 }
 
 assert {
-  res.status: eq 400
+  res.status: eq 409
   res.body.success: eq false
   res.body.error: contains "Username already exists"
 }

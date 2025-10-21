@@ -78,9 +78,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         />
       </div>
       <p
-        className={
-          `text-lg font-bold ${getUserColor(player.id)}`
-        }
+        className={`text-lg font-bold ${getUserColor(player.id)}`}
         title={player.username}
       >
         {player.username.length > 10

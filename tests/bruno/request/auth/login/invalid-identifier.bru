@@ -1,0 +1,45 @@
+meta {
+  name: invalid-identifier
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+script:pre-request {
+  const userId = Math.random().toString(36).substring(2, 8);
+
+  bru.setVar('identifier', `nonexist${userId}`);
+  bru.setVar('password', 'SomePassword123!');
+}
+
+body:json {
+  {
+    "identifier": "{{identifier}}",
+    "password": "{{password}}"
+  }
+}
+
+tests {
+  test("should return 401 unauthorized", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("should have error response structure", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', false);
+    expect(body).to.have.property('error');
+    expect(body.error).to.include('Invalid credentials');
+  });
+
+  test("should not leak user existence information", function() {
+    const body = res.getBody();
+    expect(body.error).to.not.include('user not found');
+    expect(body.error).to.not.include('email');
+    expect(body.error).to.not.include('username');
+  });
+}

@@ -20,7 +20,7 @@ function compile(
 ) {
   const state = pongGame.exportState(includeStaticObjects);
 
-  const output = JSON.stringify({
+  const output = {
     type: "state",
     state,
     metadata: {
@@ -29,9 +29,9 @@ function compile(
       fps: pongGame.fps,
     },
     settings,
-  });
+  };
 
-  return output;
+  return JSON.stringify(output);
 }
 
 /**

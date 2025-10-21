@@ -11,11 +11,8 @@ export class Ball extends GameObject {
   lastPadelHit: Padel | null = null;
   collided: boolean = false;
   static MAX_BOUNCE_ANGLE = Math.PI / 3;
-
   increasingVelocity: number = 1;
-
   targetScale: Vector2D;
-
   hitbox: HitBox;
   sprite: Sprite;
 
@@ -37,7 +34,7 @@ export class Ball extends GameObject {
 
     // Set fixed X velocity, direction based on team
     const direction = collidingPadel.team === Team.TEAM_RIGHT ? -1 : 1;
-    this.velocity.x = this.game.gameSettings.ballSpeed * direction;
+    this.velocity.x = this.game!.gameSettings.ballSpeed * direction;
 
     // Set Y velocity based on intersection
     const randomJitter = (Math.random() - 0.5) * 80 * this.increasingVelocity;
@@ -140,20 +137,20 @@ export class Ball extends GameObject {
     this.addComponent(this.sprite);
 
     this.onUpdate = () => {
-      if (this.position.y < -this.game.world.viewport.height / 2) {
-        this.position.y = -this.game.world.viewport.height / 2;
+      if (this.position.y < -this.game!.world.viewport.height / 2) {
+        this.position.y = -this.game!.world.viewport.height / 2;
         this.velocity.y *= -1;
-      } else if (this.position.y > this.game.world.viewport.height / 2) {
-        this.position.y = this.game.world.viewport.height / 2;
+      } else if (this.position.y > this.game!.world.viewport.height / 2) {
+        this.position.y = this.game!.world.viewport.height / 2;
         this.velocity.y *= -1;
       }
 
       // -- CHECK IF HITTING GOAL --
-      if (this.position.x < this.game.teamLeft.goalPostEnd) {
-        this.position.x = this.game.teamLeft.goalPostEnd;
+      if (this.position.x < this.game!.teamLeft.goalPostEnd) {
+        this.position.x = this.game!.teamLeft.goalPostEnd;
         this.onHitGoal(Team.TEAM_LEFT);
-      } else if (this.position.x > this.game.teamRight.goalPostEnd) {
-        this.position.x = this.game.teamRight.goalPostEnd;
+      } else if (this.position.x > this.game!.teamRight.goalPostEnd) {
+        this.position.x = this.game!.teamRight.goalPostEnd;
         this.onHitGoal(Team.TEAM_RIGHT);
       }
 
@@ -162,8 +159,8 @@ export class Ball extends GameObject {
   }
 
   start(team: Team = Team.TEAM_LEFT) {
-    this.game.ball.velocity.x =
-      this.game.gameSettings.ballSpeed * (team === Team.TEAM_LEFT ? 1 : -1);
+    this.game!.ball.velocity.x =
+      this.game!.gameSettings.ballSpeed * (team === Team.TEAM_LEFT ? 1 : -1);
   }
 
   onHitGoal(team: Team) {
@@ -171,11 +168,11 @@ export class Ball extends GameObject {
     this.lastPadelHit = null;
     this.velocity.x = 0;
 
-    this.game.world.addTimer(0.3, () => {
+    this.game!.world.addTimer(0.3, () => {
       this.position.x = 0;
       this.velocity.x = 0;
 
-      this.game.onHitGoal(team);
+      this.game!.onHitGoal(team);
     });
   }
 }

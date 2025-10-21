@@ -51,9 +51,9 @@ export interface GetAcceptedFriendshipsResponse
 
 // POST /friendships
 export interface CreateFriendshipRequest {
-	requesterId: number;
+  requesterId: number;
   accepterId?: number;
-	accepterUsername?: string;
+  accepterUsername?: string;
 }
 
 export interface CreateFriendshipResponse extends ApiResponse<Friendship> {}

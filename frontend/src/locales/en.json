@@ -257,6 +257,7 @@
     "basic_info": "BASIC INFO",
     "tournament_stats": "TOURNAMENT STATS",
     "friends": "FRIENDS",
+    "how_to_play": "HOW TO PLAY",
     "log_out": "LOG OUT"
   },
   "ReadyPlayers": {
@@ -288,6 +289,28 @@
     "back": "Back",
     "no_friends_yet": "No friends yet.",
     "no_new_requests": "No new requests.",
-    "no_blocked_users": "No blocked users."
+    "no_blocked_users": "No blocked users.",
+    "no_messages_yet": "No messages yet."
+  },
+  "HowToPlayPopup": {
+    "header": "How to Play",
+    "objective_title": "Objective",
+    "objective_text": [
+      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
+    ],
+    "controls_title": "Controls",
+    "controls_text": [
+      "Use the up and down arrow keys to move your paddle. In Local Mode, player 1 uses the W / S keys and player 2 uses the up / down arrow keys."
+    ],
+    "tournament_title": "Tournament Mode",
+    "tournament_text": [
+      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.", "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
+      "Player ranking and match history are tracked for all tournament games."
+    ],
+    "custom_title": "Custom Mode",
+    "custom_text": [
+      "Enjoy casual play with full customization options. Create or join rooms for both singles and doubles matches. Play with friends or get matched with random players.",
+      "Note: Local Mode supports singles matches only."
+    ]
   }
 }

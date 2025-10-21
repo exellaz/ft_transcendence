@@ -12,6 +12,8 @@ import GameSettingsPopup, {
   type GameSettings,
 } from "../../popups/GameSettingsPopup";
 
+import { useNavigate } from "react-router-dom";
+
 interface Player {
   name: string;
   spriteUrl: string;
@@ -26,6 +28,8 @@ interface GameDetails {
 const LocalGameView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`LocalGameView.${key}`);
+
+  const navigate = useNavigate();
 
   const [player1, setPlayer1] = useState<Player>({
     name: "Player 1",
@@ -46,11 +50,14 @@ const LocalGameView: React.FC = () => {
   const [choosingPlayer, setChoosingPlayer] = useState<1 | 2 | null>(null);
   const [showGameSettings, setShowGameSettings] = useState(false);
 
+  const kbdClasses = "px-4 py-2 bg-input-gray rounded";
+
   const SpriteCard: React.FC<{
     player: Player;
     onClick: () => void;
-  }> = ({ player, onClick }) => (
-    <div className="flex-col-center gap-2">
+    controls: [string, string];
+  }> = ({ player, onClick, controls }) => (
+    <div className="flex-col-center gap-4">
       <div className="relative">
         <Avatar src={player.spriteUrl} size={120} />
         <img
@@ -62,6 +69,11 @@ const LocalGameView: React.FC = () => {
         />
       </div>
       <p>{player.name}</p>
+      {/* Controls info */}
+      <span className="mt-2">
+        <kbd className={kbdClasses}>{controls[0]}</kbd> /{" "}
+        <kbd className={kbdClasses}>{controls[1]}</kbd>
+      </span>
     </div>
   );
 
@@ -70,16 +82,38 @@ const LocalGameView: React.FC = () => {
       <Card size="wide">
         <TournamentHeader>{translate("local_game")}</TournamentHeader>
 
-        <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
-          <SpriteCard player={player1} onClick={() => setChoosingPlayer(1)} />
+        <div className="w-full flex-row-between font-bold text-white text-2xl text-center">
+          <SpriteCard
+            player={player1}
+            onClick={() => setChoosingPlayer(1)}
+            controls={["W", "S"]}
+          />
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
-          <SpriteCard player={player2} onClick={() => setChoosingPlayer(2)} />
+          <SpriteCard
+            player={player2}
+            onClick={() => setChoosingPlayer(2)}
+            controls={["↑", "↓"]}
+          />
         </div>
-        <Button onClick={() => setShowGameSettings(true)}>
-          {translate("game_settings")}
-        </Button>
-        <Button variant="green">{translate("start")}</Button>
+        <div className="flex-row-center gap-6">
+          <Button onClick={() => setShowGameSettings(true)}>
+            {translate("game_settings")}
+          </Button>
+          <Button
+            variant="green"
+            onClick={() => {
+              const gameDetails: GameDetails = {
+                player1,
+                player2,
+                gameSettings,
+              };
+              navigate("/local-game", { state: gameDetails });
+            }}
+          >
+            {translate("start")}
+          </Button>
+        </div>
       </Card>
       <ChooseSpritePopup
         open={choosingPlayer !== null}

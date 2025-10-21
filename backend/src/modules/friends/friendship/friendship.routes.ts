@@ -1,23 +1,20 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
-import {
-  BlockedFriendship,
-  FriendshipStatus,
-  Prisma,
-} from "@prisma/client";
+import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import {
   createFriendshipSchema,
-  getFriendShipsByUserIdSchema,
+  deleteFriendshipSchema,
+  getAcceptedFriendShipsByUserIdSchema,
+  getPendingFriendShipsByUserIdSchema,
+  updateFriendshipSchema,
 } from "./friendship.schema";
 
-async function friendshipRoutes(
-  fastify: FastifyInstance,
-) {
-  // GET /friendships/:3/pending (get friends that send friend request to u)
+async function friendshipRoutes(fastify: FastifyInstance) {
+  // GET /friendships/:userId/pending (get friends that send friend request to u)
   fastify.get(
     "/friendships/:userId/pending",
-    { schema: getFriendShipsByUserIdSchema },
+    { schema: getPendingFriendShipsByUserIdSchema },
     async (request) => {
       const { userId } = request.params as { userId: string };
 
@@ -34,13 +31,13 @@ async function friendshipRoutes(
       });
 
       return ok(requesters);
-    }
+    },
   );
 
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
   fastify.get(
     "/friendships/:userId/accepted",
-    { schema: getFriendShipsByUserIdSchema },
+    { schema: getAcceptedFriendShipsByUserIdSchema },
     async (request) => {
       const { userId } = request.params as { userId: string };
       const uid = Number(userId);
@@ -95,7 +92,7 @@ async function friendshipRoutes(
 
       // Build a set of all user IDs that are blocked (in either direction).
       const blockedIds = new Set(
-        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId))
+        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId)),
       );
 
       /**
@@ -113,14 +110,14 @@ async function friendshipRoutes(
         }));
 
       return ok(formatted);
-    }
+    },
   );
 
   // POST /friendships
   fastify.post(
     "/friendships",
     { schema: createFriendshipSchema },
-    async (request, reply) => {
+    async (request) => {
       const { requesterId, accepterId, accepterUsername } = request.body as {
         requesterId: number;
         accepterId?: number;
@@ -132,22 +129,26 @@ async function friendshipRoutes(
 
         if (!finalAccepterId) {
           if (!accepterUsername) {
-            throw new ApiError(
+            throw ApiError.badRequest(
               "Either accepterId or accepterUsername must be provided",
-              400
+              "MISSING_ACCEPTER_INFO",
             );
           }
 
           const acceptedUser = await fastify.db.user.findFirst({
             where: { username: accepterUsername },
           });
-          if (!acceptedUser) throw new ApiError("User not found", 404);
+          if (!acceptedUser)
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
 
           finalAccepterId = acceptedUser.id;
         }
 
         if (requesterId === finalAccepterId) {
-          throw new ApiError("User cannot friend themselves", 400);
+          throw ApiError.badRequest(
+            "User cannot friend themselves",
+            "CANNOT_FRIEND_SELF",
+          );
         }
 
         // check if inverse direction exist
@@ -160,7 +161,10 @@ async function friendshipRoutes(
           },
         });
         if (inverseFriendship)
-          throw new ApiError("Friendship already exists", 400);
+          throw ApiError.conflict(
+            "Friendship already exists",
+            "FRIENDSHIP_CONFLICT",
+          );
 
         const friendship = await fastify.db.friendship.create({
           data: {
@@ -170,18 +174,26 @@ async function friendshipRoutes(
           },
         });
         return ok(friendship);
-      } catch (err: any) {
-        if (err.code === "P2002")
-          throw new ApiError("Friendship already exists", 400);
-        if (err.code === "P2003") throw new ApiError("User not found", 404);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2002")
+            throw ApiError.conflict(
+              "Friendship already exists",
+              "FRIENDSHIP_CONFLICT",
+            );
+
+          if (err.code === "P2003")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
         throw err;
       }
-    }
+    },
   );
 
   // PATCH /friendships/:requesterId/:accepterId
   fastify.patch(
     "/friendships/:requesterId/:accepterId",
+    { schema: updateFriendshipSchema },
     async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
@@ -191,7 +203,8 @@ async function friendshipRoutes(
         status?: FriendshipStatus;
       };
 
-      if (status === undefined) throw new ApiError("No fields to update", 400);
+      if (status === undefined)
+        throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");
 
       try {
         // find the friendship in either direction
@@ -210,7 +223,11 @@ async function friendshipRoutes(
           },
         });
 
-        if (!friendship) throw new ApiError("Friendship not found", 404);
+        if (!friendship)
+          throw ApiError.notFound(
+            "Friendship not found",
+            "FRIENDSHIP_NOT_FOUND",
+          );
 
         // update by friendship ID
         const updatedFriendship = await fastify.db.friendship.update({
@@ -219,19 +236,23 @@ async function friendshipRoutes(
         });
 
         return ok(updatedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("Friendship not found", 404);
-
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound(
+              "Friendship not found",
+              "FRIENDSHIP_NOT_FOUND",
+            );
+        }
         throw err; // let Fastify handle other errors
       }
-    }
+    },
   );
 
   // DELETE /friendships/:requesterId/:accepterId
   fastify.delete(
     "/friendships/:requesterId/:accepterId",
+    { schema: deleteFriendshipSchema },
     async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
@@ -255,7 +276,11 @@ async function friendshipRoutes(
           },
         });
 
-        if (!friendship) throw new ApiError("Friendship not found", 404);
+        if (!friendship)
+          throw ApiError.notFound(
+            "Friendship not found",
+            "FRIENDSHIP_NOT_FOUND",
+          );
 
         // update by friendship ID
         const deletedFriendship = await fastify.db.friendship.delete({
@@ -263,14 +288,17 @@ async function friendshipRoutes(
         });
 
         return ok(deletedFriendship);
-      } catch (err: any) {
-        if (err.code === "P2025")
-          // Prisma "record not found"
-          throw new ApiError("Friendship not found", 404);
-
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound(
+              "Friendship not found",
+              "FRIENDSHIP_NOT_FOUND",
+            );
+        }
         throw err; // let Fastify handle other errors
       }
-    }
+    },
   );
 }
 

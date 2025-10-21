@@ -14,14 +14,14 @@ import { Team } from "./pong.ts";
 import { SKIN_PATHS, Skin } from "./Skins.ts";
 
 export class Padel extends GameObject {
-  public team: Team;
-  public player: Player;
+  public team!: Team;
+  public player!: Player;
   public moveDownKey: string = "ArrowDown";
   public moveUpKey: string = "ArrowUp";
 
   isMoving: boolean = false;
 
-  sprite: Sprite;
+  sprite!: Sprite;
   teamWins(team: Team) {}
 
   skinPath: string;
@@ -48,10 +48,10 @@ export class Padel extends GameObject {
     });
 
     this.addComponent(new HitBox({}));
-
     Object.assign(this, params);
 
-    this.skinPath = SKIN_PATHS[params.player?.skin || Skin.ghost_dark].base;
+    this.skinPath = this.skinPath =
+      SKIN_PATHS[(params.player?.skin ?? Skin.ghost_dark) as Skin].base;
   }
 
   moveUp() {
@@ -110,26 +110,7 @@ export class Padel extends GameObject {
       );
 
       this.acceleration.y = 0;
-      // for (const client of this.game!.clients) {
-      // 	if (client.keysPressed.has("ArrowUp")) {
-      // 		this.acceleration.y = -this.game!.gameSettings!.playerAcceleration;
-      // 	}
-      // 	else if (client.keysPressed.has("ArrowDown")) {
-      // 		this.acceleration.y = this.game!.gameSettings!.playerAcceleration;
-      // 	}
-
-      // }
-      // let copied = this.sprite.clone();
-      // copied.opacity = 0.1;
-      // copied.blendMode = BlendMode.ColorDodge;
-      // copied.gselow = null;
-      // this.game.particles.particles.push(new Particle(this.game, 120, copied, this.position.clone(), (instance) => {
-      //     instance.sprite.opacity *= 0.96;
-      // }));
-      // return true;
     };
-
-    // console.log(this.player);
 
     this.addChild(
       new Arrow({
@@ -142,11 +123,14 @@ export class Padel extends GameObject {
 
     const scaleFactor = new Vector2D(0.48, 0.48);
 
+    const iris: string = SKIN_PATHS[this.player.skin as Skin].iris;
+    const eyes: string = SKIN_PATHS[this.player.skin as Skin].eyes;
+
     this.addChild(
       new ImageObject({
         scaleFactor: scaleFactor,
         sprite: new Sprite({
-          imagePath: "./assets/skins/components/eyes.png",
+          imagePath: eyes,
         }),
         isStatic: true,
         interpolate: new Interpolate({
@@ -165,7 +149,7 @@ export class Padel extends GameObject {
         scaleFactor: scaleFactor,
         isStatic: true,
         sprite: new Sprite({
-          imagePath: "./assets/skins/components/iris.png",
+          imagePath: iris,
         }),
         interpolate: new Interpolate({
           targetOffset: new Vector2D(
@@ -177,12 +161,6 @@ export class Padel extends GameObject {
         }),
       }),
     );
-
-    // this.addChild(new TrailSprite(this.game, this, new Sprite({
-    //     imagePath: "./assets/skins/components/iris.png",
-    //     size: new Vector2D(30, 12),
-    //     pos: new Point2D(irisOffset, -3)
-    // }), 250));
   }
 }
 export class PadelLabel extends Label {
@@ -212,8 +190,8 @@ export class PadelLabel extends Label {
 }
 
 export class Arrow extends GameObject {
-  team: Team;
-  text: string;
+  team!: Team;
+  text!: string;
   declare parent: Padel;
   public skin: number = 0;
 
@@ -251,7 +229,7 @@ export class Arrow extends GameObject {
 
     this.addComponent(
       new Sprite({
-        imagePath: SKIN_PATHS[this.skin].arrow,
+        imagePath: SKIN_PATHS[this.skin as Skin].arrow,
         flippedHorizontal: this.team === Team.TEAM_LEFT,
       }),
     );

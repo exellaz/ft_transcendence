@@ -40,7 +40,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
   const { data: blocked, loading: blockedLoading } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0 && variant === "other"
+    userId !== 0 && variant === "other",
   );
 
   // API query for friends list
@@ -51,7 +51,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
   } = useApiQuery<User[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0 && variant === "other"
+    userId !== 0 && variant === "other",
   );
 
   // API query for friend requests list
@@ -59,7 +59,7 @@ const ProfilePopup: React.FC<PopupProps> = ({
   const { data: requests, loading: requestsLoading } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: selectedId }),
     [open],
-    variant === "other"
+    variant === "other",
   );
 
   // API mutation to add a friend

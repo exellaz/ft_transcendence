@@ -39,12 +39,12 @@ export async function createTournament() {
       data: tournament,
     };
   } catch (error) {
-    console.error('Error creating tournament:', error);
+    console.error("Error creating tournament:", error);
 
     // ❌ Return standardized error response
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -132,7 +132,10 @@ export async function createTournamentMatch(m: TournamentMatchInput) {
     });
     if (p1 === undefined || p2 === undefined)
       throw new Error("Both players must exist");
-    if (p1.tournamentId !== p2.tournamentId || p1.tournamentId !== m.tournamentId) {
+    if (
+      p1.tournamentId !== p2.tournamentId ||
+      p1.tournamentId !== m.tournamentId
+    ) {
       throw new Error("Players must belong to the same tournament");
     }
 
@@ -154,18 +157,21 @@ export async function createTournamentMatch(m: TournamentMatchInput) {
       data: tournamentMatch,
     };
   } catch (error) {
-    console.error('Error creating tournamentMatch:', error);
+    console.error("Error creating tournamentMatch:", error);
 
     // ❌ Return standardized error response
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
 // update tournament status
-export async function updateTournamentStatus(status: TournamentStatus, tournamentId: number) {
+export async function updateTournamentStatus(
+  status: TournamentStatus,
+  tournamentId: number,
+) {
   try {
     const updatedTournament = await prisma.tournament.update({
       where: { id: tournamentId },
@@ -177,18 +183,20 @@ export async function updateTournamentStatus(status: TournamentStatus, tournamen
       data: updatedTournament,
     };
   } catch (error) {
-    console.error('Error updating tournament status:', error);
+    console.error("Error updating tournament status:", error);
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
-
 // update tournamentPlayer ranking
-export async function updateTournamentPlayerRanking(ranking: number, tournamentPlayerId: number) {
+export async function updateTournamentPlayerRanking(
+  ranking: number,
+  tournamentPlayerId: number,
+) {
   try {
     const updatedTournamentPlayer = await prisma.tournamentPlayer.update({
       where: { id: tournamentPlayerId },
@@ -200,11 +208,11 @@ export async function updateTournamentPlayerRanking(ranking: number, tournamentP
       data: updatedTournamentPlayer,
     };
   } catch (error) {
-    console.error('Error updating tournament player ranking:', error);
+    console.error("Error updating tournament player ranking:", error);
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

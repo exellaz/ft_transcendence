@@ -1,28 +1,38 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
+import {
+  getFriendChatMessagesByFriendshipIdSchema,
+  getLastFriendChatMessageByFriendshipIdSchema,
+} from "./friendChatMessage.schema";
 
-async function friendChatMessageRoutes(
-  fastify: FastifyInstance,
-) {
+async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId
-  fastify.get("/friendChatMessages/:friendshipId", async (request) => {
-    const { friendshipId } = request.params as { friendshipId: string };
+  fastify.get(
+    "/friendChatMessages/:friendshipId",
+    { schema: getFriendChatMessagesByFriendshipIdSchema },
+    async (request) => {
+      const { friendshipId } = request.params as { friendshipId: string };
 
-    const friendChatMessages = await fastify.db.friendChatMessage.findMany({
-      where: { friendshipId: Number(friendshipId) },
-      orderBy: { timestamp: "asc" }, // sort timestamp in ascending order
-    });
+      const friendChatMessages = await fastify.db.friendChatMessage.findMany({
+        where: { friendshipId: Number(friendshipId) },
+        orderBy: { timestamp: "asc" }, // sort timestamp in ascending order
+      });
 
-    if (!friendChatMessages)
-      throw new ApiError("friendChatMessages not found", 404);
+      if (!friendChatMessages)
+        throw ApiError.notFound(
+          "Friend chat messages not found",
+          "FRIEND_CHAT_MESSAGES_NOT_FOUND",
+        );
 
-    return ok(friendChatMessages); // only the 3 fields
-  });
+      return ok(friendChatMessages); // only the 3 fields
+    },
+  );
 
   // GET /friendChatMessages/:friendshipId/lastMessage
   fastify.get(
     "/friendChatMessages/:friendshipId/lastMessage",
-    async (request, reply) => {
+    { schema: getLastFriendChatMessageByFriendshipIdSchema },
+    async (request) => {
       const { friendshipId } = request.params as { friendshipId: string };
 
       const lastMessage = await fastify.db.friendChatMessage.findFirst({
@@ -31,7 +41,10 @@ async function friendChatMessageRoutes(
       });
 
       if (!lastMessage)
-        throw new ApiError("No messages found for this friendship", 404);
+        throw ApiError.notFound(
+          "Friend chat messages not found",
+          "FRIEND_CHAT_MESSAGES_NOT_FOUND",
+        );
 
       return ok(lastMessage); // only the 3 fields
     },

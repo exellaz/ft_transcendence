@@ -36,7 +36,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API mutation to update user data
@@ -58,7 +58,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
-     // clear error when user types
+    // clear error when user types
     if (saveError) setSaveError(null);
   };
 
