@@ -23,7 +23,7 @@ function compile(
 ) {
   const state = pongGame.exportState(includeStaticObjects);
 
-  const output = JSON.stringify({
+  const output = {
     type: "state",
     state,
     metadata: {
@@ -32,9 +32,9 @@ function compile(
       fps: pongGame.fps,
     },
     settings,
-  });
+  };
 
-  return output;
+  return JSON.stringify(output);
 }
 
 /**
@@ -80,7 +80,7 @@ export default async function gameWsRoute(fastify: any) {
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
         if (msg.type === "ready") {
-          console.log("player added ", clientId);
+          console.log("player connected ", clientId);
           room.game.addPlayer(
             new Player({
               id: clientId,

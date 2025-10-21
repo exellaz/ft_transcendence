@@ -1,118 +1,116 @@
-export const errorResponseSchema = {
+import {
+  successResponseSchema,
+  errorResponseSchema,
+} from "src/utils/common-schemas.";
+
+export const idParamSchema = {
   type: "object",
   properties: {
-    success: { type: "boolean", const: false },
-    error: { type: "string" },
-    errorCode: { type: "string" },
+    id: { type: "integer", minimum: 1 },
   },
-  required: ["success", "error"],
+  required: ["id"],
+};
+
+export const userResponseSchema = {
+  type: "object",
+  properties: {
+    id: { type: "integer" },
+    username: { type: "string" },
+    email: { type: "string", format: "email" },
+    avatarUrl: { type: ["string", "null"] },
+    status: { type: "string", enum: ["online", "offline"] },
+    joinedAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+  required: [
+    "id",
+    "username",
+    "email",
+    "avatarUrl",
+    "status",
+    "joinedAt",
+    "updatedAt",
+  ],
   additionalProperties: false,
 };
 
-// GET /users/:id
-export const getUserByIdSchema = {
-  params: {
-    type: "object",
-    properties: {
-      id: { type: "integer", minimum: 1 },
-    },
-    required: ["id"],
-  },
-
-  response: {
-    200: {
-      type: "object",
-      properties: {
-        success: { type: "boolean" },
-        data: {
-          type: "object",
-          properties: {
-            id: { type: "integer" },
-            username: { type: "string" },
-            email: { type: "string" },
-            avatarUrl: { type: ["string", "null"] },
-            status: { type: "string" }, // could refine with enum if you want
-            joinedAt: { type: "string", format: "date-time" },
-            updatedAt: { type: "string", format: "date-time" },
-          },
-          required: [
-            "id",
-            "username",
-            "email",
-            "avatarUrl",
-            "status",
-            "joinedAt",
-            "updatedAt",
-          ],
-        },
-      },
-      required: ["success", "data"],
-    },
-    404: {
-      type: "object",
-      properties: {
-        success: { type: "boolean" },
-        error: { type: "string" },
-      },
-      required: ["success", "error"],
-    },
-    400: {
-      type: "object",
-      properties: {
-        success: { type: "boolean" },
-        error: { type: "string" },
-      },
-      required: ["success", "error"],
+export const userSettingsResponseSchema = {
+  type: "object",
+  properties: {
+    userId: { type: "integer" },
+    language: {
+      type: "string",
+      enum: ["english", "simplified_chinese", "traditional_chinese"],
     },
   },
+  required: ["userId", "language"],
+  additionalProperties: false,
 };
 
-// PATCH /users/:id
-export const patchUserByIdSchema = {
-  params: {
-    type: "object",
-    properties: {
-      id: { type: "integer", minimum: 1 },
-    },
-    required: ["id"],
-  },
-};
-
-// DELETE /users/:id
-export const deleteUserByIdSchema = {
-  params: {
-    type: "object",
-    properties: {
-      id: { type: "integer", minimum: 1 },
-    },
-    required: ["id"],
-  },
-};
+// ------------------------------ User Settings Schemas ------------------------------
 
 // GET /users/:id/settings
 export const getUserSettingsByIdSchema = {
-  params: {
-    type: "object",
-    properties: {
-      id: { type: "integer", minimum: 1 },
-    },
-    required: ["id"],
+  tags: ["user"],
+  summary: "Get user settings by user ID",
+
+  params: idParamSchema,
+
+  response: {
+    200: successResponseSchema(userSettingsResponseSchema),
+    404: errorResponseSchema,
+    400: errorResponseSchema,
   },
 };
 
 // PATCH /users/:id/settings  (update single user settings)
 export const patchUserSettingsByIdSchema = {
-  params: {
+  tags: ["user"],
+  summary: "Update user settings by user ID",
+
+  params: idParamSchema,
+
+  body: {
     type: "object",
     properties: {
-      id: { type: "integer", minimum: 1 },
+      language: {
+        type: "string",
+        enum: ["english", "simplified_chinese", "traditional_chinese"],
+      },
     },
-    required: ["id"],
+    additionalProperties: false,
+  },
+
+  response: {
+    200: successResponseSchema(userSettingsResponseSchema),
+    404: errorResponseSchema,
+    400: errorResponseSchema,
   },
 };
 
-// POST /auth/register
-export const postUserRegisterSchema = {
+// ------------------------------ User Schemas ------------------------------
+
+// GET /users/:id
+export const getUserByIdSchema = {
+  tags: ["user"],
+  summary: "Get a single user by their ID",
+
+  params: idParamSchema,
+
+  response: {
+    200: successResponseSchema(userResponseSchema),
+    404: errorResponseSchema,
+    400: errorResponseSchema,
+  },
+};
+
+// PATCH /users/:id
+export const patchUserByIdSchema = {
+  tags: ["user"],
+  summary: "Update a user by their ID",
+
+  params: idParamSchema,
+
   body: {
     type: "object",
     properties: {
@@ -122,117 +120,47 @@ export const postUserRegisterSchema = {
         maxLength: 15,
         pattern: "^[a-zA-Z0-9_-]+$",
       },
-      email: { type: "string", format: "email" },
-      password: {
-        type: "string",
-        minLength: 8,
-        maxLength: 100,
-        pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-      },
+      avatarUrl: { type: "string" },
     },
-    required: ["username", "email", "password"],
     additionalProperties: false,
   },
+
   response: {
-    201: {
-      type: "object",
-      properties: {
-        success: { type: "boolean" },
-        data: {
-          type: "object",
-          properties: {
-            token: { type: "string" },
-            user: {
-              type: "object",
-              properties: {
-                id: { type: "integer" },
-                username: { type: "string" },
-                email: { type: "string", format: "email" },
-                avatarUrl: { type: ["string", "null"] },
-                status: { type: "string", enum: ["online", "offline"] },
-                joinedAt: { type: "string", format: "date-time" },
-                updatedAt: { type: "string", format: "date-time" },
-              },
-              required: [
-                "id",
-                "username",
-                "email",
-                "avatarUrl",
-                "status",
-                "joinedAt",
-                "updatedAt",
-              ],
-              additionalProperties: false,
-            },
-          },
-          required: ["token", "user"],
-          additionalProperties: false,
-        },
-      },
-      required: ["success", "data"],
-      additionalProperties: false,
-    },
+    200: successResponseSchema(userResponseSchema),
+    404: errorResponseSchema,
     400: errorResponseSchema,
-    409: errorResponseSchema,
   },
 };
 
-// POST /auth/login
-export const postUserLoginSchema = {
-  body: {
+// DELETE /users/:id
+export const deleteUserByIdSchema = {
+  tags: ["user"],
+  summary: "Delete a user by their ID",
+
+  params: {
     type: "object",
     properties: {
-      identifier: {
-        type: "string",
-        minLength: 1,
-        maxLength: 255,
-        pattern: "^\\S+$",
-      },
-      password: { type: "string", minLength: 1, maxLength: 128 },
+      id: { type: "integer", minimum: 1 },
     },
-    required: ["identifier", "password"],
-    additionalProperties: false,
+    required: ["id"],
   },
+
   response: {
-    200: {
-      type: "object",
-      properties: {
-        success: { type: "boolean", const: true },
-        data: {
-          type: "object",
-          properties: {
-            token: { type: "string" },
-            user: {
-              type: "object",
-              properties: {
-                id: { type: "integer" },
-                username: { type: "string" },
-                email: { type: "string", format: "email" },
-                avatarUrl: { type: ["string", "null"] },
-                status: { type: "string", enum: ["online", "offline"] },
-                joinedAt: { type: "string", format: "date-time" },
-                updatedAt: { type: "string", format: "date-time" },
-              },
-              required: [
-                "id",
-                "username",
-                "email",
-                "avatarUrl",
-                "status",
-                "joinedAt",
-                "updatedAt",
-              ],
-              additionalProperties: false,
-            },
-          },
-          required: ["token", "user"],
-          additionalProperties: false,
-        },
-      },
-      required: ["success", "data"],
-      additionalProperties: false,
-    },
+    200: successResponseSchema(userResponseSchema),
+    404: errorResponseSchema,
+  },
+};
+
+// GET /users - get all users
+export const getUsersSchema = {
+  tags: ["user"],
+  summary: "Get all users",
+
+  response: {
+    200: successResponseSchema({
+      type: "array",
+      items: userResponseSchema,
+    }),
     400: errorResponseSchema,
-    401: errorResponseSchema,
   },
 };

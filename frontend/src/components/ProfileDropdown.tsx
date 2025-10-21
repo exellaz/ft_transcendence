@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useApiQuery } from "../hooks/useApi";
 import { getUserById } from "../lib/usersApiClient";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserProvider";
 
 import Avatar from "./Avatar";
 import Button from "./Button";
@@ -27,6 +28,9 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ProfileDropdown.${key}`);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useUser();
 
   // API query for user data
   // unset userId will be temporarily assigned 0,
@@ -36,8 +40,6 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     [userId],
     userId !== 0,
   );
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
 
   // listen for user info updates
   useEffect(() => {
@@ -92,6 +94,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     {
       label: translate("log_out"),
       onClick: () => {
+        logout();
+        setOpen(false);
         navigate("/login");
       },
     },

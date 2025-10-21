@@ -2,6 +2,10 @@ import { FastifyInstance } from "fastify";
 import { generateRoomId } from "../room/room";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
+import {
+  getUserTournamentHistorySchema,
+  getUserTournamentStatsSchema,
+} from "./tournament.schema";
 
 interface tournament {
   id: number;
@@ -68,101 +72,109 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /users/:id/tournament-history  - tournament history + matches
-  app.get("/users/:id/tournament-history", async (request) => {
-    const { id } = request.params as { id: string };
-    const userId = Number(id);
+  app.get(
+    "/users/:id/tournament-history",
+    { schema: getUserTournamentHistorySchema },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      const userId = Number(id);
 
-    // reuseable include object for tournament history
-    const tournamentHistoryInclude = {
-      tournament: true,
-      matchesAsP1: {
-        include: {
-          player1: { include: { user: { select: { username: true } } } },
-          player2: { include: { user: { select: { username: true } } } },
+      // reuseable include object for tournament history
+      const tournamentHistoryInclude = {
+        tournament: true,
+        matchesAsP1: {
+          include: {
+            player1: { include: { user: { select: { username: true } } } },
+            player2: { include: { user: { select: { username: true } } } },
+          },
         },
-      },
-      matchesAsP2: {
-        include: {
-          player1: { include: { user: { select: { username: true } } } },
-          player2: { include: { user: { select: { username: true } } } },
+        matchesAsP2: {
+          include: {
+            player1: { include: { user: { select: { username: true } } } },
+            player2: { include: { user: { select: { username: true } } } },
+          },
         },
-      },
-    } satisfies Prisma.TournamentPlayerInclude;
+      } satisfies Prisma.TournamentPlayerInclude;
 
-    type TournamentHistory = Prisma.TournamentPlayerGetPayload<{
-      include: typeof tournamentHistoryInclude;
-    }>;
+      type TournamentHistory = Prisma.TournamentPlayerGetPayload<{
+        include: typeof tournamentHistoryInclude;
+      }>;
 
-    const tournaments: TournamentHistory[] =
-      await app.db.tournamentPlayer.findMany({
-        where: {
-          userId: userId,
-          tournament: { status: "COMPLETED" },
-        },
-        include: tournamentHistoryInclude,
-      });
+      const tournaments: TournamentHistory[] =
+        await app.db.tournamentPlayer.findMany({
+          where: {
+            userId: userId,
+            tournament: { status: "COMPLETED" },
+          },
+          include: tournamentHistoryInclude,
+        });
 
-    const formatted = tournaments.map((tp) => {
-      const matches = [...tp.matchesAsP1, ...tp.matchesAsP2].map((m) => {
-        const isPlayer1 = m.player1Id === tp.id;
-        const opponent = isPlayer1 ? m.player2 : m.player1;
+      const formatted = tournaments.map((tp) => {
+        const matches = [...tp.matchesAsP1, ...tp.matchesAsP2].map((m) => {
+          const isPlayer1 = m.player1Id === tp.id;
+          const opponent = isPlayer1 ? m.player2 : m.player1;
 
-        const myScore = isPlayer1 ? m.player1Score : m.player2Score;
-        const opponentScore = isPlayer1 ? m.player2Score : m.player1Score;
-        const result = m.winnerId === tp.id ? "win" : "lose";
+          const myScore = isPlayer1 ? m.player1Score : m.player2Score;
+          const opponentScore = isPlayer1 ? m.player2Score : m.player1Score;
+          const result = m.winnerId === tp.id ? "win" : "lose";
+
+          return {
+            round: m.round,
+            opponentUsername: opponent.user.username,
+            score: `${myScore}-${opponentScore}`,
+            result,
+          };
+        });
 
         return {
-          round: m.round,
-          opponentUsername: opponent.user.username,
-          score: `${myScore}-${opponentScore}`,
-          result,
+          tournamentId: tp.tournamentId,
+          date: tp.tournament.createdAt.toISOString().split("T")[0],
+          ranking: tp.ranking,
+          matches,
         };
       });
 
-      return {
-        tournamentId: tp.tournamentId,
-        date: tp.tournament.createdAt.toISOString().split("T")[0],
-        ranking: tp.ranking,
-        matches,
-      };
-    });
-
-    return ok(formatted);
-  });
+      return ok(formatted);
+    },
+  );
 
   // GET /users/:id/tournament-stats
-  app.get("/users/:id/tournament-stats", async (request) => {
-    const { id } = request.params as { id: string };
-    const userId = Number(id);
+  app.get(
+    "/users/:id/tournament-stats",
+    { schema: getUserTournamentStatsSchema },
+    async (request) => {
+      const { id } = request.params as { id: string };
+      const userId = Number(id);
 
-    const completedTournaments: TournamentPlayer[] =
-      await app.db.tournamentPlayer.findMany({
+      const completedTournaments: TournamentPlayer[] =
+        await app.db.tournamentPlayer.findMany({
+          where: {
+            userId: userId,
+            tournament: { status: TournamentStatus.COMPLETED },
+          },
+          select: { ranking: true },
+        });
+
+      const rankings = completedTournaments.map((t) => t.ranking);
+
+      // use prisma to get average ranking
+      const stats = await app.db.tournamentPlayer.aggregate({
+        _avg: { ranking: true },
         where: {
           userId: userId,
           tournament: { status: TournamentStatus.COMPLETED },
         },
-        select: { ranking: true },
       });
 
-    const rankings = completedTournaments.map((t) => t.ranking);
+      const tournamentStats = {
+        firstPlace: rankings.filter((r) => r === 1).length,
+        secondPlace: rankings.filter((r) => r === 2).length,
+        thirdPlace: rankings.filter((r) => r === 3).length,
+        completedTournaments: rankings.length,
+        averageRanking: stats._avg.ranking, // if user hasn't join tournaments, avgRanking = null
+      };
 
-    // use prisma to get average ranking
-    const stats = await app.db.tournamentPlayer.aggregate({
-      _avg: { ranking: true },
-      where: {
-        userId: userId,
-        tournament: { status: TournamentStatus.COMPLETED },
-      },
-    });
-
-    const tournamentStats = {
-      firstPlace: rankings.filter((r) => r === 1).length,
-      secondPlace: rankings.filter((r) => r === 2).length,
-      thirdPlace: rankings.filter((r) => r === 3).length,
-      completedTournaments: rankings.length,
-      averageRanking: stats._avg.ranking, // if user hasn't join tournaments, avgRanking = null
-    };
-
-    return ok(tournamentStats);
-  });
+      return ok(tournamentStats);
+    },
+  );
 }
