@@ -17,10 +17,7 @@ interface JWTPayload {
   exp?: number;
 }
 
-export async function authenticate(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function authenticate(request: FastifyRequest) {
   const authHeader = (request.headers.authorization || "") as string;
   if (!authHeader.startsWith("Bearer ")) {
     request.log.warn(`Authentication failed: ${AuthErrors.MISSING_BEARER}`);
