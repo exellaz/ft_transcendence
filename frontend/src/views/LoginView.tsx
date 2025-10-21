@@ -40,8 +40,9 @@ const LoginView: React.FC = () => {
     };
 
   const validateForm = (): string | null => {
-    if (!formData.identifier.trim()) return "Username or email is required";
-    if (!formData.password) return "Password is required";
+    if (!formData.identifier.trim())
+      return translate("username_or_email_required");
+    if (!formData.password) return translate("password_required");
     return null;
   };
 
@@ -61,7 +62,13 @@ const LoginView: React.FC = () => {
       });
 
       if (!loginResponse.success || !loginResponse.data) {
-        throw new Error(loginResponse.error || "Login failed");
+        // Check for errorCode and translate if present
+        if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
+          setError(translate("invalid_credentials"));
+        } else {
+          setError(translate("login_failed"));
+        }
+        return;
       }
 
       // Success: Store token and user data, then redirect
@@ -78,7 +85,7 @@ const LoginView: React.FC = () => {
 
       navigate("/main-menu");
     } catch (err) {
-      setError((err as Error).message);
+      setError(translate("login_failed"));
     } finally {
       setIsLoading(false);
     }

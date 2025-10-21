@@ -56,6 +56,10 @@
     "start": "開始"
   },
   "LoginView": {
+    "username_or_email_required": "必須輸入用戶名或電子郵件",
+    "password_required": "必須輸入密碼",
+    "invalid_credentials": "用戶名、電子郵件或密碼不正確",
+    "login_failed": "登入失敗",
     "username_or_email": "用戶名 / 電子郵件",
     "password": "密碼",
     "login": "登入",

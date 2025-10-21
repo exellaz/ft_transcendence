@@ -54,6 +54,10 @@
     "start": "Start"
   },
   "LoginView": {
+    "username_or_email_required": "Username or email is required",
+    "password_required": "Password is required",
+    "invalid_credentials": "Username, email or password is incorrect",
+    "login_failed": "Login failed",
     "username_or_email": "Username / Email",
     "password": "Password",
     "login": "LOGIN",
