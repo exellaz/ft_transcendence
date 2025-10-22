@@ -49,8 +49,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // Add friend state
   const [showAddFriendView, setShowAddFriendView] = useState(false);
   const [friendUsername, setFriendUsername] = useState("");
-  const [addFriendSuccess, setAddFriendSuccess] = useState(false);
   const [addFriendError, setAddFriendError] = useState<string | null>(null);
+  const [addFriendSuccess, setAddFriendSuccess] = useState(false);
 
   // API query for friends list
   const {
@@ -153,8 +153,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   function handleClose() {
     onClose();
     setSelectedUser(null);
-    setAddFriendSuccess(false);
     setAddFriendError(null);
+    setAddFriendSuccess(false);
   }
 
   function handleCloseCascadeCard() {
@@ -176,8 +176,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   const handleAddFriend = async (): Promise<void> => {
     // clear previous errors
-    setAddFriendSuccess(false);
     setAddFriendError(null);
+    setAddFriendSuccess(false);
 
     const trimmed = friendUsername.trim();
 
@@ -187,40 +187,40 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       return;
     }
 
-    const result = await addFriend({
+    const response = await addFriend({
       requesterId: userId,
       accepterUsername: trimmed,
     });
 
-    if (result.success) {
+    if (response.success) {
       setAddFriendSuccess(true);
       handleCloseCascadeCard();
     } else {
       setAddFriendError("Failed to add friend");
     }
-    if (result.error) {
-      setAddFriendError(result.error);
+    if (response.error) {
+      setAddFriendError(response.error);
     }
   };
 
   const handleAcceptRequest = async (requesterId: number): Promise<void> => {
-    const result = await acceptRequest({
+    const response = await acceptRequest({
       requesterId: requesterId,
       accepterId: userId,
       status: "accepted",
     });
-    if (result.success) {
+    if (response.success) {
       alert("Friend request accepted!");
       handleCloseCascadeCard();
     }
   };
 
   const handleRejectRequest = async (requesterId: number): Promise<void> => {
-    const result = await rejectRequest({
+    const response = await rejectRequest({
       requesterId: requesterId,
       accepterId: userId,
     });
-    if (result.success) {
+    if (response.success) {
       alert("Friend request rejected!");
       handleCloseCascadeCard();
     }
@@ -383,8 +383,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                   setActiveTab(tab);
                   setSelectedUser(null);
                   setShowAddFriendView(false);
-                  setAddFriendSuccess(false);
                   setAddFriendError(null);
+                  setAddFriendSuccess(false);
                   // trigger refetch based on tab
                   if (tab === "friends") {
                     refetchFriends();
@@ -434,8 +434,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                         onClick={() => {
                           setShowAddFriendView(false);
                           setSelectedUser(null);
-                          setAddFriendSuccess(false);
                           setAddFriendError(null);
+                          setAddFriendSuccess(false);
                         }}
                       >
                         {translate("back")}

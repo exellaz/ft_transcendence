@@ -24,10 +24,6 @@ const SignUpView: React.FC = () => {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [usernameStatus, setUsernameStatus] = React.useState<{
-    message: string;
-    color: "green" | "red";
-  } | null>(null);
 
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,9 +34,6 @@ const SignUpView: React.FC = () => {
 
       // Clear error when user starts typing
       if (error) setError(null);
-
-      // Clear username status when username changes
-      if (field === "username") setUsernameStatus(null);
     };
 
   // simple frontend validation mainly checking for empty fields and password match
@@ -114,10 +107,6 @@ const SignUpView: React.FC = () => {
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
           maxLength={30}
         />
-
-        {usernameStatus && (
-          <Status text={usernameStatus.message} color={usernameStatus.color} />
-        )}
 
         <Input
           placeholder={translate("email")}

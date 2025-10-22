@@ -31,7 +31,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
       });
 
       return ok(requesters);
-    },
+    }
   );
 
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
@@ -92,7 +92,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
 
       // Build a set of all user IDs that are blocked (in either direction).
       const blockedIds = new Set(
-        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId)),
+        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId))
       );
 
       /**
@@ -110,7 +110,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         }));
 
       return ok(formatted);
-    },
+    }
   );
 
   // POST /friendships
@@ -131,7 +131,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           if (!accepterUsername) {
             throw ApiError.badRequest(
               "Either accepterId or accepterUsername must be provided",
-              "MISSING_ACCEPTER_INFO",
+              "MISSING_ACCEPTER_INFO"
             );
           }
 
@@ -147,7 +147,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         if (requesterId === finalAccepterId) {
           throw ApiError.badRequest(
             "User cannot friend themselves",
-            "CANNOT_FRIEND_SELF",
+            "CANNOT_FRIEND_SELF"
           );
         }
 
@@ -160,11 +160,23 @@ async function friendshipRoutes(fastify: FastifyInstance) {
             ],
           },
         });
-        if (inverseFriendship)
+        if (inverseFriendship) {
+          if (inverseFriendship.status === "pending")
+            throw ApiError.conflict(
+              "Friend request is pending",
+              "FRIEND_REQUEST_PENDING"
+            );
+          if (inverseFriendship.status === "accepted")
+            throw ApiError.conflict(
+              "Users are already friends",
+              "ALREADY_FRIENDS"
+            );
+          // fallback for any other status
           throw ApiError.conflict(
             "Friendship already exists",
-            "FRIENDSHIP_CONFLICT",
+            "FRIENDSHIP_CONFLICT"
           );
+        }
 
         const friendship = await fastify.db.friendship.create({
           data: {
@@ -179,7 +191,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           if (err.code === "P2002")
             throw ApiError.conflict(
               "Friendship already exists",
-              "FRIENDSHIP_CONFLICT",
+              "FRIENDSHIP_CONFLICT"
             );
 
           if (err.code === "P2003")
@@ -187,7 +199,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         }
         throw err;
       }
-    },
+    }
   );
 
   // PATCH /friendships/:requesterId/:accepterId
@@ -226,7 +238,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         if (!friendship)
           throw ApiError.notFound(
             "Friendship not found",
-            "FRIENDSHIP_NOT_FOUND",
+            "FRIENDSHIP_NOT_FOUND"
           );
 
         // update by friendship ID
@@ -241,12 +253,12 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           if (err.code === "P2025")
             throw ApiError.notFound(
               "Friendship not found",
-              "FRIENDSHIP_NOT_FOUND",
+              "FRIENDSHIP_NOT_FOUND"
             );
         }
         throw err; // let Fastify handle other errors
       }
-    },
+    }
   );
 
   // DELETE /friendships/:requesterId/:accepterId
@@ -279,7 +291,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         if (!friendship)
           throw ApiError.notFound(
             "Friendship not found",
-            "FRIENDSHIP_NOT_FOUND",
+            "FRIENDSHIP_NOT_FOUND"
           );
 
         // update by friendship ID
@@ -293,12 +305,12 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           if (err.code === "P2025")
             throw ApiError.notFound(
               "Friendship not found",
-              "FRIENDSHIP_NOT_FOUND",
+              "FRIENDSHIP_NOT_FOUND"
             );
         }
         throw err; // let Fastify handle other errors
       }
-    },
+    }
   );
 }
 
