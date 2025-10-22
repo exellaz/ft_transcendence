@@ -14,7 +14,10 @@ import TournamentHeader from "../../components/TournamentHeader";
 import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
+
+// popups
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
+import ProfilePopup from "../../popups/ProfilePopup";
 
 // hooks
 import { useRoomWebSocket } from "../../lib/room-websocket";
@@ -42,8 +45,10 @@ const DoublesRoomView: React.FC = () => {
   const { roomId: paramRoomId } = useParams();
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
+  const userId = user?.id ?? 0;
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [sprite, setSprite] = useState<string>("/assets/yellow-ghost.png");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -256,6 +261,7 @@ const DoublesRoomView: React.FC = () => {
                     userId={userInfo?.id || -1}
                     players={players}
                     onSwitchTeam={onSwitch}
+                    onSelect={setSelectedId}
                   />
                   <div className="flex-row-center gap-6">
                     {/* Ready button (not for leader) */}
@@ -338,6 +344,14 @@ const DoublesRoomView: React.FC = () => {
               navigate("/main-menu");
             }}
           />
+          {selectedId && (
+            <ProfilePopup
+              open={true}
+              onClose={() => setSelectedId(null)}
+              selectedId={selectedId}
+              variant={selectedId === userId ? "self" : "other"}
+            />
+          )}
         </RoomLayout>
       )}
     </>
