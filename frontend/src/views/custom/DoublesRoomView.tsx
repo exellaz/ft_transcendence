@@ -42,7 +42,8 @@ const DoublesRoomView: React.FC = () => {
   const { roomId: paramRoomId } = useParams();
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
-  const [userInfo, setUserinfo] = useState<User | null>(null);
+  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [sprite, setSprite] = useState<string>("/assets/yellow-ghost.png");
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -56,12 +57,12 @@ const DoublesRoomView: React.FC = () => {
       JSON.stringify({
         type: "togglePrivacy",
         private: newPrivate,
-      }),
+      })
     );
 
     // Optimistically update the UI
     setRoomInfo((prev) =>
-      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
+      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev
     );
   };
 
@@ -73,7 +74,7 @@ const DoublesRoomView: React.FC = () => {
       try {
         const response = await getUserById({ id: Number(user.id) }); // Call the API
         if (response.success && response.data) {
-          setUserinfo(response.data); // Store the user info
+          setUserInfo(response.data); // Store the user info
         } else {
           console.log("Failed to fetch user info"); // Handle API error
         }
@@ -144,7 +145,7 @@ const DoublesRoomView: React.FC = () => {
     player: {
       id: userInfo?.id || -1,
       name: userInfo?.username ?? "",
-      avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
+      avatar: userInfo?.avatarUrl ?? "/assets/yellow-ghost.png",
     },
     setRoomInfo,
   });
@@ -157,8 +158,9 @@ const DoublesRoomView: React.FC = () => {
       const timer = setTimeout(() => {
         sessionStorage.setItem(
           "playerSide",
-          role.startsWith("left") ? "left" : "right",
+          role.startsWith("left") ? "left" : "right"
         );
+        sessionStorage.setItem("playerSprite", sprite);
         navigate("/game");
       }, 1000);
       return () => clearTimeout(timer);
@@ -179,7 +181,11 @@ const DoublesRoomView: React.FC = () => {
       {!roomId ? (
         <h1>no room id</h1>
       ) : (
-        <RoomLayout isLeader={isLeader}>
+        <RoomLayout
+          isLeader={isLeader}
+          selectedSprite={sprite}
+          onSelectSprite={setSprite}
+        >
           <div className="relative w-full flex justify-center">
             <Card size="large">
               {/* show countdown */}

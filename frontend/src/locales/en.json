@@ -266,7 +266,8 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends"
+    "invite_friends": "Invite Friends",
+    "choose_sprite": "Choose Sprite"
   },
   "FriendsPopup": {
     "tabs": {

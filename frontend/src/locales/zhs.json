@@ -264,7 +264,8 @@
   },
   "RoomLayout": {
     "game_settings": "游戏设置",
-    "invite_friends": "邀请好友"
+    "invite_friends": "邀请好友",
+    "choose_sprite": "选择角色"
   },
   "FriendsPopup": {
     "tabs": {

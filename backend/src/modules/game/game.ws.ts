@@ -19,7 +19,7 @@ function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 function compile(
   pongGame: PongGame,
   includeStaticObjects: boolean,
-  settings = {},
+  settings = {}
 ) {
   const state = pongGame.exportState(includeStaticObjects);
 
@@ -79,16 +79,27 @@ export default async function gameWsRoute(fastify: any) {
 
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
+        const SKIN_MAPPING: Record<string, number> = {
+          "/assets/yellow-ghost.png": 0,
+          "/assets/green-ghost.png": 1,
+          "/assets/blue-ghost.png": 2,
+          "/assets/red-ghost.png": 3,
+          "/assets/purple-ghost.png": 4,
+          "/assets/starry-ghost.png": 5,
+          "/assets/white-ghost.png": 6,
+          "/assets/42-ghost.png": 7,
+        };
+
         if (msg.type === "ready") {
           console.log("player connected ", clientId);
           room.game.addPlayer(
             new Player({
               id: clientId,
               name: playerName,
-              skin: 0,
+              skin: SKIN_MAPPING[playerSprite] ?? 0,
               team: side === "left" ? 0 : 1,
               socket: socket,
-            }),
+            })
           );
 
           //ensure the socket is up to date
@@ -99,7 +110,7 @@ export default async function gameWsRoute(fastify: any) {
             JSON.stringify({
               type: "ready",
               payload: {},
-            }),
+            })
           );
 
           // ✅ New addition: broadcast updated world to all
@@ -147,7 +158,7 @@ export default async function gameWsRoute(fastify: any) {
       else if (room.game.teamRight.padels.some((p) => p.player.id === clientId))
         side = "right";
       console.log(
-        `❌ Player ${playerName} (${side}) disconnected. countdown 3 sec to end game`,
+        `❌ Player ${playerName} (${side}) disconnected. countdown 3 sec to end game`
       );
 
       // handle player disconnect
