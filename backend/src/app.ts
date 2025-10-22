@@ -18,8 +18,10 @@ import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
+import onlineStatusRoutes from "./modules/online-status/online-status.routes";
 
 const app = Fastify({ logger: true });
+
 app.register(websocketPlugin);
 app.register(fastifyCors, corsOptions);
 app.register(errorHandler);
@@ -36,6 +38,8 @@ app.register(roomWsRoutes);
 app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
+app.register(onlineStatusRoutes);
+
 app.register(testRoutes);
 
 export default app;
