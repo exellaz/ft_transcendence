@@ -159,12 +159,13 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
 
 				//update player in lobby
                 if (msg.type === "requestLobby") {
+                    //TODO check lobby data
                     try {
                         socket.send(JSON.stringify({
                             type: "lobbyData",
                             tournamentId: tournamentId,
                             players: tournament.players,
-                            started: tournament.lock,
+                            lock: tournament.lock,
                             stage: tournament.stage ?? null,
                             maxPlayer: tournament.maxPlayer ?? null,
                             countdown: typeof tournament.countdownRemaining === "number" ? tournament.countdownRemaining : null,
@@ -215,7 +216,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
 
             //notify all clients in the same tournament about the player leaving
             broadcast(JSON.stringify({ type: "playerLeft", players: tournament.players }));
-            console.log (`Player ${playerId} left tournament ${tournamentId}: started=${tournament.lock} : player size=${tournament.players.length}`); //// debug
+            console.log (`Player ${playerId} left tournament ${tournamentId}: lock=${tournament.lock} : player size=${tournament.players.length}`); //// debug
 
             //cancel countdown if player less
             if (tournament.players.length < tournament.maxPlayer) {

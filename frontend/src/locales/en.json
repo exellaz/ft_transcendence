@@ -47,7 +47,10 @@
     "room_not_found": "Room not found",
     "unknown_error": "Unknown error",
 	"offline_error": "You are offline. Please check your connection.",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "LocalGameView": {
     "change_sprite": "Change Sprite",
@@ -115,7 +118,10 @@
     "room_is_full": "Room is full",
     "unknown_error": "Unknown error",
 	"offline_error": "You are offline. Please check your connection.",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "TournamentLobbyView": {
     "quarterfinals": "Quarterfinals",
@@ -273,7 +279,8 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends"
+    "invite_friends": "Invite Friends",
+    "choose_sprite": "Choose Sprite"
   },
   "FriendsPopup": {
     "tabs": {
@@ -304,7 +311,8 @@
     ],
     "tournament_title": "Tournament Mode",
     "tournament_text": [
-      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.", "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
+      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.",
+      "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
       "Player ranking and match history are tracked for all tournament games."
     ],
     "custom_title": "Custom Mode",

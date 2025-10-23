@@ -49,7 +49,10 @@
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
 	"offline_error": "你處於離線狀態。請檢查你的連接。",
-    "close": "關閉"
+    "close": "關閉",
+    "private": "私人",
+    "public": "公開",
+    "copied": "房間 ID 已複製到剪貼簿！"
   },
   "LocalGameView": {
     "change_sprite": "更換角色",
@@ -117,7 +120,10 @@
     "room_is_full": "房間已滿",
     "unknown_error": "未知錯誤",
 	"offline_error": "你處於離線狀態。請檢查你的連接。",
-    "close": "關閉"
+    "close": "關閉",
+    "private": "私人",
+    "public": "公開",
+    "copied": "房間 ID 已複製到剪貼簿！"
   },
   "TournamentLobbyView": {
     "quarterfinals": "四分之一決賽",
@@ -271,7 +277,8 @@
   },
   "RoomLayout": {
     "game_settings": "遊戲設定",
-    "invite_friends": "邀請好友"
+    "invite_friends": "邀請好友",
+    "choose_sprite": "選擇角色"
   },
   "FriendsPopup": {
     "tabs": {

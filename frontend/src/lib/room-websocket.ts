@@ -10,7 +10,7 @@ export interface UseRoomWebSocketParams {
   player: {
     id: number;
     name: string;
-    avatar: string;
+    sprite: string;
   };
   setRoomInfo: React.Dispatch<
     React.SetStateAction<{
@@ -88,10 +88,10 @@ export function useRoomWebSocket({
       const chooseSide = await determineSide(roomId);
       console.log("ws side:", chooseSide); ////debug
       console.log("ws player name:", player.name); ////debug
-      console.log("ws player sprite:", player.avatar); ////debug
+      console.log("ws player sprite:", player.sprite); ////debug
       const ws = new WebSocket(
         import.meta.env.VITE_WS_URL +
-          `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.avatar)}`,
+          `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.sprite)}`,
       );
       socketRef.current = ws;
 
@@ -303,7 +303,7 @@ export function useRoomWebSocket({
       };
     }
     connect();
-  }, [roomId, roomName, leaderId, player.id, player.name, player.avatar]);
+  }, [roomId, roomName, leaderId, player.id, player.name, player.sprite]);
 
   function onSwitch() {
     if (!socketRef.current) return;
@@ -348,6 +348,14 @@ export function useRoomWebSocket({
     sessionStorage.removeItem("RoomType");
   }
 
+  // notify server that this client's sprite changed
+  function onChangeSprite(spriteUrl: string) {
+    if (!socketRef.current) return;
+    socketRef.current.send(
+      JSON.stringify({ type: "setSprite", sprite: spriteUrl }),
+    );
+  }
+
   return {
     socket: socketRef.current,
     statusText,
@@ -365,5 +373,6 @@ export function useRoomWebSocket({
     onReady,
     onStartBtn,
     onLeave,
+    onChangeSprite,
   };
 }

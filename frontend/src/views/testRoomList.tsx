@@ -116,7 +116,7 @@ const RoomList: React.FC = () => {
               </p>
             </div>
             <div>
-                {tour.started ? (
+                {tour.lock ? (
                     <span className="text-green-400 font-semibold">● lock</span>
                 ) : (
                     <span className="text-red-400 font-semibold">● unlock</span>

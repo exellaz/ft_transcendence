@@ -14,7 +14,10 @@ import TournamentHeader from "../../components/TournamentHeader";
 import LiveChat from "../../components/LiveChat";
 import ReadyRoomPlayers from "../../components/ReadyRoomPlayers";
 import RoomLayout from "../../layout/RoomLayout";
+
+// popups
 import ConfirmationPopup from "../../popups/ConfirmationPopup";
+import ProfilePopup from "../../popups/ProfilePopup";
 
 // hooks
 import { useRoomWebSocket } from "../../lib/room-websocket";
@@ -42,8 +45,11 @@ const DoublesRoomView: React.FC = () => {
   const { roomId: paramRoomId } = useParams();
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
-  const [userInfo, setUserinfo] = useState<User | null>(null);
   const [canConnect, setCanConnect] = React.useState(false);
+  const userId = user?.id ?? 0;
+  const [userInfo, setUserInfo] = useState<User | null>(null);
+  const [sprite, setSprite] = useState<string>("/assets/yellow-ghost.png");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // prevent player from reloading the page
   React.useEffect (() => {
@@ -53,6 +59,33 @@ const DoublesRoomView: React.FC = () => {
         }
   }, []);
 
+  //function to toggle private and public room
+  const handleTogglePrivacy = () => {
+    if (!roomInfo || !isLeader || !socket) return;
+
+    // Determine the new privacy status
+    const newPrivate = roomInfo.type === "public"; // true → make private
+
+    // Send WebSocket message to backend
+    socket?.send(
+      JSON.stringify({
+        type: "togglePrivacy",
+        private: newPrivate,
+      }),
+    );
+
+    // Optimistically update the UI
+    setRoomInfo((prev) =>
+      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
+    );
+  };
+
+  // function to update sprite change to other users
+  function handleSelectSprite(newSprite: string) {
+    setSprite(newSprite);
+    onChangeSprite?.(newSprite);
+  }
+
   // Fetch user info when the component mounts
   React.useEffect(() => {
     if (!user) return; // Ensure `user` is available
@@ -61,7 +94,7 @@ const DoublesRoomView: React.FC = () => {
       try {
         const response = await getUserById({ id: Number(user.id) }); // Call the API
         if (response.success && response.data) {
-          setUserinfo(response.data); // Store the user info
+          setUserInfo(response.data); // Store the user info
         } else {
           console.log("Failed to fetch user info"); // Handle API error
         }
@@ -130,6 +163,7 @@ const DoublesRoomView: React.FC = () => {
     onReady,
     onStartBtn,
     onLeave,
+    onChangeSprite,
     role,
     countdown,
     roomError,
@@ -140,7 +174,7 @@ const DoublesRoomView: React.FC = () => {
     player: {
       id: userInfo?.id || -1,
       name: userInfo?.username ?? "",
-      avatar: userInfo?.avatarUrl ?? "../../assets/green-ghost.png",
+      sprite: sprite,
     },
     setRoomInfo,
   },
@@ -157,6 +191,7 @@ const DoublesRoomView: React.FC = () => {
           "playerSide",
           role.startsWith("left") ? "left" : "right",
         );
+        sessionStorage.setItem("playerSprite", sprite);
         navigate("/game");
       }, 1000);
       return () => clearTimeout(timer);
@@ -211,34 +246,17 @@ const DoublesRoomView: React.FC = () => {
 	}
   }
 
-  //function to toggle private and public room
-  const handleTogglePrivacy = () => {
-    if (!roomInfo || !isLeader || !socket) return;
-
-    // Determine the new privacy status
-    const newPrivate = roomInfo.type === "public"; // true → make private
-
-    // Send WebSocket message to backend
-    socket?.send(
-      JSON.stringify({
-        type: "togglePrivacy",
-        private: newPrivate,
-      }),
-    );
-
-    // Optimistically update the UI
-    setRoomInfo((prev) =>
-      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
-    );
-  };
-
 // -------------------------------- Render --------------------------------
   return (
     <>
       {!roomId ? (
         <h1>no room id</h1>
       ) : (
-        <RoomLayout isLeader={isLeader}>
+        <RoomLayout
+          isLeader={isLeader}
+          selectedSprite={sprite}
+          onSelectSprite={handleSelectSprite}
+        >
           <div className="relative w-full flex justify-center">
             <Card size="large">
               {/* show countdown */}
@@ -261,7 +279,7 @@ const DoublesRoomView: React.FC = () => {
                               .writeText(roomId)
                               .then(() => {
                                 // Optional: show toast or alert
-                                alert("Room ID copied to clipboard!");
+                                alert(translate("copied"));
                               })
                               .catch((err) => {
                                 console.error("Failed to copy:", err);
@@ -285,10 +303,10 @@ const DoublesRoomView: React.FC = () => {
                       {/* Track with both words */}
                       <div className="w-30 h-8 rounded-full bg-card-blue flex text-xs font-bold text-white overflow-hidden">
                         <span className="w-1/2 flex items-center justify-center">
-                          Private
+                          {translate("private")}
                         </span>
                         <span className="w-1/2 flex items-center justify-center">
-                          Public
+                          {translate("public")}
                         </span>
                       </div>
                       {/* Cover the inactive side instead of active */}
@@ -309,6 +327,7 @@ const DoublesRoomView: React.FC = () => {
                     userId={userInfo?.id || -1}
                     players={players}
                     onSwitchTeam={onSwitch}
+                    onSelect={setSelectedId}
                   />
                   <div className="flex-row-center gap-6">
                     {/* Ready button (not for leader) */}
@@ -386,6 +405,14 @@ const DoublesRoomView: React.FC = () => {
               navigate("/main-menu");
             }}
           />
+          {selectedId && (
+            <ProfilePopup
+              open={true}
+              onClose={() => setSelectedId(null)}
+              selectedId={selectedId}
+              variant={selectedId === userId ? "self" : "other"}
+            />
+          )}
         </RoomLayout>
       )}
     </>

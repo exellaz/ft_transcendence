@@ -51,7 +51,7 @@ const TournamentLobbyView: React.FC = () => {
   const {
     players: currentPlayer,
     ready,
-    started,
+    lock,
     countdown,
     toggleReady,
     onleave,
@@ -170,10 +170,10 @@ const TournamentLobbyView: React.FC = () => {
   }, [currentPlayer, lastLobbyData, refreshLobby]);
 
 //  React.useEffect(() => {
-//    if (started) {
+//    if (lock) {
 //      navigate("/game"); //TODO need implment room -> game
 //    }
-//  }, [started]);
+//  }, [lock]);
 
   React.useEffect(() => {
     if (location.state.tournament.stage) {
@@ -193,7 +193,7 @@ const TournamentLobbyView: React.FC = () => {
         <div className="w-full h-full flex-row-center gap-6">
 
           {/* countdown */}
-          {countdown !== null && !started && (
+          {countdown !== null && !lock && (
             <p className="absolute -top-8 text-6xl font-bold text-white">
               {countdown > 0 ? countdown : translate("game_start")}
             </p>

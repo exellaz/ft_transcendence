@@ -163,7 +163,14 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
 
         // --- allow type ---
-        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy", "closeTournament"];
+        const allowedTypes = [
+          "switchSide",
+          "ready",
+          "start",
+          "togglePrivacy",
+          "setSprite",
+          "closeTournament",
+        ];
         if (!allowedTypes.includes(msg.type)) {
           socket.close(1003, `unsupported message type ${msg.type}`);
           return;
@@ -365,6 +372,40 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             tournament.lock = false;
         }
 
+        // handle sprite change from client
+        if (msg.type === "setSprite") {
+          if (typeof msg.sprite !== "string" || msg.sprite.length === 0) {
+            socket.close(1003, "Invalid sprite");
+            return;
+          }
+
+          // update server-side player object
+          const playerRecord = room.clientRoles.get(clientId);
+          if (playerRecord) {
+            // keep consistent field name used elsewhere (spriteUrl)
+            playerRecord.spriteUrl = msg.sprite;
+          }
+
+          // update any entries in room.gameState so roleUpdate contains new sprite
+          room.gameState.teams.left = room.gameState.teams.left.map(
+            (p: playerInfo) =>
+              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p,
+          );
+          room.gameState.teams.right = room.gameState.teams.right.map(
+            (p: playerInfo) =>
+              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p,
+          );
+
+          const { canStart } = updateCanStart(room);
+          broadcast(room, {
+            type: "roleUpdate",
+            gameState: room.gameState,
+            leaderId: room.leaderId,
+            canStart,
+          });
+
+          return;
+        }
       } catch (err) {
         console.error("unexpected error in room wsmessage handling:", err);
         cleanupTimer();

@@ -123,9 +123,9 @@ const GameView: React.FC<GameViewProps> = () => {
   useBlockLeave();
  const { t } = useTranslation();
  const translate = (key: string) => t(`GameView.${key}`);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals" | "custom">(
-    "quarterfinals",
-  );
+//  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals" | "custom">(
+//    "quarterfinals",
+//  );
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const navigate = useNavigate();
@@ -212,7 +212,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const roomName = sessionStorage.getItem("RoomName") || "Room 1";
   const clientId = Number(navState.player?.id ?? userInfo?.id ?? -1);
   const playerName = navState.player?.name ?? userInfo?.username ?? "";
-  const playerSprite = navState.player?.spriteUrl ?? "./assets/green-ghost.png";
+  const playerSprite = sessionStorage.getItem("playerSprite");
   const initialRole = sessionStorage.getItem("playerSide") || "";
   console.log("room id from session:", roomId); ////debug
   console.log("room name from session:", roomName); ////debug
@@ -229,12 +229,12 @@ const GameView: React.FC<GameViewProps> = () => {
     clientId,
     initialRole,
     playerName,
-    playerSprite,
+    playerSprite: playerSprite ?? "",
     callback: () => {},
-	onError: (msg: string) => {
-		setDisconnectMessage(msg);
-		setRoomError(true);
-	},
+  onError: (msg: string) => {
+    setDisconnectMessage(msg);
+    setRoomError(true);
+  },
   };
   // console.log("params", params); ////debug
 

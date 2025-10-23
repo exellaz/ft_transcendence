@@ -56,7 +56,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [ready, setReady] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const [started, setStarted] = useState(false);
+  const [lock, setLock] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [stage, setStage] = useState<"QF" | "SF" | "F" | null>(null);
   const [maxPlayer, setMaxPlayer] = useState<number | null>(null);
@@ -123,7 +123,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         setPlayers(Array.isArray(data.players) ? data.players : []);
         setStage(data.nextStage ?? data.stage ?? null);
         setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
-        setStarted(false);
+        setLock(false);
         setCountdown(typeof data.countdown === "number" ? data.countdown : null);
         setLastLobbyData(data);
         // persist snapshot for quick render if navigation happens
@@ -152,7 +152,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       }
 
       if (data.type === "tournamentStarted") {
-        setStarted(true);
+        setLock(true);
       }
 
       if (data.type === "countdown") {
@@ -230,7 +230,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
   return {
     players,
     ready,
-    started,
+    lock,
     countdown,
     toggleReady,
     onleave,
