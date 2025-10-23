@@ -47,7 +47,10 @@
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
-    "close": "關閉"
+    "close": "關閉",
+    "private": "私人",
+    "public": "公開",
+    "copied": "房間 ID 已複製到剪貼簿！"
   },
   "LocalGameView": {
     "change_sprite": "更換角色",
@@ -109,8 +112,10 @@
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
-    "unknown_error": "未知錯誤",
-    "close": "關閉"
+    "close": "關閉",
+    "private": "私人",
+    "public": "公開",
+    "copied": "房間 ID 已複製到剪貼簿！"
   },
   "TournamentLobbyView": {
     "quarterfinals": "四分之一決賽",

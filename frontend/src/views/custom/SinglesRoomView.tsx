@@ -225,7 +225,7 @@ const SinglesRoomView: React.FC = () => {
                               .writeText(roomId)
                               .then(() => {
                                 // Optional: show toast or alert
-                                alert("Room ID copied to clipboard!");
+                                alert(translate("copied"));
                               })
                               .catch((err) => {
                                 console.error("Failed to copy:", err);
@@ -249,10 +249,10 @@ const SinglesRoomView: React.FC = () => {
                       {/* Track with both words */}
                       <div className="w-30 h-8 rounded-full bg-card-blue flex text-xs font-bold text-white overflow-hidden">
                         <span className="w-1/2 flex items-center justify-center">
-                          Private
+                          {translate("private")}
                         </span>
                         <span className="w-1/2 flex items-center justify-center">
-                          Public
+                          {translate("public")}
                         </span>
                       </div>
                       {/* Cover the inactive side instead of active */}
