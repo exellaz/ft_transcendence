@@ -19,7 +19,7 @@ function closeSocket(socket: any, statusCode: number, errorMsg: any) {
 function compile(
   pongGame: PongGame,
   includeStaticObjects: boolean,
-  settings = {}
+  settings = {},
 ) {
   const state = pongGame.exportState(includeStaticObjects);
 
@@ -99,7 +99,7 @@ export default async function gameWsRoute(fastify: any) {
               skin: SKIN_MAPPING[playerSprite] ?? 0,
               team: side === "left" ? 0 : 1,
               socket: socket,
-            })
+            }),
           );
 
           //ensure the socket is up to date
@@ -110,7 +110,7 @@ export default async function gameWsRoute(fastify: any) {
             JSON.stringify({
               type: "ready",
               payload: {},
-            })
+            }),
           );
 
           // ✅ New addition: broadcast updated world to all
@@ -158,7 +158,7 @@ export default async function gameWsRoute(fastify: any) {
       else if (room.game.teamRight.padels.some((p) => p.player.id === clientId))
         side = "right";
       console.log(
-        `❌ Player ${playerName} (${side}) disconnected. countdown 3 sec to end game`
+        `❌ Player ${playerName} (${side}) disconnected. countdown 3 sec to end game`,
       );
 
       // handle player disconnect

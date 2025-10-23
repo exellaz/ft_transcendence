@@ -19,7 +19,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   variant,
   onSwitchTeam,
   userId,
-  onSelect
+  onSelect,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);

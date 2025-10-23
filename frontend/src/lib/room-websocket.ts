@@ -64,7 +64,7 @@ export function useRoomWebSocket({
       console.log("ws player sprite:", player.sprite); ////debug
       const ws = new WebSocket(
         import.meta.env.VITE_WS_URL +
-          `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.sprite)}`
+          `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.sprite)}`,
       );
       socketRef.current = ws;
 
@@ -132,10 +132,10 @@ export function useRoomWebSocket({
                   p.clientId,
                   typeof p.clientId,
                   player.id,
-                  typeof player.id
+                  typeof player.id,
                 );
                 return p.clientId === player.id;
-              }
+              },
             );
             console.log("Left Player found:", leftPlayer);
             const rightPlayer = data.gameState.teams.right.find(
@@ -145,16 +145,16 @@ export function useRoomWebSocket({
                   p.clientId,
                   typeof p.clientId,
                   player.id,
-                  typeof player.id
+                  typeof player.id,
                 );
                 return p.clientId === player.id;
-              }
+              },
             );
             const newRole =
               leftPlayer?.role || rightPlayer?.role || "spectator";
             setRole(newRole);
             setPlayerText(
-              `You are: ${player.name} [${player.id}] (${newRole})`
+              `You are: ${player.name} [${player.id}] (${newRole})`,
             );
             // update team lists on left
             setLeftTeamHtml(
@@ -166,7 +166,7 @@ export function useRoomWebSocket({
                 leader: p.clientId === data.leaderId,
                 spriteUrl: p.spriteUrl,
                 ready: p.ready,
-              }))
+              })),
             );
             // update team lists on right
             setRightTeamHtml(
@@ -178,14 +178,14 @@ export function useRoomWebSocket({
                 leader: p.clientId === data.leaderId,
                 spriteUrl: p.spriteUrl,
                 ready: p.ready,
-              }))
+              })),
             );
             // update player leader
             if (data.leaderId) {
               console.log(
                 "Updating leader status:",
                 typeof player.id,
-                typeof data.leaderId
+                typeof data.leaderId,
               );
               setIsLeader(player.id === data.leaderId);
             }
@@ -218,7 +218,7 @@ export function useRoomWebSocket({
           if (data.type === "roomPrivacyUpdate") {
             // update room info
             setRoomInfo((prev) =>
-              prev ? { ...prev, ...data.data } : data.data
+              prev ? { ...prev, ...data.data } : data.data,
             );
             console.log("Room privacy updated:", data.data); ////debug
           }
@@ -251,7 +251,7 @@ export function useRoomWebSocket({
     if (ready && !isLeader) return;
     const newSide = role.startsWith("left") ? "right" : "left";
     socketRef.current.send(
-      JSON.stringify({ type: "switchSide", side: newSide })
+      JSON.stringify({ type: "switchSide", side: newSide }),
     );
   }
 
@@ -281,7 +281,7 @@ export function useRoomWebSocket({
   function onChangeSprite(spriteUrl: string) {
     if (!socketRef.current) return;
     socketRef.current.send(
-      JSON.stringify({ type: "setSprite", sprite: spriteUrl })
+      JSON.stringify({ type: "setSprite", sprite: spriteUrl }),
     );
   }
 

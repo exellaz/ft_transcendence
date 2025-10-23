@@ -62,12 +62,12 @@ const DoublesRoomView: React.FC = () => {
       JSON.stringify({
         type: "togglePrivacy",
         private: newPrivate,
-      })
+      }),
     );
 
     // Optimistically update the UI
     setRoomInfo((prev) =>
-      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev
+      prev ? { ...prev, type: newPrivate ? "private" : "public" } : prev,
     );
   };
 
@@ -170,7 +170,7 @@ const DoublesRoomView: React.FC = () => {
       const timer = setTimeout(() => {
         sessionStorage.setItem(
           "playerSide",
-          role.startsWith("left") ? "left" : "right"
+          role.startsWith("left") ? "left" : "right",
         );
         sessionStorage.setItem("playerSprite", sprite);
         navigate("/game");

@@ -28,7 +28,7 @@ export default async function roomWsRoutes(fastify: any) {
       roomId,
       side as string,
       playerName,
-      playerSprite
+      playerSprite,
     );
     //  console.log("Websocket assign role response: ", player); //// debug
 
@@ -87,10 +87,10 @@ export default async function roomWsRoutes(fastify: any) {
               JSON.stringify({
                 type: "error",
                 text: "Cannot switch side when ready. Unready first.",
-              })
+              }),
             );
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`
+              `Player ${player.playerName} (${player.role}) [${player.id}] fail to switch side when ready in room (${room.name}) [${room.id}]`,
             );
             return;
           }
@@ -98,7 +98,7 @@ export default async function roomWsRoutes(fastify: any) {
           const newRole = handleSwitchSide(
             room,
             socket,
-            msg.side as "left" | "right"
+            msg.side as "left" | "right",
           );
           if (newRole) player.role = newRole;
           return;
@@ -130,7 +130,7 @@ export default async function roomWsRoutes(fastify: any) {
                 return { ...p, ready: msg.ready };
               }
               return p;
-            }
+            },
           );
           room.gameState.teams.right = room.gameState.teams.right.map(
             (p: playerInfo) => {
@@ -138,7 +138,7 @@ export default async function roomWsRoutes(fastify: any) {
                 return { ...p, ready: msg.ready };
               }
               return p;
-            }
+            },
           );
 
           if (msg.ready === true) {
@@ -147,11 +147,11 @@ export default async function roomWsRoutes(fastify: any) {
               createLiveChatMessage(
                 -1,
                 "system",
-                `${player.playerName} is ready`
-              )
+                `${player.playerName} is ready`,
+              ),
             );
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.clientId}] is ready in room (${room.name}) [${room.id}]`
+              `Player ${player.playerName} (${player.role}) [${player.clientId}] is ready in room (${room.name}) [${room.id}]`,
             );
 
             //broadcastState(room);
@@ -166,7 +166,7 @@ export default async function roomWsRoutes(fastify: any) {
           } else {
             //if unready during countdown, cancel the countdown and broadcast the player is not ready
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.clientId}] is not ready in room (${room.name}) [${room.id}]`
+              `Player ${player.playerName} (${player.role}) [${player.clientId}] is not ready in room (${room.name}) [${room.id}]`,
             ); ////debug
             cancelCountdown(room);
             const { canStart } = updateCanStart(room);
@@ -192,7 +192,7 @@ export default async function roomWsRoutes(fastify: any) {
           if (msg.start === true) {
             //execute the start (leader only)
             console.log(
-              `Player ${player.playerName} (${player.role}) [${player.id}] started the game in room (${room.name}) [${room.id}]`
+              `Player ${player.playerName} (${player.role}) [${player.id}] started the game in room (${room.name}) [${room.id}]`,
             );
             const { canStart } = updateCanStart(room);
             broadcast(room, {
@@ -227,7 +227,7 @@ export default async function roomWsRoutes(fastify: any) {
 
           // broadcast to all players in room
           console.log(
-            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.id}]`
+            `${room.name} [${room.id}] changed to ${room.private ? "private" : "public"} by leader ${player.playerName} [${player.id}]`,
           );
           broadcast(room, {
             type: "roomPrivacyUpdate",
@@ -253,11 +253,11 @@ export default async function roomWsRoutes(fastify: any) {
           // update any entries in room.gameState so roleUpdate contains new sprite
           room.gameState.teams.left = room.gameState.teams.left.map(
             (p: playerInfo) =>
-              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p
+              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p,
           );
           room.gameState.teams.right = room.gameState.teams.right.map(
             (p: playerInfo) =>
-              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p
+              p.clientId === clientId ? { ...p, spriteUrl: msg.sprite } : p,
           );
 
           const { canStart } = updateCanStart(room);
@@ -267,7 +267,7 @@ export default async function roomWsRoutes(fastify: any) {
             leaderId: room.leaderId,
             canStart,
           });
-          
+
           return;
         }
       } catch (err) {
