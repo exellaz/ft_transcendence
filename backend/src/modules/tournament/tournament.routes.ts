@@ -43,13 +43,13 @@ export default async function tournamentRoutes(app: FastifyInstance) {
 
     tournaments.set(tournamentId, tournament);
 
-    console.log(`Tournament created: ${name} (${tournamentId})`);
+    console.log(`Tournament created: ${name} (${tournamentId}): `, tournament); ////debug
 
     const res = {
       id: tournamentId,
       name,
       players: tournament.players,
-      started: tournament.started,
+      started: tournament.lock,
       stage: tournament.stage,
       maxPlayer: tournament.maxPlayer,
     };
@@ -111,12 +111,12 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         }
     }
 
-    console.log(`Tournament next stage created: ${tournament.name} (${tournamentId})`);
+    console.log(`Next tournament created: (${tournamentId}): `, tournament)
     const res = {
         id: tournamentId,
         name: tournament.name,
         players: tournament.players,
-        started: tournament.started,
+        started: tournament.lock,
         stage: tournament.stage,
         maxPlayer: tournament.maxPlayer,
     };
@@ -181,7 +181,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
       id: tournament.id,
       name: tournament.name,
       players: tournament.players,
-      started: tournament.started,
+      started: tournament.lock,
       stage: tournament.stage,
       maxPlayer: tournament.maxPlayer,
     }));

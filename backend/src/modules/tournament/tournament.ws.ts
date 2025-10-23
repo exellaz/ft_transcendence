@@ -30,9 +30,31 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         const tournament = tournaments.get(tournamentId);
         if (!tournament) {
             socket.send(JSON.stringify({ type: "error", message: "tournament_not_found" }));
-            socket.close();
+            console.log(`[tournament] closing socket: tournament ${tournamentId} not found for player ${playerId}`);
+            socket.close(1000, "Tournament not found");
             return;
         }
+
+        const tournamentBroadcast = (msg: string) => {
+          const recipients: number[] = [];
+          for (const [ws, info] of client.entries()) {
+            if (info.tournamentId === tournamentId) {
+              try {
+                if ((ws as any).readyState === WebSocket.OPEN) {
+                  ws.send(msg);
+                  recipients.push(info.playerId);
+                }
+              } catch (err) {
+                console.warn("[tournament] failed to send to socket", info.playerId, err);
+              }
+            }
+          }
+          return recipients;
+        };
+
+        // expose stable helpers for other modules
+        tournament.broadcast = tournamentBroadcast;
+        tournament.clientMap = client;
 
         //reject player not in that set (the loser eliminated from tournament)
         const allowed = tournament.allowedPlayers;
@@ -40,7 +62,8 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             try {
                 socket.send(JSON.stringify({ type: "eliminated", tournamentId }));
             } catch {}
-            socket.close();
+            console.log(`[tournament] closing socket: player ${playerId} eliminated from ${tournamentId}`);
+            socket.close(1000, "Player eliminated");
             return;
         }
 
@@ -63,7 +86,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             broadcast(JSON.stringify({ type: "playerJoined", players: tournament.players }));
             console.log (`Player ${playerName} joined tournament ${tournamentId}`); //// debug
 
-            if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
+            if (tournament.players.length === tournament.maxPlayer && !tournament.lock) {
                // only start countdown automatically if all players are marked ready.
                const allReady = tournament.players.length > 0 && tournament.players.every(p => p.ready === true);
                if (allReady) {
@@ -120,7 +143,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                     broadcast(JSON.stringify({ type: "updatePlayer", players: tournament.players }));
                     console.log (`Player ${player?.username} is ${player?.ready ? "ready" : "not ready"} in tournament ${tournamentId}`); //// debug
 
-                    if (tournament.players.filter(p => p.ready === true).length === tournament.maxPlayer && !tournament.started) {
+                    if (tournament.players.filter(p => p.ready === true).length === tournament.maxPlayer && !tournament.lock) {
                         //reset the countdown
                         if (tournament.countdownTimer) {
                             clearInterval(tournament.countdownTimer);
@@ -141,7 +164,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                             type: "lobbyData",
                             tournamentId: tournamentId,
                             players: tournament.players,
-                            started: tournament.started,
+                            started: tournament.lock,
                             stage: tournament.stage ?? null,
                             maxPlayer: tournament.maxPlayer ?? null,
                             countdown: typeof tournament.countdownRemaining === "number" ? tournament.countdownRemaining : null,
@@ -158,7 +181,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                         }
                     }
 
-                    if (tournament.players.length === tournament.maxPlayer && !tournament.started) {
+                    if (tournament.players.length === tournament.maxPlayer && !tournament.lock) {
                         // only start countdown automatically if all players are marked ready.
                         const allReady = tournament.players.length > 0 && tournament.players.every(p => p.ready === true);
                         if (allReady) {
@@ -176,8 +199,9 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             }
         });
 
-        socket.on("close", () => {
-			if (tournament.started) return;
+        socket.on("close", (code, reason) => {
+            console.log(`socket.onclose: code=${code} reason=${reason} player=${playerId} tournament=${tournamentId}`);
+			//if (tournament.lock) return;
             tournament.players = tournament.players.filter(p => p.id !== playerId);
             client.delete(socket);
 
@@ -191,16 +215,22 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
 
             //notify all clients in the same tournament about the player leaving
             broadcast(JSON.stringify({ type: "playerLeft", players: tournament.players }));
-            console.log (`Player ${playerId} left tournament ${tournamentId}`); //// debug
+            console.log (`Player ${playerId} left tournament ${tournamentId}: started=${tournament.lock} : player size=${tournament.players.length}`); //// debug
 
             //cancel countdown if player less
             if (tournament.players.length < tournament.maxPlayer) {
                 cancelTournamentCountdown(tournamentId, broadcast);
             }
 
-            if (!tournament.started && tournament.players.length === 0) {
-                tournaments.delete(tournamentId);
-                console.log(`Tournament ${tournamentId} deleted due to no players`);
+            if (tournament.players.length === 0)
+                tournament.lock = false;
+
+            if (!tournament.lock && tournament.players.length === 0) {
+                //const deleteTournament = setInterval(() => {
+                    tournaments.delete(tournamentId);
+                    //clearInterval(deleteTournament);
+                    console.log(`Tournament ${tournamentId} deleted due to no players`);
+                //},1000);
             }
         });
     });

@@ -20,7 +20,7 @@ export async function startTournamentCountdown(
   client: Map<WebSocket, { tournamentId: number; playerId: number }>
 ) {
   const tournament = tournaments.get(tournamentId);
-  if (!tournament || tournament.started) return;
+  if (!tournament || tournament.lock) return;
 
   // Prevent concurrent starts: reserve a temporary timer as a lock while async setup runs.
   // We use a placeholder timeout and overwrite it later with the real interval.
@@ -57,11 +57,11 @@ export async function startTournamentCountdown(
 
   // Helper function to start the tournament immediately
   const startTournamentNow = () => {
-    if (tournament.started) return;
+    if (tournament.lock) return;
     clearInterval(tournament.countdownTimer);
     tournament.countdownTimer = undefined;
     tournament.countdownRemaining = undefined;
-    tournament.started = true;
+    tournament.lock = true;
 
     // Shuffle players and create matches
     const shuffled = [...tournament.players].sort(() => 0.5 - Math.random());
@@ -91,18 +91,26 @@ export async function startTournamentCountdown(
                 team: playerInfo.team === "left" ? "left" : "right",
               }));
             }
+
+            ws.send(JSON.stringify({
+                type: "matchAssigned",
+                roomId: room.id,
+                stage: tournament.stage,
+                players: pair,
+            }));
           }
         }
       }
 
+
       matches.push({ roomId: room.id, players: pair, winnerId: -1 });
-      startRoomLoop(room);
+    //  startRoomLoop(room);
     }
 
     // Update tournament and notify clients
-    tournament.matches = matches;
-    broadcast(JSON.stringify({ type: "tournamentStarted", stage: tournament.stage, matches }));
-    console.log(`Tournament ${tournamentId} started with ${tournament.players.length} players`);
+    //tournament.matches = matches;
+    //broadcast(JSON.stringify({ type: "tournamentStarted", stage: tournament.stage, matches }));
+    //console.log(`Tournament ${tournamentId} started with ${tournament.players.length} players`);
   };
 
   // If countdownTime is 0, start immediately
@@ -181,7 +189,6 @@ export function createGameRoom(
             // console.log ("Game result: ", result);
             // console.log ("==============================================="); ////debug
             await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
-            //tournaments.delete(tournamentId);
         }
 
     }
@@ -198,7 +205,7 @@ export function createGameRoom(
 		team: "left",
 		leader: false,
 		spriteUrl: playerPair[0].spriteUrl,
-		ready: true,
+		ready: false,
 		online: true,
 	}
 
@@ -209,7 +216,7 @@ export function createGameRoom(
 		team: "right",
 		leader: false,
 		spriteUrl: playerPair[1].spriteUrl,
-		ready: true,
+		ready: false,
 		online: true,
 	}
 
@@ -241,6 +248,7 @@ export function createGameRoom(
 		canStart: false,
 		leaderId: -1,
 		private: false,
+        inGame: false,
 	};
 	rooms.set(roomId, newRoom);
 	console.log(`Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`);
@@ -379,7 +387,7 @@ async function saveMatchResult(
 async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" | "F", TournamentLobbyDb: { id: number, status: string, createdAt: Date }) {
     const tournament = tournaments.get(tournamentId);
     if (!tournament) return;
-
+    //TODO  process results and prepare next stage
 	//collect winners and losers and results from current stage
     const ThisRoundResult = tournament.result?.filter(r => r.stage === currentStage);
     const winners: { id: number; username: string; spriteUrl: string; ready: boolean }[] = [];
@@ -471,7 +479,7 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
         tournament.players = winners;
         tournament.matches = [];
         tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
-        tournament.started = false;
+        tournament.lock = false;
 
         // reset client map so only winners' sockets get registered when they reconnect or are transferred
         tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
@@ -504,22 +512,27 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
     }
 
     // --- IMPORTANT: create a NEW clean lobby for next round ---
-    const winnerIds = winners.map((w) => w.id);
-    tournament.stage = nextStage as "SF" | "F";
-    tournament.players = winners;                 // replace players with winners only
-    tournament.matches = [];
-    tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
-    tournament.started = false;
+    //const winnerIds = winners.map((w) => w.id);
+    //tournament.stage = nextStage as "SF" | "F";
+    //tournament.players = winners;                 // replace players with winners only
+    //tournament.matches = [];
+    //tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
+    //tournament.lock = false;
 
     // reset client map so only winners' sockets get registered when they reconnect or are transferred
-    tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
+    //tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
     // record allowed players so WS can reject eliminated re-joins
-    tournament.allowedPlayers = new Set<number>(winnerIds);
+    //tournament.allowedPlayers = new Set<number>(winnerIds);
 
-    console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
+    //console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
 
     // notify winners / clients
     const bc = tournament.broadcast;
+    console.log(`[tournament] handleNextRound: broadcasting new lobby for ${tournamentId}`, {
+     bcType: typeof bc,
+     clientMapSize: tournament.clientMap ? (tournament.clientMap.size ?? 0) : "no-clientMap",
+     allowedPlayersSize: tournament.allowedPlayers ? tournament.allowedPlayers.size : 0,
+   });
     if (typeof bc === "function") {
       bc(JSON.stringify({
         type: "tournamentNewLobby",
@@ -529,5 +542,6 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
         maxPlayer: tournament.maxPlayer ?? winners.length,
       }));
     }
+
     return;
   }

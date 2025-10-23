@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { WaitingTournamentPlayer } from "../../types/apiInterfaces";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../../context/UserProvider";
 import { getUserById } from "../../lib/usersApiClient";
 import type { User } from "../../types/usersApi";
@@ -19,17 +19,18 @@ import { useBlockLeave } from "@/utils/blockRefresh";
 
 const TournamentLobbyView: React.FC = () => {
   useBlockLeave();
+  const location = useLocation();
   const { t } = useTranslation();
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const navigate = useNavigate();
   const { tournamentId: paramTournamentId } = useParams();
-  const tournamentId = Number(paramTournamentId ?? sessionStorage.getItem("tournamentId") ?? -1) || -1;
+  const tournamentId = Number(paramTournamentId ?? location.state?.tournamentId) || -1;
   const { user } = useUser();
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
-//  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    //"quarterfinals",
-//  );
+  const [stage, setStage] = useState<"QF" | "SF" | "F">(
+    "QF"
+);
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 //  console.log("Tournament ID:", tournamentId); ////debug
 //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
@@ -40,10 +41,10 @@ const TournamentLobbyView: React.FC = () => {
     setMessage,
     handleSendMsg
   } = useLiveChatWebSocket(
-    tournamentId ?? -1,
+    tournamentId || -1,
     {
-      id: userinfo?.id ?? -1,
-      name: userinfo?.username ?? "",
+      id: userinfo?.id || -1,
+      name: userinfo?.username || "",
     }
   );
 
@@ -59,6 +60,7 @@ const TournamentLobbyView: React.FC = () => {
     eliminated,
     lastLobbyData,
     refreshLobby,
+    matchAssigned,
   } = useTournamentWebSocket({
     tournamentId,
     player: {
@@ -74,12 +76,12 @@ const TournamentLobbyView: React.FC = () => {
 
     //use context user if available
     if (user) {
-        setUserinfo(user);
+        //setUserinfo(user);
         (async () => {
           try {
             const response = await getUserById({ id: Number(user.id) }); // Call the API
             if (response.success && response.data) {
-            //  console.log("Fetched user info:", response.data); ////debug
+              console.log("Fetched user info:", response.data); ////debug
               setUserinfo(response.data); // Store the user info
             }
           } catch (err) {
@@ -109,6 +111,18 @@ const TournamentLobbyView: React.FC = () => {
         navigate("/main-menu");
         }
   }, []);
+
+  React.useEffect(() => {
+    if (matchAssigned) {
+        navigate(`/match/${matchAssigned.roomId}`, {
+          state: {
+            players: matchAssigned.players,
+            stage: matchAssigned.stage,
+            roomId: matchAssigned.roomId,
+          },
+        });
+    }
+  });
 
 //  console.log ("Current players from WebSocket:", currentPlayer); ////debug
 
@@ -155,16 +169,22 @@ const TournamentLobbyView: React.FC = () => {
     }
   }, [currentPlayer, lastLobbyData, refreshLobby]);
 
+//  React.useEffect(() => {
+//    if (started) {
+//      navigate("/game"); //TODO need implment room -> game
+//    }
+//  }, [started]);
+
   React.useEffect(() => {
-    if (started) {
-      navigate("/game"); //TODO need implment room -> game
+    if (location.state.tournament.stage) {
+        setStage(location.state.tournament.stage);
     }
-  }, [started]);
+  }, [location.state.tournament.stage]);
 
   let stageHeader;
-  if (wsStage === "QF") stageHeader = translate("quarterfinals");
-  else if (wsStage === "SF") stageHeader = translate("semifinals");
-  else if (wsStage === "F") stageHeader = translate("finals");
+  if (stage === "QF") stageHeader = translate("quarterfinals");
+  else if (stage === "SF") stageHeader = translate("semifinals");
+  else if (stage === "F") stageHeader = translate("finals");
 
   return (
     <Background>
@@ -197,11 +217,9 @@ const TournamentLobbyView: React.FC = () => {
                   <Button variant="green" onClick={toggleReady}>
                     {ready ? translate("Unready") : translate("ready")}
                   </Button>
-                  {wsStage === "QF" && (
                     <Button variant="red" onClick={() => setShowQuitTournament(true)}>
                       {translate("quit")}
                     </Button>
-                  )}
                 </>
               ) : (
                 // eliminated players get a direct back button

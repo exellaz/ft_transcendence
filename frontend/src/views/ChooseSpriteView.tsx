@@ -22,10 +22,11 @@ async function handleJoinTournament(user: User | null, navigate: any) {
   // 2. Find one that isn't full (max 8) and hasn't started
   let tournament = tournaments.find(
     (t: TournamentLobby) =>
-		!t.started &&
+		!t.lock &&
 		t.players.length < 8 &&
 		t.maxPlayer === 8,
 	);
+    console.log("Found tournament:", tournament);
 
   // 3. If no suitable tournament, create one
   if (!tournament) {
@@ -37,17 +38,7 @@ async function handleJoinTournament(user: User | null, navigate: any) {
     }
   }
 
-  // 4. "Join" happens by adding current user to the tournament.players array
-  //    You can simulate this on frontend until you wire backend
-//  if (!tournament.players.some((p: User) => p.id === user.id)) {
-//    tournament.players.push({
-//      id: user.id,
-//      name: user.username,
-//      sprite: user.avatarUrl,
-//    });
-//  }
-
-  // 5. Navigate into the tournament lobby
+  // 4. Navigate into the tournament lobby
   navigate(`/tournament/${tournament.id}`, {
     state: { tournament },
   });

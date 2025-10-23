@@ -332,10 +332,7 @@ const DoublesRoomView: React.FC = () => {
                     {/* Leave button */}
                     <Button
                       variant="red"
-                      onClick={() => {
-                        onLeave();
-                        navigate("/main-menu");
-                      }}
+                      onClick={() => setShowLeaveRoom(true)}
                     >
                       {translate("leave_room")}
                     </Button>

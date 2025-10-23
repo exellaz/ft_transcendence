@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { playerInfo } from "../../../backend/src/types/interface";
 
@@ -38,10 +38,21 @@ export function useGameWebSocket({
 }: UseGameWebSocketParams) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
+  const socketRef = useRef(false); // to avoid multiple callbacks
+  console.log("[game]allinfo:");
+  console.log("[game]roomId:", roomId);
+  console.log("[game]clientId:", clientId);
+  console.log("[game]initialRole:", initialRole);
+  console.log("[game]playerName:", playerName);
+  console.log("[game]playerSprite:", playerSprite);
 
   useEffect(() => {
-        if (!navigator.onLine && !isOffline) {
-            onError?.("offline_error");
+    if (!roomId || roomId <= 0 || !clientId || clientId <= 0 || !playerName) {
+      console.warn("[useGameWebSocket] skipping websocket: invalid params", { roomId, clientId, playerName });
+      return;
+    }
+    if (!navigator.onLine && !isOffline) {
+        onError?.("offline_error");
         return;
     }
 
@@ -49,6 +60,7 @@ export function useGameWebSocket({
       import.meta.env.VITE_WS_URL +
         `/ws-game?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
     );
+    socketRef.current = true;
 
     function handleOffline() {
         if (!isOffline) {
@@ -109,10 +121,13 @@ export function useGameWebSocket({
     return () => {
         if (!isOffline)
             window.removeEventListener("offline", handleOffline);
-        try {
-            ws.close();
-        } catch (err) {
-            console.error("Error closing WebSocket on cleanup:", err);
+        if (socketRef.current) {
+
+            try {
+                ws.close();
+            } catch (err) {
+               console.error("Error closing WebSocket on cleanup:", err);
+            }
         }
     };
   }, [roomId, clientId, initialRole, roomName, navigate, isOffline]); //re-run effect if any of these change
@@ -137,18 +152,25 @@ export function useGameRoomWebSocket({
   const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
   const [tournamentDb, setTournamentDb] = useState<{ id: number; status: string; createdAt: Date } | null>(null);
   const navigate = useNavigate();
-  console.log("allinfo:");
-  console.log("roomId:", roomId);
-  console.log("clientId:", clientId);
-  console.log("initialRole:", initialRole);
-  console.log("playerName:", playerName);
-  console.log("playerSprite:", playerSprite);
+  const socketRoomRef = useRef(false); // to avoid multiple callbacks
+  console.log("[gameRoom]allinfo:");
+  console.log("[gameRoom]roomId:", roomId);
+  console.log("[gameRoom]clientId:", clientId);
+  console.log("[gameRoom]initialRole:", initialRole);
+  console.log("[gameRoom]playerName:", playerName);
+  console.log("[gameRoom]playerSprite:", playerSprite);
 
   useEffect(() => {
+    if (!roomId || roomId <= 0 || !clientId || clientId <= 0 || !playerName) {
+      console.warn("[useGameRoomWebSocket] skipping websocket: invalid params", { roomId, clientId, playerName });
+      return;
+    }
+
     const ws = new WebSocket(
       import.meta.env.VITE_WS_URL +
         `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
     );
+    socketRoomRef.current = true;
 
     let isCleanUp = false;
 
@@ -197,7 +219,7 @@ export function useGameRoomWebSocket({
                 if (winnerSide === "left") winnerClientIds = leftId[0] || null;
                 else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
 
-                // if this client is the winner -> do not close the websocket
+                // if this client is the winner
                 if (winnerClientIds === clientId) {
                     console.log("you are the winner - waiting for tournament next-round");
                     setIsWinner(true);
@@ -207,15 +229,13 @@ export function useGameRoomWebSocket({
 
                 // loser: setGameOver and navigate to tournament page
                 setIsWinner(false);
-                try { ws.close(1000, "game over - loser"); } catch (err) {}
+                try {
+                    ws.close(1000, "game over - loser");
+                } catch (err) {}
                 isCleanUp = true;
                 return;
             } catch (err) {
-                // fallback: if parsing fails, close and leave
-                setIsWinner(false);
-                try { ws.close(1000, "game over"); } catch {}
-                isCleanUp = true;
-                return;
+                console.error("Error handling tournament game over:", err);
             }
         }
         try { ws.close(1000, "game over"); } catch {}
@@ -246,7 +266,13 @@ export function useGameRoomWebSocket({
             window.removeEventListener("offline", handleOffline);
             window.removeEventListener("online", handleOnline);
         }
-		try { ws.close(); } catch {}
+		if (socketRoomRef.current) {
+            try {
+                ws.close();
+            } catch (err) {
+               console.error("Error closing WebSocket on cleanup:", err);
+            }
+        }
 	}
   }, [roomId, clientId, initialRole, roomName, isOffline, navigate]); //re-run effect if any of these change
 

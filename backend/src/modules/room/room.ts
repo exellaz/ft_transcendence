@@ -99,7 +99,16 @@ let lastLoopTime = performance.now();
  */
 export function startRoomLoop(room: Room) {
   if (room.loopHandle) return;
+
+  // mark room as in-game and notify clients once
+  room.inGame = true;
+  const startMsg = JSON.stringify({ type: "gameStart", roomId: room.id });
+  for (const s of room.sockets.keys()) {
+    try { s.send(startMsg); } catch (e) { console.warn("failed notify start", e); }
+  }
+
   roomStartGame(room);
+
   let sendAccumulator = 0;
 
   room.loopHandle = setInterval(() => {
@@ -148,14 +157,14 @@ export function startRoomLoop(room: Room) {
     const memory = process.memoryUsage();
     const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
 
-    if (Math.random() < 0.05) {
+    //if (Math.random() < 0.05) {
       // log ~5% of frames to avoid spamming
-      console.log(
-        `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
-          `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
-          `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
-      );
-    }
+    //  console.log(
+    //    `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
+    //      `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
+    //      `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
+    //  );
+    //} ////debug
   }, 1000 / 55);
 }
 /**
@@ -274,20 +283,72 @@ export function roomEndGame(
   console.log("===================================================");
 
   const roomId = room.id;
+  const tId = tournamentId ?? -1;
+  const tournament = tournaments.get(tId);
+  if (!tournament) {
+    console.log(`[room] can't found tournament: ${tId}`);
+    return;
+  }
 
   // Close all sockets and clean up room
   try {
-	for (const socket of Array.from(room.sockets.keys())) {
-	  try {
-		//console.log("[room] closing socket for game end:", room.id);
-		socket.close(1000, "game ended");
-	  } catch (e) { console.error("error closing socket:", e); }
-	  room.sockets.clear();
-	  room.clients.clear();
-    }
+	//for (const socket of Array.from(room.sockets.keys())) {
+	//  try {
+	//	socket.close(1000, "game ended");
+	//  } catch (e) {
+	//	console.error("[room] error closing socket:", e);
+	//  }
+	//}
+
+	// Clear room maps/sets
+	room.sockets.clear();
+	room.clients.clear();
+
+	// Remove the two players that participated in this room from the parent tournament's player list
+	//if (tournament) {
+	//  // gather clientIds from room teams
+	//  const leftIds = (room.gameState.teams.left ?? []).map((p: any) => Number(p.clientId));
+	//  const rightIds = (room.gameState.teams.right ?? []).map((p: any) => Number(p.clientId));
+	//  const idsToRemove = new Set([...leftIds, ...rightIds].filter(id => !Number.isNaN(id)));
+
+    //  // remove these ids from tournament.players
+	//  if (idsToRemove.size > 0) {
+	//	tournament.players = (tournament.players ?? []).filter((p: any) => !idsToRemove.has(Number(p.id)));
+
+	//	//// prefer tournament.broadcast if provided, otherwise try clientMap to send update
+	//	//const payload = JSON.stringify({ type: "playerLeft", players: tournament.players });
+	//	//try {
+	//	//  if (typeof tournament.broadcast === "function") {
+	//	//	tournament.broadcast(payload);
+	//	//  } else if (tournament.clientMap instanceof Map) {
+	//	//	for (const [ws, info] of tournament.clientMap.entries()) {
+	//	//	  try {
+	//	//		if (info.tournamentId === tId) ws.send(payload);
+	//	//	  } catch {}
+	//	//	}
+	//	//  }
+	//	//} catch (e) {
+	//	//  console.warn("[room] failed to notify tournament clients about removed players", e);
+	//	//}
+	//  }
+
+    //  if (tournament.players.length === 0) {
+    //    tournament.lock = false;
+    //    console.log(`[room] no player tournament ${tId} so setting started=false`);
+    //  }
+	//}
+    //const tournament = tournaments.get(tournamentId || -1);
+    //if (tournament) {
+        //console.log ("[room]: ", tournament.lock, tournament.players.length);
+        //if (tournament.lock === false && tournament.players.length === 0) {
+        //    console.log(`[room] cleaning up empty tournament ${tournamentId}`);
+        //    tournaments.delete(tournamentId || -1);
+        //}
+    //}
   } catch (e) {
-	//  console.error("[room] error during socket closing for game end:", e);
+	console.error("[room] error during socket closing for game end:", e);
   }
+
   if (rooms.has(roomId)) {
     console.log(`Deleted room ${roomId} after game end.`);
     rooms.delete(roomId);

@@ -130,7 +130,7 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/match"
+              path="/match/:roomId"
               element={
                 <RequireAuth>
                   <MatchView />

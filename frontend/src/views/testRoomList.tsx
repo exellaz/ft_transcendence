@@ -115,6 +115,13 @@ const RoomList: React.FC = () => {
                 Players: {tour.players.length}/{tour.maxPlayer} | Stage: {tour.stage === "QF" ? "Quarter Finals" : tour.stage === "SF" ? "Semi Finals" : tour.stage === "F" ? "Finals" : "Unknown"}
               </p>
             </div>
+            <div>
+                {tour.started ? (
+                    <span className="text-green-400 font-semibold">● lock</span>
+                ) : (
+                    <span className="text-red-400 font-semibold">● unlock</span>
+                )}
+            </div>
           </div>
         </div>
       ))}

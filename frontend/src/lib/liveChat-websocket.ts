@@ -86,7 +86,7 @@ export function useLiveChatWebSocket(
         ws.close(1000, "Chat closed");
       socketRef.current = null;
     };
-  }, [roomId]);
+  }, [roomId, user.id, user.name]);
 
   function handleSendMsg() {
     const ws = socketRef.current;

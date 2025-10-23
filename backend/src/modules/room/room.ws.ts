@@ -12,13 +12,13 @@ import {
 } from "../../utils/utils";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
+import { tournaments } from "../../modules/tournament/tournament.routes";
 
 const wsHandler = new WebSocketHandler();
 
 export default async function roomWsRoutes(fastify: FastifyInstance) {
   fastify.get("/ws-room", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
     const context = validateConnection(socket, req);
-    // console.log("Websocket connection context: ", context); //// debug
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
 
@@ -57,7 +57,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
 	// start server-initiate hanshake ping immediately
 	try {
-		socket.send(JSON.stringify({ type: "handshakePing" }));
+		socket.send(JSON.stringify({ type: "handshakePing", PlayerInfo: room.gameState, PlayerId: clientId }));
 		pongTimer = setTimeout(() => {
 			if (expectingPong) {
 				console.log("Handshake timeout for client:", clientId);
@@ -163,7 +163,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
 
         // --- allow type ---
-        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy"];
+        const allowedTypes = ["switchSide", "ready", "start", "togglePrivacy", "closeTournament"];
         if (!allowedTypes.includes(msg.type)) {
           socket.close(1003, `unsupported message type ${msg.type}`);
           return;
@@ -214,6 +214,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             msg.ready === null ||
             msg.ready === undefined
           ) {
+            console.log("Invalid ready value:", msg.ready); ////debug
             socket.close(1003, "Invalid boolean: [ready]");
             return;
           }
@@ -267,6 +268,17 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               leaderId: room.leaderId,
               canStart: canStart,
             });
+
+            //this for match game room
+            if (msg.matchGameStart === true && (room.gameState.teams.left.every((p) => p.ready) && room.gameState.teams.right.every((p) => p.ready))) {
+              if (!player) return;
+              if (room.game.state === 2 || room.game.state === 3) return;
+              console.log(
+                `match room [${room.id}] starting the game immediately`,
+              );
+              startRoomLoop(room);
+            }
+
             return;
           } else {
             //if unready during countdown, cancel the countdown and broadcast the player is not ready
@@ -342,6 +354,17 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             },
           });
         }
+
+        if (msg.type === "closeTournament") {
+            const tournament = tournaments.get(msg.tournamentId);
+            if (!tournament) {
+                console.log("Tournament not found:", msg.tournamentId);
+                return;
+            }
+            console.log ("[room] tournament closed by room ws:", msg.tournamentId);
+            tournament.lock = false;
+        }
+
       } catch (err) {
         console.error("unexpected error in room wsmessage handling:", err);
         cleanupTimer();
@@ -354,7 +377,9 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 	  //cleanup heartbeat timers
 	  cleanupTimer();
 
+
 	  if (room.game.state === 3) return;
+      console.log("room game state: ", socket.readyState); ////debug
       wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
   });

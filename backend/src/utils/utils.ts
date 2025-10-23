@@ -15,11 +15,11 @@ import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interfac
  */
 export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WSContext | null {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-  const clientId = url.searchParams.get("id");
-  const roomId = url.searchParams.get("room");
-  const side = url.searchParams.get("side") as "left" | "right" | null;
-  const playerName = url.searchParams.get("name");
-  const playerSprite = url.searchParams.get("sprite");
+  const clientId = url.searchParams.get("id") || "-1";
+  const roomId = url.searchParams.get("room") || "-1";
+  const side = url.searchParams.get("side") as "left" | "right" | "unknown";
+  const playerName = url.searchParams.get("name") || "unkown";
+  const playerSprite = url.searchParams.get("sprite") || "unknown";
 
   if (!clientId) {
     // console.log("Invalid clientId:", clientId); ////debug
@@ -33,11 +33,11 @@ export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WS
     return null;
   }
 
-  if (!side || (side && side !== "left" && side !== "right")) {
-    // console.log("Invalid side:", side); ////debug
-    socket.close(1008, "Side is required");
-    return null;
-  }
+//  if (!side || (side && side !== "left" && side !== "right")) {
+//     console.log("Invalid side:", side); ////debug
+//    socket.close(1008, "Side is required");
+//    return null;
+//  }
 
   if (!playerName || playerName.trim() === "" || playerName === "undefined") {
     // console.log("Invalid playerName:", playerName); ////debug

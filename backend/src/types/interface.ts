@@ -28,7 +28,7 @@ export interface TournamentLobby {
     winnerId: number | null;
     duration: number;
   }[];
-  started: boolean;
+  lock: boolean;
   stage: "QF" | "SF" | "F";
   countdownTimer?: NodeJS.Timeout | undefined;
   countdownRemaining?: number | undefined;
@@ -104,6 +104,7 @@ export interface Room {
   private: boolean; // Flag to indicate if the room is private
   countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
   countdownRemaining?: number | null; // Remaining seconds in the countdown
+  inGame?: boolean
 }
 
 export interface GameSettings {
@@ -118,7 +119,7 @@ export interface WSContext {
   clientId: number;
   roomId: number;
   room: Room;
-  side?: "left" | "right";
+  side?: "left" | "right" | undefined;
   playerName: string;
   playerSprite: string;
 }
