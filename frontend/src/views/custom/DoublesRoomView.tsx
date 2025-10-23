@@ -71,6 +71,12 @@ const DoublesRoomView: React.FC = () => {
     );
   };
 
+  // function to update sprite change to other users
+  function handleSelectSprite(newSprite: string) {
+    setSprite(newSprite);
+    onChangeSprite?.(newSprite);
+  }
+
   // Fetch user info when the component mounts
   React.useEffect(() => {
     if (!user) return; // Ensure `user` is available
@@ -140,6 +146,7 @@ const DoublesRoomView: React.FC = () => {
     onReady,
     onStartBtn,
     onLeave,
+    onChangeSprite,
     role,
     countdown,
     roomError,
@@ -150,7 +157,7 @@ const DoublesRoomView: React.FC = () => {
     player: {
       id: userInfo?.id || -1,
       name: userInfo?.username ?? "",
-      avatar: userInfo?.avatarUrl ?? "/assets/yellow-ghost.png",
+      sprite: sprite,
     },
     setRoomInfo,
   });
@@ -189,7 +196,7 @@ const DoublesRoomView: React.FC = () => {
         <RoomLayout
           isLeader={isLeader}
           selectedSprite={sprite}
-          onSelectSprite={setSprite}
+          onSelectSprite={handleSelectSprite}
         >
           <div className="relative w-full flex justify-center">
             <Card size="large">
