@@ -2,7 +2,11 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 
-const onlineUsers = new Map<number, WebSocket>();
+interface HeartbeatWebSocket extends WebSocket {
+  isAlive: boolean;
+}
+
+const onlineUsers = new Map<number, HeartbeatWebSocket>();
 
 export default async function onlineStatusRoutes(fastify: FastifyInstance) {
   // Define your online status routes here
@@ -11,33 +15,44 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
   fastify.get(
     "/online-status",
     { websocket: true },
-    (connection: WebSocket, request) => {
-      
+    (socket: WebSocket, request) => {
+
       const clientIP = request.socket.remoteAddress;
       console.log(`Client connected from ${clientIP}`);
+
+      const ws = socket as HeartbeatWebSocket;
       
       // TODO: Authenticate user (e.g., via query string token)
       // TODO: Get userId from token
       const { userId } = request.query as { userId?: string };
       if (!userId) {
-        connection.close(1008, "Missing userId");
+        ws.close(1008, "Missing userId");
         return;
       }
 
       const uid = Number(userId);
       if (isNaN(uid) || uid <= 0) {
-        connection.close(1008, "Invalid userId");
+        ws.close(1008, "Invalid userId");
         return;
       }
       // TODO: check userId is exist in database
 
+      // Attach a custom isAlive flag to this WebSocket connection object
+      ws.isAlive = true;
+
       // Add online user to Map
-      onlineUsers.set(uid, connection);
+      onlineUsers.set(uid, ws);
       console.log(`Total Online Users: ${onlineUsers.size}`);
       // Notify friends about online status
       notifyFriendsStatus(uid, true);
 
-      connection.on("close", (code, reason) => {
+      // When client responds to ping
+      ws.on("pong", () => {
+        console.log(`Received pong from user ${uid}`);
+        ws.isAlive = true;
+      });
+
+      ws.on("close", (code, reason) => {
         onlineUsers.delete(uid);
         console.log(
           `Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`,
@@ -47,18 +62,37 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         notifyFriendsStatus(uid, false);
       });
 
-      connection.on("error", (error) => {
+      ws.on("error", (error) => {
         console.error(`WebSocket error for ${clientIP}:`, error);
       });
     },
   );
 }
 
+const HEARTBEAT_INTERVAL = 10000; // 10s
+setInterval(() => {
+  console.log("Running heartbeat check...");
+  for (const [uid, ws] of onlineUsers.entries()) {
+    if (!ws.isAlive) {
+      console.log(`User ${uid} did not respond. Removing...`);
+      ws.terminate();
+      onlineUsers.delete(uid);
+      notifyFriendsStatus(uid, false);
+      continue;
+    }
+
+    ws.isAlive = false;
+    ws.ping(); // triggers "pong" event when client replies
+    console.log(`Sent ping to user ${uid}`);
+  }
+}, HEARTBEAT_INTERVAL);
+
 // notifies all friends of a user about their online/offline status
 async function notifyFriendsStatus(userId: number, isOnline: boolean) {
+  console.log(`Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`);
+
   const friends: number[] = await getFriendsOfUser(userId);
 
-  console.log(`friends of user ${userId}:`, friends);
   friends.forEach((friendId) => {
     const friendSocket = onlineUsers.get(friendId);
     if (friendSocket) {
