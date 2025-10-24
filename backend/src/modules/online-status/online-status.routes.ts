@@ -3,6 +3,7 @@ import { WebSocket } from "ws";
 import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { authenticate } from "src/plugins/authenticate";
 
 // Attach a custom isAlive flag to this WebSocket object
 interface HeartbeatWebSocket extends WebSocket {
@@ -29,28 +30,24 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       // TODO: Get userId from token
 
 
-      // const { userId } = request.query as { userId?: string };
       const { token } = request.query as { token?: string };
       if (!token) {
         ws.close(1008, "Missing token");
         return;
       }
 
-      // Verify token (recommended)
-      // const secret = process.env.JWT_SECRET as string;
-      // const decoded = jwt.verify(token, secret) as JwtPayload;
-
-      // Or just decode without verification (not recommended)
-      const decoded = jwt.decode(token) as JwtPayload | null;
+      // Verify token
+      const secret = process.env.JWT_SECRET as string;
+      const decoded = jwt.verify(token, secret) as JwtPayload;
       console.log("Decoded token:", decoded);
 
-      // TODO: if not verified, close connection
+      // if not verified, close connection
       if (decoded === null || !decoded.userId) {
         ws.close(1008, "Invalid token");
         return;
       }
 
-      // Now you can access your userId
+      // access your userId from decoded token
       const userId = decoded.userId;
       console.log('User ID:', userId);
 
