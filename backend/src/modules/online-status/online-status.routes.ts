@@ -25,10 +25,6 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       console.log(`Client connected from ${clientIP}`);
 
       const ws = socket as HeartbeatWebSocket;
-      
-      // TODO: Authenticate user (e.g., via query string token)
-      // TODO: Get userId from token
-
 
       const { token } = request.query as { token?: string };
       if (!token) {
