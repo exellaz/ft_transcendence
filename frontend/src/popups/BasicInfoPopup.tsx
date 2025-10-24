@@ -36,7 +36,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API mutation to update user data
@@ -86,7 +86,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         setSaveError(
           response.errorCode && typeof response.errorCode === "string"
             ? errorMessages[response.errorCode] || translate("save_failed")
-            : translate("save_failed")
+            : translate("save_failed"),
         );
         return;
       }

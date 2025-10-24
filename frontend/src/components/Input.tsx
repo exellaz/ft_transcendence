@@ -21,7 +21,7 @@ const Input: React.FC<InputProps> = ({
   className = "",
   icon,
   onKeyDown,
-  maxLength
+  maxLength,
 }) => (
   <div
     className={`w-full bg-input-gray rounded-full flex-row-center px-5 py-2 ${className}`}

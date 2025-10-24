@@ -80,7 +80,7 @@ const SignUpView: React.FC = () => {
           response.errorCode && typeof response.errorCode === "string"
             ? errorMessages[response.errorCode] ||
                 translate("registration_failed")
-            : translate("registration_failed")
+            : translate("registration_failed"),
         );
         return;
       }

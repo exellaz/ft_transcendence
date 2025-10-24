@@ -6,7 +6,7 @@ import type { ApiResponse } from "../types/apiResponse";
 export function useApiQuery<T>(
   apiCall: () => Promise<ApiResponse<T>>,
   dependencies: React.DependencyList = [],
-  enabled: boolean
+  enabled: boolean,
 ) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,7 +88,7 @@ export function useApiQuery<T>(
 // Simple version - no loading/error states
 // No state updates = no unmounting issues
 export function useApiMutation<TRequest, TResponse>(
-  mutationFn: (payload: TRequest) => Promise<ApiResponse<TResponse>>
+  mutationFn: (payload: TRequest) => Promise<ApiResponse<TResponse>>,
 ) {
   const mutate = async (payload: TRequest) => {
     try {
