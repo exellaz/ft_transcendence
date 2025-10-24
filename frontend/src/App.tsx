@@ -18,8 +18,6 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
-import OnlineStatusView from "./views/OnlineStatusView";
-
 import BouncingSprites from "./components/BouncingSprites";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
@@ -179,7 +177,6 @@ const App: React.FC = () => {
             />
             {/* Miscellaneous routes */}
             <Route path="/test" element={<TestView />} />
-            <Route path="/online-status-view" element={<OnlineStatusView />} />
 
           </Routes>
         </PreLoginWrapper>
