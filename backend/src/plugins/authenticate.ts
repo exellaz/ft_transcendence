@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
-import { authConfig } from "../config/authConfig.ts";
-import { getUserById } from "../userModel.ts";
+import { ApiError } from "../utils/response.ts";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 const AuthErrors = {
@@ -11,57 +10,134 @@ const AuthErrors = {
   MALFORMED_TOKEN: "MALFORMED_TOKEN",
 } as const;
 
-export async function authenticate(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+interface JWTPayload {
+  userId: number;
+  email?: string;
+  iat?: number;
+  exp?: number;
+}
+
+export async function authenticate(request: FastifyRequest) {
   const authHeader = (request.headers.authorization || "") as string;
   if (!authHeader.startsWith("Bearer ")) {
     request.log.warn(`Authentication failed: ${AuthErrors.MISSING_BEARER}`);
-    return reply.code(401).send({ error: "Unauthorized" });
+    throw ApiError.unauthorized(
+      "Missing or invalid Authorization header",
+      AuthErrors.MISSING_BEARER,
+    );
   }
 
   const token = authHeader.slice(7).trim();
+
+  if (!token) {
+    request.log.warn(`Authentication failed: Empty token`);
+    throw ApiError.unauthorized(
+      "Empty authentication token",
+      AuthErrors.MALFORMED_TOKEN,
+    );
+  }
+
   try {
-    const decoded = jwt.verify(token, authConfig.jwtSecret) as {
-      userId: number;
-      email?: string;
-      iat?: number;
-      exp?: number;
-    };
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      request.log.error("JWT_SECRET not configured");
+      throw ApiError.internal(
+        "Authentication configuration error",
+        "CONFIG_ERROR",
+      );
+    }
+
+    const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
 
     if (!decoded.userId) {
       request.log.warn(`Authentication failed: ${AuthErrors.MALFORMED_TOKEN}`);
-      return reply.code(401).send({ error: "Unauthorized" });
+      throw ApiError.unauthorized(
+        "Invalid token format",
+        AuthErrors.MALFORMED_TOKEN,
+      );
     }
 
-    const user = getUserById(decoded.userId);
+    const user = await request.server.db.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        status: true,
+        joinedAt: true,
+        updatedAt: true,
+      },
+    });
     if (!user) {
       request.log.warn(
         `Authentication failed: ${AuthErrors.USER_NOT_FOUND} - userId: ${decoded.userId}`,
       );
-      return reply.code(401).send({ error: "Unauthorized" });
+      throw ApiError.unauthorized("User not found", AuthErrors.USER_NOT_FOUND);
     }
-
     request.user = user;
-    return;
   } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
     if (err && typeof err === "object" && "name" in err) {
-      if (err.name === "TokenExpiredError") {
-        request.log.warn(`Authentication failed: ${AuthErrors.TOKEN_EXPIRED}`);
-      } else if (err.name === "JsonWebTokenError") {
-        request.log.warn(`Authentication failed: ${AuthErrors.INVALID_TOKEN}`);
-      } else {
-        request.log.error(
-          `Authentication failed: Unexpected error - ${err.name}`,
-        );
+      const jwtError = err as jwt.JsonWebTokenError;
+
+      switch (jwtError.name) {
+        case "TokenExpiredError":
+          request.log.warn(
+            `Authentication failed: ${AuthErrors.TOKEN_EXPIRED}`,
+          );
+          throw ApiError.unauthorized(
+            "Token expired",
+            AuthErrors.TOKEN_EXPIRED,
+          );
+
+        case "JsonWebTokenError":
+          request.log.warn(
+            `Authentication failed: ${AuthErrors.INVALID_TOKEN}`,
+          );
+          throw ApiError.unauthorized(
+            "Invalid token",
+            AuthErrors.INVALID_TOKEN,
+          );
+
+        case "NotBeforeError":
+          request.log.warn(`Authentication failed: Token not active yet`);
+          throw ApiError.unauthorized(
+            "Token not yet valid",
+            AuthErrors.INVALID_TOKEN,
+          );
+
+        default:
+          request.log.warn(
+            `Authentication failed: Unknown JWT error - ${jwtError.name}`,
+          );
+          throw ApiError.unauthorized(
+            "Token validation failed",
+            AuthErrors.INVALID_TOKEN,
+          );
       }
-    } else {
-      request.log.error(
-        `Authentication failed: Unknown error - ${String(err)}`,
-      );
     }
 
-    return reply.code(401).send({ error: "Unauthorized" });
+    request.log.error(
+      `Authentication failed: Unexpected error - ${String(err)}`,
+    );
+    throw ApiError.unauthorized(
+      "Authentication failed",
+      AuthErrors.INVALID_TOKEN,
+    );
+  }
+}
+
+export function requireOwnership(
+  userId: number | undefined,
+  requestUserId: number,
+) {
+  if (userId !== requestUserId || userId === undefined) {
+    throw ApiError.forbidden(
+      "Access denied: insufficient permissions",
+      "ACCESS_DENIED",
+    );
   }
 }

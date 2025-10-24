@@ -4,8 +4,12 @@ declare module "fastify" {
   interface FastifyRequest {
     user?: {
       id: number;
-      email?: string;
-      name?: string;
+      username: string;
+      email: string;
+      avatarUrl: string | null;
+      status: string;
+      joinedAt: Date;
+      updatedAt: Date;
     };
   }
 }

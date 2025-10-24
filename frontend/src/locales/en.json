@@ -37,9 +37,10 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
-    "room_not_found": "Room not found",
-    "unknown_error": "Unknown error",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "LocalGameView": {
     "change_sprite": "Change Sprite",
@@ -120,8 +121,10 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
-    "unknown_error": "未知錯誤",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "TournamentLobbyView": {
     "quarterfinals": "Quarterfinals",
@@ -329,6 +332,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends"
+    "invite_friends": "Invite Friends",
+    "choose_sprite": "Choose Sprite"
   }
 }

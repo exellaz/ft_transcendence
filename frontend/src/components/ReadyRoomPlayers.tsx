@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import type { WaitingRoomPlayer } from "../types/apiInterfaces";
 import { getUserColor } from "../utils/colorUtils";
 
 import Avatar from "./Avatar";
-import ProfilePopup from "../popups/ProfilePopup";
 
 interface ReadyRoomPlayersProps {
   players: WaitingRoomPlayer[];
   variant: "singles" | "doubles";
   onSwitchTeam?: () => void;
   userId: number;
+  onSelect: (id: number) => void;
 }
 
 // Component to display players in ready room with team switch functionality
@@ -19,10 +19,10 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   variant,
   onSwitchTeam,
   userId,
+  onSelect,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // Separate players into left and right teams
   const leftTeamPlayers = players.filter(
@@ -55,7 +55,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   }> = ({ player }) => (
     <div
       className={`${basicCellStyling} gap-4 cursor-pointer`}
-      onClick={() => setSelectedId(player.id)}
+      onClick={() => onSelect(player.id)}
     >
       <div className="relative">
         <img
@@ -156,15 +156,6 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           teamPlayers={rightTeamPlayers}
         />
       </div>
-
-      {selectedId && (
-        <ProfilePopup
-          open={true}
-          onClose={() => setSelectedId(null)}
-          selectedId={selectedId}
-          variant={selectedId === userId ? "self" : "other"}
-        />
-      )}
     </>
   );
 };
