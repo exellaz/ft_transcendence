@@ -149,6 +149,8 @@ export function useGameRoomWebSocket({
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
   const [isWinner, setIsWinner] = useState(false);
+  const [loserRank, setLoserRank] = useState<number | null>(null);
+  const [winnerRank, setWinnerRank] = useState<number | null>(null);
   const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
   const [tournamentDb, setTournamentDb] = useState<{ id: number; status: string; createdAt: Date } | null>(null);
   const navigate = useNavigate();
@@ -223,12 +225,22 @@ export function useGameRoomWebSocket({
                 if (winnerClientIds === clientId) {
                     console.log("you are the winner - waiting for tournament next-round");
                     setIsWinner(true);
+                    const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
+                    if (placement) {
+                        console.log(`winner [${clientId}] placement: ${placement.rank}`); ////debug
+                        setWinnerRank(placement.rank);
+                    }
                     ws.close(1000, "game over - winner");
                     return;
                 }
 
                 // loser: setGameOver and navigate to tournament page
                 setIsWinner(false);
+                const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
+                    if (placement) {
+                        console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
+                        setLoserRank(placement.rank);
+                    }
                 try {
                     ws.close(1000, "game over - loser");
                 } catch (err) {}
@@ -281,5 +293,7 @@ export function useGameRoomWebSocket({
     isWinner,
     lastTournamentId,
 	tournamentDb,
+    winnerRank,
+    loserRank,
   };
 }

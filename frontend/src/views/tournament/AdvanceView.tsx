@@ -14,6 +14,7 @@ const AdvanceView: React.FC = () => {
   const translate = (key: string) => t(`AdvanceView.${key}`);
   const navigate = useNavigate();
   const [isAdvancing, setIsAdvancing] = React.useState(false);
+  console.log("AdvanceView location.state:", location.state); ////debug
 
   async function handleContinueClick() {
     const lastTournamentId = Number(location.state?.lastTournamentId ?? 0);

@@ -212,7 +212,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const roomName = sessionStorage.getItem("RoomName") || "Room 1";
   const clientId = Number(navState.player?.id ?? userInfo?.id ?? -1);
   const playerName = navState.player?.name ?? userInfo?.username ?? "";
-  const playerSprite = sessionStorage.getItem("playerSprite");
+  const playerSprite = sessionStorage.getItem("playerSprite") || navState.player?.spriteUrl;
   const initialRole = sessionStorage.getItem("playerSide") || "";
   console.log("room id from session:", roomId); ////debug
   console.log("room name from session:", roomName); ////debug
@@ -241,7 +241,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const { socket } = useGameWebSocket(params);
   // console.log("socket has been create: ", socket); ////debug
 
-  const { gameOver, isWinner, lastTournamentId, tournamentDb } = useGameRoomWebSocket({
+  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameRoomWebSocket({
     ...params,
     isOffline: delayForGameOver,
   });
@@ -256,7 +256,7 @@ const GameView: React.FC<GameViewProps> = () => {
     let mounted = true;
     (async () => {
       try {
-        const tournament = await getTournamentById(lastTournamentId);
+        const tournament = await getTournamentById(lastTournamentId || -1);
         const next = nextRoundFromTournament(tournament);
         if (mounted) setHasNextStage(!!next);
       } catch (err) {
@@ -268,103 +268,14 @@ const GameView: React.FC<GameViewProps> = () => {
     };
   }, [lastTournamentId]);
 
-  // helper to map current -> next round
-//  const nextRoundFromTournament = (tournament: any) => {
-//    if (!tournament) return null;
-//    // prefer numeric maxPlayer if present (8 -> 4 -> 2)
-//    const max = typeof tournament.maxPlayer === "number" ? tournament.maxPlayer : undefined;
-//    if (max === 8) return { code: "SF", size: 4 };
-//    if (max === 4) return { code: "F", size: 2 };
-
-//    // fallback to stage string parsing
-//    const stage = (tournament.stage || "").toString().toLowerCase();
-//    if (stage.includes("quarter") || stage === "qf") return { code: "SF", size: 4 };
-//    if (stage.includes("semi") || stage === "sf") return { code: "F", size: 2 };
-//    return null;
-//  };
-
-//  // extracted so both the auto-timer and the button use the same logic
-//  const goToNextRound = async (tournamentDb: { id: number; status: string; createdAt: Date } | null) => {
-//    if (!isWinner || !lastTournamentId || isAdvancing) return;
-//    setIsAdvancing(true);
-
-//    // clear room session storage (same as losers)
-//    sessionStorage.removeItem("playerSide");
-//    sessionStorage.removeItem("RoomId");
-//    sessionStorage.removeItem("RoomLeaderId");
-//    sessionStorage.removeItem("RoomName");
-//    sessionStorage.removeItem("RoomType");
-
-//    // try to read current stage from session first, otherwise fetch tournament info
-//    let parentTournament = null;
-//    try {
-//        parentTournament = await getTournamentById(lastTournamentId);
-//    } catch (err) {
-//        console.error("error fetching parent tournament info:", err);
-//        parentTournament = null;
-//    }
-//    const next = nextRoundFromTournament(parentTournament);
-//    if (!next) {
-//      console.log("no next round to navigate to");
-//      navigate("/main-menu");
-//      setIsAdvancing(false);
-//      return;
-//    }
-
-//    try {
-//      const res = await createNextTournament(next.code, lastTournamentId, tournamentDb);
-
-//      // navigate to the new tournament lobby if created
-//      if (res && res.id) {
-//        const currentTournamentId = Number(sessionStorage.getItem("tournamentId") ?? lastTournamentId ?? -1);
-//        if (currentTournamentId > 0) {
-//          try { closeTournamentWebsocket(currentTournamentId, clientId); } catch (e) { console.warn("failed to close tournament ws", e); }
-//        }
-//        // also close match socket
-//        closeMatchWebsocket(roomId, clientId);
-//        console.log(" [ move stage ] navigating to next tournament id:", res.id, res.stage);
-//        navigate(`/tournament/${res.id}`);
-//        //setInterval(() => {
-//        //    if (lastTournamentId) {
-//                //deleteTournament(lastTournamentId).catch((err) => console.log("error deleting old tournament:", err));
-//        //    }
-//        //}, 10000); //delete old tournament after 10 seconds
-//        return;
-//      }
-
-//      //fallback: navigate to parent tournament page
-//      const parent = await getTournamentById(lastTournamentId);
-//      if (parent && parent.nextTournamentId) {
-//        const nextId = parent.nextTournamentId;
-//        console.log(" [ move stage ] navigating to parent tournament id:", nextId);
-//        navigate(`/tournament/${nextId}`);
-//        return;
-//      }
-//    } catch (err) {
-//      console.error("error creating next tournament:", err);
-
-//      //fallback: navigate to parent tournament page
-//      try {
-//        const parent = await getTournamentById(lastTournamentId);
-//        if (parent && parent.nextTournamentId) {
-//          const nextId = parent.nextTournamentId;
-//          console.log(" [ move stage ] navigating to parent tournament id:", nextId);
-//          navigate(`/tournament/${nextId}`);
-//          return;
-//        }
-//      } catch (err2) {
-//        console.error("error during fallback navigation:", err2);
-//      }
-//    } finally {
-//      setIsAdvancing(false);
-//    }
-//  };
-
-
   // auto-navigate winners after a timeout (still possible, but user can click the button to jump early)
   React.useEffect(() => {
     if (!isWinner || !lastTournamentId) return;
     const timer = setTimeout(() => {
+      if (winnerRank === 1) {
+        navigate("/results", { state: { roomId, clientId, lastTournamentId, winnerRank } });
+        return;
+      }
       navigate("/advance", { state: {
                       playerSprite,
                       lastTournamentId,
@@ -374,7 +285,22 @@ const GameView: React.FC<GameViewProps> = () => {
                   } });
     }, 1000);
     return () => clearTimeout(timer);
-  }, [isWinner, lastTournamentId, tournamentDb, clientId, roomId, playerSprite]); // navigate is safe to omit here (stable)
+  }, [isWinner, lastTournamentId, tournamentDb, clientId, roomId, playerSprite, winnerRank]); // navigate is safe to omit here (stable)
+
+  React.useEffect(() => {
+    if (gameOver && !isWinner) {
+      const timer = setTimeout(() => {
+        console.log("loser back to lobby: ", lastTournamentId);
+        sessionStorage.removeItem("playerSide");
+        sessionStorage.removeItem("RoomId");
+        sessionStorage.removeItem("RoomLeaderId");
+        sessionStorage.removeItem("RoomName");
+        sessionStorage.removeItem("RoomType");
+        navigate("/results", { state: { roomId, clientId, lastTournamentId, loserRank } });
+      }, 1000); //wait 3 seconds before navigating away
+      return () => clearTimeout(timer);
+    }
+  }, [gameOver, isWinner]);
 
   React.useEffect(() => {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -476,6 +402,7 @@ const GameView: React.FC<GameViewProps> = () => {
                     tournamentDb,
                     clientId,
                     roomId,
+                    winnerRank,
                 } });
 
               }}

@@ -90,7 +90,7 @@ const CustomModeView: React.FC = () => {
       }
     }
 
-    //if had room, navigate to it
+    //if had room, navigate to itLiveChat
     const roomIdToUse = room.id || room.roomId || "";
 	if (!roomIdToUse || roomIdToUse === "") {
 		setRoomError(translate("room_not_found"));

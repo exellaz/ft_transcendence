@@ -39,6 +39,7 @@ export interface TournamentLobby {
   nextTournamentId?: number;
   parentTournamentId?: number;
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
+  placements: { playerId: number; position: number }[];
 }
 
 export interface TournamentGameRoom {
@@ -165,6 +166,7 @@ export interface gameOver {
     playerRight: Room["gameState"]["teams"]["right"];
     tournamentId?: number;
 	tournamentDb?: { id: number; status: string; createdAt: Date } | null;
+    placements: { playerId: number; position: number }[];
 };
 
 export interface countdown {
