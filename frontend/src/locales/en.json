@@ -149,8 +149,8 @@
     "upload_avatar": "Upload a new avatar",
     "upload_avatar_button": "Upload Avatar",
     "confirm_upload": "Confirm Upload",
-    "avatar_updated": "Avatar has been updated.",
-    "avatar_update_error": "Avatar could not be updated.",
+    "avatar_updated": "Avatar has been updated",
+    "avatar_update_error": "Avatar could not be updated",
     "back": "Back"
   },
   "ConfirmationPopup": {
@@ -166,13 +166,19 @@
     "add_friend": "Add Friend",
     "search_friend": "Search friend",
     "enter_friend_username": "Enter friend's username",
-    "friend_added": "Friend has been added.",
-    "user_not_exist": "User does not exist.",
+    "friend_added": "Friend has been added",
     "back": "Back",
-    "no_friends_yet": "No friends yet.",
-    "no_new_requests": "No new requests.",
-    "no_blocked_users": "No blocked users.",
-    "no_messages_yet": "No messages yet."
+    "no_friends_yet": "No friends yet",
+    "no_new_requests": "No new requests",
+    "no_blocked_users": "No blocked users",
+    "no_messages_yet": "No messages yet",
+    "enter_valid_username": "Please enter a valid username",
+    "user_not_found": "User not found",
+    "friend_request_pending": "Friend request is pending",
+    "already_friends": "Users are already friends",
+    "friendship_conflict": "Friendship already exists",
+    "cannot_friend_self": "User cannot friend themselves",
+    "add_friend_failed": "Failed to add friend"
   },
   "GameSettingsPopup": {
     "header": "Game Settings",
@@ -250,13 +256,13 @@
     "finals": "Finals",
     "won": "Won",
     "lost": "Lost",
-    "no_history_yet": "No tournament history yet."
+    "no_history_yet": "No tournament history yet"
   },
   "ApiState": {
     "loading": "Loading...",
     "error": "Error",
     "try_again": "Try Again",
-    "not_found": "Record not found."
+    "not_found": "Record not found"
   },
   "CascadeCard": {
     "confirm_block": "Are you sure you want to block {{username}}?",
@@ -293,7 +299,7 @@
     "offline": "Offline",
     "type_message": "Type a message",
     "send": "Send",
-    "no_messages_yet": "No messages yet."
+    "no_messages_yet": "No messages yet"
   },
   "ProfileContents": {
     "loading": "Loading...",

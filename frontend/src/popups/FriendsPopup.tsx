@@ -168,7 +168,9 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     }
   }
 
-  const handleFriendUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFriendUsernameChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setFriendUsername(e.target.value);
     if (addFriendError) setAddFriendError(null);
     if (addFriendSuccess) setAddFriendSuccess(false);
@@ -183,23 +185,37 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
     // return if input is empty
     if (trimmed === "") {
-      setAddFriendError("Please enter a valid username");
+      setAddFriendError(translate("enter_valid_username"));
       return;
     }
 
-    const response = await addFriend({
-      requesterId: userId,
-      accepterUsername: trimmed,
-    });
+    try {
+      const response = await addFriend({
+        requesterId: userId,
+        accepterUsername: trimmed,
+      });
 
-    if (response.success) {
+      const errorMessages: Record<string, string> = {
+        USER_NOT_FOUND: translate("user_not_found"),
+        FRIEND_REQUEST_PENDING: translate("friend_request_pending"),
+        ALREADY_FRIENDS: translate("already_friends"),
+        FRIENDSHIP_CONFLICT: translate("friendship_conflict"),
+        CANNOT_FRIEND_SELF: translate("cannot_friend_self"),
+      };
+
+      if (!response.success || !response.data) {
+        setAddFriendError(
+          response.errorCode && typeof response.errorCode === "string"
+            ? errorMessages[response.errorCode] ||
+                translate("add_friend_failed")
+            : translate("add_friend_failed"),
+        );
+        return;
+      }
       setAddFriendSuccess(true);
       handleCloseCascadeCard();
-    } else {
-      setAddFriendError("Failed to add friend");
-    }
-    if (response.error) {
-      setAddFriendError(response.error);
+    } catch (err) {
+      setAddFriendError(translate("add_friend_failed"));
     }
   };
 

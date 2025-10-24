@@ -147,8 +147,8 @@
     "upload_avatar": "上传新头像",
     "upload_avatar_button": "上传头像",
     "confirm_upload": "确认上传",
-    "avatar_updated": "头像已更新。",
-    "avatar_update_error": "头像更新失败。",
+    "avatar_updated": "头像已更新",
+    "avatar_update_error": "头像更新失败",
     "back": "返回"
   },
   "ConfirmationPopup": {
@@ -164,13 +164,19 @@
     "add_friend": "添加好友",
     "search_friend": "搜索好友",
     "enter_friend_username": "输入好友用户名",
-    "friend_added": "好友已添加。",
-    "user_not_exist": "用户不存在。",
+    "friend_added": "好友已添加",
     "back": "返回",
-    "no_friends_yet": "还没有朋友。",
-    "no_new_requests": "没有新的请求。",
-    "no_blocked_users": "没有被屏蔽的用户。",
-    "no_messages_yet": "还没有消息。"
+    "no_friends_yet": "还没有朋友",
+    "no_new_requests": "没有新的请求",
+    "no_blocked_users": "没有被屏蔽的用户",
+    "no_messages_yet": "还没有消息",
+    "enter_valid_username": "请输入有效的用户名",
+    "user_not_found": "未找到用户",
+    "friend_request_pending": "好友请求处理中",
+    "already_friends": "双方已是好友",
+    "friendship_conflict": "好友关系已存在",
+    "cannot_friend_self": "无法将自己添加为好友",
+    "add_friend_failed": "添加好友失败"
   },
   "GameSettingsPopup": {
     "header": "游戏设置",
@@ -248,13 +254,13 @@
     "finals": "决赛",
     "won": "胜利",
     "lost": "失败",
-    "no_history_yet": "暂无比赛记录。"
+    "no_history_yet": "暂无比赛记录"
   },
   "ApiState": {
     "loading": "加载中...",
     "error": "错误",
     "try_again": "重试",
-    "not_found": "未找到记录。"
+    "not_found": "未找到记录"
   },
   "CascadeCard": {
     "confirm_block": "确定要屏蔽 {{username}} 吗？",
@@ -291,7 +297,7 @@
     "offline": "离线",
     "type_message": "输入消息",
     "send": "发送",
-    "no_messages_yet": "还没有消息。"
+    "no_messages_yet": "还没有消息"
   },
   "ProfileContents": {
     "loading": "加载中...",
