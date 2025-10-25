@@ -69,17 +69,32 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     // clear previous errors
     setSaveError(null);
 
-    const result = await mutate({
-      id: user.id,
-      username: username.trim(),
-    });
+    try {
+      const response = await mutate({
+        id: user.id,
+        username: username.trim(),
+      });
 
-    if (result.success) {
+      const errorMessages: Record<string, string> = {
+        USERNAME_INVALID: translate("username_invalid"),
+        USERNAME_TOO_SHORT: translate("username_too_short"),
+        USERNAME_TOO_LONG: translate("username_too_long"),
+        USERNAME_CONFLICT: translate("username_conflict"),
+      };
+
+      if (!response.success || !response.data) {
+        setSaveError(
+          response.errorCode && typeof response.errorCode === "string"
+            ? errorMessages[response.errorCode] || translate("save_failed")
+            : translate("save_failed"),
+        );
+        return;
+      }
       refetch();
       // notify ProfileDropdown about updated user data
       window.dispatchEvent(new CustomEvent("userUpdated"));
-    } else if (result.error) {
-      setSaveError(result.error);
+    } catch (err) {
+      setSaveError(translate("save_failed"));
     }
   };
 
@@ -126,6 +141,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           onChange={handleUsernameChange}
           placeholder={translate("username")}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+          maxLength={30}
         />
         {saveError && <Status text={saveError} color="red" />}
         {/* Email is read-only */}
@@ -148,7 +164,13 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     );
 
   return (
-    <PopupCard open={open} onClose={onClose}>
+    <PopupCard
+      open={open}
+      onClose={() => {
+        setSaveError(null);
+        onClose();
+      }}
+    >
       <Header>{translate("header")}</Header>
       {children}
     </PopupCard>

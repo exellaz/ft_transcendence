@@ -40,8 +40,9 @@ const LoginView: React.FC = () => {
     };
 
   const validateForm = (): string | null => {
-    if (!formData.identifier.trim()) return "Username or email is required";
-    if (!formData.password) return "Password is required";
+    if (!formData.identifier.trim())
+      return translate("username_or_email_required");
+    if (!formData.password) return translate("password_required");
     return null;
   };
 
@@ -61,7 +62,13 @@ const LoginView: React.FC = () => {
       });
 
       if (!loginResponse.success || !loginResponse.data) {
-        throw new Error(loginResponse.error || "Login failed");
+        // Check for errorCode and translate if present
+        if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
+          setError(translate("invalid_credentials"));
+        } else {
+          setError(translate("login_failed"));
+        }
+        return;
       }
 
       // Success: Store token and user data, then redirect
@@ -78,7 +85,7 @@ const LoginView: React.FC = () => {
 
       navigate("/main-menu");
     } catch (err) {
-      setError((err as Error).message);
+      setError(translate("login_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +107,7 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("identifier")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+          maxLength={254}
         />
         <Input
           placeholder={translate("password")}
@@ -108,6 +116,7 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("password")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+          maxLength={128}
         />
         {error && <Status text={error} color="red" />}
         <Button variant="longYellow" onClick={handleLogin}>

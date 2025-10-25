@@ -93,9 +93,18 @@ export function useApiMutation<TRequest, TResponse>(
   const mutate = async (payload: TRequest) => {
     try {
       const response = await mutationFn(payload);
-      return { success: response.success, data: response.data };
+      return {
+        success: response.success,
+        data: response.data,
+        error: response.error,
+        errorCode: response.errorCode,
+      };
     } catch (err) {
-      return { success: false, error: "Network error" };
+      return {
+        success: false,
+        error: "Network error",
+        errorCode: "NETWORK_ERROR",
+      };
     }
   };
 
