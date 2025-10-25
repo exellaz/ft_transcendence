@@ -74,9 +74,11 @@ export function useRoomWebSocket({
 
   useEffect(() => {
 	if (!autoConnect) return;
-	if (!player.id || player.id < 0) return;
 	if (!roomId || roomId < 0) return;
     //TODO replace with JWT
+    const userJWT = localStorage.getItem("authToken");
+    console.log("Room ws connecting with JWT:", userJWT); ////debug
+
 
     async function connect() {
       // pick role (leader gets left_player1)
@@ -91,8 +93,12 @@ export function useRoomWebSocket({
       console.log("ws player sprite:", player.sprite); ////debug
       const ws = new WebSocket(
         import.meta.env.VITE_WS_URL +
-          `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.sprite)}`,
+          `/ws-room?room=${roomId}&side=${chooseSide}&token=${userJWT}`,
       );
+      //  const ws = new WebSocket(
+    //    import.meta.env.VITE_WS_URL +
+    //      `/ws-room?id=${player.id}&room=${roomId}&side=${chooseSide}&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.sprite)}`,
+    //  ); //TODO use JWT token and remove player id, name nad sprite and backend retrieve the jwt to
       socketRef.current = ws;
 
       // open connection
@@ -285,8 +291,8 @@ export function useRoomWebSocket({
       };
 
       // close connection
-      ws.onclose = () => {
-        console.log("Room ws disconnected");
+      ws.onclose = (ev: CloseEvent) => {
+        console.log("Room ws disconnected: ", ev.code, ev.reason);
 		setRoomError("offline_error");
 		setCanStart(false);
 		setReady(false);
@@ -294,16 +300,16 @@ export function useRoomWebSocket({
 
       ws.onerror = (e) => {
         console.error("Room ws error", e);
-        ws.close();
+        ws.close(1000, "websocket error");
       };
 
       // clean up on unmount
       return () => {
-        try { if (ws) ws.close(); } catch {}
+        try { if (ws) ws.close(1000, "room websocket unmounted"); } catch {}
       };
     }
     connect();
-  }, [roomId, roomName, leaderId, player.id, player.name, player.sprite]);
+  }, [roomId, roomName, leaderId]);
 
   function onSwitch() {
     if (!socketRef.current) return;

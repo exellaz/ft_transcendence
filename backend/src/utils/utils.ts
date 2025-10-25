@@ -5,6 +5,20 @@ import { URL } from "url";
 import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
 import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interface";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+//! temporary helper function to get user info by id
+import { GetUserRequest, GetUserResponse } from "../../../frontend/src/types/usersApi";
+export async function getUserInfoById({
+  id,
+}: GetUserRequest): Promise<GetUserResponse> {
+  const res = await fetch(`http://localhost:3000/users/${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return res.json();
+}
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -13,19 +27,11 @@ import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interfac
  * @return WSContext if valid, otherwise null (and closes socket)
  * @note Close the socket with appropriate code/message if validation fails
  */
-export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WSContext | null {
+export async function validateConnection(socket: WSWebSocket, req: FastifyRequest): Promise<WSContext | null> {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-  const clientId = url.searchParams.get("id") || "-1";
   const roomId = url.searchParams.get("room") || "-1";
-  const side = url.searchParams.get("side") as "left" | "right" | "unknown";
-  const playerName = url.searchParams.get("name") || "unkown";
-  const playerSprite = url.searchParams.get("sprite") || "unknown";
-
-  if (!clientId) {
-    // console.log("Invalid clientId:", clientId); ////debug
-    socket.close(1008, "Client id is required");
-    return null;
-  }
+  const side = url.searchParams.get("side") as "left" | "right" | undefined;
+  const token = url.searchParams.get("token") || "";
 
   if (!roomId) {
     // console.log("Invalid roomId:", roomId); ////debug
@@ -33,21 +39,39 @@ export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WS
     return null;
   }
 
-//  if (!side || (side && side !== "left" && side !== "right")) {
-//     console.log("Invalid side:", side); ////debug
-//    socket.close(1008, "Side is required");
-//    return null;
-//  }
-
-  if (!playerName || playerName.trim() === "" || playerName === "undefined") {
-    // console.log("Invalid playerName:", playerName); ////debug
-    socket.close(1008, "Player name is required");
+  if (!token) {
+    socket.close(1008, "Authentication token is required");
     return null;
   }
 
+  const secret = process.env.JWT_SECRET as string;
+  const decode = jwt.verify(token, secret) as JwtPayload;
+  console.log("Decode jwt: ", decode); ////debug
+  if (decode === null || !decode.userId) {
+    socket.close(1008, "Invalid authentication token");
+    return null;
+  }
+
+  const clientId: number = decode.userId;
+  console.log("[validate token] Authenticated user id: ", clientId); ////debug
+
+  //! need to validate user later
+  const user = await getUserInfoById({ id: clientId });
+  if (!user || !user.data) {
+    socket.close(1008, "User not found");
+    return null;
+  }
+  console.log("[validate token] Authenticated user: ", user); ////debug
+
+  const playerName = user.data.username;
+  if (!playerName) {
+    socket.close(1008, "User has no username");
+    return null;
+  }
+
+  const playerSprite = user.data.avatarUrl;
   if (!playerSprite) {
-    // console.log("Invalid playerSprite:", playerSprite); ////debug
-    socket.close(1008, "Player sprite is required");
+    socket.close(1008, "User has no sprite");
     return null;
   }
 
@@ -59,10 +83,10 @@ export function validateConnection(socket: WSWebSocket, req: FastifyRequest): WS
   }
 
   return {
-    clientId: parseInt(clientId),
+    clientId: clientId,
     roomId: parseInt(roomId),
     room,
-    side: side ?? undefined,
+    side: side,
     playerName,
     playerSprite,
   };

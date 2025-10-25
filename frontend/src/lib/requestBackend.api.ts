@@ -100,10 +100,10 @@ export async function createRoomAPI(
  * @return "left" or "right" side to client in Promise format
  * @note it fetches the room details from the backend to make the decision
  */
-export async function determineSide(roomId: number): Promise<"left" | "right"> {
+export async function determineSide(roomId: number): Promise<"left" | "right" | "unknown"> {
   const rooms = await fetchRooms();
   const room = rooms.find((r: Room) => r.id === roomId);
-  if (!room) return "left";
+  if (!room) return "unknown";
   return room.leftPlayers <= room.rightPlayers ? "left" : "right";
 }
 

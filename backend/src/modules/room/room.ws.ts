@@ -17,8 +17,8 @@ import { tournaments } from "../../modules/tournament/tournament.routes";
 const wsHandler = new WebSocketHandler();
 
 export default async function roomWsRoutes(fastify: FastifyInstance) {
-  fastify.get("/ws-room", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
-    const context = validateConnection(socket, req);
+  fastify.get("/ws-room", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
+    const context = await validateConnection(socket, req);
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
 
@@ -83,14 +83,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
 
 		// First: handle initial hanshake pong (server -> client handshake)
-		if (!player && expectingPong && msg && msg.type === "handshakePong") {
-			const pongId = (typeof msg.clientId === "number") ? msg.clientId : null;
-			if (pongId !== clientId) {
-				console.log(`Handshake pong clientId mismatch: expected ${clientId}, got ${pongId}`);
-				cleanupTimer();
-                socket.close(1003, "Handshake error: clientId mismatch");
-				return;
-			}
+		if (msg.type === "handshakePong") {
+            console.log("Received handshake pong from client:", clientId);
 			expectingPong = false;
 			if (pongTimer) clearTimeout(pongTimer);
 
