@@ -39,7 +39,8 @@ export interface TournamentLobby {
   nextTournamentId?: number;
   parentTournamentId?: number;
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
-  placements: { playerId: number; position: number }[];
+  eliminatedOrder: number[];
+  placements: { clientId: number; rank: number }[];
 }
 
 export interface TournamentGameRoom {
@@ -65,6 +66,7 @@ export interface playerInfo {
   spriteUrl: string; // URL of the player's sprite
   ready: boolean; // whether the player is ready
   online: boolean; // whether the player is online
+  finishTime?: number; // time taken to finish the game
 }
 
 /**
@@ -166,7 +168,7 @@ export interface gameOver {
     playerRight: Room["gameState"]["teams"]["right"];
     tournamentId?: number;
 	tournamentDb?: { id: number; status: string; createdAt: Date } | null;
-    placements: { playerId: number; position: number }[];
+    placements: { clientId: number; rank: number }[];
 };
 
 export interface countdown {

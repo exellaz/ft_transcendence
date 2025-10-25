@@ -29,9 +29,9 @@ export async function getUserInfoById({
  */
 export async function validateConnection(socket: WSWebSocket, req: FastifyRequest): Promise<WSContext | null> {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
+//  console.log("WebSocket connection URL:", url.href); ////debug
   const roomId = url.searchParams.get("room") || "-1";
   const side = url.searchParams.get("side") as "left" | "right" | undefined;
-  const token = url.searchParams.get("token") || "";
 
   if (!roomId) {
     // console.log("Invalid roomId:", roomId); ////debug
@@ -39,29 +39,27 @@ export async function validateConnection(socket: WSWebSocket, req: FastifyReques
     return null;
   }
 
+  const token = req.headers["sec-websocket-protocol"];
   if (!token) {
     socket.close(1008, "Authentication token is required");
     return null;
   }
-
   const secret = process.env.JWT_SECRET as string;
   const decode = jwt.verify(token, secret) as JwtPayload;
-  console.log("Decode jwt: ", decode); ////debug
   if (decode === null || !decode.userId) {
     socket.close(1008, "Invalid authentication token");
     return null;
   }
 
   const clientId: number = decode.userId;
-  console.log("[validate token] Authenticated user id: ", clientId); ////debug
-
+//  console.log("[validate token] Authenticated user id: ", clientId); ////debug
   //! need to validate user later
   const user = await getUserInfoById({ id: clientId });
   if (!user || !user.data) {
     socket.close(1008, "User not found");
     return null;
   }
-  console.log("[validate token] Authenticated user: ", user); ////debug
+//  console.log("[validate token] Authenticated user: ", user); ////debug
 
   const playerName = user.data.username;
   if (!playerName) {

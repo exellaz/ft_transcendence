@@ -1,9 +1,7 @@
-import { Room, GameSettings, TournamentLobby, gameOver } from "../../types/interface";
+import { Room, GameSettings, TournamentLobby, gameOver, playerInfo } from "../../types/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
 import { tournaments } from "../tournament/tournament.routes";
-import { writeFileSync } from "fs";
-import pako from "pako";
 import os from "os";
 import { performance } from "perf_hooks";
 
@@ -173,8 +171,6 @@ export function startRoomLoop(room: Room) {
  */
 export function roomStartGame(room: Room) {
     room.startTime = new Date();
-    // console.log(`room setting: ${JSON.stringify(room.setting)}`); ////debug
-    // room.game.resetBall(room, "left");
 }
 
 /**
@@ -230,15 +226,7 @@ export function roomEndGame(
   const ms = end.getTime() - start.getTime(); // milliseconds
   room.duration = ms; // store raw ms (number)
 
-//   //braodcast everyone the game is ended
-//   broadcast(room, {
-//     type: "game_over",
-//     canLeave: true,
-//     result: room.result,
-//     playerLeft: room.gameState.teams.left,
-//     playerRight: room.gameState.teams.right,
-//     tournamentId: tournamentId || 0,
-//   });
+  //broadcast everyone the game is ended
   //prepare game over payload and include next tournament info if available
   const payload: gameOver = {
 	type: "game_over",
@@ -250,6 +238,7 @@ export function roomEndGame(
     placements: [],
   }
 
+  // attach current tournament database info to payload and send to next tournament
   try {
 	const parent = tournaments.get(tournamentId || -1);
 	// console.log("roomEndGame: attaching next tournament info for tournamentId:", tournamentId, parent); ////debug
@@ -260,34 +249,36 @@ export function roomEndGame(
 		console.error("roomEndGame: failed to attach next tournament info:", e);
   }
 
-try {
-  const tId = tournamentId ?? -1;
-  const tournament = tournaments.get(tId);
-  if (tournament) {
-    // determine losers for this match (if team, this will be array of player objects)
-    const losersRaw = winner === "left" ? (room.gameState.teams.right ?? []) : (room.gameState.teams.left ?? []);
+  // update tournament eliminated order and placements
+  try {
+    const tId = tournamentId ?? -1;
+    const tournament = tournaments.get(tId);
+    if (tournament) {
+      // determine losers for this match
+      const losersRaw = winner === "left" ? (room.gameState.teams.right ?? []) : (room.gameState.teams.left ?? []);
 
-    // Convert losersRaw -> ordered clientId list:
-    // Priority: server-provided finishTime on each player, else preserve array order
-    let losersOrderedClientIds: number[] = [];
-    const extractClientId = (p: any) => typeof p?.clientId === "number" ? p.clientId : typeof p?.id === "number" ? p.id : null;
+      // Convert losersRaw -> ordered clientId list:
+      // Priority: server-provided finishTime on each player, else preserve array order
+      let losersOrderedClientIds: number[] = [];
+      const extractClientId = (p: {clientId: number, id?: number}) => typeof p?.clientId === "number" ? p.clientId : typeof p?.id === "number" ? p.id : null;
 
-    if (Array.isArray(losersRaw) && losersRaw.length > 0) {
-      const hasFinishTimes = losersRaw.every((p: any) => p && (p.finishTime !== undefined));
-      const losersCopy = losersRaw.slice();
-      if (hasFinishTimes) {
-        losersCopy.sort((a: any, b: any) => (Number(a.finishTime) || 0) - (Number(b.finishTime) || 0));
+      // sort by finishTime if available
+      if (Array.isArray(losersRaw) && losersRaw.length > 0) {
+        const hasFinishTimes = losersRaw.every((p: { finishTime?: number }) => p && (p.finishTime !== undefined));
+        const losersCopy = losersRaw.slice();
+        if (hasFinishTimes) {
+          losersCopy.sort((a: { finishTime?: number }, b: { finishTime?: number }) => (Number(a.finishTime) || 0) - (Number(b.finishTime) || 0));
+        }
+        // For team matches (doubles) where a team has multiple players, push each member in the same order
+        losersOrderedClientIds = losersCopy.map((p: playerInfo) => extractClientId(p)).filter((c: number | null) => typeof c === "number");
       }
-      // For team matches (doubles) where a team has multiple players, push each member in the same order
-      losersOrderedClientIds = losersCopy.map((p: any) => extractClientId(p)).filter((c: any) => typeof c === "number");
-    }
 
-    const placements = updateTournamentEliminatedOrderAndPlacements(tournament, losersOrderedClientIds);
-    payload.placements = placements;
+      const placements = updateTournamentEliminatedOrderAndPlacements(tournament, losersOrderedClientIds);
+      payload.placements = placements;
+    }
+  } catch (err) {
+    console.error("roomEndGame: failed computing tournament placements:", err);
   }
-} catch (err) {
-  console.error("roomEndGame: failed computing tournament placements:", err);
-}
 
   broadcast(room, payload);
 
@@ -297,6 +288,7 @@ try {
   const rightPlayer = room.gameState.teams.right
     .map((p) => p.clientId)
     .join(", ");
+  const placementMap = buildPlacementMap(payload.placements);
 
   console.log("====================== GAME OVER ==================");
   console.log(`Left team: [${leftPlayer}], Right team: [${rightPlayer}]`);
@@ -311,27 +303,14 @@ try {
     `Duration: ${Math.floor(room.duration / 1000)} sec (${room.duration} ms)`,
   );
 
-  // replace fragile filtering logic with a direct lookup map
-  // payload.placements comes from different sources and may not match the exact 'gameOver' type,
-  // so coerce to any[] and extract clientId/playerId and rank/position robustly.
-  const placementEntries: [number, number][] = (payload.placements as any[] || [])
-    .map((p: any) => {
-      const id = typeof p?.clientId === "number" ? p.clientId : typeof p?.playerId === "number" ? p.playerId : null;
-      const rank = typeof p?.rank === "number" ? p.rank : typeof p?.position === "number" ? p.position : null;
-      return id !== null && rank !== null ? [id, rank] as [number, number] : null;
-    })
-    .filter((v: any): v is [number, number] => v !== null);
-
-  const placementMap = new Map<number, number>(placementEntries);
-
   console.log(
     `player left id: ${leftPlayer} is rank ${room.gameState.teams.left
-      .map((p: any) => `${placementMap.get(p.clientId) ?? "n/a"}`)
+      .map((p: playerInfo) => `${placementMap.get(p.clientId) ?? "n/a"}`)
       .join(", ")}`,
   );
   console.log(
     `player right id: ${rightPlayer} is rank ${room.gameState.teams.right
-      .map((p: any) => `${placementMap.get(p.clientId) ?? "n/a"}`)
+      .map((p: playerInfo) => `${placementMap.get(p.clientId) ?? "n/a"}`)
       .join(", ")}`,
   );
   console.log("===================================================");
@@ -339,72 +318,24 @@ try {
   const roomId = room.id;
   const tId = tournamentId ?? -1;
   const tournament = tournaments.get(tId);
+
+  //check is tournament match or room match
   if (!tournament) {
-    console.log(`[room] can't found tournament: ${tId}`);
+    //console.log(`[room] can't found tournament: ${tId}`); ////debug
+    room.sockets.clear();
+	room.clients.clear();
+    if (rooms.has(roomId)) {
+      console.log(`Deleted room ${roomId} after game end.`); ////debug
+      rooms.delete(roomId);
+    }
     return;
   }
 
   // Close all sockets and clean up room
-  try {
-	//for (const socket of Array.from(room.sockets.keys())) {
-	//  try {
-	//	socket.close(1000, "game ended");
-	//  } catch (e) {
-	//	console.error("[room] error closing socket:", e);
-	//  }
-	//}
-
-	// Clear room maps/sets
-	room.sockets.clear();
-	room.clients.clear();
-
-	// Remove the two players that participated in this room from the parent tournament's player list
-	//if (tournament) {
-	//  // gather clientIds from room teams
-	//  const leftIds = (room.gameState.teams.left ?? []).map((p: any) => Number(p.clientId));
-	//  const rightIds = (room.gameState.teams.right ?? []).map((p: any) => Number(p.clientId));
-	//  const idsToRemove = new Set([...leftIds, ...rightIds].filter(id => !Number.isNaN(id)));
-
-    //  // remove these ids from tournament.players
-	//  if (idsToRemove.size > 0) {
-	//	tournament.players = (tournament.players ?? []).filter((p: any) => !idsToRemove.has(Number(p.id)));
-
-	//	//// prefer tournament.broadcast if provided, otherwise try clientMap to send update
-	//	//const payload = JSON.stringify({ type: "playerLeft", players: tournament.players });
-	//	//try {
-	//	//  if (typeof tournament.broadcast === "function") {
-	//	//	tournament.broadcast(payload);
-	//	//  } else if (tournament.clientMap instanceof Map) {
-	//	//	for (const [ws, info] of tournament.clientMap.entries()) {
-	//	//	  try {
-	//	//		if (info.tournamentId === tId) ws.send(payload);
-	//	//	  } catch {}
-	//	//	}
-	//	//  }
-	//	//} catch (e) {
-	//	//  console.warn("[room] failed to notify tournament clients about removed players", e);
-	//	//}
-	//  }
-
-    //  if (tournament.players.length === 0) {
-    //    tournament.lock = false;
-    //    console.log(`[room] no player tournament ${tId} so setting started=false`);
-    //  }
-	//}
-    //const tournament = tournaments.get(tournamentId || -1);
-    //if (tournament) {
-        //console.log ("[room]: ", tournament.lock, tournament.players.length);
-        //if (tournament.lock === false && tournament.players.length === 0) {
-        //    console.log(`[room] cleaning up empty tournament ${tournamentId}`);
-        //    tournaments.delete(tournamentId || -1);
-        //}
-    //}
-  } catch (e) {
-	console.error("[room] error during socket closing for game end:", e);
-  }
-
+  room.sockets.clear();
+  room.clients.clear();
   if (rooms.has(roomId)) {
-    console.log(`Deleted room ${roomId} after game end.`);
+    console.log(`Deleted match room ${roomId} after game end.`);
     rooms.delete(roomId);
   }
 
@@ -421,9 +352,10 @@ try {
 }
 
 /**
- * Append losers (in order) to tournament.eliminatedOrder and compute placements array.
+ * @brief Append losers (in order) to tournament.eliminatedOrder and compute placements => [clientId, rank]
+ *
  */
-function updateTournamentEliminatedOrderAndPlacements(tournament: any, losersOrderedClientIds: number[]) {
+function updateTournamentEliminatedOrderAndPlacements(tournament: TournamentLobby, losersOrderedClientIds: number[]) {
   if (!Array.isArray(tournament.eliminatedOrder)) tournament.eliminatedOrder = [];
 
   // Append new losers in order, avoid duplicates
@@ -431,31 +363,64 @@ function updateTournamentEliminatedOrderAndPlacements(tournament: any, losersOrd
     if (!tournament.eliminatedOrder.includes(cid)) tournament.eliminatedOrder.push(cid);
   }
 
+  // Determine total players count for placement calculation
   const totalPlayers = Number(
-    tournament.tournamentDb?.playersCount ??
     tournament.players?.length ??
-    tournament.initialPlayersCount ??
-    tournament.playersCount ??
     2
   ) || 2;
 
-  // Compute placements: first eliminated -> worst rank (totalPlayers), next -> totalPlayers-1, ...
+  // Compute placements: first eliminated -> the first end game team gets lowest rank -> highest number
   const placements = tournament.eliminatedOrder.map((cid: number, idx: number) => ({
     clientId: cid,
     rank: Math.max(1, totalPlayers - idx),
   }));
 
-  // If all but one eliminated, ensure remaining player has rank 1
+  // when only one player remaining, assign them rank 1
   if (tournament.eliminatedOrder.length === totalPlayers - 1) {
     const playersList = Array.isArray(tournament.players) ? tournament.players : [];
     const extractId = (p: any) => (typeof p?.clientId === "number" ? p.clientId : typeof p?.id === "number" ? p.id : null);
-    const remaining = playersList.map(extractId).find((id: any) => id != null && !tournament.eliminatedOrder.includes(id));
-    if (typeof remaining === "number" && !placements.some((p: any) => p.clientId === remaining)) {
+    const remaining = playersList.map(extractId).find((id: number) => id != null && !tournament.eliminatedOrder.includes(id));
+    if (typeof remaining === "number" && !placements.some((p: { clientId: number }) => p.clientId === remaining)) {
       placements.push({ clientId: remaining, rank: 1 });
     }
   }
 
-  // persist
+  // Update tournament placements
   tournament.placements = placements;
   return placements;
+}
+
+/**
+ * @brief Parse raw placements payload into array of [clientId, rank] tuples
+ * @param raw Raw placements payload
+ * @returns Array of [clientId, rank] tuples
+ */
+export function parsePlacementEntries(raw: any[] | undefined): [number, number][] {
+  const arr = raw ?? [];
+  return (arr as any[])
+    .map((p: any) => {
+      const id =
+        typeof p?.clientId === "number"
+          ? p.clientId
+          : typeof p?.playerId === "number"
+          ? p.playerId
+          : null;
+      const rank =
+        typeof p?.rank === "number"
+          ? p.rank
+          : typeof p?.position === "number"
+          ? p.position
+          : null;
+      return id !== null && rank !== null ? ([id, rank] as [number, number]) : null;
+    })
+    .filter((v: any): v is [number, number] => v !== null);
+}
+
+/**
+ * @brief Build a Map from clientId to rank from raw placements payload
+ * @param raw Raw placements payload
+ * @returns Map of clientId to rank
+ */
+export function buildPlacementMap(raw: any[] | undefined): Map<number, number> {
+  return new Map<number, number>(parsePlacementEntries(raw));
 }

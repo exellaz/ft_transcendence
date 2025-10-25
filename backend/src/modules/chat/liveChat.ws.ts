@@ -111,7 +111,8 @@ export default async function liveChatRoutes(fastify: FastifyInstance) {
     });
 
     // Step 3: handle client disconnect
-    socket.on("close", () => {
+    socket.on("close", (code, reason) => {
+      console.log(`[live chat websocket] Connection closed: code=${code}, reason=${reason}`); ////debug
       clients.delete(socket);
       if (clients.size === 0) {
         chatRooms.delete(room); //delete the room chat

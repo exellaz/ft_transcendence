@@ -38,37 +38,21 @@ function compile(
  * @note websocket error code: https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code
  */
 export default async function gameWsRoute(fastify: FastifyInstance) {
-  fastify.get("/ws-game", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
-    const context = validateConnection(socket, req);
+  fastify.get("/ws-game", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
+    const context = await validateConnection(socket, req);
     if (!context) return; // Invalid connection, already closed in validateConnection
 
     // Step 1: Assign role to client (player, spectator, etc.)
     const { clientId, room, side, playerName, playerSprite } = context;
+    console.log(`[game websocket] New connection: clientId=${clientId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
+
 
     //? implement socket for tournament use
     room.sockets.set(socket, clientId);
     room.clients.add(socket);
 
-    //add heartbeat
-    let heartbeatInterval: NodeJS.Timeout;
-    let isAlive = true;
-
-    function startHeartbeat() {
-      heartbeatInterval = setInterval(() => {
-        if (!isAlive) {
-          console.log(`Player ${playerName} [${clientId}] heartbeat failed - terminating connection`);
-          socket.terminate();
-          return;
-        }
-
-        isAlive = false;
-        socket.ping();
-      }, 30000); // Send ping every 30 seconds
-    }
-
-    socket.on("pong", () => {
-        isAlive = true;
-    });
+    const heartbeat = createAppHeartbeat(socket, { heartbeatMs: 30000, receiveTimeoutMs: 5000, maxMissed: 3 });
+    heartbeat.start();
 
     // console.log("player sprite: ", playerSprite); ////debug
     // console.log("player name: ", playerName); ////debug
@@ -88,6 +72,11 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           msg = JSON.parse(raw.toString());
         } catch {
           return closeSocket(socket, 1003, "Invalid JSON");
+        }
+
+        if (msg.type === "returnHeartbeat") {
+          heartbeat.onAck();
+          return;
         }
 
         // --- validation ---
@@ -162,12 +151,13 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     });
 
     // Step 3: handle client disconnect
-    socket.on("close", () => {
+    socket.on("close", (code, reason) => {
+      console.log(`[game websocket] Connection closed: clientId=${clientId}, code=${code}, reason=${reason}`); ////debug
       //0 loading, 1 countdown, 2 started, 3 ended
       // console.log("pong game state: ", room.game.state); ////debug
 
       //clean heartbeat
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      heartbeat.stop();
 
       //if game still loading or game ended, ignore
       if (room.game.state === 0 || room.game.state === 3) return;
@@ -191,7 +181,80 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const GRACE_PERIOD = 3000;
       handlePlayerDisconnect(room, clientId, GRACE_PERIOD);
     });
-
-    startHeartbeat();
   });
+}
+
+
+export function createAppHeartbeat(
+  socket: WebSocket,
+  opts?: {
+    heartbeatMs?: number;
+    receiveTimeoutMs?: number;
+    maxMissed?: number;
+    closeCode?: number;
+    closeReason?: string;
+  },
+) {
+  const heartbeatMs = opts?.heartbeatMs ?? 10000;
+  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 5000;
+  const maxMissed = opts?.maxMissed ?? 3;
+  const closeCode = opts?.closeCode ?? 1003;
+  const closeReason = opts?.closeReason ?? "Heartbeat timeout";
+
+  let isAlive = true;
+  let missed = 0;
+  let interval: NodeJS.Timeout | null = null;
+  let receiveTimeout: NodeJS.Timeout | null = null;
+
+  function cleanupTimers() {
+    if (interval) { clearInterval(interval); interval = null; }
+    if (receiveTimeout) { clearTimeout(receiveTimeout); receiveTimeout = null; }
+  }
+
+  function start() {
+    cleanupTimers();
+    isAlive = true;
+    missed = 0;
+    interval = setInterval(() => {
+      if (!isAlive) {
+        missed++;
+        if (missed >= maxMissed) {
+          cleanupTimers();
+          try { socket.close(closeCode, closeReason); } catch {}
+          return;
+        }
+      }
+      isAlive = false;
+      try {
+        socket.send(JSON.stringify({ type: "heartbeat" }));
+      } catch (err) {
+        cleanupTimers();
+        try { socket.close(1011, "server error"); } catch {}
+        return;
+      }
+      if (receiveTimeout) clearTimeout(receiveTimeout);
+      receiveTimeout = setTimeout(() => {
+        // no ack within window -> treat as missed
+        if (!isAlive) {
+          missed++;
+          if (missed >= maxMissed) {
+            cleanupTimers();
+            try { socket.close(closeCode, closeReason); } catch {}
+          }
+        }
+      }, receiveTimeoutMs);
+    }, heartbeatMs);
+  }
+
+  function onAck() {
+    isAlive = true;
+    missed = 0;
+    if (receiveTimeout) { clearTimeout(receiveTimeout); receiveTimeout = null; }
+  }
+
+  function stop() {
+    cleanupTimers();
+  }
+
+  return { start, stop, onAck };
 }

@@ -31,8 +31,11 @@ export function useLiveChatWebSocket(
     );
     socketRef.current = ws;
 
-    // open connection
     ws.addEventListener("open", () => console.log("Chat ws connected"));
+
+    ws.addEventListener("error", (e) => console.error("Live chat WebSocket error", e));
+
+    ws.addEventListener("close", (ev) => console.log(`live chat ws disconnected: code=${ev.code}, reason=${ev.reason}`));
 
     // handle incoming message / event from server
     ws.addEventListener("message", (ev) => {
@@ -75,15 +78,15 @@ export function useLiveChatWebSocket(
       }
     });
 
-    // close connection
-    ws.addEventListener("close", () => console.log("Chat ws disconnected"));
-
     return () => {
       if (
         ws.readyState === WebSocket.OPEN ||
         ws.readyState === WebSocket.CONNECTING
       )
-        ws.close(1000, "Chat closed");
+      ws.close(1000, "Chat closed");
+      ws.removeEventListener("open", () => {});
+      ws.removeEventListener("message", () => {});
+      ws.removeEventListener("close", () => {});
       socketRef.current = null;
     };
   }, [roomId, user.id, user.name]);

@@ -9,8 +9,6 @@ interface UseGameWebSocketParams {
   roomName: string;
   clientId: number;
   initialRole: string;
-  playerName: string;
-  playerSprite: string;
   callback: (socket: WebSocket) => void;
   isOffline?: boolean;
   onError?: (msg: string) => void;
@@ -27,11 +25,8 @@ interface UseGameWebSocketParams {
  */
 export function useGameWebSocket({
   roomId,
-  roomName,
-  clientId,
   initialRole,
-  playerName,
-  playerSprite,
+  clientId,
   isOffline = false,
   onError,
   callback,
@@ -41,24 +36,30 @@ export function useGameWebSocket({
   const socketRef = useRef(false); // to avoid multiple callbacks
   console.log("[game]allinfo:");
   console.log("[game]roomId:", roomId);
-  console.log("[game]clientId:", clientId);
   console.log("[game]initialRole:", initialRole);
-  console.log("[game]playerName:", playerName);
-  console.log("[game]playerSprite:", playerSprite);
 
   useEffect(() => {
-    if (!roomId || roomId <= 0 || !clientId || clientId <= 0 || !playerName) {
-      console.warn("[useGameWebSocket] skipping websocket: invalid params", { roomId, clientId, playerName });
+    if (!roomId || roomId <= 0 || !clientId || clientId <= 0) {
+      console.warn("[useGameWebSocket] skipping websocket: invalid params", { roomId });
       return;
     }
+
     if (!navigator.onLine && !isOffline) {
         onError?.("offline_error");
         return;
     }
 
+    //get JWT
+    const userJWT = localStorage.getItem("authToken");
+    if (!userJWT) {
+        console.warn("No JWT found, cannot connect to game WebSocket");
+        return;
+    }
+    console.log("Game ws connecting with JWT:", userJWT); ////debug
+
     const ws = new WebSocket(
       import.meta.env.VITE_WS_URL +
-        `/ws-game?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
+        `/ws-game?room=${roomId}&side=${initialRole}`, [userJWT]
     );
     socketRef.current = true;
 
@@ -76,12 +77,22 @@ export function useGameWebSocket({
     if (!isOffline)
         window.addEventListener("offline", handleOffline);
 
-    // open connection
     ws.addEventListener("open", () => {
       console.log("Game ws connected");
       setSocket(ws);
       console.log("!created socket: ", socket);
       try { callback?.(ws); } catch (err) {};
+    });
+
+    ws.addEventListener("error", (e) => {
+      console.error("Game ws error", e);
+      if (!navigator.onLine)
+        handleOffline();
+    });
+
+    ws.addEventListener("close", (ev) => {
+      console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
+      setSocket(null);
     });
 
     ws.addEventListener("message", (event) => {
@@ -105,32 +116,23 @@ export function useGameWebSocket({
         }
     });
 
-    ws.onerror = (e) => {
-      console.error("WebSocket error", e);
-      if (!navigator.onLine)
-        handleOffline();
-    };
-
-    // close connection
-    ws.addEventListener("close", () => {
-      console.log("Game ws disconnected");
-      setSocket(null);
-    });
-
     // close socket when component unmount
     return () => {
         if (!isOffline)
             window.removeEventListener("offline", handleOffline);
         if (socketRef.current) {
-
             try {
-                ws.close();
+                ws.close(1000, "game component unmount");
             } catch (err) {
                console.error("Error closing WebSocket on cleanup:", err);
             }
+            ws.removeEventListener("open", () => {});
+            ws.removeEventListener("message", () => {});
+            ws.removeEventListener("close", () => {});
+            ws.removeEventListener("error", () => {});
         }
     };
-  }, [roomId, clientId, initialRole, roomName, navigate, isOffline]); //re-run effect if any of these change
+  }, [roomId, clientId, initialRole, navigate, isOffline]); //re-run effect if any of these change
 
   return {
     socket,
@@ -143,8 +145,6 @@ export function useGameRoomWebSocket({
   roomName,
   clientId,
   initialRole,
-  playerName,
-  playerSprite,
   isOffline = false,
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
@@ -159,32 +159,39 @@ export function useGameRoomWebSocket({
   console.log("[gameRoom]roomId:", roomId);
   console.log("[gameRoom]clientId:", clientId);
   console.log("[gameRoom]initialRole:", initialRole);
-  console.log("[gameRoom]playerName:", playerName);
-  console.log("[gameRoom]playerSprite:", playerSprite);
 
   useEffect(() => {
-    if (!roomId || roomId <= 0 || !clientId || clientId <= 0 || !playerName) {
-      console.warn("[useGameRoomWebSocket] skipping websocket: invalid params", { roomId, clientId, playerName });
+    if (!roomId || roomId <= 0 || !clientId || clientId <= 0) {
+      console.warn("[useGameRoomWebSocket] skipping websocket: invalid params", { roomId, clientId });
       return;
     }
 
+    //get JWT
+    const userJWT = localStorage.getItem("authToken");
+    if (!userJWT) {
+        console.warn("No JWT found, cannot connect to game Room WebSocket");
+        return;
+    }
+    console.log("Game ws connecting with JWT:", userJWT); ////debug
+
     const ws = new WebSocket(
       import.meta.env.VITE_WS_URL +
-        `/ws-room?id=${clientId}&room=${roomId}&side=${initialRole}&name=${encodeURIComponent(playerName)}&sprite=${encodeURIComponent(playerSprite)}`,
+        `/ws-room?room=${roomId}&side=${initialRole}`, [userJWT]
     );
     socketRoomRef.current = true;
 
     let isCleanUp = false;
 
-	ws.onopen = () => {
-	  console.log("Game Room ws connected");
-	};
-	ws.onclose = () => {
-	  console.log("Game Room ws disconnected");
-      isCleanUp = true;
-	}
+	ws.addEventListener("open", () => console.log("Game Room ws connected"));
 
-    ws.onmessage = (event) => {
+    ws.addEventListener("error", (e) => console.error("Game Room ws error", e));
+
+	ws.addEventListener("close", (ev) => {
+	  console.log(`Game Room ws disconnected: code=${ev.code}, reason=${ev.reason}`);
+      isCleanUp = true;
+	});
+
+    ws.addEventListener("message", (event) => {
       if (isCleanUp) return;
       const msg = JSON.parse(event.data);
     //  console.log("Game WebSocket message received:", msg); //// debug
@@ -254,7 +261,7 @@ export function useGameRoomWebSocket({
         isCleanUp = true;
         setIsWinner(false);
       }
-    };
+    });
 
     // Handle offline detection for this WebSocket
     function handleOffline() {
@@ -280,10 +287,14 @@ export function useGameRoomWebSocket({
         }
 		if (socketRoomRef.current) {
             try {
-                ws.close();
+                ws.close(1000, "game room component unmount");
             } catch (err) {
                console.error("Error closing WebSocket on cleanup:", err);
             }
+            ws.removeEventListener("open", () => {});
+            ws.removeEventListener("message", () => {});
+            ws.removeEventListener("close", () => {});
+            ws.removeEventListener("error", () => {});
         }
 	}
   }, [roomId, clientId, initialRole, roomName, isOffline, navigate]); //re-run effect if any of these change

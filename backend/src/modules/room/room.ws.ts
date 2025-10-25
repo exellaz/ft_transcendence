@@ -21,6 +21,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     const context = await validateConnection(socket, req);
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
+    //console.log(`[room websocket] New connection: clientId=${clientId}, roomId=${roomId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
 
 	//wait client to be reachable before assigning role
 	type PlayerRole = {
@@ -35,21 +36,16 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 	let player: PlayerRole | null = null;
 	let expectingPong = true;
 	let pongTimer: NodeJS.Timeout | null = null;
-	let heartbeatInterval: NodeJS.Timeout | null = null;
-	let heartbeatTimeout: NodeJS.Timeout | null = null;
-    let isAlive = true;
-    let missedHeartbeats = 0;
     let isConnectionClosed = false;
-    const MAX_MISSED_HEARTBEATS = 3;
-	const HANDSHAKE_MS = 1500; //? 1.5 seconds
+	const HANDSHAKE_MS = 1500; // 1.5 seconds
+    // heartbeat helper (will be created after handshake completes)
+    let hb: ReturnType<typeof createAppHeartbeat> | null = null;
 
     function cleanupTimer() {
         isConnectionClosed = true;
 
         try {
             if (pongTimer) clearTimeout(pongTimer);
-            if (heartbeatInterval) clearInterval(heartbeatInterval);
-            if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
         } catch (err) {
             console.error("Error during cleanup timers:", err);
         }
@@ -99,36 +95,15 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 				playerSprite,
 			);
 
-			// start a periodic server heartbeat to check client connectivity
-			const HEARTBEAT_MS = 1000;
-			const RECEIVED_HEARTBEAT_MS = 2000;
-			heartbeatInterval = setInterval(() => {
-                if (!isAlive) {
-                    missedHeartbeats++;
-                    console.log(`Room WebSocket: Player ${clientId} missed heartbeat ${missedHeartbeats}/${MAX_MISSED_HEARTBEATS}`);
-                }
-                if (missedHeartbeats >= MAX_MISSED_HEARTBEATS) {
-                    console.log(`Room WebSocket: Player ${clientId} exceeded missed heartbeats. Terminating connection.`);
-                    cleanupTimer();
-                    socket.close(1003, "Heartbeat timeout: no response from client");
-                    return;
-                }
-                isAlive = false;
-				try {
-					//console.log(`[room.ws] send heartbeat -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
-					socket.send(JSON.stringify({ type: "heartbeat" }));
-					if (heartbeatTimeout) clearTimeout(heartbeatTimeout);
-					heartbeatTimeout = setTimeout(() => {
-						//console.log(`[room.ws] heartbeat ack timeout -> client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
-						cleanupTimer();
-                        socket.close(1003, "Heartbeat timeout: no ack from client");
-					}, RECEIVED_HEARTBEAT_MS); // wait for client heartbeat
-				} catch (err) {
-					console.error("Error sending heartbeat:", err);
-					cleanupTimer();
-                    socket.close(1011, "server error");
-				}
-			}, HEARTBEAT_MS); // send heartbeat to client
+            hb = createAppHeartbeat(socket, {
+                heartbeatMs: 1000,
+                receiveTimeoutMs: 2000,
+                maxMissed: 3,
+                closeCode: 1003,
+                closeReason: "Heartbeat timeout: no response from client",
+            });
+            hb.start();
+
 			return;
 		}
 
@@ -136,13 +111,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
 		//  also treat heartbeat ack
 		if (player && msg && msg.type === "returnHeartbeat") {
-            isAlive = true;
-            missedHeartbeats = 0;
-			//console.log(`[room.ws] received heartbeat <- client: ${clientId}, time=${new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kuala_Lumpur" })}`); ////debug
-			if (heartbeatTimeout) {
-                clearTimeout(heartbeatTimeout);
-                heartbeatTimeout = null;
-            }
+            if (hb) hb.onAck();
 			return;
 		}
 
@@ -408,14 +377,106 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     });
 
     // Step 3: handle client disconnect
-    socket.on("close", () => {
-	  //cleanup heartbeat timers
+    socket.on("close", (code, reason) => {
+      console.log(`[room websocket] Connection closed: code=${code}, reason=${reason}`); ////debug
+
+      //stop heartbeat helper and cleanup timer
+      try {
+        if (hb) hb.stop();
+      } catch (err) {
+        console.error("Error stopping heartbeat:", err);
+      }
 	  cleanupTimer();
 
 
 	  if (room.game.state === 3) return;
-      console.log("room game state: ", socket.readyState); ////debug
+    //  console.log("room game state: ", socket.readyState); ////debug
       wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
   });
+}
+
+export function createAppHeartbeat(
+  socket: WebSocket,
+  opts?: {
+    heartbeatMs?: number;
+    receiveTimeoutMs?: number;
+    maxMissed?: number;
+    closeCode?: number;
+    closeReason?: string;
+  },
+) {
+  const heartbeatMs = opts?.heartbeatMs ?? 10000;
+  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 5000;
+  const maxMissed = opts?.maxMissed ?? 3;
+  const closeCode = opts?.closeCode ?? 1003;
+  const closeReason = opts?.closeReason ?? "Heartbeat timeout";
+
+  let isAlive = true;
+  let missed = 0;
+  let interval: NodeJS.Timeout | null = null;
+  let receiveTimeout: NodeJS.Timeout | null = null;
+
+  function cleanupTimers() {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
+    if (receiveTimeout) {
+      clearTimeout(receiveTimeout);
+      receiveTimeout = null;
+    }
+  }
+
+  function start() {
+    cleanupTimers();
+    isAlive = true;
+    missed = 0;
+    interval = setInterval(() => {
+      if (!isAlive) {
+        missed++;
+        if (missed >= maxMissed) {
+          cleanupTimers();
+          try { socket.close(closeCode, closeReason); } catch {}
+          return;
+        }
+      }
+      isAlive = false;
+
+      try {
+        socket.send(JSON.stringify({ type: "heartbeat" }));
+      } catch (err) {
+        cleanupTimers();
+        try { socket.close(1011, "server error"); } catch {}
+        return;
+      }
+
+      if (receiveTimeout) clearTimeout(receiveTimeout);
+      receiveTimeout = setTimeout(() => {
+        // if still not alive after window, count as missed
+        if (!isAlive) {
+          missed++;
+          if (missed >= maxMissed) {
+            cleanupTimers();
+            try { socket.close(closeCode, closeReason); } catch {}
+          }
+        }
+      }, receiveTimeoutMs);
+    }, heartbeatMs);
+  }
+
+  function onAck() {
+    isAlive = true;
+    missed = 0;
+    if (receiveTimeout) {
+      clearTimeout(receiveTimeout);
+      receiveTimeout = null;
+    }
+  }
+
+  function stop() {
+    cleanupTimers();
+  }
+
+  return { start, stop, onAck };
 }

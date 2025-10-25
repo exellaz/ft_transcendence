@@ -201,7 +201,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         });
 
         socket.on("close", (code, reason) => {
-            console.log(`socket.onclose: code=${code} reason=${reason} player=${playerId} tournament=${tournamentId}`);
+            console.log(`[tournament websocket] code=${code} reason=${reason} player=${playerId} tournament=${tournamentId}`);
 			//if (tournament.lock) return;
             tournament.players = tournament.players.filter(p => p.id !== playerId);
             client.delete(socket);

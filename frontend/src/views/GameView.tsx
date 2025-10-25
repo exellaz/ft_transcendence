@@ -228,8 +228,6 @@ const GameView: React.FC<GameViewProps> = () => {
     roomName,
     clientId,
     initialRole,
-    playerName,
-    playerSprite: playerSprite ?? "",
     callback: () => {},
   onError: (msg: string) => {
     setDisconnectMessage(msg);
@@ -288,9 +286,10 @@ const GameView: React.FC<GameViewProps> = () => {
   }, [isWinner, lastTournamentId, tournamentDb, clientId, roomId, playerSprite, winnerRank]); // navigate is safe to omit here (stable)
 
   React.useEffect(() => {
+    if (lastTournamentId === null) return;
     if (gameOver && !isWinner) {
       const timer = setTimeout(() => {
-        console.log("loser back to lobby: ", lastTournamentId);
+        console.log("loser back to lobby: ", lastTournamentId); ////debug
         sessionStorage.removeItem("playerSide");
         sessionStorage.removeItem("RoomId");
         sessionStorage.removeItem("RoomLeaderId");
