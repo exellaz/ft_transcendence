@@ -5,11 +5,13 @@ export type FriendChatSocketPayload = {
 };
 
 export const createFriendChatSocket = (
-  userId: number,
   onMessage: (data: any) => void
 ) => {
   const ws = new WebSocket(
-    import.meta.env.VITE_WS_URL + `/ws-friends/${userId}`
+    import.meta.env.VITE_WS_URL + `/ws-friendChat`,
+    // send the JWT as a subprotocol for authentication
+    // more secure than query params because JWT may leak in logs or be tracked by analytics
+    [localStorage.getItem("authToken") || ""]
   );
 
   ws.addEventListener("message", (ev) => {

@@ -1,11 +1,15 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+import { WebSocket } from "ws";
+
+const prisma = new PrismaClient();
 
 // helper to generate unique user code *DEPRECATED*
 export async function generateUniqueUserCode(
   fastify: FastifyInstance,
-  username: string,
+  username: string
 ) {
   let code: string;
   let exists = true;
@@ -45,7 +49,7 @@ export function generateAuthToken(userId: number, email: string): string {
 export function validateRegistrationInput(
   email: string,
   password: string,
-  username: string,
+  username: string
 ) {
   const errors: string[] = [];
 
@@ -59,7 +63,7 @@ export function validateRegistrationInput(
   }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
     errors.push(
-      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number"
     );
   }
 
@@ -71,7 +75,7 @@ export function validateRegistrationInput(
   }
   if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
     errors.push(
-      "Username can only contain letters, numbers, underscores, and hyphens",
+      "Username can only contain letters, numbers, underscores, and hyphens"
     );
   }
 
@@ -80,7 +84,7 @@ export function validateRegistrationInput(
 
 export async function verifyPassword(
   plainPassword: string,
-  hashedPassword: string,
+  hashedPassword: string
 ): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword);
 }
@@ -97,4 +101,41 @@ export function validateLoginInput(identifier: string, password: string) {
   }
 
   return errors;
+}
+
+export async function doesUserIdExist(userId: number): Promise<boolean> {
+  try {
+    const user = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
+
+    return user !== null; // ✅ Return true only if user exists
+  } catch (err) {
+    console.error("Error checking user existence:", err);
+    return false;
+  }
+}
+
+export async function validateUserId(
+  ws: WebSocket,
+  userId: string | undefined
+): Promise<number | null> {
+  if (!userId) {
+    ws.close(1008, "Missing userId");
+    return null;
+  }
+
+  const uid = Number(userId);
+  if (isNaN(uid) || uid <= 0) {
+    ws.close(1008, "Invalid userId");
+    return null;
+  }
+
+  // check userId is exist in database
+  if (!(await doesUserIdExist(uid))) {
+    ws.close(1008, "User does not exist");
+    return null;
+  }
+
+  return uid;
 }
