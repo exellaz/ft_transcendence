@@ -2,7 +2,7 @@ import React from "react";
 import { useLanguage } from "../context/LanguageProvider";
 
 const languageOptions = [
-  { value: "en", label: "English" },
+  { value: "english", label: "English" },
   { value: "simplified_chinese", label: "简体中文" },
   { value: "traditional_chinese", label: "繁體中文" },
 ];
