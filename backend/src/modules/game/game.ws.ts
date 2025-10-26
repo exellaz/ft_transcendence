@@ -79,13 +79,24 @@ export default async function gameWsRoute(fastify: any) {
 
         // console.log(`recieved ${msg.type} : ${JSON.stringify(msg, null, 2)}` )
 
+        const SKIN_MAPPING: Record<string, number> = {
+          "/assets/yellow-ghost.png": 0,
+          "/assets/green-ghost.png": 1,
+          "/assets/blue-ghost.png": 2,
+          "/assets/red-ghost.png": 3,
+          "/assets/purple-ghost.png": 4,
+          "/assets/starry-ghost.png": 5,
+          "/assets/white-ghost.png": 6,
+          "/assets/42-ghost.png": 7,
+        };
+
         if (msg.type === "ready") {
           console.log("player connected ", clientId);
           room.game.addPlayer(
             new Player({
               id: clientId,
               name: playerName,
-              skin: 0,
+              skin: SKIN_MAPPING[playerSprite] ?? 0,
               team: side === "left" ? 0 : 1,
               socket: socket,
             }),

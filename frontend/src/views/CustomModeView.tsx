@@ -235,6 +235,7 @@ const CustomModeView: React.FC = () => {
                   placeholder={translate("enter_room_id")}
                   value={roomId}
                   onChange={(e) => setRoomId(e.target.value)}
+                  maxLength={6}
                 />
                 {/* error popup for key in room id */}
                 {roomError && (

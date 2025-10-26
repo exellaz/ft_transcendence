@@ -41,13 +41,12 @@ const SettingsPopup: React.FC<PopupProps> = ({ open, onClose }) => {
     if (option === language) return;
     setLanguage(option);
 
-    const result = await mutate({
+    const response = await mutate({
       id: userId,
       language: option,
     });
 
-    if (!result.success) {
-      alert(`${t("ApiState.error")}: ${result.error}`);
+    if (!response.success) {
       setLanguage(language); // revert on error
     }
   };

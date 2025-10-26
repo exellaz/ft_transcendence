@@ -115,7 +115,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
           ? user.username.length > 8
             ? user.username.slice(0, 8) + "..."
             : user.username
-          : t("common.loading")}
+          : translate("loading")}
       </Button>
 
       {open && (

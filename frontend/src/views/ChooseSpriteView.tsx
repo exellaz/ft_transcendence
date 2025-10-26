@@ -55,7 +55,6 @@ const ChooseSpriteView: React.FC = () => {
           selected={selectedSprite}
           onSelectSprite={setSelectedSprite}
           onConfirm={async () => {
-            alert(`Confirmed sprite selection: ${selectedSprite}`);
             navigate("/tournament");
           }}
         />

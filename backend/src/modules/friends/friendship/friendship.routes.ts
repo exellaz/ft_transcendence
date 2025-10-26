@@ -160,11 +160,23 @@ async function friendshipRoutes(fastify: FastifyInstance) {
             ],
           },
         });
-        if (inverseFriendship)
+        if (inverseFriendship) {
+          if (inverseFriendship.status === "pending")
+            throw ApiError.conflict(
+              "Friend request is pending",
+              "FRIEND_REQUEST_PENDING",
+            );
+          if (inverseFriendship.status === "accepted")
+            throw ApiError.conflict(
+              "Users are already friends",
+              "ALREADY_FRIENDS",
+            );
+          // fallback for any other status
           throw ApiError.conflict(
             "Friendship already exists",
             "FRIENDSHIP_CONFLICT",
           );
+        }
 
         const friendship = await fastify.db.friendship.create({
           data: {

@@ -80,7 +80,7 @@ const GameView: React.FC<GameViewProps> = () => {
     const roomName = sessionStorage.getItem("RoomName") || "Room 1";
     const clientId = userInfo?.id;
     const playerName = userInfo?.username;
-    const playerSprite = userInfo?.avatarUrl || "default.png";
+    const playerSprite = sessionStorage.getItem("playerSprite");
     const initialRole = sessionStorage.getItem("playerSide") || "";
 
     // -------------------------------- Websockets --------------------------------
