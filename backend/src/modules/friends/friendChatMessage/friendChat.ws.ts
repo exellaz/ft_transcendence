@@ -48,7 +48,7 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
 
       ws.on("close", (code, reason) => {
         console.log(
-          `Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`
+          `Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`,
         );
         console.log(`User ${uid} disconnected.`);
       });
@@ -75,7 +75,7 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
           !msg?.message
         ) {
           ws.send(
-            JSON.stringify({ type: "error", message: "invalid message shape" })
+            JSON.stringify({ type: "error", message: "invalid message shape" }),
           );
           return;
         }
@@ -87,7 +87,10 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
         // 3) message length validation
         if (!text || text.length === 0 || text.length > 200) {
           ws.send(
-            JSON.stringify({ type: "error", message: "invalid message length" })
+            JSON.stringify({
+              type: "error",
+              message: "invalid message length",
+            }),
           );
           return;
         }
@@ -109,7 +112,7 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
               JSON.stringify({
                 type: "error",
                 message: "invalid or unaccepted friendship",
-              })
+              }),
             );
             return;
           }
@@ -141,7 +144,7 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
               JSON.stringify({
                 type: "error",
                 message: "cannot send to blocked user",
-              })
+              }),
             );
             return;
           }
@@ -177,10 +180,10 @@ export default async function friendChatRoutes(fastify: FastifyInstance) {
         } catch (err) {
           fastify.log?.error?.({ err }, "friend chat handler error");
           ws.send(
-            JSON.stringify({ type: "error", message: "internal server error" })
+            JSON.stringify({ type: "error", message: "internal server error" }),
           );
         }
       });
-    }
+    },
   );
 }

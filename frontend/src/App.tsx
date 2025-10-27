@@ -1,10 +1,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import RequireAuth from "./components/RequireAuth";
+import CatchAllRedirect from "./components/CatchAllRedirect";
 import RedirectIfAuth from "./components/RedirectIfAuth";
+import RequireAuth from "./components/RequireAuth";
+import RequireGameMode from "./components/RequireGameMode";
 
 import AdvanceView from "./views/tournament/AdvanceView";
-import CatchAllRedirect from "./components/CatchAllRedirect";
 import ChooseSpriteView from "./views/ChooseSpriteView";
 import CustomModeView from "./views/CustomModeView";
 import DoublesRoomView from "./views/custom/DoublesRoomView";
@@ -109,55 +110,9 @@ const App: React.FC = () => {
               path="/local-game"
               element={
                 <RequireAuth>
-                  <GameView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/choose-sprite"
-              element={
-                <RequireAuth>
-                  <ChooseSpriteView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/tournament"
-              element={
-                <RequireAuth>
-                  <TournamentLobbyView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/match"
-              element={
-                <RequireAuth>
-                  <MatchView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/game"
-              element={
-                <RequireAuth>
-                  <GameView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/advance"
-              element={
-                <RequireAuth>
-                  <AdvanceView />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/results"
-              element={
-                <RequireAuth>
-                  <ResultsView />
+                  <RequireGameMode allowed={["local"]}>
+                    <GameView />
+                  </RequireGameMode>
                 </RequireAuth>
               }
             />
@@ -174,6 +129,66 @@ const App: React.FC = () => {
               element={
                 <RequireAuth>
                   <DoublesRoomView />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/choose-sprite"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["tournament"]}>
+                    <ChooseSpriteView />
+                  </RequireGameMode>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/tournament"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["tournament"]}>
+                    <TournamentLobbyView />
+                  </RequireGameMode>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/match"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["tournament"]}>
+                    <MatchView />
+                  </RequireGameMode>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/game"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["custom", "tournament"]}>
+                    <GameView />
+                  </RequireGameMode>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/advance"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["tournament"]}>
+                    <AdvanceView />
+                  </RequireGameMode>
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/results"
+              element={
+                <RequireAuth>
+                  <RequireGameMode allowed={["tournament"]}>
+                    <ResultsView />
+                  </RequireGameMode>
                 </RequireAuth>
               }
             />

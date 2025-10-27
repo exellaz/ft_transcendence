@@ -4,7 +4,7 @@ import type {
   WaitingTournamentPlayer,
   LiveChatMessage,
 } from "../types/apiInterfaces";
-import { getUserColor } from "../utils/colorUtils";
+import { getUserColor } from "../utils/color";
 
 import Button from "../components/Button";
 

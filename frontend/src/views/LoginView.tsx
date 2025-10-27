@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
 import { login, getUserSettingsById } from "../lib/usersApiClient";
+import { useClearGameMode } from "../hooks/useClearGameMode";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -28,6 +29,8 @@ const LoginView: React.FC = () => {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+
+  useClearGameMode();
 
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
