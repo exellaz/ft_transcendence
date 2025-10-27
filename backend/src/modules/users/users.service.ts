@@ -2,7 +2,6 @@ import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { WebSocket } from "ws";
 
 const prisma = new PrismaClient();
 
@@ -114,28 +113,4 @@ export async function doesUserIdExist(userId: number): Promise<boolean> {
     console.error("Error checking user existence:", err);
     return false;
   }
-}
-
-export async function validateUserId(
-  ws: WebSocket,
-  userId: string | undefined,
-): Promise<number | null> {
-  if (!userId) {
-    ws.close(1008, "Missing userId");
-    return null;
-  }
-
-  const uid = Number(userId);
-  if (isNaN(uid) || uid <= 0) {
-    ws.close(1008, "Invalid userId");
-    return null;
-  }
-
-  // check userId is exist in database
-  if (!(await doesUserIdExist(uid))) {
-    ws.close(1008, "User does not exist");
-    return null;
-  }
-
-  return uid;
 }

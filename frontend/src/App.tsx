@@ -20,7 +20,6 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
-
 import BouncingSprites from "./components/BouncingSprites";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
