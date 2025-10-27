@@ -9,10 +9,12 @@ import React, {
   useContext,
   type ReactNode,
 } from "react";
-import { useUser } from "../context/UserProvider";
+import { useUser } from "@/context/UserProvider";
+import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery } from "@/hooks/useApi";
 import { getAcceptedFriendshipsByUserId } from "@/lib/friendsApiClient";
 import type { UserWithFriendshipId } from "@/types/friendsApi";
+import type { FriendChatMessage } from "@/types/friendsApi";
 
 // -------------------------
 // Define WebSocket message types
@@ -40,12 +42,15 @@ interface FriendMessageMsg {
 
 interface MessageAckMsg {
   type: "MESSAGE_ACK";
-  message: any; // Define the structure of the message as needed
+  tempId: number;
+  savedMessage: FriendChatMessage;
 }
 
 interface MessageErrMsg {
   type: "MESSAGE_ERR";
-  message: any; // Define the structure of the message as needed
+  friendshipId: number;
+  tempId: number;
+  error: string;
 }
 
 type ServerMessage =
@@ -93,6 +98,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const { user, isAuthenticated, token } = useUser();
 
   const userId = user?.id ?? 0;
+
+  const qc = useQueryClient();
 
   // API query for friends list
   const { data: friends, refetch: refetchFriends } = useApiQuery<
@@ -187,10 +194,32 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
         // Friend chat events
         case "FRIEND_MESSAGE":
           break;
-        case "MESSAGE_ACK":
+        case "MESSAGE_ACK": {
+          const { tempId, savedMessage } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", savedMessage.friendshipId],
+            // optimistic message in cache is replaced with savedMessage from server
+            // .map() creates a new array
+            (old = []) =>
+              old.map((msg) =>
+                msg.id === tempId
+                  ? savedMessage
+                  : msg
+              )
+          );
           break;
-        case "MESSAGE_ERR":
+        }
+        case "MESSAGE_ERR": {
+          const { friendshipId, tempId } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", friendshipId],
+            // client removes the optimistic message that failed to send from the cache
+            // old is the current cached array
+            // .filter() creates a new array
+            (old = []) => old.filter((m) => m.id !== tempId)
+          );
           break;
+        }
 
         default:
           console.warn("⚠️ Unknown message type:", data);

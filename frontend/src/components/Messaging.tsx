@@ -55,7 +55,7 @@ const Messaging: React.FC<MessagingProps> = ({
   const handleSendMessage = async () => {
     if (message.trim() === "" || message.length > MESSAGE_LIMIT) return;
 
-    // negative tempId to mark optimistic entries
+    // negative tempId to differentiate optimistic ids from real ids
     // these will be reconciled when the server sends back an acknowledgement
     // with the real message id
     const tempId = Date.now() * -1; 

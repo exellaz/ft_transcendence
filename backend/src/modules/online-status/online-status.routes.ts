@@ -3,7 +3,6 @@ import { WebSocket } from "ws";
 import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { authenticate } from "src/plugins/authenticate";
 
 // Attach a custom isAlive flag to this WebSocket object
 interface HeartbeatWebSocket extends WebSocket {
@@ -85,14 +84,21 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
       // listen for incoming messages, validate, save, ack
       ws.on("message", async (raw) => {
+        // defined for use in the catch block
+        let friendshipId: number | undefined;
+        let tempId: number | undefined;
         try {
           // --- STEP 1: Parse and validate incoming JSON ---
-          const { friendshipId, message, tempId } = parseIncomingMessage(raw);
+          const parsed = parseIncomingMessage(raw);
+          friendshipId = parsed.friendshipId;
+          tempId = parsed.tempId;
+          const { message } = parsed;
+
           // --- STEP 2: Validate DB state and permissions ---
           const { participants } = await validateFriendshipAndPermissions(
             fastify,
             userId,
-            friendshipId
+            friendshipId!
           );
 
           // --- STEP 3: Save message to DB ---
@@ -124,13 +130,24 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
           // --- STEP 5: ACK to sender for optimistic UI reconciliation ---
           ws.send(
-            JSON.stringify({ type: "MESSAGE_ACK", tempId, savedMessage: saved })
+            JSON.stringify({
+              type: "MESSAGE_ACK",
+              tempId,
+              savedMessage: saved,
+            })
           );
         } catch (err: any) {
           const message =
             err instanceof Error ? err.message : "internal server error";
           fastify.log?.error?.({ err }, "friend chat handler error");
-          ws.send(JSON.stringify({ type: "MESSAGE_ERR", message }));
+          ws.send(
+            JSON.stringify({
+              type: "MESSAGE_ERR",
+              friendshipId,
+              tempId,
+              error: message,
+            })
+          );
         }
       });
 

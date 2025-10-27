@@ -40,16 +40,10 @@ export const useMessages = (friendshipId: number, enabled = true) => {
   // will automatically call at the right time.
   // tempId necessary because optimistic messages have not hit the server and thus have no real id yet,
   // but React Query still needs a unique key for each message to render it in a list.
-  const mutation = useMutation<
-    void,
-    unknown,
-    { message: string; tempId: number }
-  >({
+  const mutation = useMutation({
     // Messaging component will send the message over the websocket.
     // No-op function. Hook is purely for caching and optimistic UI.
-    mutationFn: async (_vars) => {
-      return;
-    },
+    mutationFn: async (_vars: { message: string; tempId: number }) => {},
 
     // onMutate: runs before the mutationFn
     // - creates the optimistic FriendChatMessage and adds it to the cache
@@ -61,9 +55,9 @@ export const useMessages = (friendshipId: number, enabled = true) => {
       // snapshot previous cache so we can roll back on error
       const previous = qc.getQueryData<FriendChatMessage[]>(queryKey) || [];
 
-      // create an optimistic message (temporary id, current time)
+      // create an optimistic message with temporary id and current time
       const optimistic: FriendChatMessage = {
-        id: tempId, // negative temp id so it won't collide with server ids
+        id: tempId,
         friendshipId,
         senderId: userId,
         message,
@@ -75,14 +69,6 @@ export const useMessages = (friendshipId: number, enabled = true) => {
 
       // return context with previous value for potential rollback
       return { previous };
-    },
-
-    // onError: called if mutationFn throws an error
-    // - rollback optimistic update if the mutation fails
-    onError: (_err, _vars, context: any) => {
-      if (context?.previous) {
-        qc.setQueryData<FriendChatMessage[]>(queryKey, context.previous);
-      }
     },
   });
 
