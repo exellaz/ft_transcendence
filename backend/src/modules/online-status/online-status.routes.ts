@@ -15,7 +15,7 @@ const onlineUsers = new Map<number, HeartbeatWebSocket>();
 export default async function onlineStatusRoutes(fastify: FastifyInstance) {
   // Define your online status routes here
 
-  // ws://localhost:3000/online-status?userId=123
+  // ws://localhost:3000/online-status
   fastify.get(
     "/online-status",
     { websocket: true },
@@ -26,15 +26,25 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
       const ws = socket as HeartbeatWebSocket;
 
-      const { token } = request.query as { token?: string };
-      if (!token) {
+      // Authenticate WebSocket connection via JWT in Sec-WebSocket-Protocol(request header)
+      const protocolHeader = request.headers["sec-websocket-protocol"];
+      const token = Array.isArray(protocolHeader)
+        ? protocolHeader[0]
+        : protocolHeader;
+      if (!token || typeof token !== "string") {
         ws.close(1008, "Missing token");
         return;
       }
 
-      // Verify token
+      // Verify token (try-catch block used because jwt.verify throws on invalid token)
       const secret = process.env.JWT_SECRET as string;
-      const decoded = jwt.verify(token, secret) as JwtPayload;
+      let decoded: JwtPayload;
+      try {
+        decoded = jwt.verify(token, secret) as JwtPayload;
+      } catch (err) {
+        ws.close(1008, "Invalid token");
+        return;
+      }
       console.log("Decoded token:", decoded);
 
       // if not verified, close connection
