@@ -78,6 +78,8 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       ws.on("pong", () => {
         console.log(`Received pong from user ${uid}`);
         ws.isAlive = true;
+
+        notifyFriendsStatus(uid, true);
       });
 
       ws.on("close", (code, reason) => {
@@ -178,4 +180,28 @@ async function getFriendsOfUser(userId: number) {
 
   const friendIds: number[] = acceptedFriends.map((friend) => friend.id);
   return friendIds;
+}
+
+
+export async function notifyFriendshipUpdateToUsers(requesterId: number, accepterId: number) {
+  // Notify both users about the friendship update
+  const requesterSocket = onlineUsers.get(requesterId);
+  if (requesterSocket) {
+    requesterSocket.send(
+      JSON.stringify({
+        type: "FRIENDSHIP_UPDATE",
+        userId: accepterId,
+      }),
+    );
+  }
+
+  const accepterSocket = onlineUsers.get(accepterId);
+  if (accepterSocket) {
+    accepterSocket.send(
+      JSON.stringify({
+        type: "FRIENDSHIP_UPDATE",
+        userId: requesterId,
+      }),
+    );
+  }
 }

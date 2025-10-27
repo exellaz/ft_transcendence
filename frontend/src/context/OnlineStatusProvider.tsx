@@ -10,6 +10,9 @@ import React, {
   type ReactNode,
 } from "react";
 import { useUser } from "../context/UserProvider";
+import { useApiQuery } from "@/hooks/useApi";
+import { getAcceptedFriendshipsByUserId } from "@/lib/friendsApiClient";
+import type { UserWithFriendshipId } from "@/types/friendsApi";
 
 // -------------------------
 // Define WebSocket message types
@@ -25,7 +28,12 @@ interface FriendStatusMsg {
   online: boolean;
 }
 
-type ServerMessage = OnlineFriendsListMsg | FriendStatusMsg;
+interface FriendshipUpdateMsg {
+  type: "FRIENDSHIP_UPDATE";
+  userId: number;
+}
+
+type ServerMessage = OnlineFriendsListMsg | FriendStatusMsg | FriendshipUpdateMsg;
 
 // -------------------------
 // Context value interface
@@ -55,21 +63,49 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   children,
 }) => {
 
-  const friendIds: number[] = [6, 8]; // ! Example friend IDs
-  // TODO: fetch current friendIds from database API
-  // TODO: it should refresh when friends are added/removed
+  const { user, isAuthenticated, token } = useUser();
+
+  const userId = user?.id ?? 0;
+
+  // API query for friends list
+  const {
+    data: friends,
+    refetch: refetchFriends,
+  } = useApiQuery<UserWithFriendshipId[]>(
+    () => getAcceptedFriendshipsByUserId({ userId: userId }),
+    [userId],
+    userId !== 0,
+  );
+
+  let friendIds: number[] = [];
+  if (friends)
+    friendIds = friends.map(friend => friend.id);
+  console.log("FRIENDS IDS:", friendIds); // logs
+
 
   const [friendStatusMap, setFriendStatusMap] = useState<Map<number, boolean>>(
     () => new Map(friendIds.map((id) => [id, false])),
   );
-  console.log("FRIENDS IDS:", friendIds); // logs
 
-  const wsRef = useRef<WebSocket | null>(null); // TODO: what is this for?
+  // Rebuild the status map when friends change
+  useEffect(() => {
+    if (!friends || friends.length === 0) return;
+
+    setFriendStatusMap((prev) => {
+      const updated = new Map<number, boolean>();
+      friends.forEach((f) => {
+        updated.set(f.id, prev.get(f.id) ?? false);
+      });
+      return updated;
+    });
+    friendIds = friends.map(friend => friend.id);
+  }, [friends]);
+
+  const wsRef = useRef<WebSocket | null>(null); 
 
   // -------------------------
   // Establish WebSocket connection
   // -------------------------
-  const { isAuthenticated, token } = useUser();
   
   useEffect(() => {
     if (isAuthenticated === false)
@@ -104,6 +140,12 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             console.log("🔄 Updated friendStatusMap:", updated); // logs
             return updated;
           });
+          break;
+        
+        case "FRIENDSHIP_UPDATE":
+          // Refetch friends list on friendship update
+          refetchFriends();
+          console.log("🔄 Friendship update - refetched friends and updated map");
           break;
 
         default:

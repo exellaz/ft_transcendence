@@ -10,6 +10,7 @@ import {
   getPendingFriendShipsByUserIdSchema,
   updateFriendshipSchema,
 } from "./friendship.schema";
+import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.routes";
 
 async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:userId/pending (get friends that send friend request to u)
@@ -170,6 +171,8 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           where: { id: friendship.id },
           data: { status },
         });
+
+        notifyFriendshipUpdateToUsers(Number(requesterId), Number(accepterId));
 
         return ok(updatedFriendship);
       } catch (err: unknown) {
