@@ -4,6 +4,7 @@ import RequireAuth from "./components/RequireAuth";
 import RedirectIfAuth from "./components/RedirectIfAuth";
 
 import AdvanceView from "./views/tournament/AdvanceView";
+import CatchAllRedirect from "./components/CatchAllRedirect";
 import ChooseSpriteView from "./views/ChooseSpriteView";
 import CustomModeView from "./views/CustomModeView";
 import DoublesRoomView from "./views/custom/DoublesRoomView";
@@ -178,6 +179,9 @@ const App: React.FC = () => {
             />
             {/* Miscellaneous routes */}
             <Route path="/test" element={<TestView />} />
+            {/* Handles all other routes */}
+            {/* - redirects to /login or /main-menu depending on auth status */}
+            <Route path="*" element={<CatchAllRedirect />} />
           </Routes>
         </PreLoginWrapper>
       </BrowserRouter>
