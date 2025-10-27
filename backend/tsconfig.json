@@ -31,8 +31,7 @@
     // 🔑 Needed for @shared/*
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["./shared/*",
-                    "../shared/*"]
+      "@shared/*": ["./shared/*", "../shared/*"]
     }
   },
   "include": ["src"]

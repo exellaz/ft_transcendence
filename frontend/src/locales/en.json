@@ -1,10 +1,4 @@
 {
-  "common": {
-    "loading": "Loading...",
-    "username_required": "Username is required",
-    "username_length": "Username must be 2-15 characters",
-    "username_characters": "Only letters, numbers, and underscores allowed"
-  },
   "AdvanceView": {
     "advancement": "Advancement",
     "congratulations": "Congratulations!",
@@ -43,9 +37,10 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
-    "room_not_found": "Room not found",
-    "unknown_error": "Unknown error",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "LocalGameView": {
     "change_sprite": "Change Sprite",
@@ -54,6 +49,10 @@
     "start": "Start"
   },
   "LoginView": {
+    "username_or_email_required": "Username or email is required",
+    "password_required": "Password is required",
+    "invalid_credentials": "Username, email or password is incorrect",
+    "login_failed": "Login failed",
     "username_or_email": "Username / Email",
     "password": "Password",
     "login": "LOGIN",
@@ -90,11 +89,26 @@
     "login": "LOGIN"
   },
   "SignUpView": {
+    "username_required": "Username is required",
+    "email_required": "Email is required",
+    "password_required": "Password is required",
+    "password_mismatch": "Passwords do not match",
+    "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
+    "username_too_short": "Username must be at least 2 characters long",
+    "username_too_long": "Username must be at most 15 characters long",
+    "username_already_exists": "User with this username already exists",
+    "email_invalid": "Please enter a valid email address",
+    "email_already_exists": "User with this email already exists",
+    "password_too_weak": "Password must contain uppercase, lowercase, and numbers",
+    "password_too_short": "Password must be at least 8 characters long",
+    "password_too_long": "Password is too long",
+    "registration_failed": "Registration failed",
     "username": "Username",
     "username_available": "Username is available",
     "email": "Email",
     "password": "Password",
     "confirm_password": "Confirm password",
+    "creating_account": "Creating account...",
     "signup": "SIGN UP"
   },
   "SinglesRoomView": {
@@ -107,8 +121,10 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
-    "unknown_error": "未知錯誤",
-    "close": "close"
+    "close": "close",
+    "private": "Private",
+    "public": "Public",
+    "copied": "Room ID copied to clipboard!"
   },
   "TournamentLobbyView": {
     "quarterfinals": "Quarterfinals",
@@ -120,7 +136,11 @@
     "quit_confirmation": "Are you sure you want to quit the tournament?"
   },
   "BasicInfoPopup": {
-    "loading": "Loading...",
+    "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
+    "username_too_short": "Username must be at least 2 characters long",
+    "username_too_long": "Username must be at most 15 characters long",
+    "username_conflict": "Username already exists",
+    "save_failed": "Failed to save changes",
     "header": "Basic Info",
     "joined": "Joined",
     "change_avatar": "Change Avatar",
@@ -132,13 +152,36 @@
     "upload_avatar": "Upload a new avatar",
     "upload_avatar_button": "Upload Avatar",
     "confirm_upload": "Confirm Upload",
-    "avatar_updated": "Avatar has been updated.",
-    "avatar_update_error": "Avatar could not be updated.",
+    "avatar_updated": "Avatar has been updated",
+    "avatar_update_error": "Avatar could not be updated",
     "back": "Back"
   },
   "ConfirmationPopup": {
     "yes": "YES",
     "no": "NO"
+  },
+  "FriendsPopup": {
+    "tabs": {
+      "friends": "Friends",
+      "requests": "Requests",
+      "blocked": "Blocked"
+    },
+    "add_friend": "Add Friend",
+    "search_friend": "Search friend",
+    "enter_friend_username": "Enter friend's username",
+    "friend_added": "Friend has been added",
+    "back": "Back",
+    "no_friends_yet": "No friends yet",
+    "no_new_requests": "No new requests",
+    "no_blocked_users": "No blocked users",
+    "no_messages_yet": "No messages yet",
+    "enter_valid_username": "Please enter a valid username",
+    "user_not_found": "User not found",
+    "friend_request_pending": "Friend request is pending",
+    "already_friends": "Users are already friends",
+    "friendship_conflict": "Friendship already exists",
+    "cannot_friend_self": "User cannot friend themselves",
+    "add_friend_failed": "Failed to add friend"
   },
   "GameSettingsPopup": {
     "header": "Game Settings",
@@ -154,7 +197,30 @@
     "small": "Small",
     "big": "Big"
   },
+  "HowToPlayPopup": {
+    "header": "How to Play",
+    "objective_title": "Objective",
+    "objective_text": [
+      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
+    ],
+    "controls_title": "Controls",
+    "controls_text": [
+      "Use the up and down arrow keys to move your paddle. In Local Mode, player 1 uses the W / S keys and player 2 uses the up / down arrow keys."
+    ],
+    "tournament_title": "Tournament Mode",
+    "tournament_text": [
+      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.",
+      "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
+      "Player ranking and match history are tracked for all tournament games."
+    ],
+    "custom_title": "Custom Mode",
+    "custom_text": [
+      "Enjoy casual play with full customization options. Create or join rooms for both singles and doubles matches. Play with friends or get matched with random players.",
+      "Note: Local Mode supports singles matches only."
+    ]
+  },
   "ProfilePopup": {
+    "loading": "Loading...",
     "header": "My Profile",
     "header_other": "Profile",
     "add_friend": "Add Friend",
@@ -193,13 +259,13 @@
     "finals": "Finals",
     "won": "Won",
     "lost": "Lost",
-    "no_history_yet": "No tournament history yet."
+    "no_history_yet": "No tournament history yet"
   },
   "ApiState": {
     "loading": "Loading...",
     "error": "Error",
     "try_again": "Try Again",
-    "not_found": "Record not found."
+    "not_found": "Record not found"
   },
   "CascadeCard": {
     "confirm_block": "Are you sure you want to block {{username}}?",
@@ -236,7 +302,7 @@
     "offline": "Offline",
     "type_message": "Type a message",
     "send": "Send",
-    "no_messages_yet": "No messages yet."
+    "no_messages_yet": "No messages yet"
   },
   "ProfileContents": {
     "loading": "Loading...",
@@ -266,44 +332,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends"
-  },
-  "FriendsPopup": {
-    "tabs": {
-      "friends": "Friends",
-      "requests": "Requests",
-      "blocked": "Blocked"
-    },
-    "add_friend": "Add Friend",
-    "search_friend": "Search friend",
-    "enter_friend_username": "Enter friend's username",
-    "friend_added": "Friend has been added.",
-    "user_not_exist": "User does not exist.",
-    "back": "Back",
-    "no_friends_yet": "No friends yet.",
-    "no_new_requests": "No new requests.",
-    "no_blocked_users": "No blocked users.",
-    "no_messages_yet": "No messages yet."
-  },
-  "HowToPlayPopup": {
-    "header": "How to Play",
-    "objective_title": "Objective",
-    "objective_text": [
-      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
-    ],
-    "controls_title": "Controls",
-    "controls_text": [
-      "Use the up and down arrow keys to move your paddle. In Local Mode, player 1 uses the W / S keys and player 2 uses the up / down arrow keys."
-    ],
-    "tournament_title": "Tournament Mode",
-    "tournament_text": [
-      "Compete in a structured bracket of singles matches that progresses through quarterfinals, semifinals, and finals.", "Winners will advance to the next round while losing players in each bracket will be ranked based on the duration of their matches. Faster losses will result in lower rankings.",
-      "Player ranking and match history are tracked for all tournament games."
-    ],
-    "custom_title": "Custom Mode",
-    "custom_text": [
-      "Enjoy casual play with full customization options. Create or join rooms for both singles and doubles matches. Play with friends or get matched with random players.",
-      "Note: Local Mode supports singles matches only."
-    ]
+    "invite_friends": "Invite Friends",
+    "choose_sprite": "Choose Sprite"
   }
 }

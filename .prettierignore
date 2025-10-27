@@ -7,6 +7,4 @@ coverage
 **/node_modules
 
 *.md
-*.json
 **/*.md
-**/*.json

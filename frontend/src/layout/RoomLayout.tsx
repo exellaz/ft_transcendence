@@ -5,17 +5,26 @@ import { useUser } from "../context/UserProvider";
 import Background from "../components/Background";
 import Button from "../components/Button";
 
+import ChooseSpritePopup from "../popups/ChooseSpritePopup";
 import FriendsPopup from "../popups/FriendsPopup";
 import RoomGameSettingsPopup from "../popups/RoomGameSettingsPopup";
 
 interface RoomLayoutProps {
   children: React.ReactNode;
   isLeader: boolean | null;
+  selectedSprite: string;
+  onSelectSprite: (sprite: string) => void;
 }
 
-const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
+const RoomLayout: React.FC<RoomLayoutProps> = ({
+  children,
+  isLeader,
+  selectedSprite,
+  onSelectSprite,
+}) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`RoomLayout.${key}`);
+  const [showChooseSprite, setShowChooseSprite] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
   const [showInviteFriends, setShowInviteFriends] = useState(false);
 
@@ -28,6 +37,9 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
   return (
     <Background>
       <div className="absolute top-10 right-10 flex-col-center gap-6 z-20">
+        <Button variant="profile" onClick={() => setShowChooseSprite(true)}>
+          {translate("choose_sprite")}
+        </Button>
         {isLeader === true && (
           <Button variant="profile" onClick={() => setShowGameSettings(true)}>
             {translate("game_settings")}
@@ -38,6 +50,12 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({ children, isLeader }) => {
         </Button>
       </div>
       {children}
+      <ChooseSpritePopup
+        open={showChooseSprite}
+        onClose={() => setShowChooseSprite(false)}
+        selected={selectedSprite}
+        onSelectSprite={onSelectSprite}
+      />
       <RoomGameSettingsPopup
         open={showGameSettings}
         onClose={() => setShowGameSettings(false)}

@@ -7,11 +7,7 @@
     "dev2": "nodemon --watch src --exec ts-node src/loginApp.ts",
     "build": "tsc -b",
     "start": "node dist/server.js",
-    "start2": "node dist/app.js",
-    "lint": "eslint src --ext .ts,.js",
-    "lint:fix": "eslint src --ext .ts,.js --fix",
-    "format": "npx prettier --check \"src/**/*.{ts,js,json,md}\"",
-    "format:fix": "npx prettier --write \"src/**/*.{ts,js,json,md}\""
+    "start2": "node dist/app.js"
   },
   "allowImportingTsExtensions": true,
   "dependencies": {
@@ -20,6 +16,7 @@
     "@fastify/swagger": "^9.5.2",
     "@fastify/swagger-ui": "^5.2.3",
     "@fastify/websocket": "^11.2.0",
+    "ws": "^8.18.3",
     "@prisma/client": "^6.15.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.2.0",
@@ -31,21 +28,16 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@types/ws": "^8.18.1",
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.1",
-    "@types/ws": "^8.18.1",
-    "eslint": "^9.35.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
     "globals": "^16.4.0",
     "jiti": "^2.5.1",
     "prisma": "^6.15.0",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0"
+    "typescript": "^5.9.2"
   }
 }

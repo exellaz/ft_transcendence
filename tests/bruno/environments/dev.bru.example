@@ -1,6 +1,3 @@
 vars {
   baseUrl: http://HOST:PORT
-  testEmail: test@transcendence.local
-  testUsername: testuser
-  testPassword: TestPass123
 }
