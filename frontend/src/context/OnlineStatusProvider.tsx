@@ -119,7 +119,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
     return () => {
       ws.close();
     };
-  }, [token]); // TODO: add token to dependency array if needed
+  }, [isAuthenticated, token]); // TODO: add token to dependency array if needed
 
   // -------------------------
   // Helper to access a friend’s status easily
