@@ -118,7 +118,9 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("[Online Status websocket] ✅ Connected to online-status WebSocket");
+      console.log(
+        "[Online Status websocket] ✅ Connected to online-status WebSocket",
+      );
     };
 
     ws.onmessage = (event) => {
@@ -130,7 +132,10 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           setFriendStatusMap((prev) => {
             const updated = new Map(prev);
             data.onlineFriends.forEach((fid) => updated.set(fid, true));
-            console.log("[Online Status websocket] 🔄 Init friendStatusMap:", updated); // logs
+            console.log(
+              "[Online Status websocket] 🔄 Init friendStatusMap:",
+              updated,
+            ); // logs
             return updated;
           });
           break;
@@ -139,7 +144,10 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           setFriendStatusMap((prev) => {
             const updated = new Map(prev);
             updated.set(data.friendId, data.online);
-            console.log("[Online Status websocket] 🔄 Updated friendStatusMap:", updated); // logs
+            console.log(
+              "[Online Status websocket] 🔄 Updated friendStatusMap:",
+              updated,
+            ); // logs
             return updated;
           });
           break;
@@ -158,7 +166,9 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
     };
 
     ws.onclose = () => {
-      console.log("[Online Status websocket] ❌ Disconnected from online-status WebSocket");
+      console.log(
+        "[Online Status websocket] ❌ Disconnected from online-status WebSocket",
+      );
     };
 
     ws.onerror = (err) => {

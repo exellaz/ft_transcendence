@@ -21,7 +21,9 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
     { websocket: true },
     async (socket: WebSocket, request) => {
       const clientIP = request.socket.remoteAddress;
-      console.log(`[Online Status websocket] Client connected from ${clientIP}`);
+      console.log(
+        `[Online Status websocket] Client connected from ${clientIP}`,
+      );
 
       const ws = socket as HeartbeatWebSocket;
 
@@ -63,7 +65,9 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       // Add online user to Map
       onlineUsers.set(uid, ws);
       console.log(`[Online Status websocket] User ${uid} connected.`);
-      console.log(`[Online Status websocket] Total Online Users: ${onlineUsers.size}`);
+      console.log(
+        `[Online Status websocket] Total Online Users: ${onlineUsers.size}`,
+      );
 
       // Send initial online friends list
       sendOnlineFriendsList(uid, ws);
@@ -85,13 +89,18 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
           `[Online Status websocket]Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`,
         );
         console.log(`[Online Status websocket] User ${uid} disconnected.`);
-        console.log(`[Online Status websocket] Remaining Online Users: ${onlineUsers.size}`);
+        console.log(
+          `[Online Status websocket] Remaining Online Users: ${onlineUsers.size}`,
+        );
         // Notify friends about offline status
         notifyFriendsStatus(uid, false);
       });
 
       ws.on("error", (error) => {
-        console.error(`[Online Status websocket] WebSocket error for ${clientIP}:`, error);
+        console.error(
+          `[Online Status websocket] WebSocket error for ${clientIP}:`,
+          error,
+        );
       });
     },
   );
@@ -102,7 +111,9 @@ setInterval(() => {
   console.log("[Online Status websocket] Running heartbeat check...");
   for (const [uid, ws] of onlineUsers.entries()) {
     if (!ws.isAlive) {
-      console.log(`[Online Status websocket] User ${uid} did not respond. Removing...`);
+      console.log(
+        `[Online Status websocket] User ${uid} did not respond. Removing...`,
+      );
       ws.terminate(); // use ws.close to specify code/reason if needed
       onlineUsers.delete(uid);
       notifyFriendsStatus(uid, false);
@@ -144,7 +155,10 @@ async function sendOnlineFriendsList(userId: number, ws: HeartbeatWebSocket) {
   const onlineFriendIds: number[] = friends.filter((friendId) =>
     onlineUsers.has(friendId),
   );
-  console.log(`[Online Status websocket] Sending online friends to ${userId}:`, onlineFriendIds);
+  console.log(
+    `[Online Status websocket] Sending online friends to ${userId}:`,
+    onlineFriendIds,
+  );
 
   ws.send(
     JSON.stringify({
