@@ -62,7 +62,7 @@ type ServerMessage =
 interface OnlineStatusContextType {
   friendStatusMap: Map<number, boolean>;
   isFriendOnline: (friendId: number) => boolean;
-  sendFriendMessage: (
+  wsSendMessage: (
     tempId: number,
     friendshipId: number,
     message: string
@@ -219,7 +219,10 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const isFriendOnline = (friendId: number) =>
     friendStatusMap.get(friendId) ?? false;
 
-  const sendFriendMessage = (
+  // -------------------------
+  // Helper to send a message through the websocket
+  // -------------------------
+  const wsSendMessage = (
     tempId: number,
     friendshipId: number,
     message: string
@@ -237,7 +240,9 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   };
 
   return (
-    <OnlineStatusContext.Provider value={{ friendStatusMap, isFriendOnline, sendFriendMessage }}>
+    <OnlineStatusContext.Provider
+      value={{ friendStatusMap, isFriendOnline, wsSendMessage }}
+    >
       {children}
     </OnlineStatusContext.Provider>
   );

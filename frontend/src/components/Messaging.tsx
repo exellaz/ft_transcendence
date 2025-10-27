@@ -28,13 +28,13 @@ const Messaging: React.FC<MessagingProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`Messaging.${key}`);
-  const { isFriendOnline, sendFriendMessage } = useOnlineStatus();
+  const { isFriendOnline, wsSendMessage } = useOnlineStatus();
   const {
     data: messages,
     isLoading,
     isError,
     refetch,
-    sendMessage,
+    optimisticSendMessage,
   } = useMessages(friendshipId, true);
 
   // message in input bar
@@ -55,6 +55,16 @@ const Messaging: React.FC<MessagingProps> = ({
   const handleSendMessage = async () => {
     if (message.trim() === "" || message.length > MESSAGE_LIMIT) return;
 
+    // negative tempId to mark optimistic entries
+    // these will be reconciled when the server sends back an acknowledgement
+    // with the real message id
+    const tempId = Date.now() * -1; 
+    // optimistic UI update via React Query
+    // await waits for the optimistic update to complete
+    // await only applicable for functions that actually return a promise
+    await optimisticSendMessage(message, tempId);
+    // sends the message through the websocket
+    wsSendMessage(tempId, friendshipId, message);
     setMessage("");
   };
 

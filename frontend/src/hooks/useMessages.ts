@@ -87,8 +87,7 @@ export const useMessages = (friendshipId: number, enabled = true) => {
   });
 
   // sendMessage triggers the entire mutation lifecycle
-  const sendMessage = async (message: string) => {
-    const tempId = Date.now() * -1; // negative temp id to mark optimistic entries
+  const optimisticSendMessage = async (message: string, tempId: number) => {
     // invoking mutateAsync will call mutationFn
     return mutation.mutateAsync({ message, tempId });
   };
@@ -107,6 +106,6 @@ export const useMessages = (friendshipId: number, enabled = true) => {
   // ...query spreads these into the return value
   return {
     ...query,
-    sendMessage,
+    optimisticSendMessage,
   };
 };
