@@ -7,6 +7,7 @@ import {
   postBlockedFriendshipSchema,
 } from "./blockedFriendship.schema";
 import { Prisma } from "@prisma/client";
+import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.routes";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)
@@ -81,6 +82,8 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
           data: { blockerId, blockedId },
         });
 
+        notifyFriendshipUpdateToUsers(Number(blockerId), Number(blockedId));
+
         return ok(blockedFriendship);
       } catch (err: unknown) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -118,6 +121,8 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
               },
             },
           });
+
+        notifyFriendshipUpdateToUsers(Number(blockerId), Number(blockedId));
 
         return ok(deletedBlockedFriendship);
       } catch (err: unknown) {

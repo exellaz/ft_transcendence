@@ -8,6 +8,7 @@ interface UserContextType {
   setUser: (user: User | null) => void;
   isAuthenticated: boolean;
   logout: () => void;
+  token: string | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -15,8 +16,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  const token = localStorage.getItem("authToken");
+
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
     if (token && isTokenValid(token)) {
       // TODO: Validate token in backend
       const payload = decodeJWT(token);
@@ -44,7 +46,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = isTokenValid(localStorage.getItem("authToken"));
 
   return (
-    <UserContext.Provider value={{ user, setUser, isAuthenticated, logout }}>
+    <UserContext.Provider
+      value={{ user, setUser, isAuthenticated, logout, token }}
+    >
       {children}
     </UserContext.Provider>
   );
