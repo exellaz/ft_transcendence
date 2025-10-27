@@ -56,10 +56,13 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 }) => {
 
   const friendIds: number[] = [6, 8]; // ! Example friend IDs
+  // TODO: fetch current friendIds from database API
+  // TODO: it should refresh when friends are added/removed
 
   const [friendStatusMap, setFriendStatusMap] = useState<Map<number, boolean>>(
     () => new Map(friendIds.map((id) => [id, false])),
   );
+  console.log("FRIENDS IDS:", friendIds); // logs
 
   const wsRef = useRef<WebSocket | null>(null); // TODO: what is this for?
 
@@ -72,7 +75,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
     if (isAuthenticated === false)
       return;
 
-    const ws = new WebSocket(`ws://localhost:3000/online-status?token=${token}`);
+    // const ws = new WebSocket(`ws://localhost:3000/online-status?token=${token}`);
+    const ws = new WebSocket(`ws://localhost:3000/online-status`,[token || ""]);
     wsRef.current = ws;
 
     ws.onopen = () => {
