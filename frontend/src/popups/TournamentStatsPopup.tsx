@@ -71,7 +71,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   let statsChildren: React.ReactNode;
   if (statsLoading) statsChildren = <LoadingState />;
   else if (statsError)
-    statsChildren = <ErrorState error={statsError} onRetry={refetchStats} />;
+    statsChildren = <ErrorState onRetry={refetchStats} />;
   else if (!stats) statsChildren = <NotFoundState />;
   else
     statsChildren = (
@@ -100,7 +100,7 @@ const TournamentStatsPopup: React.FC<PopupProps> = ({
   if (historyLoading) historyChildren = <LoadingState />;
   else if (historyError)
     historyChildren = (
-      <ErrorState error={historyError} onRetry={refetchHistory} />
+      <ErrorState onRetry={refetchHistory} />
     );
   else if (!history) historyChildren = <NotFoundState />;
   else if (history.length === 0)

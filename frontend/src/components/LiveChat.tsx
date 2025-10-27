@@ -27,22 +27,20 @@ const LiveChat: React.FC<{
   const translate = (key: string) => t(`LiveChat.${key}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MESSAGE_LIMIT = 200;
-
+  
   // Auto-scroll to the bottom when chatMessages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      // scrollTop is the number of pixels the content is scrolled vertically.
-      // scrollHeight is the total height of the content inside the container.
-      // Setting scrollTop = scrollHeight means the scroll bar moves to the very bottom, showing the latest message.
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-    }
-  }, [chatMessages]); // Runs every time messages change
+    messagesEndRef.current?.scrollTo({
+      top: messagesEndRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [chatMessages]);
 
   // Helper function to get display name for a message
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.id === -1) return "System"; // System messages
     const player = players.find(
-      (p: WaitingTournamentPlayer) => p.id === msg.id,
+      (p: WaitingTournamentPlayer) => p.id === msg.id
     ); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };

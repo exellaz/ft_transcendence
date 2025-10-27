@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { User } from "../types/usersApi";
-import { useApiQuery } from "../hooks/useApi";
-import { getAllFriendChatMessages } from "../lib/friendsApiClient";
-import type { FriendChatMessage } from "../types/friendsApi";
+import { useMessages } from "../hooks/useMessages";
+import { useOnlineStatus } from "../context/OnlineStatusProvider";
 import { formatTimestamp } from "../utils/date";
 
 import {
@@ -13,7 +12,6 @@ import {
 } from "../components/ApiState";
 import Avatar from "./Avatar";
 import Button from "./Button";
-import { useOnlineStatus } from "@/context/OnlineStatusProvider";
 
 interface MessagingProps {
   userId: number;
@@ -30,58 +28,41 @@ const Messaging: React.FC<MessagingProps> = ({
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`Messaging.${key}`);
-  const [localMessages, setLocalMessages] = useState<FriendChatMessage[]>([]);
+  const { isFriendOnline, sendFriendMessage } = useOnlineStatus();
+  const {
+    data: messages,
+    isLoading,
+    isError,
+    refetch,
+    sendMessage,
+  } = useMessages(friendshipId, true);
+
   // message in input bar
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // limit user's message length
   const MESSAGE_LIMIT = 200;
 
-  // Auto-scroll to the bottom when chatMessages change
+  // Auto-scroll to the bottom when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      // scrollTop is the number of pixels the content is scrolled vertically.
-      // scrollHeight is the total height of the content inside the container.
-      // Setting scrollTop = scrollHeight means the scroll bar moves to the very bottom, showing the latest message.
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-    }
-  }, [localMessages]); // Runs every time messages change
-
-  // API query for message list
-  const {
-    data: messages,
-    loading,
-    error,
-    refetch,
-  } = useApiQuery<FriendChatMessage[]>(
-    () => getAllFriendChatMessages({ friendshipId: friendshipId }),
-    [open, selectedUser],
-    true,
-  );
-
-  useEffect(() => {
-    if (messages) setLocalMessages(messages);
+    messagesEndRef.current?.scrollTo({
+      top: messagesEndRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   // Handler to send message
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim() === "" || message.length > MESSAGE_LIMIT) return;
-    const newMsg: FriendChatMessage = {
-      id: Date.now(), // TODO: replace with real ID from backend
-      friendshipId: friendshipId,
-      senderId: userId,
-      message: message,
-      timestamp: new Date(),
-    };
-    setLocalMessages([...localMessages, newMsg]);
+
     setMessage("");
   };
 
   let messagesContent: React.ReactNode;
-  if (loading) {
+  if (isLoading) {
     messagesContent = <LoadingState />;
-  } else if (error) {
-    messagesContent = <ErrorState error={error} onRetry={refetch} />;
+  } else if (isError) {
+    messagesContent = <ErrorState onRetry={refetch} />;
   } else if (!messages) {
     messagesContent = <NotFoundState />;
   } else if (messages.length === 0) {
@@ -95,7 +76,7 @@ const Messaging: React.FC<MessagingProps> = ({
   } else {
     messagesContent = (
       <div className="flex flex-col gap-4">
-        {localMessages?.map((msg) => (
+        {messages?.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${
@@ -120,8 +101,6 @@ const Messaging: React.FC<MessagingProps> = ({
       </div>
     );
   }
-
-  const { isFriendOnline } = useOnlineStatus();
 
   return (
     <div className="w-full h-full rounded-3xl flex flex-col">

@@ -107,7 +107,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   let children: React.ReactNode;
 
   if (loading) children = <LoadingState />;
-  else if (error) children = <ErrorState error={error} onRetry={refetch} />;
+  else if (error) children = <ErrorState onRetry={refetch} />;
   else if (!user) children = <NotFoundState />;
   else
     children = (

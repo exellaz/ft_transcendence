@@ -263,7 +263,7 @@
   },
   "ApiState": {
     "loading": "Loading...",
-    "error": "Error",
+    "something_went_wrong": "Something went wrong",
     "try_again": "Try Again",
     "not_found": "Record not found"
   },

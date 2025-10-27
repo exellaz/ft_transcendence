@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
+import { useOnlineStatus } from "../context/OnlineStatusProvider";
 import {
   createFriendship,
   deleteFriendship,
@@ -27,7 +28,6 @@ import FriendTile from "../components/FriendTile";
 import Input from "../components/Input";
 import PopupCard from "../components/PopupCard";
 import Status from "../components/Status";
-import { useOnlineStatus } from "@/context/OnlineStatusProvider";
 
 interface PopupProps {
   open: boolean;
@@ -248,7 +248,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     friendsContent = <LoadingState />;
   } else if (friendsError) {
     friendsContent = (
-      <ErrorState error={friendsError} onRetry={refetchFriends} />
+      <ErrorState onRetry={refetchFriends} />
     );
   } else if (!friends) {
     friendsContent = <NotFoundState />;
@@ -304,7 +304,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     requestsContent = <LoadingState />;
   } else if (requestsError) {
     requestsContent = (
-      <ErrorState error={requestsError} onRetry={refetchRequests} />
+      <ErrorState onRetry={refetchRequests} />
     );
   } else if (!requests) {
     requestsContent = <NotFoundState />;
@@ -344,7 +344,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     blockedContent = <LoadingState />;
   } else if (blockedError) {
     blockedContent = (
-      <ErrorState error={blockedError} onRetry={refetchBlocked} />
+      <ErrorState onRetry={refetchBlocked} />
     );
   } else if (!blocked) {
     blockedContent = <NotFoundState />;

@@ -52,9 +52,9 @@ const ProfileContents: React.FC<ProfileContentsProps> = ({ selectedId }) => {
 
   if (userLoading || statsLoading) contents = <LoadingState />;
   else if (userError)
-    contents = <ErrorState error={userError} onRetry={refetchUser} />;
+    contents = <ErrorState onRetry={refetchUser} />;
   else if (statsError)
-    contents = <ErrorState error={statsError} onRetry={refetchStats} />;
+    contents = <ErrorState onRetry={refetchStats} />;
   else if (!user || !stats) contents = <NotFoundState />;
   else
     contents = (

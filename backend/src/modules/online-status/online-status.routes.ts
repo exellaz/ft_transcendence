@@ -87,7 +87,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       ws.on("message", async (raw) => {
         try {
           // --- STEP 1: Parse and validate incoming JSON ---
-          const { friendshipId, text, tempId } = parseIncomingMessage(raw);
+          const { friendshipId, message, tempId } = parseIncomingMessage(raw);
           // --- STEP 2: Validate DB state and permissions ---
           const { participants } = await validateFriendshipAndPermissions(
             fastify,
@@ -97,7 +97,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
           // --- STEP 3: Save message to DB ---
           const saved = await fastify.db.friendChatMessage.create({
-            data: { friendshipId, senderId: userId, message: text },
+            data: { friendshipId, senderId: userId, message: message },
             select: {
               id: true,
               friendshipId: true,
@@ -123,12 +123,14 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
           }
 
           // --- STEP 5: ACK to sender for optimistic UI reconciliation ---
-          ws.send(JSON.stringify({ type: "ACK", tempId, savedMessage: saved }));
+          ws.send(
+            JSON.stringify({ type: "MESSAGE_ACK", tempId, savedMessage: saved })
+          );
         } catch (err: any) {
           const message =
             err instanceof Error ? err.message : "internal server error";
           fastify.log?.error?.({ err }, "friend chat handler error");
-          ws.send(JSON.stringify({ type: "MESSAGE_ERROR", message }));
+          ws.send(JSON.stringify({ type: "MESSAGE_ERR", message }));
         }
       });
 
@@ -284,20 +286,25 @@ function parseIncomingMessage(raw: WebSocket.RawData) {
   }
 
   // 2) Validate message fields
-  if (msg?.type !== "OUTGOING_MESSAGE" || !msg?.friendshipId || !msg?.message) {
+  if (
+    msg?.type !== "OUTGOING_MESSAGE" ||
+    typeof msg?.tempId !== "number" ||
+    typeof msg?.friendshipId !== "number" ||
+    typeof msg?.message !== "string"
+  ) {
     throw new Error("invalid message shape");
   }
 
-  const friendshipId = Number(msg.friendshipId);
-  const text = String(msg.message).trim();
-  const tempId = msg.tempId ?? null;
+  const tempId = msg.tempId;
+  const friendshipId = msg.friendshipId;
+  const message = msg.message.trim();
 
   // 3) Validate message length
-  if (!text || text.length === 0 || text.length > 200) {
+  if (!message || message.length === 0 || message.length > 200) {
     throw new Error("invalid message length");
   }
 
-  return { friendshipId, text, tempId };
+  return { tempId, friendshipId, message };
 }
 
 async function validateFriendshipAndPermissions(

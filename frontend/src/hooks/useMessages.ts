@@ -9,8 +9,6 @@ import { useUser } from "../context/UserProvider";
   - provide a sendMessage() mutation that does optimistic update into react-query cache
   (optimistic update means we update the UI immediately, before server confirms the success of the mutation. 
    if server fails, we roll back.)
-  Usage:
-    const { data: messages, isLoading, sendMessage } = useMessages(friendshipId, { enabled: open })
 */
 
 export const useMessages = (friendshipId: number, enabled = true) => {
@@ -95,7 +93,18 @@ export const useMessages = (friendshipId: number, enabled = true) => {
     return mutation.mutateAsync({ message, tempId });
   };
 
-  // expose all query state (data, isLoading, isError, etc.) plus sendMessage
+  // React Query provides an object that can be destructured to access various query states
+  //   {
+  //   data,          // your fetched data
+  //   error,         // error object if something failed
+  //   isLoading,     // true while fetching
+  //   isFetching,    // true while background fetching
+  //   isError,       // true if the query failed
+  //   refetch,       // function to manually refetch
+  //   status,        // 'idle' | 'loading' | 'success' | 'error'
+  //   ...
+  // }
+  // ...query spreads these into the return value
   return {
     ...query,
     sendMessage,

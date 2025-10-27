@@ -263,7 +263,7 @@
   },
   "ApiState": {
     "loading": "載入中...",
-    "error": "錯誤",
+    "something_went_wrong": "發生錯誤",
     "try_again": "重試",
     "not_found": "未找到記錄"
   },

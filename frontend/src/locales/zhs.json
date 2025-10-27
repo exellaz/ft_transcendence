@@ -263,7 +263,7 @@
   },
   "ApiState": {
     "loading": "加载中...",
-    "error": "错误",
+    "something_went_wrong": "发生错误",
     "try_again": "重试",
     "not_found": "未找到记录"
   },
