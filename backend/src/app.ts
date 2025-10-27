@@ -20,8 +20,6 @@ import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
 import onlineStatusRoutes from "./modules/online-status/online-status.routes";
 
-const app = Fastify({ logger: true });
-
 const app = Fastify({
   logger: false,
 });
