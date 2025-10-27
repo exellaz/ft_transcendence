@@ -52,7 +52,7 @@ export async function findOrCreateGoogleUser(
   });
 
   if (user) {
-    name = sanitizeUsername(name + "_" + googleId.slice(-6), googleId);
+    name = sanitizeUsername("user_" + googleId.slice(-6), googleId);
   }
 
   // Create new Google user with default settings
