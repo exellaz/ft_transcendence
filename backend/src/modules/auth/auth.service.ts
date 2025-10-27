@@ -46,6 +46,15 @@ export async function findOrCreateGoogleUser(
     return user;
   }
 
+  user = await prisma.user.findUnique({
+    where: { username: name },
+    select: userPublicSelect,
+  });
+
+  if (user) {
+    name = sanitizeUsername(name + "_" + googleId.slice(-6), googleId);
+  }
+
   // Create new Google user with default settings
   user = await prisma.user.create({
     data: {
@@ -71,3 +80,30 @@ export async function updateLastLogin(userId: number): Promise<void> {
     console.error(`Failed to update last login for user ${userId}:`, error);
   }
 }
+
+export function sanitizeUsername(name: string, googleId: string): string {
+  // Remove invalid characters - keep only alphanumeric, underscore, and hyphen
+  let sanitized = name.replace(/[^a-zA-Z0-9_-]/g, "").trim();
+
+  if (sanitized.length > 15) {
+    sanitized = sanitized.substring(0, 15);
+  }
+
+  if (sanitized.length < 2) {
+    const googleIdSuffix = googleId.slice(-6);
+    sanitized = `user_${googleIdSuffix}`;
+
+    if (sanitized.length > 15) {
+      sanitized = sanitized.substring(0, 15);
+    }
+  }
+
+  // Final validation - ensure result matches schema pattern
+  if (!/^[a-zA-Z0-9_-]+$/.test(sanitized)) {
+    const googleIdSuffix = googleId.slice(-6);
+    sanitized = `user_${googleIdSuffix}`.substring(0, 15);
+  }
+
+  return sanitized;
+}
+

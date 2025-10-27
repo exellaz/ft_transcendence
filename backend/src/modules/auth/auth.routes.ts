@@ -9,7 +9,7 @@ import {
   postGoogleAuthSchema,
 } from "./auth.schema";
 import { verifyGoogleIdToken } from "../auth/auth.service";
-import { findOrCreateGoogleUser, updateLastLogin } from "../auth/auth.service";
+import { findOrCreateGoogleUser, updateLastLogin, sanitizeUsername } from "../auth/auth.service";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -148,25 +148,8 @@ async function authRoutes(fastify: FastifyInstance) {
         const name = payload.name ?? "lil_bro";
 
         // Remove invalid characters keeping only alphanumeric, underscore, and hyphen
-        const sanitizeUsername = (name: string): string => {
-          let sanitized = name.replace(/[^a-zA-Z0-9_-]/g, "").trim();
-          if (sanitized.length > 15) {
-            sanitized = sanitized.substring(0, 15);
-          }
 
-          if (sanitized.length < 2) {
-            sanitized = `user_${googleId.slice(-6)}`;
-
-            if (!/^[a-zA-Z0-9_-]+$/.test(sanitized)) {
-              const googleIdSuffix = googleId.slice(-6);
-              sanitized = `user_${googleIdSuffix}`.substring(0, 15);
-            }
-          }
-
-          return sanitized;
-        };
-
-        const sanitizedUsername = sanitizeUsername(name);
+        const sanitizedUsername = sanitizeUsername(name, googleId);
 
         // Find or create user with Google account linking
         const user = await findOrCreateGoogleUser(
