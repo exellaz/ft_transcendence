@@ -27,6 +27,7 @@ import FriendTile from "../components/FriendTile";
 import Input from "../components/Input";
 import PopupCard from "../components/PopupCard";
 import Status from "../components/Status";
+import { useOnlineStatus } from "@/context/OnlineStatusProvider";
 
 interface PopupProps {
   open: boolean;
@@ -242,6 +243,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // Friends content
   let friendsContent: React.ReactNode;
+  const { isFriendOnline } = useOnlineStatus();
   if (friendsLoading) {
     friendsContent = <LoadingState />;
   } else if (friendsError) {
@@ -282,7 +284,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
                     : last.message
                 }
                 timestamp={last.timestamp}
-                online={user.status === "online"}
+                online={isFriendOnline(user.id)} // ! TO CHANGE
                 onClick={() =>
                   selectedUser === user
                     ? setSelectedUser(null)

@@ -106,4 +106,3 @@ export function sanitizeUsername(name: string, googleId: string): string {
 
   return sanitized;
 }
-

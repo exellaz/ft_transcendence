@@ -9,7 +9,11 @@ import {
   postGoogleAuthSchema,
 } from "./auth.schema";
 import { verifyGoogleIdToken } from "../auth/auth.service";
-import { findOrCreateGoogleUser, updateLastLogin, sanitizeUsername } from "../auth/auth.service";
+import {
+  findOrCreateGoogleUser,
+  updateLastLogin,
+  sanitizeUsername,
+} from "../auth/auth.service";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(

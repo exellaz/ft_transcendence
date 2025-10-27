@@ -13,6 +13,7 @@ import {
 } from "../components/ApiState";
 import Avatar from "./Avatar";
 import Button from "./Button";
+import { useOnlineStatus } from "@/context/OnlineStatusProvider";
 
 interface MessagingProps {
   userId: number;
@@ -120,6 +121,8 @@ const Messaging: React.FC<MessagingProps> = ({
     );
   }
 
+  const { isFriendOnline } = useOnlineStatus();
+
   return (
     <div className="w-full h-full rounded-3xl flex flex-col">
       {/* Header */}
@@ -134,10 +137,10 @@ const Messaging: React.FC<MessagingProps> = ({
         {/* Status */}
         <span
           className={`rounded-full text-white text-sm font-semibold ml-auto px-4 py-2 ${
-            selectedUser.status === "online" ? "bg-green-500" : "bg-red-500"
+            isFriendOnline(selectedUser.id) ? "bg-green-500" : "bg-red-500"
           }`}
         >
-          {selectedUser.status === "online"
+          {isFriendOnline(selectedUser.id)
             ? translate("online")
             : translate("offline")}
         </span>
