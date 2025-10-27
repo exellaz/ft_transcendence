@@ -12,7 +12,10 @@ import {
   updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
-import type { UserWithFriendshipId } from "../types/friendsApi";
+import type {
+  UserWithFriendshipId,
+  FriendChatMessage,
+} from "../types/friendsApi";
 import { formatTimestamp } from "../utils/date";
 
 import {
@@ -62,7 +65,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<UserWithFriendshipId[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0,
+    userId !== 0
   );
 
   type LastMessage = {
@@ -70,7 +73,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     timestamp: string;
   };
   const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
-    {},
+    {}
   );
 
   // secondary API call to fetch last message for each friend
@@ -102,10 +105,10 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             console.error(
               "Error fetching last message for",
               friend.username,
-              err,
+              err
             );
           }
-        }),
+        })
       );
 
       if (isMounted) setLastMessages(results);
@@ -118,6 +121,25 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     };
   }, [friends]);
 
+  useEffect(() => {
+    const updateLastMessage = (event: Event) => {
+      const msg = (event as CustomEvent<FriendChatMessage>).detail;
+      setLastMessages((prev) => ({
+        ...prev,
+        [msg.friendshipId]: {
+          message: msg.message,
+          timestamp: formatTimestamp(msg.timestamp),
+        },
+      }));
+    };
+
+    // updateLastMessage is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK" 
+    // events in OnlineStatusProvider
+    window.addEventListener("updateLastMessage", updateLastMessage);
+    return () =>
+      window.removeEventListener("updateLastMessage", updateLastMessage);
+  }, []);
+
   // API query for friend requests list
   const {
     data: requests,
@@ -127,7 +149,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0,
+    userId !== 0
   );
 
   // API query for blocked users list
@@ -139,7 +161,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0,
+    userId !== 0
   );
 
   // API mutation to add a friend
@@ -170,7 +192,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   }
 
   const handleFriendUsernameChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setFriendUsername(e.target.value);
     if (addFriendError) setAddFriendError(null);
@@ -209,7 +231,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           response.errorCode && typeof response.errorCode === "string"
             ? errorMessages[response.errorCode] ||
                 translate("add_friend_failed")
-            : translate("add_friend_failed"),
+            : translate("add_friend_failed")
         );
         return;
       }
@@ -247,9 +269,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (friendsLoading) {
     friendsContent = <LoadingState />;
   } else if (friendsError) {
-    friendsContent = (
-      <ErrorState onRetry={refetchFriends} />
-    );
+    friendsContent = <ErrorState onRetry={refetchFriends} />;
   } else if (!friends) {
     friendsContent = <NotFoundState />;
   } else if (friends.length === 0) {
@@ -266,7 +286,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         {friends
           // filters friends list based on search term
           .filter((user) =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase()),
+            user.username.toLowerCase().includes(searchTerm.toLowerCase())
           )
           .map((user) => {
             const last = lastMessages[user.friendshipId] ?? {
@@ -303,9 +323,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (requestsLoading) {
     requestsContent = <LoadingState />;
   } else if (requestsError) {
-    requestsContent = (
-      <ErrorState onRetry={refetchRequests} />
-    );
+    requestsContent = <ErrorState onRetry={refetchRequests} />;
   } else if (!requests) {
     requestsContent = <NotFoundState />;
   } else if (requests.length === 0) {
@@ -343,9 +361,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (blockedLoading) {
     blockedContent = <LoadingState />;
   } else if (blockedError) {
-    blockedContent = (
-      <ErrorState onRetry={refetchBlocked} />
-    );
+    blockedContent = <ErrorState onRetry={refetchBlocked} />;
   } else if (!blocked) {
     blockedContent = <NotFoundState />;
   } else if (blocked.length === 0) {

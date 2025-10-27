@@ -114,14 +114,14 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
           });
 
           // --- STEP 4: Broadcast to both participants ---
-          const payload = { type: "FRIEND_MESSAGE", message: saved };
-
           const friendId = participants.find((id) => id !== userId);
           if (friendId) {
             const friendSocket = onlineUsers.get(friendId);
             if (friendSocket && friendSocket.readyState === friendSocket.OPEN) {
               try {
-                friendSocket.send(JSON.stringify(payload));
+                friendSocket.send(
+                  JSON.stringify({ type: "FRIEND_MESSAGE", message: saved })
+                );
               } catch {
                 // ignore individual socket errors
               }

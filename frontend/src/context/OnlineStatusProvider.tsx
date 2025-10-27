@@ -37,7 +37,7 @@ interface FriendshipUpdateMsg {
 
 interface FriendMessageMsg {
   type: "FRIEND_MESSAGE";
-  message: any; // Define the structure of the message as needed
+  message: FriendChatMessage;
 }
 
 interface MessageAckMsg {
@@ -192,8 +192,18 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           break;
 
         // Friend chat events
-        case "FRIEND_MESSAGE":
+        case "FRIEND_MESSAGE": {
+          const { message } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", message.friendshipId],
+            // add new message to the cache
+            (old = []) => [...old, message]
+          );
+          window.dispatchEvent(
+            new CustomEvent("updateLastMessage", { detail: message })
+          );
           break;
+        }
         case "MESSAGE_ACK": {
           const { tempId, savedMessage } = data;
           qc.setQueryData<FriendChatMessage[]>(
@@ -201,11 +211,10 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             // optimistic message in cache is replaced with savedMessage from server
             // .map() creates a new array
             (old = []) =>
-              old.map((msg) =>
-                msg.id === tempId
-                  ? savedMessage
-                  : msg
-              )
+              old.map((msg) => (msg.id === tempId ? savedMessage : msg))
+          );
+          window.dispatchEvent(
+            new CustomEvent("updateLastMessage", { detail: savedMessage })
           );
           break;
         }
