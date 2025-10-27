@@ -22,7 +22,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
     async (socket: WebSocket, request) => {
       const clientIP = request.socket.remoteAddress;
       console.log(
-        `[Online Status websocket] Client connected from ${clientIP}`,
+        `[Online Status websocket] Client connected from ${clientIP}`
       );
 
       const ws = socket as HeartbeatWebSocket;
@@ -66,7 +66,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       onlineUsers.set(uid, ws);
       console.log(`[Online Status websocket] User ${uid} connected.`);
       console.log(
-        `[Online Status websocket] Total Online Users: ${onlineUsers.size}`,
+        `[Online Status websocket] Total Online Users: ${onlineUsers.size}`
       );
 
       // Send initial online friends list
@@ -83,14 +83,63 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         notifyFriendsStatus(uid, true);
       });
 
+      // listen for incoming messages, validate, save, ack
+      ws.on("message", async (raw) => {
+        try {
+          // --- STEP 1: Parse and validate incoming JSON ---
+          const { friendshipId, text, tempId } = parseIncomingMessage(raw);
+          // --- STEP 2: Validate DB state and permissions ---
+          const { participants } = await validateFriendshipAndPermissions(
+            fastify,
+            userId,
+            friendshipId
+          );
+
+          // --- STEP 3: Save message to DB ---
+          const saved = await fastify.db.friendChatMessage.create({
+            data: { friendshipId, senderId: userId, message: text },
+            select: {
+              id: true,
+              friendshipId: true,
+              senderId: true,
+              message: true,
+              timestamp: true,
+            },
+          });
+
+          // --- STEP 4: Broadcast to both participants ---
+          const payload = { type: "FRIEND_MESSAGE", message: saved };
+
+          const friendId = participants.find((id) => id !== userId);
+          if (friendId) {
+            const friendSocket = onlineUsers.get(friendId);
+            if (friendSocket && friendSocket.readyState === friendSocket.OPEN) {
+              try {
+                friendSocket.send(JSON.stringify(payload));
+              } catch {
+                // ignore individual socket errors
+              }
+            }
+          }
+
+          // --- STEP 5: ACK to sender for optimistic UI reconciliation ---
+          ws.send(JSON.stringify({ type: "ACK", tempId, savedMessage: saved }));
+        } catch (err: any) {
+          const message =
+            err instanceof Error ? err.message : "internal server error";
+          fastify.log?.error?.({ err }, "friend chat handler error");
+          ws.send(JSON.stringify({ type: "MESSAGE_ERROR", message }));
+        }
+      });
+
       ws.on("close", (code, reason) => {
         onlineUsers.delete(uid);
         console.log(
-          `[Online Status websocket]Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`,
+          `[Online Status websocket]Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`
         );
         console.log(`[Online Status websocket] User ${uid} disconnected.`);
         console.log(
-          `[Online Status websocket] Remaining Online Users: ${onlineUsers.size}`,
+          `[Online Status websocket] Remaining Online Users: ${onlineUsers.size}`
         );
         // Notify friends about offline status
         notifyFriendsStatus(uid, false);
@@ -99,10 +148,10 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       ws.on("error", (error) => {
         console.error(
           `[Online Status websocket] WebSocket error for ${clientIP}:`,
-          error,
+          error
         );
       });
-    },
+    }
   );
 }
 
@@ -112,7 +161,7 @@ setInterval(() => {
   for (const [uid, ws] of onlineUsers.entries()) {
     if (!ws.isAlive) {
       console.log(
-        `[Online Status websocket] User ${uid} did not respond. Removing...`,
+        `[Online Status websocket] User ${uid} did not respond. Removing...`
       );
       ws.terminate(); // use ws.close to specify code/reason if needed
       onlineUsers.delete(uid);
@@ -128,7 +177,7 @@ setInterval(() => {
 
 async function validateUserId(
   ws: WebSocket,
-  userId: string | undefined,
+  userId: string | undefined
 ): Promise<number | null> {
   if (!userId) {
     ws.close(1008, "Missing userId");
@@ -153,25 +202,25 @@ async function validateUserId(
 async function sendOnlineFriendsList(userId: number, ws: HeartbeatWebSocket) {
   const friends: number[] = await getFriendsOfUser(userId);
   const onlineFriendIds: number[] = friends.filter((friendId) =>
-    onlineUsers.has(friendId),
+    onlineUsers.has(friendId)
   );
   console.log(
     `[Online Status websocket] Sending online friends to ${userId}:`,
-    onlineFriendIds,
+    onlineFriendIds
   );
 
   ws.send(
     JSON.stringify({
       type: "ONLINE_FRIENDS_LIST",
       onlineFriends: onlineFriendIds,
-    }),
+    })
   );
 }
 
 // notifies all friends of a user about their online/offline status
 async function notifyFriendsStatus(userId: number, isOnline: boolean) {
   console.log(
-    `[Online Status websocket] Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`,
+    `[Online Status websocket] Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`
   );
 
   const friends: number[] = await getFriendsOfUser(userId);
@@ -184,7 +233,7 @@ async function notifyFriendsStatus(userId: number, isOnline: boolean) {
           type: "FRIEND_STATUS", // ? what is type?
           friendId: userId,
           online: isOnline,
-        }),
+        })
       );
     }
   });
@@ -200,7 +249,7 @@ async function getFriendsOfUser(userId: number) {
 
 export async function notifyFriendshipUpdateToUsers(
   requesterId: number,
-  accepterId: number,
+  accepterId: number
 ) {
   // Notify both users about the friendship update
   const requesterSocket = onlineUsers.get(requesterId);
@@ -209,7 +258,7 @@ export async function notifyFriendshipUpdateToUsers(
       JSON.stringify({
         type: "FRIENDSHIP_UPDATE",
         userId: accepterId,
-      }),
+      })
     );
   }
 
@@ -219,7 +268,81 @@ export async function notifyFriendshipUpdateToUsers(
       JSON.stringify({
         type: "FRIENDSHIP_UPDATE",
         userId: requesterId,
-      }),
+      })
     );
   }
+}
+
+// HELPER FUNCTIONS FOR MESSAGE EVENT
+function parseIncomingMessage(raw: WebSocket.RawData) {
+  let msg: any;
+  // 1) Validate JSON
+  try {
+    msg = JSON.parse(raw.toString());
+  } catch {
+    throw new Error("malformed json");
+  }
+
+  // 2) Validate message fields
+  if (msg?.type !== "OUTGOING_MESSAGE" || !msg?.friendshipId || !msg?.message) {
+    throw new Error("invalid message shape");
+  }
+
+  const friendshipId = Number(msg.friendshipId);
+  const text = String(msg.message).trim();
+  const tempId = msg.tempId ?? null;
+
+  // 3) Validate message length
+  if (!text || text.length === 0 || text.length > 200) {
+    throw new Error("invalid message length");
+  }
+
+  return { friendshipId, text, tempId };
+}
+
+async function validateFriendshipAndPermissions(
+  fastify: FastifyInstance,
+  userId: number,
+  friendshipId: number
+) {
+  // 1) Fetch friendship and check friendship status
+  const friendship = await fastify.db.friendship.findUnique({
+    where: { id: friendshipId },
+    select: {
+      requesterId: true,
+      accepterId: true,
+      status: true,
+    },
+  });
+
+  if (!friendship || friendship.status !== "accepted") {
+    throw new Error("invalid or unaccepted friendship");
+  }
+
+  const { requesterId, accepterId } = friendship;
+  const participants = [requesterId, accepterId];
+
+  // 2) Verify user is participant
+  if (!participants.includes(userId)) {
+    throw new Error("unauthorized");
+  }
+
+  const otherUserId = requesterId === userId ? accepterId : requesterId;
+
+  // 3) Verify neither party is blocked
+  const isBlocked = await fastify.db.blockedFriendship.findFirst({
+    where: {
+      OR: [
+        { blockerId: userId, blockedId: otherUserId },
+        { blockerId: otherUserId, blockedId: userId },
+      ],
+    },
+    select: { id: true },
+  });
+
+  if (isBlocked) {
+    throw new Error("cannot send to blocked user");
+  }
+
+  return { participants, otherUserId };
 }
