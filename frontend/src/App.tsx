@@ -177,7 +177,6 @@ const App: React.FC = () => {
             />
             {/* Miscellaneous routes */}
             <Route path="/test" element={<TestView />} />
-
           </Routes>
         </PreLoginWrapper>
       </BrowserRouter>

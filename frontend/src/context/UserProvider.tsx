@@ -46,7 +46,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = isTokenValid(localStorage.getItem("authToken"));
 
   return (
-    <UserContext.Provider value={{ user, setUser, isAuthenticated, logout, token}}>
+    <UserContext.Provider
+      value={{ user, setUser, isAuthenticated, logout, token }}
+    >
       {children}
     </UserContext.Provider>
   );

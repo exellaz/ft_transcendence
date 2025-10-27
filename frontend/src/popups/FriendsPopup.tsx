@@ -226,7 +226,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       handleCloseCascadeCard();
     }
   };
-  
+
   // Friends content
   let friendsContent: React.ReactNode;
   const { isFriendOnline } = useOnlineStatus();
@@ -247,7 +247,6 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       </div>
     );
   } else {
-    
     friendsContent = (
       <div className="flex-col-center gap-4 p-1">
         {friends

@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 import { doesUserIdExist } from "../users/users.service";
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { authenticate } from "src/plugins/authenticate";
 
 // Attach a custom isAlive flag to this WebSocket object
@@ -20,7 +20,6 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
     "/online-status",
     { websocket: true },
     async (socket: WebSocket, request) => {
-
       const clientIP = request.socket.remoteAddress;
       console.log(`Client connected from ${clientIP}`);
 
@@ -55,11 +54,10 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
       // access your userId from decoded token
       const userId = decoded.userId;
-      console.log('User ID:', userId);
+      console.log("User ID:", userId);
 
       const uid = await validateUserId(ws, userId);
-      if (uid === null)
-        return;
+      if (uid === null) return;
 
       ws.isAlive = true;
 
@@ -118,24 +116,27 @@ setInterval(() => {
   }
 }, HEARTBEAT_INTERVAL);
 
-async function validateUserId(ws: WebSocket, userId: string | undefined): Promise<number | null> {
+async function validateUserId(
+  ws: WebSocket,
+  userId: string | undefined,
+): Promise<number | null> {
   if (!userId) {
     ws.close(1008, "Missing userId");
     return null;
   }
-  
+
   const uid = Number(userId);
   if (isNaN(uid) || uid <= 0) {
     ws.close(1008, "Invalid userId");
     return null;
   }
-  
+
   // check userId is exist in database
   if (!(await doesUserIdExist(uid))) {
     ws.close(1008, "User does not exist");
     return null;
   }
-  
+
   return uid;
 }
 
@@ -156,7 +157,9 @@ async function sendOnlineFriendsList(userId: number, ws: HeartbeatWebSocket) {
 
 // notifies all friends of a user about their online/offline status
 async function notifyFriendsStatus(userId: number, isOnline: boolean) {
-  console.log(`Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`);
+  console.log(
+    `Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`,
+  );
 
   const friends: number[] = await getFriendsOfUser(userId);
 
@@ -182,8 +185,10 @@ async function getFriendsOfUser(userId: number) {
   return friendIds;
 }
 
-
-export async function notifyFriendshipUpdateToUsers(requesterId: number, accepterId: number) {
+export async function notifyFriendshipUpdateToUsers(
+  requesterId: number,
+  accepterId: number,
+) {
   // Notify both users about the friendship update
   const requesterSocket = onlineUsers.get(requesterId);
   if (requesterSocket) {

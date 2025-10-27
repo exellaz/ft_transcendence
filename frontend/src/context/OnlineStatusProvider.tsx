@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 // src/context/OnlineStatusContext.tsx
 import React, {
@@ -33,7 +33,10 @@ interface FriendshipUpdateMsg {
   userId: number;
 }
 
-type ServerMessage = OnlineFriendsListMsg | FriendStatusMsg | FriendshipUpdateMsg;
+type ServerMessage =
+  | OnlineFriendsListMsg
+  | FriendStatusMsg
+  | FriendshipUpdateMsg;
 
 // -------------------------
 // Context value interface
@@ -46,7 +49,9 @@ interface OnlineStatusContextType {
 // -------------------------
 // Create context
 // -------------------------
-const OnlineStatusContext = createContext<OnlineStatusContextType | undefined>(undefined);
+const OnlineStatusContext = createContext<OnlineStatusContextType | undefined>(
+  undefined,
+);
 
 // -------------------------
 // Provider component
@@ -62,26 +67,22 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   // friendIds,
   children,
 }) => {
-
   const { user, isAuthenticated, token } = useUser();
 
   const userId = user?.id ?? 0;
 
   // API query for friends list
-  const {
-    data: friends,
-    refetch: refetchFriends,
-  } = useApiQuery<UserWithFriendshipId[]>(
+  const { data: friends, refetch: refetchFriends } = useApiQuery<
+    UserWithFriendshipId[]
+  >(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [userId],
     userId !== 0,
   );
 
   let friendIds: number[] = [];
-  if (friends)
-    friendIds = friends.map(friend => friend.id);
+  if (friends) friendIds = friends.map((friend) => friend.id);
   console.log("FRIENDS IDS:", friendIds); // logs
-
 
   const [friendStatusMap, setFriendStatusMap] = useState<Map<number, boolean>>(
     () => new Map(friendIds.map((id) => [id, false])),
@@ -98,26 +99,27 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
       });
       return updated;
     });
-    friendIds = friends.map(friend => friend.id);
+    friendIds = friends.map((friend) => friend.id);
   }, [friends]);
 
-  const wsRef = useRef<WebSocket | null>(null); 
+  const wsRef = useRef<WebSocket | null>(null);
 
   // -------------------------
   // Establish WebSocket connection
   // -------------------------
-  
+
   useEffect(() => {
-    if (isAuthenticated === false)
-      return;
+    if (isAuthenticated === false) return;
 
     // const ws = new WebSocket(`ws://localhost:3000/online-status?token=${token}`);
-    const ws = new WebSocket(`ws://localhost:3000/online-status`,[token || ""]);
+    const ws = new WebSocket(`ws://localhost:3000/online-status`, [
+      token || "",
+    ]);
     wsRef.current = ws;
 
     ws.onopen = () => {
       console.log("✅ Connected to online-status WebSocket");
-    }; 
+    };
 
     ws.onmessage = (event) => {
       const data: ServerMessage = JSON.parse(event.data);
@@ -141,11 +143,13 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             return updated;
           });
           break;
-        
+
         case "FRIENDSHIP_UPDATE":
           // Refetch friends list on friendship update
           refetchFriends();
-          console.log("🔄 Friendship update - refetched friends and updated map");
+          console.log(
+            "🔄 Friendship update - refetched friends and updated map",
+          );
           break;
 
         default:
@@ -170,7 +174,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   // -------------------------
   // Helper to access a friend’s status easily
   // -------------------------
-  const isFriendOnline = (friendId: number) => friendStatusMap.get(friendId) ?? false;
+  const isFriendOnline = (friendId: number) =>
+    friendStatusMap.get(friendId) ?? false;
 
   return (
     <OnlineStatusContext.Provider value={{ friendStatusMap, isFriendOnline }}>
@@ -185,7 +190,9 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 export const useOnlineStatus = (): OnlineStatusContextType => {
   const context = useContext(OnlineStatusContext);
   if (!context) {
-    throw new Error("useOnlineStatus must be used within an OnlineStatusProvider");
+    throw new Error(
+      "useOnlineStatus must be used within an OnlineStatusProvider",
+    );
   }
   return context;
 };
