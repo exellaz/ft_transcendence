@@ -122,7 +122,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   }, [friends]);
 
   useEffect(() => {
-    const updateLastMessage = (event: Event) => {
+    const handler = (event: Event) => {
       const msg = (event as CustomEvent<FriendChatMessage>).detail;
       setLastMessages((prev) => ({
         ...prev,
@@ -133,11 +133,11 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       }));
     };
 
-    // updateLastMessage is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK" 
+    // handler is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK" 
     // events in OnlineStatusProvider
-    window.addEventListener("updateLastMessage", updateLastMessage);
+    window.addEventListener("updateLastMessage", handler);
     return () =>
-      window.removeEventListener("updateLastMessage", updateLastMessage);
+      window.removeEventListener("updateLastMessage", handler);
   }, []);
 
   // API query for friend requests list

@@ -200,7 +200,14 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             (old = []) => [...old, message]
           );
           window.dispatchEvent(
-            new CustomEvent("updateLastMessage", { detail: message })
+            new CustomEvent<FriendChatMessage>("updateLastMessage", {
+              detail: message,
+            })
+          );
+          window.dispatchEvent(
+            new CustomEvent<FriendChatMessage>("newMessage", {
+              detail: message,
+            })
           );
           break;
         }
@@ -214,7 +221,9 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
               old.map((msg) => (msg.id === tempId ? savedMessage : msg))
           );
           window.dispatchEvent(
-            new CustomEvent("updateLastMessage", { detail: savedMessage })
+            new CustomEvent<FriendChatMessage>("updateLastMessage", {
+              detail: savedMessage,
+            })
           );
           break;
         }

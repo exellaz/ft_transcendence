@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useUser } from "../context/UserProvider";
+import { toast, ToastContainer } from "react-toastify";
+import type { FriendChatMessage } from "../types/friendsApi";
 
 import Background from "../components/Background";
 import ProfileDropdown from "../components/ProfileDropdown";
@@ -24,8 +26,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { user } = useUser();
   const userId = user?.id ?? 0;
 
+  const showFriendsRef = useRef(showFriends);
+  useEffect(() => {
+    const handler = (event: CustomEvent<FriendChatMessage>) => {
+      // showFriendsRef.current always holds the latest value of showFriends.
+      if (!showFriendsRef.current) {
+        toast.info(
+          `New message from ${event.detail.senderId}: ${event.detail.message}`
+        );
+      }
+    };
+
+    window.addEventListener("newMessage", handler as EventListener);
+
+    return () => {
+      window.removeEventListener("newMessage", handler as EventListener);
+    };
+  }, []);
+
   return (
     <Background>
+      <ToastContainer />
       <ProfileDropdown
         setShowProfile={setShowProfile}
         setShowBasicInfo={setShowBasicInfo}
