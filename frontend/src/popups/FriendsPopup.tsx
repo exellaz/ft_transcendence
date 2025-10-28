@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
 import { useOnlineStatus } from "../context/OnlineStatusProvider";
@@ -16,7 +16,6 @@ import type {
   UserWithFriendshipId,
   FriendChatMessage,
 } from "../types/friendsApi";
-import { formatTimestamp } from "../utils/date";
 
 import {
   LoadingState,
@@ -70,7 +69,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   type LastMessage = {
     message: string;
-    timestamp: string;
+    timestamp: Date;
   };
   const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
     {}
@@ -98,7 +97,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             if (res.success && res.data) {
               results[friend.friendshipId] = {
                 message: res.data.message,
-                timestamp: formatTimestamp(res.data.timestamp),
+                timestamp: res.data.timestamp,
               };
             }
           } catch (err) {
@@ -128,17 +127,50 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         ...prev,
         [msg.friendshipId]: {
           message: msg.message,
-          timestamp: formatTimestamp(msg.timestamp),
+          timestamp: msg.timestamp,
         },
       }));
     };
 
-    // handler is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK" 
+    // handler is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK"
     // events in OnlineStatusProvider
     window.addEventListener("updateLastMessage", handler);
-    return () =>
-      window.removeEventListener("updateLastMessage", handler);
+    return () => window.removeEventListener("updateLastMessage", handler);
   }, []);
+
+  // useMemo lets you cache the result of an expensive computation
+  // and only recompute it when certain dependencies change.
+  // prevents sorting and filtering every time the popup is opened.
+  const sortedFilteredFriends = useMemo(() => {
+    if (!friends) return [];
+    return (
+      [...friends]
+        // filters friends list based on search term
+        .filter((user) =>
+          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        // sort friend list by timestamp and username
+        .sort((a, b) => {
+          const lastA = lastMessages[a.friendshipId];
+          const lastB = lastMessages[b.friendshipId];
+
+          // If both have timestamps, most recent first
+          if (lastA?.timestamp && lastB?.timestamp) {
+            return (
+              new Date(lastB.timestamp).getTime() -
+              new Date(lastA.timestamp).getTime()
+            );
+          }
+
+          // If only one has timestamp, that one goes first
+          if (lastA?.timestamp && !lastB?.timestamp) return -1;
+          if (!lastA?.timestamp && lastB?.timestamp) return 1;
+
+          // Otherwise, sort alphabetically by username
+          return a.username.localeCompare(b.username);
+        })
+    );
+  }, [friends, lastMessages, searchTerm]);
 
   // API query for friend requests list
   const {
@@ -283,37 +315,32 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } else {
     friendsContent = (
       <div className="flex-col-center gap-4 p-1">
-        {friends
-          // filters friends list based on search term
-          .filter((user) =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-          .map((user) => {
-            const last = lastMessages[user.friendshipId] ?? {
-              message: translate("no_messages_yet"),
-              timestamp: "",
-            };
-            return (
-              <FriendTile
-                key={user.username}
-                username={user.username}
-                avatarUrl={user.avatarUrl}
-                lastMessage={
-                  last.message.length > 40
-                    ? last.message.slice(0, 40) + "..."
-                    : last.message
-                }
-                timestamp={last.timestamp}
-                online={isFriendOnline(user.id)} // ! TO CHANGE
-                onClick={() =>
-                  selectedUser === user
-                    ? setSelectedUser(null)
-                    : setSelectedUser(user)
-                }
-                active={selectedUser === user}
-              />
-            );
-          })}
+        {sortedFilteredFriends.map((user) => {
+          const last = lastMessages[user.friendshipId] ?? {
+            message: translate("no_messages_yet"),
+            timestamp: "",
+          };
+          return (
+            <FriendTile
+              key={user.username}
+              username={user.username}
+              avatarUrl={user.avatarUrl}
+              lastMessage={
+                last.message.length > 40
+                  ? last.message.slice(0, 40) + "..."
+                  : last.message
+              }
+              timestamp={last.timestamp}
+              online={isFriendOnline(user.id)} // ! TO CHANGE
+              onClick={() =>
+                selectedUser === user
+                  ? setSelectedUser(null)
+                  : setSelectedUser(user)
+              }
+              active={selectedUser === user}
+            />
+          );
+        })}
       </div>
     );
   }

@@ -1,11 +1,13 @@
 import React from "react";
+import { formatTimestamp } from "../utils/date";
+
 import Avatar from "./Avatar";
 
 interface FriendTileProps {
   username: string;
   avatarUrl: string;
   lastMessage?: string;
-  timestamp?: string;
+  timestamp?: Date;
   online: boolean;
   onClick?: () => void;
   active?: boolean;
@@ -41,7 +43,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
           {username.length > 10 ? username.slice(0, 10) + "…" : username}
         </span>
         <span className="text-xs text-gray-400 whitespace-nowrap">
-          {timestamp ?? "N/A"}
+          {timestamp ? formatTimestamp(timestamp) : "N/A"}
         </span>
       </div>
       <span className="text-xs text-gray-400 w-full block">
