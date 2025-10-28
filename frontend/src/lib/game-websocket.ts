@@ -34,9 +34,9 @@ export function useGameWebSocket({
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
   const socketRef = useRef(false); // to avoid multiple callbacks
-  console.log("[game]allinfo:");
-  console.log("[game]roomId:", roomId);
-  console.log("[game]initialRole:", initialRole);
+//  console.log("[game]allinfo:"); ////debug
+//  console.log("[game]roomId:", roomId); ////debug
+//  console.log("[game]initialRole:", initialRole); ////debug
 
   useEffect(() => {
     if (!roomId || roomId <= 0 || !clientId || clientId <= 0) {

@@ -213,10 +213,11 @@ export class GameClient {
     // send initial handshake
     // console.log("asking for ready"); ////debug
     if (this.websocketRef.readyState === WebSocket.OPEN) {
+      console.log("[game] socket already open, sending ready"); ////debug
       this.sendData("ready");
     } else {
       this.websocketRef.addEventListener("open", () => {
-        // console.log("socket opened, now sending ready"); ////debug
+         console.log("[game] socket opened, now sending ready"); ////debug
         this.sendData("ready");
       });
     }

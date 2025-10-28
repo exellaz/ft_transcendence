@@ -5,7 +5,6 @@ import type { WaitingTournamentPlayer } from "../types/apiInterfaces";
 // new: shared cache so sockets can be closed from other modules
 const tournamentWebsocket = new Map<string, WebSocket>();
 
-// ...existing code...
 export function closeTournamentWebsocket(tournamentId: number, playerId: number) {
   const key = `${tournamentId}-${playerId}`;
   let ws = tournamentWebsocket.get(key);
@@ -41,7 +40,7 @@ export function closeTournamentWebsocket(tournamentId: number, playerId: number)
     console.warn("[tournament-websocket] no websocket found to close for", key);
   }
 }
-// ...existing code...
+
 
 export interface useTournamentWebSocketParams {
     tournamentId: number;

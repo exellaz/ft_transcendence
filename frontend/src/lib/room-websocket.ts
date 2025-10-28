@@ -293,7 +293,7 @@ export function useRoomWebSocket({
 
       // clean up on unmount
       return () => {
-        try { if (ws) ws.close(1000, "room websocket unmounted"); } catch {}
+        //try { if (ws) ws.close(1000, "room websocket unmounted"); } catch {}
         ws.removeEventListener("open", () => {});
         ws.removeEventListener("error", () => {});
         ws.removeEventListener("close", () => {});
