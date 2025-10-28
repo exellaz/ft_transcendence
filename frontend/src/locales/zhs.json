@@ -58,7 +58,11 @@
     "login": "登录",
     "loading": "加载中...",
     "continue_with_google": "使用谷歌继续",
-    "signup_prompt": "还没有账号？注册"
+    "signup_prompt": "还没有账号？注册",
+    "2fa": "双重验证",
+    "enter_code": "请输入您的验证器应用中的六位数代码。",
+    "verify_code": "验证代码",
+    "invalid_code_error": "代码无效或服务器错误"
   },
   "MainMenuView": {
     "tournament_mode": "锦标赛模式",

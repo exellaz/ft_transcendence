@@ -29,6 +29,7 @@ export default function OtpInputField({
         height: "2.5rem",
         fontSize: "1.25rem",
         textAlign: "center",
+        color: "#ffffff", 
         borderRadius: "0.75rem",
         border: "2px solid #FACC15",
         outline: "none",

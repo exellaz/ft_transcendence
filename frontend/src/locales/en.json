@@ -58,7 +58,11 @@
     "login": "LOGIN",
     "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
-    "signup_prompt": "Don’t have an account? Sign up"
+    "signup_prompt": "Don’t have an account? Sign up",
+    "2fa": "Two-Factor Authentication",
+    "enter_code": "Enter the 6-digit code from your authenticator app.",
+    "verify_code": "Verify Code",
+    "invalid_code_error": "Invalid code or server error"
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",

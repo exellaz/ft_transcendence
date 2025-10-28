@@ -58,7 +58,11 @@
     "login": "登入",
     "loading": "載入中...",
     "continue_with_google": "使用 Google 繼續",
-    "signup_prompt": "還沒有帳號？註冊"
+    "signup_prompt": "還沒有帳號？註冊",
+    "2fa": "雙重驗證",
+    "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
+    "verify_code": "驗證代碼",
+    "invalid_code_error": "代碼無效或伺服器錯誤"
   },
   "MainMenuView": {
     "tournament_mode": "錦標賽模式",
