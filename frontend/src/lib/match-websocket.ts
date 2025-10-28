@@ -48,11 +48,17 @@ export function useMatchWebsocket(
             return;
         }
 
+        //get JWT
+        const userJWT = localStorage.getItem("authToken");
+        if (!userJWT) return;
+        console.log("Room ws connecting with JWT:", userJWT); ////debug
+
+
         const key = `${roomId}-${player.id}`;
         let ws = matchWebsocket.get(key);
         if (!ws || ws.readyState === WebSocket.CLOSED) {
             ws = new WebSocket(
-                import.meta.env.VITE_WS_URL + `/ws-room?id=${player.id}&room=${roomId}&side=unknown&name=${encodeURIComponent(player.name)}&sprite=${encodeURIComponent(player.spriteUrl)}`,
+                import.meta.env.VITE_WS_URL + `/ws-room?&room=${roomId}&side=unknown`, [userJWT]
             );
             matchWebsocket.set(key, ws);
         }

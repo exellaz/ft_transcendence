@@ -89,11 +89,19 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       }
     } catch (err) { /* ignore parse errors */ }
 
+    //get JWT
+    const userJWT = localStorage.getItem("authToken");
+    if (!userJWT) {
+        console.warn("No JWT found, cannot connect to tournament WebSocket");
+        return;
+    }
+    console.log("Tournament ws connecting with JWT:", userJWT); ////debug
+
     const key = `${tournamentId}-${player.id}`;
     let ws = tournamentWebsocket.get(key);
     if (!ws || ws.readyState === WebSocket.CLOSED) {
         ws = new WebSocket(
-            `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}&playerId=${player.id}&name=${player.username}&avatar=${player.avatarUrl || ""}`,
+            `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}`, [userJWT],
         );
         tournamentWebsocket.set(key, ws);
     }

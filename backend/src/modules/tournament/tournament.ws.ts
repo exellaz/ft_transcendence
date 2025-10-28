@@ -4,18 +4,57 @@ import { tournaments } from "./tournament.routes";
 import { startTournamentCountdown, cancelTournamentCountdown } from "./tournament";
 import { createTournament } from "./tournament.service";
 import { TournamentPlayerWs } from "../../types/interface";
-import { count } from "console";
-import { broadcast } from "src/utils/utils";
+import jwt, { JwtPayload } from "jsonwebtoken";
+
+//! temporary helper function to get user info by id
+import { GetUserRequest, GetUserResponse } from "../../../../frontend/src/types/usersApi";
+export async function getUserInfoById({
+  id,
+}: GetUserRequest): Promise<GetUserResponse> {
+  const res = await fetch(`http://localhost:3000/users/${id}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return res.json();
+}
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 
 export default async function tournamentWsRoute(fastify: FastifyInstance) {
-    fastify.get("/ws-tournament", { websocket: true }, (socket: WebSocket, req: FastifyRequest) => {
+    fastify.get("/ws-tournament", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
         const url = new URL(req.url!, `http://${req.headers.host}`);
         const tournamentId = parseInt(url.searchParams.get("id") || "");
-        const playerId = parseInt(url.searchParams.get("playerId") || "");
-        const playerName = url.searchParams.get("name");
-        const playerSprite = url.searchParams.get("avatar");
+
+        const token = req.headers["sec-websocket-protocol"];
+        if (!token) {
+          socket.close(1008, "Authentication token is required");
+          return null;
+        }
+        const secret = process.env.JWT_SECRET as string;
+        const decode = jwt.verify(token, secret) as JwtPayload;
+        if (decode === null || !decode.userId) {
+          socket.close(1008, "Invalid authentication token");
+          return null;
+        }
+
+        const playerId = decode.userId as number;
+        const user = await getUserInfoById({ id: playerId });
+        if (!user || !user.data) {
+          socket.close(1008, "User not found");
+          return null;
+        }
+
+        const playerName = user.data.username;
+        if (!playerName) {
+            socket.close(1008, "Invalid user name");
+            return null;
+        }
+        const playerSprite = user.data.avatarUrl;
+        if (!playerSprite) {
+            socket.close(1008, "Invalid user sprite");
+            return null;
+        }
 
         //validate parameters
         if (!tournamentId || !playerId || !playerName || !playerSprite) {

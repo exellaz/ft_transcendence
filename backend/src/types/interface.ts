@@ -39,8 +39,8 @@ export interface TournamentLobby {
   nextTournamentId?: number;
   parentTournamentId?: number;
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
-  eliminatedOrder: number[];
-  placements: { clientId: number; rank: number }[];
+  eliminatedOrder?: number[];
+  placements?: { clientId: number; rank: number }[];
 }
 
 export interface TournamentGameRoom {

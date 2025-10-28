@@ -145,36 +145,6 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     }
   });
 
-//  app.patch("/update-tournament/:tournamentId", async (
-//    req: FastifyRequest<{ Params: { tournamentId: string } }>,
-//    reply: FastifyReply
-//  ) => {
-//    const tournamentId = parseInt(req.params.tournamentId);
-//    const { maxPlayer, stage } = req.body as { maxPlayer?: number; stage: string; };
-
-//    const tournament = tournaments.get(tournamentId);
-//    if (!tournament) {
-//      return reply.status(404).send({ error: "Tournament not found" });
-//    }
-
-//    if (stage && typeof stage === "string" && stage.trim() !== "") {
-//      tournament.stage = stage as "QF" | "SF" | "F";
-//    }
-
-//    if (maxPlayer && typeof maxPlayer === "number") {
-//      tournament.maxPlayer = maxPlayer;
-//    }
-
-//    return ({
-//      id: tournament.id,
-//      name: tournament.name,
-//      players: tournament.players,
-//      lock: false,
-//      stage: tournament.stage,
-//      maxPlayer: tournament.maxPlayer,
-//    });
-//  });
-
   // GET /list-tournaments - list all tournaments
   app.get("/list-tournaments", async () => {
     const response = Array.from(tournaments.values()).map((tournament) => ({
