@@ -51,8 +51,8 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     room.sockets.set(socket, clientId);
     room.clients.add(socket);
 
-    const heartbeat = createAppHeartbeat(socket, { heartbeatMs: 30000, receiveTimeoutMs: 5000, maxMissed: 3 });
-    heartbeat.start();
+    //const heartbeat = createAppHeartbeat(socket, { heartbeatMs: 1000, receiveTimeoutMs: 5000, maxMissed: 3 });
+    //heartbeat.start();
 
     // console.log("player sprite: ", playerSprite); ////debug
     // console.log("player name: ", playerName); ////debug
@@ -74,10 +74,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           return closeSocket(socket, 1003, "Invalid JSON");
         }
 
-        if (msg.type === "returnHeartbeat") {
-          heartbeat.onAck();
-          return;
-        }
+        //if (msg.type === "returnHeartbeat") {
+        //  heartbeat.onAck();
+        //  return;
+        //}
 
         // --- validation ---
         if (typeof msg !== "object" || msg === null)
@@ -102,7 +102,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         };
 
         if (msg.type === "ready") {
-        //   console.log("player added ", clientId); ////debug
+           console.log("player added ", clientId); ////debug
           room.game.addPlayer(
             new Player({
               id: clientId,
@@ -156,8 +156,12 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       //0 loading, 1 countdown, 2 started, 3 ended
       // console.log("pong game state: ", room.game.state); ////debug
 
+	  if (code === 1001) {
+
+	  }
+
       //clean heartbeat
-      heartbeat.stop();
+    //  heartbeat.stop();
 
       //if game still loading or game ended, ignore
       if (room.game.state === 0 || room.game.state === 3) return;
@@ -195,8 +199,8 @@ export function createAppHeartbeat(
     closeReason?: string;
   },
 ) {
-  const heartbeatMs = opts?.heartbeatMs ?? 10000;
-  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 5000;
+  const heartbeatMs = opts?.heartbeatMs ?? 1000;
+  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 10000;
   const maxMissed = opts?.maxMissed ?? 3;
   const closeCode = opts?.closeCode ?? 1003;
   const closeReason = opts?.closeReason ?? "Heartbeat timeout";
@@ -226,6 +230,7 @@ export function createAppHeartbeat(
       }
       isAlive = false;
       try {
+		console.log("sending heartbeat"); ////debug
         socket.send(JSON.stringify({ type: "heartbeat" }));
       } catch (err) {
         cleanupTimers();
@@ -247,6 +252,7 @@ export function createAppHeartbeat(
   }
 
   function onAck() {
+	console.log("heartbeat ack received"); ////debug
     isAlive = true;
     missed = 0;
     if (receiveTimeout) { clearTimeout(receiveTimeout); receiveTimeout = null; }

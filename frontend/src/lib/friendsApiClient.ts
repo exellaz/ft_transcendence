@@ -21,7 +21,7 @@ import type {
   UpdateFriendshipResponse,
 } from "../types/friendsApi";
 
-const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
 export async function getPendingFriendshipsByUserId({

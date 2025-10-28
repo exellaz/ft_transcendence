@@ -5,7 +5,7 @@ import type {
   GetTournamentStatsResponse,
 } from "@/types/tournamentApi";
 
-const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // GET /users/:id/tournament-history  - tournament history + matches
 export async function getTournamentHistoryRequest({

@@ -6,7 +6,7 @@ const { chromium } = require("playwright");
   const room_list = "http://localhost:5173/roomList";
   const LOGIN_PATH = "/login";
   const SUCCESS_PATH = "/main-menu";
-  const TOTAL_TABS = 9;
+  const TOTAL_TABS = 8;
 
   const USERS = [
     { identifier: "username1", password: "Password1" },
@@ -27,7 +27,7 @@ const { chromium } = require("playwright");
   for (let i = 0; i < TOTAL_TABS; i++) {
     const { identifier, password } = USERS[i % USERS.length];
 
-    const browser = await chromium.launch({ executablePath: "", headless: false });
+    const browser = await chromium.launch({ executablePath: "/opt/google/chrome/chrome", headless: false });
     browsers.push(browser);
 
     const context = await browser.newContext();
@@ -103,9 +103,9 @@ const { chromium } = require("playwright");
 
   }
 
-  if (lastPage) {
-    await lastPage.goto(`${room_list}`);
-  }
+//  if (lastPage) {
+//    await lastPage.goto(`${room_list}`);
+//  }
 
   console.log("All tabs opened. Close the browser manually when done.");
   await new Promise(() => {});

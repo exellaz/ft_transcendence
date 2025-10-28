@@ -302,16 +302,17 @@ const GameView: React.FC<GameViewProps> = () => {
   }, [gameOver, isWinner]);
 
   React.useEffect(() => {
-    if (!socket || socket.readyState !== WebSocket.OPEN) {
-      // console.log("waiting for socket connection..."); ////debug
+    if (!socket) {
+       console.warn("waiting for socket connection:", socket); ////debug
       return;
     }
 
       if (socket.readyState !== WebSocket.OPEN) {
-        socket.onopen = () => {
+		console.warn("socket -> open the game");
+        socket.addEventListener( "open", () => {
           let gameClient = new GameClient(canvasRef.current, socket);
           gameClient.start();
-        };
+        });
         return;
       }
       let gameClient = new GameClient(canvasRef.current, socket);
@@ -339,14 +340,12 @@ const GameView: React.FC<GameViewProps> = () => {
         {/*<TournamentHeader>
           {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
         </TournamentHeader>*/}
-        <div className="w-full h-[500px] flex-col-center border-4 border-yellow-400 text-white text-9xl text-center">
           <canvas
             ref={canvasRef}
             width={1000}
             height={500}
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
-        </div>
 
         {gameOver && !isWinner && (
           <div>

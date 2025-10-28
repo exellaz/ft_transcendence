@@ -124,6 +124,8 @@ export function updateCanStart(room: Room): {
   const teamsBalanced =
     leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
 
+ const enoughPlayers = leftPlayers.length + rightPlayers.length >= room.teamSize * 2;
+
   // --- decide why ---
   let reason: string | null = null;
   if (allPlayers.length <= 1) {
@@ -132,18 +134,20 @@ export function updateCanStart(room: Room): {
     reason = "Teams are not equal";
   } else if (!allReady) {
     reason = "Not all players are ready";
+  } else if (!enoughPlayers) {
+	reason = "Not enough players to start the game";
   }
 
   // set canStart based on conditions
   room.canStart = reason === null;
 
-  // console.log("updateCanStart:", { ////debug
-  //     allPlayers,
-  //     nonLeaderPlayers,
-  // 	teamsBalanced,
-  //     allReady,
-  //     canStart: room.canStart
-  // });
+//   console.log("updateCanStart:", { ////debug
+//       allPlayers,
+//       nonLeaderPlayers,
+//   	teamsBalanced,
+//       allReady,
+//       canStart: room.canStart
+//   });
 
   return { canStart: room.canStart, reason };
 }
