@@ -51,33 +51,33 @@ const App: React.FC = () => {
             <Route
               path="/"
               element={
-                //<RedirectIfAuth>
+                <RedirectIfAuth>
                   <LoginView />
-                //</RedirectIfAuth>
+                </RedirectIfAuth>
               }
             />
             <Route
               path="/login"
               element={
-                //<RedirectIfAuth>
+                <RedirectIfAuth>
                   <LoginView />
-                //</RedirectIfAuth>
+                </RedirectIfAuth>
               }
             />
             <Route
               path="/signup"
               element={
-                //<RedirectIfAuth>
+                <RedirectIfAuth>
                   <SignUpView />
-                //</RedirectIfAuth>
+                </RedirectIfAuth>
               }
             />
             <Route
               path="/signup-success"
               element={
-                //<RedirectIfAuth>
+                <RedirectIfAuth>
                   <SignUpSuccessView />
-                //</RedirectIfAuth>
+                </RedirectIfAuth>
               }
             />
             {/* Protected routes - require a valid JWT */}
