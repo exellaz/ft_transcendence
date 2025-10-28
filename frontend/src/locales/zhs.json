@@ -201,7 +201,7 @@
     "header": "如何玩",
     "objective_title": "目标",
     "objective_text": [
-      "目标很简单——将球击过对方的球拍以得分。每场比赛从发球开始。使用你的球拍反弹球并巧妙地击败对手。先获得五分的玩家获胜。"
+      "目标很简单——将球击过对方的球拍以得分。每场比赛从发球开始。使用你的球拍反弹球并巧妙地击败对手。先获得三分的玩家获胜。"
     ],
     "controls_title": "操作方法",
     "controls_text": [
@@ -261,6 +261,16 @@
     "lost": "失败",
     "no_history_yet": "暂无比赛记录"
   },
+  "TwoFAPopup": {
+    "header": "双重验证设置",
+    "2fa_not_enabled_message": "尚未启用双重验证（2FA）。",
+    "enable_2fa": "启用双重验证",
+    "authenticator_instructions": "设置您的验证器，然后输入下方的六位数代码。",
+    "verify_code": "验证代码",
+    "2fa_enabled_message": "双重验证（2FA）已启用。",
+    "disable_2fa": "停用双重验证",
+    "invalid_code_error": "代码无效或服务器错误"
+  },
   "ApiState": {
     "loading": "加载中...",
     "error": "错误",
@@ -314,6 +324,7 @@
     "loading": "加载中...",
     "my_profile": "我的资料",
     "basic_info": "基本信息",
+    "2fa_settings": "双重验证设置",
     "tournament_stats": "锦标赛统计",
     "friends": "好友",
     "how_to_play": "如何玩",
