@@ -13,6 +13,7 @@ import Logo from "../components/Logo";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
 import TextButton from "../components/TextButton";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
@@ -97,6 +98,14 @@ const LoginView: React.FC = () => {
     }
   };
 
+  const handleGoogleSuccess = () => {
+    setError(null);
+  };
+
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
   return (
     <PreLoginLayout>
       <Card>
@@ -123,12 +132,11 @@ const LoginView: React.FC = () => {
           {isLoading ? translate("loading") : translate("login")}
         </Button>
         <Divider />
-        <Button variant="longWhite" className="flex-row-center gap-2">
-          <div>
-            <img src="/assets/google.png" alt="google.png" className="w-5" />
-          </div>
-          {translate("continue_with_google")}
-        </Button>
+        <GoogleLoginButton
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+        />
+
         <TextButton onClick={() => navigate("/signup")}>
           {translate("signup_prompt")}
         </TextButton>

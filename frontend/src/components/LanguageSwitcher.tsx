@@ -17,7 +17,7 @@ const LanguageSwitcher: React.FC = () => {
           key={option.value}
           type="button"
           onClick={() => setLanguage(option.value)}
-          className={`text-card-blue text-lg px-4 py-2 cursor-pointer 
+          className={`text-card-blue text-lg px-4 py-2 cursor-pointer
             ${language === option.value ? "font-bold bg-grass-light-green border-y-4 border-yellow-400" : ""}
           `}
         >

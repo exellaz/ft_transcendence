@@ -6,6 +6,7 @@ declare module "fastify" {
       id: number;
       username: string;
       email: string;
+      googleId: string | null;
       avatarUrl: string | null;
       status: string;
       joinedAt: Date;
