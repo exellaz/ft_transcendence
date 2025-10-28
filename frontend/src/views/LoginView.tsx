@@ -26,7 +26,7 @@ const LoginView: React.FC = () => {
 
   // TODO: Remove hardcoded error
   const [verifyError, setVerifyError] = useState<string | null>(
-    translate("invalid_code_error")
+    translate("invalid_code_error"),
   );
   const [step, setStep] = useState<"login" | "2FA">("login");
   const [code, setCode] = useState("");

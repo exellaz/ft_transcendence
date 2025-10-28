@@ -39,7 +39,7 @@ const TwoFAPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
 
   // TODO: remove hardcoded states when API is ready
   const [verifyError, setVerifyError] = useState<string | null>(
-    translate("invalid_code_error")
+    translate("invalid_code_error"),
   );
   const [step, setStep] = useState<"initial" | "setup" | "enabled">("setup");
   const [qrUrl, setQrUrl] = useState("/assets/qr-placeholder.png");
