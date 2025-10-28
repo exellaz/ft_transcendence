@@ -39,16 +39,27 @@ const Messaging: React.FC<MessagingProps> = ({
 
   // message in input bar
   const [message, setMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const isInitialRender = useRef(true);
   // limit user's message length
   const MESSAGE_LIMIT = 200;
 
   // Auto-scroll to the bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollTo({
-      top: messagesEndRef.current.scrollHeight,
-      behavior: "smooth",
-    });
+    const container = messagesEndRef.current;
+    if (!container) return;
+
+    if (isInitialRender.current) {
+      // Initial render - jump straight to the bottom
+      container.scrollTop = container.scrollHeight;
+      isInitialRender.current = false;
+    } else {
+      // Later updates - smooth scroll
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [messages]);
 
   // Handler to send message
@@ -58,7 +69,7 @@ const Messaging: React.FC<MessagingProps> = ({
     // negative tempId to differentiate optimistic ids from real ids
     // these will be reconciled when the server sends back an acknowledgement
     // with the real message id
-    const tempId = Date.now() * -1; 
+    const tempId = Date.now() * -1;
     // optimistic UI update via React Query
     // await waits for the optimistic update to complete
     // await only applicable for functions that actually return a promise
