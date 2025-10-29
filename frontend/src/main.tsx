@@ -1,4 +1,5 @@
 import { StrictMode } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import { LanguageProvider } from "./context/LanguageProvider";
 import { UserProvider } from "./context/UserProvider.tsx";
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
       <LanguageProvider>
         <UserProvider>
           <OnlineStatusProvider>
-            <App />
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
           </OnlineStatusProvider>
         </UserProvider>
       </LanguageProvider>

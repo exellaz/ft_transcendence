@@ -1,10 +1,16 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import type { FriendChatMessage } from "./types/friendsApi";
+
+// components
+import BouncingSprites from "./components/BouncingSprites";
 import CatchAllRedirect from "./components/CatchAllRedirect";
 import RedirectIfAuth from "./components/RedirectIfAuth";
 import RequireAuth from "./components/RequireAuth";
 import RequireGameMode from "./components/RequireGameMode";
 
+// views
 import AdvanceView from "./views/tournament/AdvanceView";
 import ChooseSpriteView from "./views/ChooseSpriteView";
 import CustomModeView from "./views/CustomModeView";
@@ -20,7 +26,6 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
-import BouncingSprites from "./components/BouncingSprites";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
 // including BouncingSprites at the App level ensures animation consistency
@@ -42,9 +47,27 @@ const PreLoginWrapper: React.FC<{ children: React.ReactNode }> = ({
 };
 
 const App: React.FC = () => {
+  const location = useLocation();
+  const hideToastPaths = ["/", "/login", "/signup", "/signup-success", "/game", "/local-game"];
+  const hideToast = hideToastPaths.includes(location.pathname);
+
+  useEffect(() => {
+    const handler = (event: CustomEvent<FriendChatMessage>) => {
+      toast.info(
+        `New message from ${event.detail.senderId}: ${event.detail.message}`
+      );
+    };
+
+    window.addEventListener("newMessage", handler as EventListener);
+
+    return () => {
+      window.removeEventListener("newMessage", handler as EventListener);
+    };
+  }, []);
+
   return (
     <>
-      <BrowserRouter>
+      {!hideToast && <ToastContainer />}
         <PreLoginWrapper>
           <Routes>
             {/* Pre-login routes - redirect away if already authenticated */}
@@ -198,7 +221,6 @@ const App: React.FC = () => {
             <Route path="*" element={<CatchAllRedirect />} />
           </Routes>
         </PreLoginWrapper>
-      </BrowserRouter>
     </>
   );
 };

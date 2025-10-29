@@ -332,7 +332,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends",
+    "friends": "Friends",
     "choose_sprite": "Choose Sprite"
   }
 }

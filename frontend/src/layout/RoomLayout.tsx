@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
-import { toast, ToastContainer } from "react-toastify";
-import type { FriendChatMessage } from "../types/friendsApi";
 
 import Background from "../components/Background";
 import Button from "../components/Button";
@@ -28,7 +26,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
   const translate = (key: string) => t(`RoomLayout.${key}`);
   const [showChooseSprite, setShowChooseSprite] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
-  const [showInviteFriends, setShowInviteFriends] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
 
   const { user } = useUser();
   const userId = user?.id ?? 0;
@@ -36,27 +34,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
   const roomId = sessionStorage.getItem("RoomId");
   if (!roomId) return <div>{translate("no_room")}</div>;
 
-  const showInviteFriendsRef = useRef(showInviteFriends);
-  useEffect(() => {
-    const handler = (event: CustomEvent<FriendChatMessage>) => {
-      // showInviteFriendsRef.current always holds the latest value of showInviteFriends.
-      if (!showInviteFriendsRef.current) {
-        toast.info(
-          `New message from ${event.detail.senderId}: ${event.detail.message}`
-        );
-      }
-    };
-
-    window.addEventListener("newMessage", handler as EventListener);
-
-    return () => {
-      window.removeEventListener("newMessage", handler as EventListener);
-    };
-  }, []);
-
   return (
     <Background>
-      <ToastContainer />
       <div className="absolute top-10 right-10 flex-col-center gap-6 z-20">
         <Button variant="profile" onClick={() => setShowChooseSprite(true)}>
           {translate("choose_sprite")}
@@ -66,8 +45,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
             {translate("game_settings")}
           </Button>
         )}
-        <Button variant="profile" onClick={() => setShowInviteFriends(true)}>
-          {translate("invite_friends")}
+        <Button variant="profile" onClick={() => setShowFriends(true)}>
+          {translate("friends")}
         </Button>
       </div>
       {children}
@@ -83,8 +62,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
         roomId={roomId}
       />
       <FriendsPopup
-        open={showInviteFriends}
-        onClose={() => setShowInviteFriends(false)}
+        open={showFriends}
+        onClose={() => setShowFriends(false)}
         userId={userId}
       />
     </Background>

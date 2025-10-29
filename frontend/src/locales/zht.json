@@ -332,7 +332,7 @@
   },
   "RoomLayout": {
     "game_settings": "遊戲設定",
-    "invite_friends": "邀請好友",
+    "friends": "好友",
     "choose_sprite": "選擇角色"
   }
 }
