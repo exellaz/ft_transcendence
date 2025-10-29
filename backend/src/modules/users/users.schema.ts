@@ -120,7 +120,6 @@ export const patchUserByIdSchema = {
         maxLength: 15,
         pattern: "^[a-zA-Z0-9_-]+$",
       },
-      avatarUrl: { type: "string" },
     },
     additionalProperties: false,
   },

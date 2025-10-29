@@ -112,19 +112,16 @@ async function userRoutes(fastify: FastifyInstance) {
     { schema: patchUserByIdSchema },
     async (request) => {
       const { id } = request.params as { id: string };
-      const { username, avatarUrl } = request.body as {
+      const { username } = request.body as {
         username?: string;
-        avatarUrl?: string;
       };
 
       interface UserPatchData {
         username?: string;
-        avatarUrl?: string;
       }
       // Build update object dynamically
       const data: UserPatchData = {};
       if (username !== undefined) data.username = username;
-      if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
       if (Object.keys(data).length === 0)
         throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");

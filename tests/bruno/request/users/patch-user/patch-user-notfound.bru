@@ -12,13 +12,12 @@ patch {
 
 body:json {
   {
-    "username": "updatedName",
-    "avatarUrl": "https://example.com/avatar.png"
+    "username": "updatedName"
   }
 }
 
 assert {
-	res.status: eq 404
-	res.body.success: eq false
-	res.body.error: contains "User not found"
+  res.status: eq 404
+  res.body.success: eq false
+  res.body.error: contains "User not found"
 }

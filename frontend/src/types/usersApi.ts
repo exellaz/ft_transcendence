@@ -37,7 +37,6 @@ export interface GetUserResponse extends ApiResponse<User> {}
 export interface UpdateUserRequest {
   id: number; // user ID to update
   username?: string; // optional
-  avatarUrl?: string; // optional
 }
 
 export interface UpdateUserResponse extends ApiResponse<User> {}
