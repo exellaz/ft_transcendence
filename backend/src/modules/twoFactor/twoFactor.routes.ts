@@ -39,7 +39,7 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
         request.user?.username || "user",
         secret,
       );
-      return ok({ qrCode: qrCodeDataUri, secret });
+      return ok({ qrUri: qrCodeDataUri, secret });
     },
   );
 
@@ -115,6 +115,25 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
         `Two-factor authentication disabled for user: ${request.user?.username}`,
       );
       return ok({ message: "Two-factor authentication disabled successfully" });
+    },
+  );
+
+  fastify.get(
+    "/auth/two-factor/status",
+    { preHandler: authenticate },
+    async (request) => {
+      const userId = request.user?.id || "";
+
+      const user = await fastify.db.user.findUnique({
+        where: { id: userId },
+        select: { twoFactorEnabled: true },
+      });
+
+      if (!user) {
+        throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+      }
+
+      return ok({ twoFactorEnabled: user.twoFactorEnabled });
     },
   );
 }
