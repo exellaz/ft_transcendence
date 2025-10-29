@@ -55,6 +55,16 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const [addFriendError, setAddFriendError] = useState<string | null>(null);
   const [addFriendSuccess, setAddFriendSuccess] = useState(false);
 
+  type LastMessage = {
+    message: string;
+    timestamp: Date;
+  };
+  const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
+    {}
+  );
+  // maps userId to unread status boolean
+  const [unreadMap, setUnreadMap] = useState<Record<number, boolean>>({});
+
   // API query for friends list
   const {
     data: friends,
@@ -65,14 +75,6 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open],
     userId !== 0
-  );
-
-  type LastMessage = {
-    message: string;
-    timestamp: Date;
-  };
-  const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
-    {}
   );
 
   // secondary API call to fetch last message for each friend
@@ -123,12 +125,20 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   useEffect(() => {
     const handler = (event: Event) => {
       const msg = (event as CustomEvent<FriendChatMessage>).detail;
+
+      // update last message
       setLastMessages((prev) => ({
         ...prev,
         [msg.friendshipId]: {
           message: msg.message,
           timestamp: msg.timestamp,
         },
+      }));
+
+      // mark sender as unread
+      setUnreadMap((prev) => ({
+        ...prev,
+        [msg.senderId]: true,
       }));
     };
 
@@ -332,12 +342,16 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
               }
               timestamp={last.timestamp}
               online={isFriendOnline(user.id)} // ! TO CHANGE
-              onClick={() =>
-                selectedUser === user
-                  ? setSelectedUser(null)
-                  : setSelectedUser(user)
-              }
+              onClick={() => {
+                // clear unread when clicked
+                setUnreadMap((prev) => ({
+                  ...prev,
+                  [user.id]: false,
+                }));
+                setSelectedUser(selectedUser === user ? null : user);
+              }}
               active={selectedUser === user}
+              unread={unreadMap[user.id]}
             />
           );
         })}
