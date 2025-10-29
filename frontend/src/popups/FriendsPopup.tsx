@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
+import { useQueryClient } from "@tanstack/react-query";
 import { useOnlineStatus } from "../context/OnlineStatusProvider";
 import {
   createFriendship,
@@ -41,6 +42,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`FriendsPopup.${key}`);
 
+  const queryClient = useQueryClient();
+
   // Selected user and active tab states
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const tabs = ["friends", "requests", "blocked"] as const;
@@ -78,6 +81,8 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   );
 
   // secondary API call to fetch last message for each friend
+  // this API is independent so that we don't have to fetch the entire chat history
+  // if the Messaging component is never opened.
   useEffect(() => {
     if (!friends || friends.length === 0) return;
 
@@ -122,6 +127,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     };
   }, [friends]);
 
+  // update last message when FRIEND_MESSAGE or MESSAGE_ACK received
   useEffect(() => {
     const handler = (event: Event) => {
       const msg = (event as CustomEvent<FriendChatMessage>).detail;
@@ -142,11 +148,42 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       }));
     };
 
-    // handler is dispatched upon "FRIEND_MESSAGE" and "MESSAGE_ACK"
-    // events in OnlineStatusProvider
     window.addEventListener("updateLastMessage", handler);
     return () => window.removeEventListener("updateLastMessage", handler);
   }, []);
+
+  // update last message when Messaging component refetches messages
+  useEffect(() => {
+    // listen for query cache update
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.type !== "updated") return;
+
+      const query = event.query;
+      // check that query.queryKey[] is an array for safe destructuring
+      // ["friendMessages", 1] → FriendChatMessage[]
+      // ["friendMessages", 2] → FriendChatMessage[]
+      if (!Array.isArray(query.queryKey)) return;
+      // Only care about friendMessages queries
+      if (query.queryKey[0] !== "friendMessages") return;
+
+      const [_, friendshipId] = query.queryKey;
+      const messages = query.state.data as FriendChatMessage[] | undefined;
+      if (!messages || messages.length === 0) return;
+
+      // gets last message from the cache
+      const last = messages[messages.length - 1];
+      setLastMessages((prev) => ({
+        ...prev,
+        [friendshipId]: {
+          message: last.message,
+          timestamp: last.timestamp,
+        },
+      }));
+    });
+
+    // cleanup function - similar logic to removeEventListener
+    return () => unsubscribe();
+  }, [queryClient]);
 
   // useMemo lets you cache the result of an expensive computation
   // and only recompute it when certain dependencies change.
