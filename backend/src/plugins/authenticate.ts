@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/response.ts";
-import type { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyRequest } from "fastify";
 
 const AuthErrors = {
   MISSING_BEARER: "MISSING_BEARER",

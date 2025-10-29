@@ -97,7 +97,7 @@ const LoginView: React.FC = () => {
       }
 
       navigate("/main-menu");
-    } catch (err) {
+    } catch {
       setError(translate("login_failed"));
     } finally {
       setIsLoading(false);

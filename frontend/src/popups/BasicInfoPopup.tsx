@@ -93,7 +93,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       refetch();
       // notify ProfileDropdown about updated user data
       window.dispatchEvent(new CustomEvent("userUpdated"));
-    } catch (err) {
+    } catch {
       setSaveError(translate("save_failed"));
     }
   };

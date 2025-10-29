@@ -27,7 +27,7 @@ const LiveChat: React.FC<{
   const translate = (key: string) => t(`LiveChat.${key}`);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const MESSAGE_LIMIT = 200;
-  
+
   // Auto-scroll to the bottom when chatMessages change
   useEffect(() => {
     messagesEndRef.current?.scrollTo({
@@ -40,7 +40,7 @@ const LiveChat: React.FC<{
   const getDisplayName = (msg: LiveChatMessage) => {
     if (msg.id === -1) return "System"; // System messages
     const player = players.find(
-      (p: WaitingTournamentPlayer) => p.id === msg.id
+      (p: WaitingTournamentPlayer) => p.id === msg.id,
     ); // Find player by uid
     return player ? player.username : "Unknown"; // Fallback to "Unknown" if not found
   };

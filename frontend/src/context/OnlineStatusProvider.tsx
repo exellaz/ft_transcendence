@@ -71,7 +71,7 @@ interface OnlineStatusContextType {
   wsSendMessage: (
     tempId: number,
     friendshipId: number,
-    message: string
+    message: string,
   ) => void;
 }
 
@@ -79,7 +79,7 @@ interface OnlineStatusContextType {
 // Create context
 // -------------------------
 const OnlineStatusContext = createContext<OnlineStatusContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // -------------------------
@@ -108,7 +108,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   >(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [userId],
-    userId !== 0
+    userId !== 0,
   );
 
   let friendIds: number[] = [];
@@ -116,7 +116,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   // console.log("FRIENDS IDS:", friendIds); // logs
 
   const [friendStatusMap, setFriendStatusMap] = useState<Map<number, boolean>>(
-    () => new Map(friendIds.map((id) => [id, false]))
+    () => new Map(friendIds.map((id) => [id, false])),
   );
 
   // Rebuild the status map when friends change
@@ -150,7 +150,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 
     ws.onopen = () => {
       console.log(
-        "[Online Status websocket] ✅ Connected to online-status WebSocket"
+        "[Online Status websocket] ✅ Connected to online-status WebSocket",
       );
     };
 
@@ -166,7 +166,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             data.onlineFriends.forEach((fid) => updated.set(fid, true));
             console.log(
               "[Online Status websocket] 🔄 Init friendStatusMap:",
-              updated
+              updated,
             ); // logs
             return updated;
           });
@@ -178,7 +178,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             updated.set(data.friendId, data.online);
             console.log(
               "[Online Status websocket] 🔄 Updated friendStatusMap:",
-              updated
+              updated,
             ); // logs
             return updated;
           });
@@ -188,7 +188,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           // Refetch friends list on friendship update
           refetchFriends();
           console.log(
-            "[Online Status websocket] 🔄 Friendship update - refetched friends and updated map"
+            "[Online Status websocket] 🔄 Friendship update - refetched friends and updated map",
           );
           break;
 
@@ -198,17 +198,17 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           qc.setQueryData<FriendChatMessage[]>(
             ["friendMessages", message.friendshipId],
             // add new message to the cache
-            (old = []) => [...old, message]
+            (old = []) => [...old, message],
           );
           window.dispatchEvent(
             new CustomEvent<FriendChatMessage>("updateLastMessage", {
               detail: message,
-            })
+            }),
           );
           window.dispatchEvent(
             new CustomEvent<FriendMessageMsg>("newMessage", {
               detail: data,
-            })
+            }),
           );
           break;
         }
@@ -219,12 +219,12 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             // optimistic message in cache is replaced with savedMessage from server
             // .map() creates a new array
             (old = []) =>
-              old.map((msg) => (msg.id === tempId ? savedMessage : msg))
+              old.map((msg) => (msg.id === tempId ? savedMessage : msg)),
           );
           window.dispatchEvent(
             new CustomEvent<FriendChatMessage>("updateLastMessage", {
               detail: savedMessage,
-            })
+            }),
           );
           break;
         }
@@ -235,7 +235,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             // client removes the optimistic message that failed to send from the cache
             // old is the current cached array
             // .filter() creates a new array
-            (old = []) => old.filter((m) => m.id !== tempId)
+            (old = []) => old.filter((m) => m.id !== tempId),
           );
           break;
         }
@@ -247,7 +247,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 
     ws.onclose = () => {
       console.log(
-        "[Online Status websocket] ❌ Disconnected from online-status WebSocket"
+        "[Online Status websocket] ❌ Disconnected from online-status WebSocket",
       );
     };
 
@@ -273,7 +273,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const wsSendMessage = (
     tempId: number,
     friendshipId: number,
-    message: string
+    message: string,
   ) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
@@ -282,7 +282,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           tempId,
           friendshipId,
           message,
-        })
+        }),
       );
     }
   };
@@ -303,7 +303,7 @@ export const useOnlineStatus = (): OnlineStatusContextType => {
   const context = useContext(OnlineStatusContext);
   if (!context) {
     throw new Error(
-      "useOnlineStatus must be used within an OnlineStatusProvider"
+      "useOnlineStatus must be used within an OnlineStatusProvider",
     );
   }
   return context;

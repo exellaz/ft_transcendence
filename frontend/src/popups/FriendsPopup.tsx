@@ -63,7 +63,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     timestamp: Date;
   };
   const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
-    {}
+    {},
   );
   // maps userId to unread status boolean
   const [unreadMap, setUnreadMap] = useState<Record<number, boolean>>({});
@@ -77,7 +77,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<UserWithFriendshipId[]>(
     () => getAcceptedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // secondary API call to fetch last message for each friend
@@ -111,10 +111,10 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             console.error(
               "Error fetching last message for",
               friend.username,
-              err
+              err,
             );
           }
-        })
+        }),
       );
 
       if (isMounted) setLastMessages(results);
@@ -166,7 +166,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       // Only care about friendMessages queries
       if (query.queryKey[0] !== "friendMessages") return;
 
-      const [_, friendshipId] = query.queryKey;
+      const [, friendshipId] = query.queryKey;
       const messages = query.state.data as FriendChatMessage[] | undefined;
       if (!messages || messages.length === 0) return;
 
@@ -194,7 +194,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       [...friends]
         // filters friends list based on search term
         .filter((user) =>
-          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+          user.username.toLowerCase().includes(searchTerm.toLowerCase()),
         )
         // sort friend list by timestamp and username
         .sort((a, b) => {
@@ -228,7 +228,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User[]>(
     () => getPendingFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API query for blocked users list
@@ -240,7 +240,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User[]>(
     () => getBlockedFriendshipsByUserId({ userId: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API mutation to add a friend
@@ -271,7 +271,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   }
 
   const handleFriendUsernameChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setFriendUsername(e.target.value);
     if (addFriendError) setAddFriendError(null);
@@ -310,13 +310,13 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
           response.errorCode && typeof response.errorCode === "string"
             ? errorMessages[response.errorCode] ||
                 translate("add_friend_failed")
-            : translate("add_friend_failed")
+            : translate("add_friend_failed"),
         );
         return;
       }
       setAddFriendSuccess(true);
       handleCloseCascadeCard();
-    } catch (err) {
+    } catch {
       setAddFriendError(translate("add_friend_failed"));
     }
   };

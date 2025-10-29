@@ -26,5 +26,5 @@ createRoot(document.getElementById("root")!).render(
       queries and mutations - useful for debugging */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  </StrictMode>
+  </StrictMode>,
 );

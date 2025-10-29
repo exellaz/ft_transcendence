@@ -6,10 +6,7 @@ interface CustomToastProps {
   message: string;
 }
 
-const CustomToast: React.FC<CustomToastProps> = ({
-  username,
-  message,
-}) => {
+const CustomToast: React.FC<CustomToastProps> = ({ username, message }) => {
   const { t } = useTranslation();
 
   return (

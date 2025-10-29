@@ -43,7 +43,7 @@ export const useMessages = (friendshipId: number, enabled = true) => {
   const mutation = useMutation({
     // Messaging component will send the message over the websocket.
     // No-op function. Hook is purely for caching and optimistic UI.
-    mutationFn: async (_vars: { message: string; tempId: number }) => {},
+    mutationFn: async () => {},
 
     // onMutate: runs before the mutationFn
     // - creates the optimistic FriendChatMessage and adds it to the cache

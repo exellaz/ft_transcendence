@@ -22,7 +22,7 @@ const FriendTile: React.FC<FriendTileProps> = ({
   online,
   onClick,
   active,
-  unread
+  unread,
 }) => {
   return (
     <div
