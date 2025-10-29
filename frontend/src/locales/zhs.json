@@ -282,6 +282,9 @@
     "choose_sprite": "选择一个角色",
     "confirm": "确认"
   },
+  "CustomToast": {
+    "message_from": "来自 {{username}} 的新消息"
+  },
   "LiveChat": {
     "live_chat": "实时聊天",
     "send": "发送"

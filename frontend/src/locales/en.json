@@ -282,6 +282,9 @@
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
   },
+  "CustomToast": {
+    "message_from": "New message from {{username}}"
+  },
   "LiveChat": {
     "live_chat": "Live Chat",
     "send": "Send"
