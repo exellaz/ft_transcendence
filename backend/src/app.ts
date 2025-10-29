@@ -22,8 +22,6 @@ import onlineStatusRoutes from "./modules/online-status/online-status.routes";
 import multipart from '@fastify/multipart';
 import avatarUploadStaticPlugin from "./plugins/avatar-upload";
 import assetsStaticPlugin from "./plugins/assets.static";
-// import avatarUploadRoutes from "./modules/avatar-upload/avatar-upload.routes";
-;
 
 const app = Fastify({
   logger: false,
@@ -34,8 +32,9 @@ app.register(errorHandler);
 app.register(dbConnector);
 app.register(fastifySwagger, swaggerOptions);
 app.register(fastifySwaggerUi, swaggerUiOptions);
-app.register(avatarUploadStaticPlugin);
 app.register(multipart);
+app.register(avatarUploadStaticPlugin);
+app.register(assetsStaticPlugin);
 
 // routes
 app.register(userRoutes);

@@ -8,18 +8,18 @@ import { FastifyInstance } from "fastify";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const uploadsDir = path.join(__dirname, "../../uploads/avatars");
+export const assetsDir = path.join(__dirname, "../../public/assets");
 
-async function avatarUploadStaticPlugin(fastify: FastifyInstance) {
+async function assetsStaticPlugin(fastify: FastifyInstance) {
 
-  await fs.mkdir(uploadsDir, { recursive: true });
-
+  await fs.mkdir(assetsDir, { recursive: true });
+  console.log(`[assets static] Ensured assets directory exists at ${assetsDir}`);
   fastify.register(fastifyStatic, {
-    root: uploadsDir,
-    prefix: "/uploads/avatars/",
+    root: assetsDir,
+    prefix: "/assets/",
     decorateReply: false // needed
   });
 
 };
 
-export default fp(avatarUploadStaticPlugin);
+export default fp(assetsStaticPlugin);
