@@ -1,4 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserProvider";
+import { useNavigate } from "react-router-dom";
+import Button from "./Button";
 
 declare global {
   interface Window {
@@ -26,39 +30,141 @@ interface GoogleCredentialResponse {
 }
 
 interface Props {
-  onSuccess: (idToken: string) => void;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
 }
 
-export default function GoogleLoginButton({ onSuccess }: Props) {
-  useEffect(() => {
-    window.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async (response: GoogleCredentialResponse) => {
-        console.log("Google response:", response);
+export default function GoogleLoginButton({ onSuccess, onError }: Props) {
+  const { t } = useTranslation();
+  const { setUser } = useUser();
+  const navigate = useNavigate();
+  const [isGoogleReady, setIsGoogleReady] = useState(false);
+  const hiddenButtonRef = useRef<HTMLDivElement>(null);
+
+  const translate = (key: string) => t(`LoginView.${key}`);
+
+  const handleGoogleResponse = useCallback(
+    async (response: GoogleCredentialResponse) => {
+      try {
         const idToken = response.credential;
 
-        const res = await fetch("http://localhost:4000/auth/google", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idToken }),
         });
 
         const data = await res.json();
-        console.log("Server response", data);
 
-        if (data.ok) {
-           localStorage.setItem("authToken", data.token); // temporary storage
+        if (data.success) {
+          localStorage.setItem("authToken", data.data.token);
+          setUser(data.data.user);
+          onSuccess?.();
+          navigate("/main-menu");
+        } else {
+          onError?.(data.code || "google_signin_failed");
+        }
+      } catch (error) {
+        console.error("Google OAuth error:", error);
+      }
+    },
+    [onSuccess, onError, setUser, navigate, translate],
+  );
+
+  const handleGoogleLogin = useCallback(() => {
+    if (!isGoogleReady || !window.google) {
+      onError?.("Google Sign-In is not ready yet. Please try again.");
+      return;
+    }
+
+    const googleButton = hiddenButtonRef.current?.querySelector(
+      'div[role="button"]',
+    ) as HTMLElement;
+    if (googleButton) {
+      googleButton.click();
+    } else {
+      console.error("Google button not found");
+      onError?.("Failed to trigger Google Sign-In. Please try again.");
+    }
+  }, [isGoogleReady, onError]);
+
+  useEffect(() => {
+    const loadGoogleScript = () => {
+      if (window.google) {
+        initializeGoogle();
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogle;
+      script.onerror = () => {
+        console.error("Failed to load Google script");
+        onError?.("Failed to load Google Sign-In");
+      };
+      document.head.appendChild(script);
+    };
+
+    const initializeGoogle = () => {
+      try {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+        if (!clientId) {
+          console.error("Google Client ID not found");
+          onError?.("Google Sign-In configuration error");
+          return;
         }
 
-        onSuccess(idToken); // keep calling the parent handler
-      },
-    });
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+        });
 
-    window.google.accounts.id.renderButton(
-      document.getElementById("google-button"),
-      { theme: "outline", size: "large" },
-    );
-  }, [onSuccess]);
+        if (hiddenButtonRef.current) {
+          window.google.accounts.id.renderButton(hiddenButtonRef.current, {
+            theme: "outline",
+            size: "large",
+            type: "standard",
+          });
+        }
 
-  return <div id="google-button"></div>;
+        setIsGoogleReady(true);
+      } catch (error) {
+        console.error("Error initializing Google:", error);
+        onError?.("Failed to initialize Google Sign-In");
+      }
+    };
+
+    loadGoogleScript();
+  }, [handleGoogleResponse, onError]);
+
+  return (
+    <>
+      {/* Hidden Google button */}
+      <div
+        ref={hiddenButtonRef}
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          visibility: "hidden",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Custom styled button */}
+      <Button
+        variant="longWhite"
+        className="flex-row-center gap-2"
+        onClick={handleGoogleLogin}
+        disabled={!isGoogleReady}
+      >
+        <div>
+          <img src="/assets/google.png" alt="google.png" className="w-5" />
+        </div>
+        {isGoogleReady ? translate("continue_with_google") : "loading"}
+      </Button>
+    </>
+  );
 }

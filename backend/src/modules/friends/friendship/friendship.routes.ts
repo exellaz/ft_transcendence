@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
 import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
+import { getAcceptedFriends } from "./friendship.service";
 import {
   createFriendshipSchema,
   deleteFriendshipSchema,
@@ -9,6 +10,7 @@ import {
   getPendingFriendShipsByUserIdSchema,
   updateFriendshipSchema,
 } from "./friendship.schema";
+import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.routes";
 
 async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:userId/pending (get friends that send friend request to u)
@@ -42,74 +44,9 @@ async function friendshipRoutes(fastify: FastifyInstance) {
       const { userId } = request.params as { userId: string };
       const uid = Number(userId);
 
-      type UserWithFriendships = Prisma.UserGetPayload<{
-        include: {
-          sentFriendships: true;
-          receivedFriendships: true;
-        };
-      }>;
-      /**
-       *    Fetch all users who are in an accepted friendship with the current user.
-       *    includes both directions (sent & received), and select only the public fields.
-       *    Additionally,`id` of the accepted friendship is included
-       */
-      const friends: UserWithFriendships[] = await fastify.db.user.findMany({
-        where: {
-          OR: [
-            {
-              sentFriendships: {
-                some: { accepterId: uid, status: "accepted" },
-              },
-            },
-            {
-              receivedFriendships: {
-                some: { requesterId: uid, status: "accepted" },
-              },
-            },
-          ],
-        },
-        select: {
-          // include friendshipId
-          ...userPublicSelect,
-          sentFriendships: {
-            where: { accepterId: uid, status: "accepted" },
-            select: { id: true },
-          },
-          receivedFriendships: {
-            where: { requesterId: uid, status: "accepted" },
-            select: { id: true },
-          },
-        },
-      });
+      const acceptedFriends = await getAcceptedFriends(uid);
 
-      // Get all block relationships involving the current user.
-      const blocked: BlockedFriendship[] =
-        await fastify.db.blockedFriendship.findMany({
-          where: {
-            OR: [{ blockerId: uid }, { blockedId: uid }],
-          },
-        });
-
-      // Build a set of all user IDs that are blocked (in either direction).
-      const blockedIds = new Set(
-        blocked.map((b) => (b.blockerId === uid ? b.blockedId : b.blockerId)),
-      );
-
-      /**
-       * Format users:
-       *    - Filter out blocked users
-       *    - Exclude sentFriendships / receivedFriendships from the output
-       *    - Compute a single `friendshipId` (from sent or received)
-       */
-      const formatted = friends
-        .filter((u) => !blockedIds.has(u.id))
-        .map(({ sentFriendships, receivedFriendships, ...user }) => ({
-          ...user,
-          friendshipId:
-            sentFriendships[0]?.id ?? receivedFriendships[0]?.id ?? null,
-        }));
-
-      return ok(formatted);
+      return ok(acceptedFriends);
     },
   );
 
@@ -160,11 +97,23 @@ async function friendshipRoutes(fastify: FastifyInstance) {
             ],
           },
         });
-        if (inverseFriendship)
+        if (inverseFriendship) {
+          if (inverseFriendship.status === "pending")
+            throw ApiError.conflict(
+              "Friend request is pending",
+              "FRIEND_REQUEST_PENDING",
+            );
+          if (inverseFriendship.status === "accepted")
+            throw ApiError.conflict(
+              "Users are already friends",
+              "ALREADY_FRIENDS",
+            );
+          // fallback for any other status
           throw ApiError.conflict(
             "Friendship already exists",
             "FRIENDSHIP_CONFLICT",
           );
+        }
 
         const friendship = await fastify.db.friendship.create({
           data: {
@@ -234,6 +183,8 @@ async function friendshipRoutes(fastify: FastifyInstance) {
           where: { id: friendship.id },
           data: { status },
         });
+
+        notifyFriendshipUpdateToUsers(Number(requesterId), Number(accepterId));
 
         return ok(updatedFriendship);
       } catch (err: unknown) {

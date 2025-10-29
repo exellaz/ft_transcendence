@@ -15,6 +15,6 @@ export const errorResponseSchema = {
     error: { type: "string" },
     errorCode: { type: "string" },
   },
-  required: ["success", "error"],
+  required: ["success", "error", "errorCode"],
   additionalProperties: false,
 };

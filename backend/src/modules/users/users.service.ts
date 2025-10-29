@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // helper to generate unique user code *DEPRECATED*
 export async function generateUniqueUserCode(
@@ -97,4 +100,17 @@ export function validateLoginInput(identifier: string, password: string) {
   }
 
   return errors;
+}
+
+export async function doesUserIdExist(userId: number): Promise<boolean> {
+  try {
+    const user = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
+
+    return user !== null; // ✅ Return true only if user exists
+  } catch (err) {
+    console.error("Error checking user existence:", err);
+    return false;
+  }
 }

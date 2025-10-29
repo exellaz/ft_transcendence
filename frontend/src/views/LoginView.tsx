@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
@@ -8,11 +8,14 @@ import { login, getUserSettingsById } from "../lib/usersApiClient";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Divider from "../components/Divider";
+import Header from "../components/Header";
 import Input from "../components/Input";
 import Logo from "../components/Logo";
+import OtpInputField from "../components/OtpInputField";
 import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
 import TextButton from "../components/TextButton";
+import GoogleLoginButton from "../components/GoogleLoginButton";
 
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
@@ -21,13 +24,20 @@ const LoginView: React.FC = () => {
   const { setUser } = useUser();
   const { setLanguage } = useLanguage();
 
-  const [formData, setFormData] = React.useState({
+  // TODO: Remove hardcoded error
+  const [verifyError, setVerifyError] = useState<string | null>(
+    translate("invalid_code_error"),
+  );
+  const [step, setStep] = useState<"login" | "2FA">("login");
+  const [code, setCode] = useState("");
+
+  const [formData, setFormData] = useState({
     identifier: "",
     password: "",
   });
 
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,8 +50,9 @@ const LoginView: React.FC = () => {
     };
 
   const validateForm = (): string | null => {
-    if (!formData.identifier.trim()) return "Username or email is required";
-    if (!formData.password) return "Password is required";
+    if (!formData.identifier.trim())
+      return translate("username_or_email_required");
+    if (!formData.password) return translate("password_required");
     return null;
   };
 
@@ -61,7 +72,13 @@ const LoginView: React.FC = () => {
       });
 
       if (!loginResponse.success || !loginResponse.data) {
-        throw new Error(loginResponse.error || "Login failed");
+        // Check for errorCode and translate if present
+        if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
+          setError(translate("invalid_credentials"));
+        } else {
+          setError(translate("login_failed"));
+        }
+        return;
       }
 
       // Success: Store token and user data, then redirect
@@ -78,7 +95,7 @@ const LoginView: React.FC = () => {
 
       navigate("/main-menu");
     } catch (err) {
-      setError((err as Error).message);
+      setError(translate("login_failed"));
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +107,18 @@ const LoginView: React.FC = () => {
     }
   };
 
-  return (
-    <PreLoginLayout>
-      <Card>
+  const handleGoogleSuccess = () => {
+    setError(null);
+  };
+
+  const handleGoogleError = (errorMessage: string) => {
+    setError(errorMessage);
+  };
+
+  let children: React.ReactNode;
+  if (step === "login") {
+    children = (
+      <>
         <Logo />
         <Input
           placeholder={translate("username_or_email")}
@@ -100,6 +126,7 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("identifier")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/user.png" alt="user.png" className="w-10" />}
+          maxLength={254}
         />
         <Input
           placeholder={translate("password")}
@@ -108,22 +135,40 @@ const LoginView: React.FC = () => {
           onChange={handleInputChange("password")}
           onKeyDown={handleKeyPress}
           icon={<img src="/assets/lock.png" alt="lock.png" className="w-10" />}
+          maxLength={128}
         />
         {error && <Status text={error} color="red" />}
         <Button variant="longYellow" onClick={handleLogin}>
           {isLoading ? translate("loading") : translate("login")}
         </Button>
         <Divider />
-        <Button variant="longWhite" className="flex-row-center gap-2">
-          <div>
-            <img src="/assets/google.png" alt="google.png" className="w-5" />
-          </div>
-          {translate("continue_with_google")}
-        </Button>
+        <GoogleLoginButton
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+        />
         <TextButton onClick={() => navigate("/signup")}>
           {translate("signup_prompt")}
         </TextButton>
-      </Card>
+      </>
+    );
+  } else if (step === "2FA") {
+    children = (
+      <>
+        <Header>{translate("2fa")}</Header>
+        <img src="/assets/secure.png" alt="secure.png" className="w-40 h-40" />
+        <p className="text-white text-center text-xl">
+          {translate("enter_code")}
+        </p>
+        <OtpInputField value={code} onChange={setCode} />
+        {verifyError && <Status color="red" text={verifyError} />}
+        <Button onClick={() => {}}>{translate("verify_code")}</Button>
+      </>
+    );
+  }
+
+  return (
+    <PreLoginLayout>
+      <Card>{children}</Card>
     </PreLoginLayout>
   );
 };

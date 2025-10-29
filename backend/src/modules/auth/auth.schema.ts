@@ -5,6 +5,7 @@ import {
   successResponseSchema,
 } from "src/utils/common-schemas.";
 import { userResponseSchema } from "../users/users.schema";
+import { error } from "console";
 
 // POST /auth/register
 export const postUserRegisterSchema = {
@@ -59,6 +60,36 @@ export const postUserLoginSchema = {
       password: { type: "string", minLength: 1, maxLength: 128 },
     },
     required: ["identifier", "password"],
+    additionalProperties: false,
+  },
+  response: {
+    200: successResponseSchema({
+      type: "object",
+      properties: {
+        token: { type: "string" },
+        user: userResponseSchema,
+      },
+      required: ["token", "user"],
+      additionalProperties: false,
+    }),
+    400: errorResponseSchema,
+    401: errorResponseSchema,
+  },
+};
+
+// POST /auth/google
+export const postGoogleAuthSchema = {
+  tags: ["auth"],
+  body: {
+    type: "object",
+    properties: {
+      idToken: {
+        type: "string",
+        minLength: 1,
+        description: "Google ID token from OAuth flow",
+      },
+    },
+    required: ["idToken"],
     additionalProperties: false,
   },
   response: {

@@ -1,19 +1,9 @@
 {
-  "common": {
-    "loading": "加载中...",
-    "username_required": "用户名是必填项",
-    "username_length": "用户名必须为2-15个字符",
-    "username_characters": "只允许字母、数字和下划线"
-  },
   "AdvanceView": {
     "advancement": "晋级",
     "congratulations": "恭喜！",
     "next_round": "你已晋级到下一轮！",
     "continue": "继续"
-  },
-  "ChooseSpriteContents": {
-    "choose_sprite": "选择一个角色",
-    "confirm": "确认"
   },
   "CustomModeView": {
     "choose_action": "选择操作",
@@ -65,12 +55,20 @@
 	"close": "关闭"
   },
   "LoginView": {
+    "username_or_email_required": "必须输入用户名或电子邮件",
+    "password_required": "必须输入密码",
+    "invalid_credentials": "用户名、电子邮件或密码不正确",
+    "login_failed": "登录失败",
     "username_or_email": "用户名 / 电子邮件",
     "password": "密码",
     "login": "登录",
     "loading": "加载中...",
     "continue_with_google": "使用谷歌继续",
-    "signup_prompt": "还没有账号？注册"
+    "signup_prompt": "还没有账号？注册",
+    "2fa": "双重验证",
+    "enter_code": "请输入您的验证器应用中的六位数代码。",
+    "verify_code": "验证代码",
+    "invalid_code_error": "代码无效或服务器错误"
   },
   "MainMenuView": {
     "tournament_mode": "锦标赛模式",
@@ -101,11 +99,26 @@
     "login": "登录"
   },
   "SignUpView": {
+    "username_required": "必须输入用户名",
+    "email_required": "必须输入电子邮件",
+    "password_required": "必须输入密码",
+    "password_mismatch": "两次输入的密码不一致",
+    "username_invalid": "用户名只能包含字母、数字、下划线和连字符",
+    "username_too_short": "用户名至少需要 2 个字符",
+    "username_too_long": "用户名最多只能有 15 个字符",
+    "username_already_exists": "该用户名已被使用",
+    "email_invalid": "请输入有效的电子邮件地址",
+    "email_already_exists": "该电子邮件已被使用",
+    "password_too_weak": "密码必须包含大写字母、小写字母和数字",
+    "password_too_short": "密码至少需要 8 个字符",
+    "password_too_long": "密码过长",
+    "registration_failed": "注册失败",
     "username": "用户名",
     "username_available": "用户名可用",
     "email": "电子邮件",
     "password": "密码",
     "confirm_password": "确认密码",
+    "creating_account": "创建账户中...",
     "signup": "注册"
   },
   "SinglesRoomView": {
@@ -135,7 +148,11 @@
     "quit_confirmation": "你确定要退出锦标赛吗？"
   },
   "BasicInfoPopup": {
-    "loading": "加载中...",
+    "username_invalid": "用户名只能包含字母、数字、下划线和连字符",
+    "username_too_short": "用户名至少需要 2 个字符",
+    "username_too_long": "用户名最多只能有 15 个字符",
+    "username_conflict": "用户名已存在",
+    "save_failed": "保存更改失败",
     "header": "基本信息",
     "joined": "加入时间",
     "change_avatar": "更换头像",
@@ -147,13 +164,36 @@
     "upload_avatar": "上传新头像",
     "upload_avatar_button": "上传头像",
     "confirm_upload": "确认上传",
-    "avatar_updated": "头像已更新。",
-    "avatar_update_error": "头像更新失败。",
+    "avatar_updated": "头像已更新",
+    "avatar_update_error": "头像更新失败",
     "back": "返回"
   },
   "ConfirmationPopup": {
     "yes": "是",
     "no": "否"
+  },
+  "FriendsPopup": {
+    "tabs": {
+      "friends": "好友",
+      "requests": "请求",
+      "blocked": "已屏蔽"
+    },
+    "add_friend": "添加好友",
+    "search_friend": "搜索好友",
+    "enter_friend_username": "输入好友用户名",
+    "friend_added": "好友已添加",
+    "back": "返回",
+    "no_friends_yet": "还没有朋友",
+    "no_new_requests": "没有新的请求",
+    "no_blocked_users": "没有被屏蔽的用户",
+    "no_messages_yet": "还没有消息",
+    "enter_valid_username": "请输入有效的用户名",
+    "user_not_found": "未找到用户",
+    "friend_request_pending": "好友请求处理中",
+    "already_friends": "双方已是好友",
+    "friendship_conflict": "好友关系已存在",
+    "cannot_friend_self": "无法将自己添加为好友",
+    "add_friend_failed": "添加好友失败"
   },
   "GameSettingsPopup": {
     "header": "游戏设置",
@@ -169,7 +209,30 @@
     "small": "小",
     "big": "大"
   },
+  "HowToPlayPopup": {
+    "header": "如何玩",
+    "objective_title": "目标",
+    "objective_text": [
+      "目标很简单——将球击过对方的球拍以得分。每场比赛从发球开始。使用你的球拍反弹球并巧妙地击败对手。先获得三分的玩家获胜。"
+    ],
+    "controls_title": "操作方法",
+    "controls_text": [
+      "使用上下方向键移动你的球拍。在本地模式下，玩家1使用W / S键，玩家2使用上下方向键。"
+    ],
+    "tournament_title": "锦标赛模式",
+    "tournament_text": [
+      "在结构化的单人淘汰赛中竞争，比赛将经历四分之一决赛、半决赛和决赛。",
+      "获胜者将晋级下一轮，每轮中失败的玩家将根据比赛时长进行排名。较快失败将导致排名较低。",
+      "所有锦标赛游戏都会记录玩家排名和比赛历史。"
+    ],
+    "custom_title": "自定义模式",
+    "custom_text": [
+      "享受休闲玩法并拥有完整的自定义选项。创建或加入单人和双人房间，与朋友一起玩或与随机玩家匹配。",
+      "* 注意：本地模式仅支持单人比赛。"
+    ]
+  },
   "ProfilePopup": {
+    "loading": "加载中...",
     "header": "我的资料",
     "header_other": "资料",
     "add_friend": "添加好友",
@@ -208,13 +271,23 @@
     "finals": "决赛",
     "won": "胜利",
     "lost": "失败",
-    "no_history_yet": "暂无比赛记录。"
+    "no_history_yet": "暂无比赛记录"
+  },
+  "TwoFAPopup": {
+    "header": "双重验证设置",
+    "2fa_not_enabled_message": "尚未启用双重验证（2FA）。",
+    "enable_2fa": "启用双重验证",
+    "authenticator_instructions": "设置您的验证器，然后输入下方的六位数代码。",
+    "verify_code": "验证代码",
+    "2fa_enabled_message": "双重验证（2FA）已启用。",
+    "disable_2fa": "停用双重验证",
+    "invalid_code_error": "代码无效或服务器错误"
   },
   "ApiState": {
     "loading": "加载中...",
     "error": "错误",
     "try_again": "重试",
-    "not_found": "未找到记录。"
+    "not_found": "未找到记录"
   },
   "CascadeCard": {
     "confirm_block": "确定要屏蔽 {{username}} 吗？",
@@ -226,6 +299,10 @@
     "back_to_chat": "返回聊天",
     "block": "屏蔽",
     "unblock": "取消屏蔽"
+  },
+  "ChooseSpriteContents": {
+    "choose_sprite": "选择一个角色",
+    "confirm": "确认"
   },
   "LiveChat": {
     "live_chat": "实时聊天",
@@ -247,7 +324,7 @@
     "offline": "离线",
     "type_message": "输入消息",
     "send": "发送",
-    "no_messages_yet": "还没有消息。"
+    "no_messages_yet": "还没有消息"
   },
   "ProfileContents": {
     "loading": "加载中...",
@@ -259,6 +336,7 @@
     "loading": "加载中...",
     "my_profile": "我的资料",
     "basic_info": "基本信息",
+    "2fa_settings": "双重验证设置",
     "tournament_stats": "锦标赛统计",
     "friends": "好友",
     "how_to_play": "如何玩",
@@ -279,44 +357,5 @@
     "game_settings": "游戏设置",
     "invite_friends": "邀请好友",
     "choose_sprite": "选择角色"
-  },
-  "FriendsPopup": {
-    "tabs": {
-      "friends": "好友",
-      "requests": "请求",
-      "blocked": "已屏蔽"
-    },
-    "add_friend": "添加好友",
-    "search_friend": "搜索好友",
-    "enter_friend_username": "输入好友用户名",
-    "friend_added": "好友已添加。",
-    "user_not_exist": "用户不存在。",
-    "back": "返回",
-    "no_friends_yet": "还没有朋友。",
-    "no_new_requests": "没有新的请求。",
-    "no_blocked_users": "没有被屏蔽的用户。",
-    "no_messages_yet": "还没有消息。"
-  },
-  "HowToPlayPopup": {
-    "header": "如何玩",
-    "objective_title": "目标",
-    "objective_text": [
-      "目标很简单——将球击过对方的球拍以得分。每场比赛从发球开始。使用你的球拍反弹球并巧妙地击败对手。先获得五分的玩家获胜。"
-    ],
-    "controls_title": "操作方法",
-    "controls_text": [
-      "使用上下方向键移动你的球拍。在本地模式下，玩家1使用W / S键，玩家2使用上下方向键。"
-    ],
-    "tournament_title": "锦标赛模式",
-    "tournament_text": [
-      "在结构化的单人淘汰赛中竞争，比赛将经历四分之一决赛、半决赛和决赛。",
-      "获胜者将晋级下一轮，每轮中失败的玩家将根据比赛时长进行排名。较快失败将导致排名较低。",
-      "所有锦标赛游戏都会记录玩家排名和比赛历史。"
-    ],
-    "custom_title": "自定义模式",
-    "custom_text": [
-      "享受休闲玩法并拥有完整的自定义选项。创建或加入单人和双人房间，与朋友一起玩或与随机玩家匹配。",
-      "* 注意：本地模式仅支持单人比赛。"
-    ]
   }
 }

@@ -12,6 +12,7 @@ import type { User } from "../types/usersApi";
 interface ProfileDropdownProps {
   setShowProfile: (open: boolean) => void;
   setShowBasicInfo: (open: boolean) => void;
+  setShowTwoFA: (open: boolean) => void;
   setShowFriends: (open: boolean) => void;
   setShowTournamentStats: (open: boolean) => void;
   setShowHowToPlay: (open: boolean) => void;
@@ -21,6 +22,7 @@ interface ProfileDropdownProps {
 const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   setShowProfile,
   setShowBasicInfo,
+  setShowTwoFA,
   setShowFriends,
   setShowTournamentStats,
   setShowHowToPlay,
@@ -71,6 +73,13 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
       },
     },
     {
+      label: translate("2fa_settings"),
+      onClick: () => {
+        setOpen(false);
+        setShowTwoFA(true);
+      },
+    },
+    {
       label: translate("tournament_stats"),
       onClick: () => {
         setOpen(false);
@@ -115,7 +124,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
           ? user.username.length > 8
             ? user.username.slice(0, 8) + "..."
             : user.username
-          : t("common.loading")}
+          : translate("loading")}
       </Button>
 
       {open && (

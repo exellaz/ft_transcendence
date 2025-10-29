@@ -26,7 +26,7 @@ services:
       - ./shared:/app/shared
       - ./backend/prisma/database:/app/prisma/database # bind mount
     environment:
-      - FORCE_COLOR=1
+      - FORCE_COLOR=1 # add color to terminal output
 
 volumes:
   frontend_node_modules:
