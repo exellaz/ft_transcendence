@@ -169,12 +169,6 @@ const TournamentLobbyView: React.FC = () => {
     }
   }, [currentPlayer, lastLobbyData, refreshLobby]);
 
-//  React.useEffect(() => {
-//    if (lock) {
-//      navigate("/game"); //TODO need implment room -> game
-//    }
-//  }, [lock]);
-
   React.useEffect(() => {
     if (location.state.tournament.stage) {
         setStage(location.state.tournament.stage);

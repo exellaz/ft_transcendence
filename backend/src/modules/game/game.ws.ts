@@ -4,6 +4,7 @@ import { Player } from "@shared/game/Player.ts";
 import { handlePlayerDisconnect } from "src/utils/utils.ts";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
+import { clear } from "console";
 
 function closeSocket(socket: WebSocket, statusCode: number, errorMsg: string) {
   socket.close(1003, errorMsg);
@@ -59,6 +60,34 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
 
     // console.log("room setting", room.setting.ballSpeed); ////debug
 
+    let expectingHandshake = true;
+    let handshakeTimer: NodeJS.Timeout | null = null;
+    const HANDSHAKE_MS = 1500;
+
+    try {
+        socket.send(JSON.stringify({ type: "handshakePing"}));
+        handshakeTimer = setTimeout(() => {
+            if (expectingHandshake) {
+                console.log(`[game websocket] Handshake pong NOT received in time from clientId=${clientId}, closing socket`);
+                try {
+                    if (handshakeTimer) clearTimeout(handshakeTimer);
+                } catch {
+                    console.log("failed to clear handshake timer");
+                }
+                closeSocket(socket, 1003, "Handshake timeout");
+            }
+        }, HANDSHAKE_MS);
+    } catch (err) {
+        console.error("Failed to send handshake ping:", err);
+        try {
+            if (handshakeTimer) clearTimeout(handshakeTimer);
+        } catch {
+            console.log("failed to clear handshake timer");
+        }
+        closeSocket(socket, 1011, "server error");
+        return;
+    }
+
     socket.on("error", (err) => {
       console.error("ws backend error: ", err);
     });
@@ -74,6 +103,12 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           return closeSocket(socket, 1003, "Invalid JSON");
         }
 
+        if (msg.type === "handshakePong") {
+            console.log("[game websocket] Handshake pong received from clientId=", clientId); ////debug
+            expectingHandshake = false;
+            if(handshakeTimer) clearTimeout(handshakeTimer);
+            return;
+        }
         //if (msg.type === "returnHeartbeat") {
         //  heartbeat.onAck();
         //  return;
@@ -155,10 +190,6 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       console.log(`[game websocket] Connection closed: clientId=${clientId}, code=${code}, reason=${reason}`); ////debug
       //0 loading, 1 countdown, 2 started, 3 ended
       // console.log("pong game state: ", room.game.state); ////debug
-
-	  if (code === 1001) {
-
-	  }
 
       //clean heartbeat
     //  heartbeat.stop();

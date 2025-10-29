@@ -6,6 +6,7 @@ import WebSocket from "ws";
 import { TournamentMatch } from "../../types/interface";
 import { createTournament, createTournamentMatch, createTournamentPlayer, updateTournamentPlayerRanking, updateTournamentStatus } from "./tournament.service";
 
+//TODO refactor: check these function had redundant or not
 /**
  * @brief Start the countdown for a tournament.
  * @param tournamentId - The ID of the tournament to start the countdown for.
@@ -101,16 +102,8 @@ export async function startTournamentCountdown(
           }
         }
       }
-
-
       matches.push({ roomId: room.id, players: pair, winnerId: -1 });
-    //  startRoomLoop(room);
     }
-
-    // Update tournament and notify clients
-    //tournament.matches = matches;
-    //broadcast(JSON.stringify({ type: "tournamentStarted", stage: tournament.stage, matches }));
-    //console.log(`Tournament ${tournamentId} started with ${tournament.players.length} players`);
   };
 
   // If countdownTime is 0, start immediately
@@ -176,7 +169,7 @@ export function createGameRoom(
 		ballSpeed: 1,
 		ballSize: 1,
 		paddleSpeed: 1,
-		scorePoint: 1, //? point to win
+		scorePoint: 3, //? point to win
 		map: "stadium",
 	  },
 	  async (winner) => {
@@ -229,7 +222,7 @@ export function createGameRoom(
 			ballSpeed: 1,
 			ballSize: 1,
 			paddleSpeed: 1,
-			scorePoint: 5,
+			scorePoint: 3,
 			map: "stadium"
 		},
 		gameState: {
@@ -521,21 +514,6 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
           tournaments.delete(tournamentId);
           return;
       }
-
-      // --- IMPORTANT: create a NEW clean lobby for next round ---
-      //const winnerIds = winners.map((w) => w.id);
-      //tournament.stage = nextStage as "SF" | "F";
-      //tournament.players = winners;                 // replace players with winners only
-      //tournament.matches = [];
-      //tournament.result = tournament.result?.filter((r) => r.stage !== currentStage) ?? [];
-      //tournament.lock = false;
-
-      // reset client map so only winners' sockets get registered when they reconnect or are transferred
-      //tournament.clientMap = new Map<WebSocket, { tournamentId: number; playerId: number }>();
-      // record allowed players so WS can reject eliminated re-joins
-      //tournament.allowedPlayers = new Set<number>(winnerIds);
-
-      //console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
 
       // notify winners / clients
       const bc = tournament.broadcast;

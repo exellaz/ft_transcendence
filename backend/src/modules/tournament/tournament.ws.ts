@@ -198,21 +198,6 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
 
 				//update player in lobby
                 if (msg.type === "requestLobby") {
-                    //TODO check lobby data
-                    try {
-                        socket.send(JSON.stringify({
-                            type: "lobbyData",
-                            tournamentId: tournamentId,
-                            players: tournament.players,
-                            lock: tournament.lock,
-                            stage: tournament.stage ?? null,
-                            maxPlayer: tournament.maxPlayer ?? null,
-                            countdown: typeof tournament.countdownRemaining === "number" ? tournament.countdownRemaining : null,
-                        }));
-                    } catch (err) {
-                        console.error("Error sending lobby data:", err);
-                    }
-
                     const broadcast = (msg: string) => {
                         for (const [ws, info] of client.entries()) {
                             if (info.tournamentId === tournamentId) {
@@ -266,11 +251,8 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                 tournament.lock = false;
 
             if (!tournament.lock && tournament.players.length === 0) {
-                //const deleteTournament = setInterval(() => {
                     tournaments.delete(tournamentId);
-                    //clearInterval(deleteTournament);
                     console.log(`Tournament ${tournamentId} deleted due to no players`);
-                //},1000);
             }
         });
     });

@@ -104,6 +104,12 @@ export function useGameWebSocket({
                 try { callback?.(ws); } catch (err) {};
             }
 
+            if (msg && msg.type === "handshakePing") {
+                console.log("[game ws] handshakePing received");
+                ws.send(JSON.stringify({ type: "handshakePong" }));
+                return;
+            }
+
             if (msg.type === "tournamentNextRound") {
                 const players = msg.players as { id: number }[] | undefined;
                 if (Array.isArray(players) && players.some(p => p.id === clientId)) {
