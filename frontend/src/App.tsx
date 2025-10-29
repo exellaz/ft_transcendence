@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import type { FriendChatMessage } from "./types/friendsApi";
+import { toast, ToastContainer, Slide } from "react-toastify";
+import type { FriendMessageMsg } from "./context/OnlineStatusProvider";
 
 // components
 import BouncingSprites from "./components/BouncingSprites";
@@ -60,10 +60,13 @@ const App: React.FC = () => {
   const hideToast = hideToastPaths.includes(location.pathname);
 
   useEffect(() => {
-    const handler = (event: CustomEvent<FriendChatMessage>) => {
+    const handler = (event: CustomEvent<FriendMessageMsg>) => {
       // toast calls the individual notifications
       // you can either pass plain text or a React element to it
-      toast(<CustomToast message={event.detail.message}/>)
+      const { username, message } = event.detail;
+      // immediately close any existing toast
+      toast.dismiss();
+      toast(<CustomToast username={username} message={message.message} />);
     };
 
     window.addEventListener("newMessage", handler as EventListener);
@@ -76,7 +79,20 @@ const App: React.FC = () => {
   return (
     <>
       {/* ToastContainer is like a global manager that controls where, how, and how many toasts appear.*/}
-      {!hideToast && <ToastContainer />}
+      {!hideToast && (
+        <ToastContainer
+          position="top-center"
+          hideProgressBar
+          autoClose={5000}
+          limit={1}
+          pauseOnHover
+          closeOnClick
+          closeButton={false}
+          // otherwise default toast will have a white background
+          toastClassName={() => "bg-transparent"}
+          transition={Slide}
+        />
+      )}
       <PreLoginWrapper>
         <Routes>
           {/* Pre-login routes - redirect away if already authenticated */}

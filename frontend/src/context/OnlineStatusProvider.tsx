@@ -35,8 +35,9 @@ interface FriendshipUpdateMsg {
   userId: number;
 }
 
-interface FriendMessageMsg {
+export interface FriendMessageMsg {
   type: "FRIEND_MESSAGE";
+  username: string;
   message: FriendChatMessage;
 }
 
@@ -205,8 +206,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             })
           );
           window.dispatchEvent(
-            new CustomEvent<FriendChatMessage>("newMessage", {
-              detail: message,
+            new CustomEvent<FriendMessageMsg>("newMessage", {
+              detail: data,
             })
           );
           break;

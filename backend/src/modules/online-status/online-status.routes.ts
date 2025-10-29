@@ -118,9 +118,18 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
           if (friendId) {
             const friendSocket = onlineUsers.get(friendId);
             if (friendSocket && friendSocket.readyState === friendSocket.OPEN) {
+              // fetch friend's username for toast display
+              const sender = await fastify.db.user.findUnique({
+                where: { id: userId },
+                select: { username: true },
+              });
               try {
                 friendSocket.send(
-                  JSON.stringify({ type: "FRIEND_MESSAGE", message: saved })
+                  JSON.stringify({
+                    type: "FRIEND_MESSAGE",
+                    username: sender?.username,
+                    message: saved,
+                  })
                 );
               } catch {
                 // ignore individual socket errors
