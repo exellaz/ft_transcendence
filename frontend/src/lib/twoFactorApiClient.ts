@@ -1,3 +1,5 @@
+import type { User } from "@/types/usersApi";
+
 export interface TwoFactorQRResponse {
   qrUri: string;
   secret: string;
@@ -5,6 +7,17 @@ export interface TwoFactorQRResponse {
 
 export interface TwoFactorResponse {
   message: string;
+}
+
+export interface TwoFactorVerifyRequest {
+  identifier: string;
+  password: string;
+  twoFactorCode: string;
+}
+
+export interface TwoFactorVerifyResponse {
+  token: string;
+  user: User;
 }
 
 const getAuthHeaders = () => ({
@@ -134,5 +147,37 @@ export const getTwoFactorStatus = async (): Promise<{
   } catch (error) {
     console.error("2FA status request error:", error);
     return { success: false, error: "Network error" };
+  }
+};
+
+export const verifyTwoFactor = async (params: TwoFactorVerifyRequest): Promise<{
+  success: boolean;
+  data?: TwoFactorVerifyResponse;
+  error?: string;
+  code?: string;
+}> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/two-factor/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      return { success: true, data: data.data };
+    } else {
+      return {
+        success: false,
+        error: data.error || 'Failed to verify 2FA',
+        code: data.code
+      };
+    }
+  } catch (error) {
+    console.error('2FA verify request error:', error);
+    return { success: false, error: 'Network error' };
   }
 };

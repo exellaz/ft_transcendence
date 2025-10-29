@@ -16,6 +16,7 @@ import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
 import TextButton from "../components/TextButton";
 import GoogleLoginButton from "../components/GoogleLoginButton";
+import { verifyTwoFactor, type TwoFactorVerifyResponse } from "@/lib/twoFactorApiClient";
 
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
@@ -25,9 +26,7 @@ const LoginView: React.FC = () => {
   const { setLanguage } = useLanguage();
 
   // TODO: Remove hardcoded error
-  const [verifyError, setVerifyError] = useState<string | null>(
-    translate("invalid_code_error"),
-  );
+  const [verifyError, setVerifyError] = useState<string | null>(null);
   const [step, setStep] = useState<"login" | "2FA">("login");
   const [code, setCode] = useState("");
 
@@ -71,33 +70,64 @@ const LoginView: React.FC = () => {
         password: formData.password,
       });
 
-      if (!loginResponse.success || !loginResponse.data) {
-        // Check for errorCode and translate if present
-        if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
+      if (loginResponse.success) {
+        await handleLoginSuccess(loginResponse.data);
+      } else {
+        if (loginResponse.errorCode === "TWO_FACTOR_REQUIRED") {
+          setStep("2FA");
+        } else if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
           setError(translate("invalid_credentials"));
         } else {
-          setError(translate("login_failed"));
+          setError(loginResponse.error || translate("login_failed"));
         }
-        return;
       }
-
-      // Success: Store token and user data, then redirect
-      localStorage.setItem("authToken", loginResponse.data.token);
-      setUser(loginResponse.data.user);
-
-      // Raw API query for user's preferred language
-      const settingsResponse = await getUserSettingsById({
-        id: loginResponse.data.user.id,
-      });
-      if (settingsResponse.success && settingsResponse.data?.language) {
-        setLanguage(settingsResponse.data.language);
-      }
-
-      navigate("/main-menu");
-    } catch (err) {
+    } catch {
       setError(translate("login_failed"));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleTwoFactorVerify = async () => {
+    if (code.length !== 6) return;
+
+    setIsLoading(true);
+    setVerifyError(null);
+
+    try {
+      const verifyResponse = await verifyTwoFactor({
+        identifier: formData.identifier,
+        password: formData.password,
+        twoFactorCode: code,
+      });
+
+      if (verifyResponse.success && verifyResponse.data) {
+        await handleLoginSuccess(verifyResponse.data);
+      } else {
+        if (verifyResponse.code === "INVALID_TWO_FACTOR_CODE") {
+          setVerifyError(translate("invalid_2fa_code"));
+        } else {
+          setVerifyError(verifyResponse.error || translate("verification_failed"));
+        }
+      }
+    } catch {
+      setVerifyError(translate("verification_failed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleLoginSuccess = async (loginData: TwoFactorVerifyResponse) => {
+    localStorage.setItem("authToken", loginData.token);
+    setUser(loginData.user);
+    navigate("/main-menu");
+
+    const settingsResponse = await getUserSettingsById({
+      id: loginData.user.id,
+    });
+    if (settingsResponse.success && settingsResponse.data?.language) {
+      setLanguage(settingsResponse.data.language);
     }
   };
 
@@ -161,7 +191,7 @@ const LoginView: React.FC = () => {
         </p>
         <OtpInputField value={code} onChange={setCode} />
         {verifyError && <Status color="red" text={verifyError} />}
-        <Button onClick={() => {}}>{translate("verify_code")}</Button>
+        <Button onClick={handleTwoFactorVerify}>{translate("verify_code")}</Button>
       </>
     );
   }
