@@ -93,7 +93,7 @@ const MatchView: React.FC = () => {
           },
         },
       });
-    }, 1000);
+    }, 2000);
     // only clear when roomReady flips back or component unmounts
     return () => clearTimeout(id);
   }, [roomReady, navigate]);

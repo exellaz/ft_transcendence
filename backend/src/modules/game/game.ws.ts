@@ -47,10 +47,22 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     const { clientId, room, side, playerName, playerSprite } = context;
     console.log(`[game websocket] New connection: clientId=${clientId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
 
+    ////after validate the connection and extract room info, check for duplicate connections
+    //for (const [s, id] of room.sockets.entries()) {
+    //  if (id === clientId && s !== socket) {
+    //    try {
+    //      console.log(`[game.ws] duplicate connection for clientId=${clientId}, closing old socket`);
+    //      s.close(1000, "duplicate connection");
+    //    } catch {}
+    //    room.sockets.delete(s);
+    //    room.clients.delete(s);
+    //    break;
+    //  }
+    //}
 
-    //? implement socket for tournament use
-    room.sockets.set(socket, clientId);
-    room.clients.add(socket);
+    ////? implement socket for tournament use
+    //room.sockets.set(socket, clientId);
+    //room.clients.add(socket);
 
     //const heartbeat = createAppHeartbeat(socket, { heartbeatMs: 1000, receiveTimeoutMs: 5000, maxMissed: 3 });
     //heartbeat.start();
@@ -60,33 +72,33 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
 
     // console.log("room setting", room.setting.ballSpeed); ////debug
 
-    let expectingHandshake = true;
-    let handshakeTimer: NodeJS.Timeout | null = null;
-    const HANDSHAKE_MS = 1500;
+    //let expectingHandshake = true;
+    //let handshakeTimer: NodeJS.Timeout | null = null;
+    //const HANDSHAKE_MS = 1500;
 
-    try {
-        socket.send(JSON.stringify({ type: "handshakePing"}));
-        handshakeTimer = setTimeout(() => {
-            if (expectingHandshake) {
-                console.log(`[game websocket] Handshake pong NOT received in time from clientId=${clientId}, closing socket`);
-                try {
-                    if (handshakeTimer) clearTimeout(handshakeTimer);
-                } catch {
-                    console.log("failed to clear handshake timer");
-                }
-                closeSocket(socket, 1003, "Handshake timeout");
-            }
-        }, HANDSHAKE_MS);
-    } catch (err) {
-        console.error("Failed to send handshake ping:", err);
-        try {
-            if (handshakeTimer) clearTimeout(handshakeTimer);
-        } catch {
-            console.log("failed to clear handshake timer");
-        }
-        closeSocket(socket, 1011, "server error");
-        return;
-    }
+    //try {
+    //    socket.send(JSON.stringify({ type: "handshakePing"}));
+    //    handshakeTimer = setTimeout(() => {
+    //        if (expectingHandshake) {
+    //            console.log(`[game websocket] Handshake pong NOT received in time from clientId=${clientId}, closing socket`);
+    //            try {
+    //                if (handshakeTimer) clearTimeout(handshakeTimer);
+    //            } catch {
+    //                console.log("failed to clear handshake timer");
+    //            }
+    //            closeSocket(socket, 1003, "Handshake timeout");
+    //        }
+    //    }, HANDSHAKE_MS);
+    //} catch (err) {
+    //    console.error("Failed to send handshake ping:", err);
+    //    try {
+    //        if (handshakeTimer) clearTimeout(handshakeTimer);
+    //    } catch {
+    //        console.log("failed to clear handshake timer");
+    //    }
+    //    closeSocket(socket, 1011, "server error");
+    //    return;
+    //}
 
     socket.on("error", (err) => {
       console.error("ws backend error: ", err);
@@ -103,12 +115,13 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           return closeSocket(socket, 1003, "Invalid JSON");
         }
 
-        if (msg.type === "handshakePong") {
-            console.log("[game websocket] Handshake pong received from clientId=", clientId); ////debug
-            expectingHandshake = false;
-            if(handshakeTimer) clearTimeout(handshakeTimer);
-            return;
-        }
+        //if (msg.type === "handshakePong") {
+        //    console.log("[game websocket] Handshake pong received from clientId=", clientId); ////debug
+        //    expectingHandshake = false;
+        //    if(handshakeTimer) clearTimeout(handshakeTimer);
+        //    return;
+        //}
+
         //if (msg.type === "returnHeartbeat") {
         //  heartbeat.onAck();
         //  return;

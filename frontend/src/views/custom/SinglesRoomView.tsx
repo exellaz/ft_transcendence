@@ -194,7 +194,7 @@ const SinglesRoomView: React.FC = () => {
         );
         sessionStorage.setItem("playerSprite", sprite);
         navigate("/game");
-      }, 1000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [countdown, navigate, role]);
