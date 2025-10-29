@@ -12,7 +12,6 @@ export const uploadsDir = path.join(__dirname, "../../uploads/avatars");
 const avatarUploadPlugin = fp(async (fastify) => {
 
   await fs.mkdir(uploadsDir, { recursive: true });
-  console.log(`✅ Ensured uploads directory exists at ${uploadsDir}`);
 
   fastify.register(fastifyStatic, {
     root: uploadsDir,
