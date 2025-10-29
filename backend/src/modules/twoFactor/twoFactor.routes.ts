@@ -2,6 +2,9 @@ import { FastifyInstance } from "fastify";
 import { TwoFactorService } from "./twoFactor.service";
 import { authenticate } from "src/plugins/authenticate";
 import { ApiError, ok } from "src/utils/response";
+import { generateAuthToken } from "../users/users.service";
+import { userPublicSelect } from "../users/users.select";
+import { verifyPassword } from "../users/users.service";
 
 export async function twoFactorRoutes(fastify: FastifyInstance) {
   fastify.get(
@@ -134,6 +137,82 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
       }
 
       return ok({ twoFactorEnabled: user.twoFactorEnabled });
+    },
+  );
+
+  fastify.post(
+    "/auth/two-factor/verify",
+    {
+      schema: {
+        tags: ["auth"],
+        body: {
+          type: "object",
+          properties: {
+            identifier: { type: "string", minLength: 1 },
+            password: { type: "string", minLength: 1 },
+            twoFactorCode: { type: "string", minLength: 6, maxLength: 6 }
+          },
+          required: ["identifier", "password", "twoFactorCode"],
+          additionalProperties: false
+        }
+      }
+    },
+    async (request) => {
+      const { identifier, password, twoFactorCode } = request.body as {
+        identifier: string;
+        password: string;
+        twoFactorCode: string;
+      };
+
+      // Find user
+      const user = await fastify.db.user.findFirst({
+        where: {
+          OR: [
+            { email: identifier.toLowerCase().trim() },
+            { username: identifier.trim() },
+          ],
+        },
+        select: {
+          ...userPublicSelect,
+          password: true,
+          twoFactorEnabled: true,
+          twoFactorSecret: true,
+        },
+      });
+
+      if (!user || !user.password) {
+        throw ApiError.unauthorized("Invalid credentials", "INVALID_CREDENTIALS");
+      }
+
+      // Verify password
+      const isValidPassword = await verifyPassword(password, user.password);
+      if (!isValidPassword) {
+        throw ApiError.unauthorized("Invalid credentials", "INVALID_CREDENTIALS");
+      }
+
+      // Verify 2FA is enabled
+      if (!user.twoFactorEnabled || !user.twoFactorSecret) {
+        throw ApiError.badRequest("Two-factor authentication not enabled", "TWO_FACTOR_NOT_ENABLED");
+      }
+
+      // Verify 2FA code
+      const isValid2FA = TwoFactorService.verifyToken(twoFactorCode, user.twoFactorSecret);
+      if (!isValid2FA) {
+        throw ApiError.unauthorized("Invalid two-factor authentication code", "INVALID_TWO_FACTOR_CODE");
+      }
+
+      // Remove sensitive data
+      const { ...userWithoutSensitive } = user;
+
+      // Generate token and update last login
+      const token = generateAuthToken(user.id, user.email);
+
+      request.log.info(`2FA verification successful for user: ${user.email}`);
+
+      return ok({
+        token,
+        user: userWithoutSensitive,
+      });
     },
   );
 }

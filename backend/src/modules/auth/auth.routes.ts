@@ -95,6 +95,7 @@ async function authRoutes(fastify: FastifyInstance) {
         select: {
           ...userPublicSelect,
           password: true,
+          twoFactorEnabled: true,
         },
       });
 
@@ -110,6 +111,13 @@ async function authRoutes(fastify: FastifyInstance) {
         throw ApiError.unauthorized(
           "Invalid credentials",
           "INVALID_CREDENTIALS",
+        );
+      }
+
+      if (user.twoFactorEnabled) {
+        throw ApiError.unauthorized(
+          "Two-factor authentication required",
+          "TWO_FACTOR_REQUIRED",
         );
       }
 
