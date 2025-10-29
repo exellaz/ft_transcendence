@@ -58,7 +58,11 @@
     "login": "登入",
     "loading": "載入中...",
     "continue_with_google": "使用 Google 繼續",
-    "signup_prompt": "還沒有帳號？註冊"
+    "signup_prompt": "還沒有帳號？註冊",
+    "2fa": "雙重驗證",
+    "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
+    "verify_code": "驗證代碼",
+    "invalid_code_error": "代碼無效或伺服器錯誤"
   },
   "MainMenuView": {
     "tournament_mode": "錦標賽模式",
@@ -201,7 +205,7 @@
     "header": "如何遊玩",
     "objective_title": "目標",
     "objective_text": [
-      "目標很簡單——將球擊過對方的球拍以獲得分數。每場比賽從發球開始。使用你的球拍反彈球並巧妙地擊敗對手。先取得五分的玩家贏得比賽。"
+      "目標很簡單——將球擊過對方的球拍以獲得分數。每場比賽從發球開始。使用你的球拍反彈球並巧妙地擊敗對手。先取得三分的玩家贏得比賽。"
     ],
     "controls_title": "操作方式",
     "controls_text": [
@@ -261,6 +265,16 @@
     "lost": "失敗",
     "no_history_yet": "尚無比賽紀錄"
   },
+  "TwoFAPopup": {
+    "header": "雙重驗證設定",
+    "2fa_not_enabled_message": "尚未啟用雙重驗證（2FA）。",
+    "enable_2fa": "啟用雙重驗證",
+    "authenticator_instructions": "設定您的驗證器，然後輸入下方的六位數代碼。",
+    "verify_code": "驗證代碼",
+    "2fa_enabled_message": "雙重驗證（2FA）已啟用。",
+    "disable_2fa": "停用雙重驗證",
+    "invalid_code_error": "代碼無效或伺服器錯誤"
+  },
   "ApiState": {
     "loading": "載入中...",
     "error": "錯誤",
@@ -314,6 +328,7 @@
     "loading": "載入中...",
     "my_profile": "我的資料",
     "basic_info": "基本資訊",
+    "2fa_settings": "兩步驗證設定",
     "tournament_stats": "錦標賽統計",
     "friends": "好友",
     "how_to_play": "如何遊玩",
