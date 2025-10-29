@@ -44,8 +44,9 @@ enum RoundType {
 model User {
   id         Int            @id @default(autoincrement())
   username   String         @unique
-  password   String
+  password   String?
   email      String         @unique
+  googleId   String?        @unique @map("google_id")
   avatarUrl  String         @default("/assets/yellow-ghost.png") @map("avatar_url")
   status     userStatus     @default(offline) @map("status")
   joinedAt   DateTime       @default(now()) @map("joined_at")
@@ -60,7 +61,7 @@ model User {
   blockedUsers       BlockedFriendship[] @relation("Blocks")   // people I blocked
   blockedBy          BlockedFriendship[] @relation("BlockedBy") // people who blocked me
 
-  friendChatMessages FriendChatMessage[] 
+  friendChatMessages FriendChatMessage[]
 
   tournamentPlayers  TournamentPlayer[]
 
@@ -113,8 +114,8 @@ model BlockedFriendship {
 
 model FriendChatMessage {
   id           Int      @id @default(autoincrement())
-  friendshipId Int  
-  senderId     Int 
+  friendshipId Int
+  senderId     Int
   message      String
   timestamp    DateTime @default(now())
 

@@ -3,7 +3,17 @@ import { ok, ApiError } from "../../utils/response";
 import { hashPassword, generateAuthToken } from "../users/users.service";
 import { userPublicSelect } from "../users/users.select";
 import { verifyPassword } from "../users/users.service";
-import { postUserLoginSchema, postUserRegisterSchema } from "./auth.schema";
+import {
+  postUserLoginSchema,
+  postUserRegisterSchema,
+  postGoogleAuthSchema,
+} from "./auth.schema";
+import { verifyGoogleIdToken } from "../auth/auth.service";
+import {
+  findOrCreateGoogleUser,
+  updateLastLogin,
+  sanitizeUsername,
+} from "../auth/auth.service";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -113,6 +123,63 @@ async function authRoutes(fastify: FastifyInstance) {
         token,
         user: userWithoutPassword,
       });
+    },
+  );
+
+  fastify.post(
+    "/auth/google",
+    { schema: postGoogleAuthSchema },
+    async (request) => {
+      const body = request.body as { idToken?: string };
+      const idToken = body?.idToken;
+
+      if (!idToken) {
+        throw ApiError.badRequest("idToken is required", "MISSING_ID_TOKEN");
+      }
+
+      try {
+        // Verify Google token
+        const payload = await verifyGoogleIdToken(idToken);
+        if (!payload?.sub || !payload?.email) {
+          throw ApiError.badRequest(
+            "Invalid Google payload",
+            "INVALID_GOOGLE_PAYLOAD",
+          );
+        }
+
+        const googleId = payload.sub;
+        const email = payload.email;
+        const name = payload.name ?? "lil_bro";
+
+        // Remove invalid characters keeping only alphanumeric, underscore, and hyphen
+
+        const sanitizedUsername = sanitizeUsername(name, googleId);
+
+        // Find or create user with Google account linking
+        const user = await findOrCreateGoogleUser(
+          googleId,
+          email,
+          sanitizedUsername,
+        );
+        await updateLastLogin(user.id);
+        const token = generateAuthToken(user.id, user.email);
+        request.log.info(`Google OAuth login successful: ${user.email}`);
+
+        return ok({
+          token,
+          user,
+        });
+      } catch (err) {
+        if (err instanceof ApiError) {
+          throw err;
+        }
+
+        request.log.error(`Google OAuth failed: ${err}`);
+        throw ApiError.unauthorized(
+          "Google authentication failed",
+          "GOOGLE_AUTH_FAILED",
+        );
+      }
     },
   );
 }
