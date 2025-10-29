@@ -15,13 +15,13 @@ import type {
   UpdateUserAvatarResponse,
 } from "../types/usersApi";
 
-const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 // POST /auth/register
 export async function register(
   payload: RegisterRequest,
 ): Promise<RegisterResponse> {
-  const res = await fetch(`${API_BASE}/auth/register`, {
+  const res = await fetch(`${VITE_API_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -32,7 +32,7 @@ export async function register(
 
 // POST /auth/login
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
-  const res = await fetch(`${API_BASE}/auth/login`, {
+  const res = await fetch(`${VITE_API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -45,7 +45,7 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
 export async function getUserById({
   id,
 }: GetUserRequest): Promise<GetUserResponse> {
-  const res = await fetch(`${API_BASE}/users/${id}`, {
+  const res = await fetch(`${VITE_API_URL}/users/${id}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -58,7 +58,7 @@ export async function updateUserById(
   payload: UpdateUserRequest,
 ): Promise<UpdateUserResponse> {
   const { id, ...data } = payload;
-  const res = await fetch(`${API_BASE}/users/${id}`, {
+  const res = await fetch(`${VITE_API_URL}/users/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -77,7 +77,7 @@ export async function uploadUserAvatar(
   // Fastify will recognize this as the uploaded file.
   formData.append("file", avatarFile);
 
-  const res = await fetch(`${API_BASE}/users/${id}/avatar`, {
+  const res = await fetch(`${VITE_API_URL}/users/${id}/avatar`, {
     method: "PATCH",
     body: formData, // browser sets correct multipart headers automatically
   });
@@ -90,7 +90,7 @@ export async function uploadUserAvatar(
 export async function getUserSettingsById({
   id,
 }: GetUserSettingsRequest): Promise<GetUserSettingsResponse> {
-  const res = await fetch(`${API_BASE}/users/${id}/settings`, {
+  const res = await fetch(`${VITE_API_URL}/users/${id}/settings`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -103,7 +103,7 @@ export async function updateUserSettingsById(
   payload: UpdateUserSettingsRequest,
 ): Promise<UpdateUserSettingsResponse> {
   const { id, ...data } = payload;
-  const res = await fetch(`${API_BASE}/users/${id}/settings`, {
+  const res = await fetch(`${VITE_API_URL}/users/${id}/settings`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
