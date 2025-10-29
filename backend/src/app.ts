@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { FastifyPluginCallback } from "fastify";
 import fastifyCors from "@fastify/cors";
 import websocketPlugin from "@fastify/websocket";
 import dbConnector from "./plugins/db";
@@ -19,6 +19,9 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
 import onlineStatusRoutes from "./modules/online-status/online-status.routes";
+import multipart from '@fastify/multipart';
+import avatarUploadPlugin from "./plugins/avatar-upload";
+import avatarUploadRoutes from "./modules/avatar-upload/avatar-upload.routes";
 
 const app = Fastify({
   logger: false,
@@ -40,6 +43,9 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(onlineStatusRoutes);
+app.register(multipart);
+app.register(avatarUploadPlugin);
+app.register(avatarUploadRoutes)
 
 app.register(testRoutes);
 
