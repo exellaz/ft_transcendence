@@ -20,8 +20,10 @@ import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
 import onlineStatusRoutes from "./modules/online-status/online-status.routes";
 import multipart from '@fastify/multipart';
-import avatarUploadPlugin from "./plugins/avatar-upload";
-import avatarUploadRoutes from "./modules/avatar-upload/avatar-upload.routes";
+import avatarUploadStaticPlugin from "./plugins/avatar-upload";
+import assetsStaticPlugin from "./plugins/assets.static";
+// import avatarUploadRoutes from "./modules/avatar-upload/avatar-upload.routes";
+;
 
 const app = Fastify({
   logger: false,
@@ -32,6 +34,10 @@ app.register(errorHandler);
 app.register(dbConnector);
 app.register(fastifySwagger, swaggerOptions);
 app.register(fastifySwaggerUi, swaggerUiOptions);
+app.register(avatarUploadStaticPlugin);
+app.register(multipart);
+
+// routes
 app.register(userRoutes);
 app.register(authRoutes);
 app.register(friendshipRoutes);
@@ -43,9 +49,6 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(onlineStatusRoutes);
-app.register(multipart);
-app.register(avatarUploadPlugin);
-app.register(avatarUploadRoutes)
 
 app.register(testRoutes);
 

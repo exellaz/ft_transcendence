@@ -12,6 +12,8 @@ import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 import { Prisma } from "@prisma/client";
 import { request } from "http";
 import { authenticate } from "../../plugins/authenticate";
+import { MultipartFile } from "@fastify/multipart";
+import { uploadFileToServerUploadsDir } from "./users.service";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -152,6 +154,43 @@ async function userRoutes(fastify: FastifyInstance) {
       }
     },
   );
+
+  // PATCH /users/:id/avatar  (upload user avatar)
+  fastify.patch('/users/:id/avatar', async (request, reply) => {
+
+    console.log("Uploading avatar for user...");
+    // get userId from param
+    const { id } = request.params as { id: string };
+    const userId = Number(id);
+    // TODO: check if the user is uploading avatar for themselves
+
+    const data: MultipartFile | undefined = await request.file();
+    if (!data)
+      throw ApiError.badRequest('No file uploaded', 'NO_FILE_UPLOADED');
+  
+    const filename = data.filename;
+  
+    try {
+      // upload file to Server /uploads/avatars
+      uploadFileToServerUploadsDir(data.file, filename);
+      
+      // save relative filepath of avatar image to user's avatarUrl in database
+      const updatedUser = await fastify.db.user.update({
+        where: { id: userId },
+        data: { avatarUrl: `/uploads/avatars/${filename}` },
+        select: userPublicSelect
+      });
+
+      return ok(updatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === "P2025")
+          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+      }
+
+      throw err; // let Fastify handle other errors
+    }
+  });
 
   // DELETE
   fastify.delete(

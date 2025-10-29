@@ -3,13 +3,14 @@ import fastifyStatic from "@fastify/static";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { FastifyInstance } from "fastify";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const uploadsDir = path.join(__dirname, "../../uploads/avatars");
 
-const avatarUploadPlugin = fp(async (fastify) => {
+async function avatarUploadStaticPlugin(fastify: FastifyInstance) {
 
   await fs.mkdir(uploadsDir, { recursive: true });
 
@@ -18,6 +19,6 @@ const avatarUploadPlugin = fp(async (fastify) => {
     prefix: "/uploads/avatars/",
   });
 
-});
+};
 
-export default avatarUploadPlugin;
+export default fp(avatarUploadStaticPlugin);
