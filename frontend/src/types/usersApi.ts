@@ -42,6 +42,14 @@ export interface UpdateUserRequest {
 
 export interface UpdateUserResponse extends ApiResponse<User> {}
 
+// PATCH /users/:id/avatar  (upload user avatar)
+export interface UpdateUserAvatarRequest {
+  id: number; // user ID to update
+  avatarFile: File; // avatar file to upload
+}
+
+export interface UpdateUserAvatarResponse extends ApiResponse<User> {}
+
 // GET /users/:id/settings
 export interface GetUserSettingsRequest {
   id: number;

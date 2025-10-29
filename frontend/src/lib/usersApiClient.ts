@@ -11,6 +11,8 @@ import type {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
+  UpdateUserAvatarRequest,
+  UpdateUserAvatarResponse,
 } from "../types/usersApi";
 
 const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
@@ -64,6 +66,25 @@ export async function updateUserById(
 
   return res.json();
 }
+
+// PATCH /users/:id/avatar
+export async function uploadUserAvatar(
+  {id, avatarFile}: UpdateUserAvatarRequest,
+): Promise<UpdateUserAvatarResponse> {
+  const formData = new FormData();
+
+  // 👇 This is required:
+  // Fastify will recognize this as the uploaded file.
+  formData.append("file", avatarFile);
+
+  const res = await fetch(`${API_BASE}/users/${id}/avatar`, {
+    method: "PATCH",
+    body: formData, // browser sets correct multipart headers automatically
+  });
+
+  return res.json();
+}
+
 
 // GET /users/:id/settings
 export async function getUserSettingsById({
