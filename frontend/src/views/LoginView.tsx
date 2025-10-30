@@ -84,7 +84,11 @@ const LoginView: React.FC = () => {
         <p className="text-white text-center text-xl">
           {translate("enter_code")}
         </p>
-        <OtpInputField value={code} onChange={setCode} onKeyDown={handleKeyPress} />
+        <OtpInputField
+          value={code}
+          onChange={setCode}
+          onKeyDown={handleKeyPress}
+        />
         {verifyError && <Status color="red" text={verifyError} />}
         <Button onClick={handleTwoFactorVerify}>
           {translate("verify_code")}

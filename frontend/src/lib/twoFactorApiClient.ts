@@ -1,4 +1,5 @@
 import type { User } from "@/types/usersApi";
+import { apiRequest, type ApiResponse } from "@/types/api";
 
 export interface TwoFactorQRResponse {
   qrUri: string;
@@ -20,169 +21,52 @@ export interface TwoFactorVerifyResponse {
   user: User;
 }
 
-const getAuthHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
-});
-
-export const getTwoFactorSetup = async (): Promise<{
-  success: boolean;
-  data?: TwoFactorQRResponse;
-  error?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/two-factor/qr`,
-      {
-        method: "GET",
-        headers: getAuthHeaders(),
-      },
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      return { success: true, data: data.data };
-    } else {
-      return { success: false, error: data.error };
-    }
-  } catch (error) {
-    console.error("2FA setup request error:", error);
-    return { success: false, error: "Network error" };
-  }
-};
-
-export const enableTwoFactor = async (
-  token: string,
-): Promise<{
-  success: boolean;
-  data?: TwoFactorResponse;
-  error?: string;
-  code?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/two-factor/enable`,
-      {
-        method: "PATCH",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ token }),
-      },
-    );
-
-    const data = await response.json();
-    if (data.success) {
-      return { success: true, data: data.data };
-    } else {
-      return {
-        success: false,
-        error: data.error,
-        code: data.code,
-      };
-    }
-  } catch (error) {
-    console.error("Enable 2FA request error:", error);
-    return { success: false, error: "Network error" };
-  }
-};
-
-export const disableTwoFactor = async (): Promise<{
-  success: boolean;
-  data?: TwoFactorResponse;
-  error?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/two-factor/disable`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken") || ""}`,
-        },
-      },
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      return { success: true, data: data.data };
-    } else {
-      return { success: false, error: data.error };
-    }
-  } catch (error) {
-    console.error("2FA disable request error:", error);
-    return { success: false, error: "Network error" };
-  }
-};
-
 export interface TwoFactorStatusResponse {
   twoFactorEnabled: boolean;
 }
 
-// Check if user has 2FA enabled
-export const getTwoFactorStatus = async (): Promise<{
-  success: boolean;
-  data?: TwoFactorStatusResponse;
-  error?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/two-factor/status`,
-      {
-        method: "GET",
-        headers: getAuthHeaders(),
-      },
-    );
+// GET /auth/two-factor/qr
+export const getTwoFactorSetup = (): Promise<
+  ApiResponse<TwoFactorQRResponse>
+> =>
+  apiRequest<TwoFactorQRResponse>("/auth/two-factor/qr", {
+    method: "GET",
+    requireAuth: true,
+  });
 
-    const data = await response.json();
+// PATCH /auth/two-factor/enable
+export const enableTwoFactor = (
+  token: string,
+): Promise<ApiResponse<TwoFactorResponse>> =>
+  apiRequest<TwoFactorResponse>("/auth/two-factor/enable", {
+    method: "PATCH",
+    requireAuth: true,
+    body: JSON.stringify({ token }),
+  });
 
-    if (data.success) {
-      return { success: true, data: data.data };
-    } else {
-      return {
-        success: false,
-        error: data.error || "Failed to get 2FA status",
-      };
-    }
-  } catch (error) {
-    console.error("2FA status request error:", error);
-    return { success: false, error: "Network error" };
-  }
-};
+// PATCH /auth/two-factor/disable
+export const disableTwoFactor = async (): Promise<
+  ApiResponse<TwoFactorResponse>
+> =>
+  apiRequest<TwoFactorResponse>("/auth/two-factor/disable", {
+    method: "PATCH",
+    requireAuth: true,
+  });
 
-export const verifyTwoFactor = async (
+// GET /auth/two-factor/status
+export const getTwoFactorStatus = (): Promise<
+  ApiResponse<TwoFactorStatusResponse>
+> =>
+  apiRequest<TwoFactorStatusResponse>("/auth/two-factor/status", {
+    method: "GET",
+    requireAuth: true,
+  });
+
+// POST /auth/two-factor/verify
+export const verifyTwoFactor = (
   params: TwoFactorVerifyRequest,
-): Promise<{
-  success: boolean;
-  data?: TwoFactorVerifyResponse;
-  error?: string;
-  code?: string;
-}> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/auth/two-factor/verify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(params),
-      },
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      return { success: true, data: data.data };
-    } else {
-      return {
-        success: false,
-        error: data.error || "Failed to verify 2FA",
-        code: data.code,
-      };
-    }
-  } catch (error) {
-    console.error("2FA verify request error:", error);
-    return { success: false, error: "Network error" };
-  }
-};
+): Promise<ApiResponse<TwoFactorVerifyResponse>> =>
+  apiRequest<TwoFactorVerifyResponse>("/auth/two-factor/verify", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });

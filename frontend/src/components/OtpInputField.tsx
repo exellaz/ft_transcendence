@@ -10,7 +10,7 @@ interface OtpInputFieldProps {
 
 type OtpInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-}
+};
 
 export default function OtpInputField({
   value,
