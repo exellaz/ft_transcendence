@@ -3,11 +3,17 @@ import { WebSocket } from "ws";
 import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { authenticate } from "src/plugins/authenticate";
 
 // Attach a custom isAlive flag to this WebSocket object
 interface HeartbeatWebSocket extends WebSocket {
   isAlive: boolean;
+}
+
+interface OutgoingMessageMsg {
+  type: "OUTGOING_MESSAGE";
+  tempId: number;
+  friendshipId: number;
+  message: string;
 }
 
 const onlineUsers = new Map<number, HeartbeatWebSocket>();
@@ -42,7 +48,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       let decoded: JwtPayload;
       try {
         decoded = jwt.verify(token, secret) as JwtPayload;
-      } catch (err) {
+      } catch {
         ws.close(1008, "Invalid token");
         return;
       }
@@ -81,6 +87,84 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         ws.isAlive = true;
 
         notifyFriendsStatus(uid, true);
+      });
+
+      // listen for incoming messages, validate, save, ack
+      ws.on("message", async (raw) => {
+        // defined for use in the catch block
+        let friendshipId: number | undefined;
+        let tempId: number | undefined;
+        try {
+          // --- STEP 1: Parse and validate incoming JSON ---
+          const parsed = parseIncomingMessage(raw);
+          friendshipId = parsed.friendshipId;
+          tempId = parsed.tempId;
+          const { message } = parsed;
+
+          // --- STEP 2: Validate DB state and permissions ---
+          const { participants } = await validateFriendshipAndPermissions(
+            fastify,
+            userId,
+            friendshipId!,
+          );
+
+          // --- STEP 3: Save message to DB ---
+          const saved = await fastify.db.friendChatMessage.create({
+            data: { friendshipId, senderId: userId, message: message },
+            select: {
+              id: true,
+              friendshipId: true,
+              senderId: true,
+              message: true,
+              timestamp: true,
+            },
+          });
+
+          // --- STEP 4: Broadcast to both participants ---
+          const friendId = participants.find((id) => id !== userId);
+          if (friendId) {
+            const friendSocket = onlineUsers.get(friendId);
+            if (friendSocket && friendSocket.readyState === friendSocket.OPEN) {
+              // fetch friend's username for toast display
+              const sender = await fastify.db.user.findUnique({
+                where: { id: userId },
+                select: { username: true },
+              });
+              try {
+                friendSocket.send(
+                  JSON.stringify({
+                    type: "FRIEND_MESSAGE",
+                    username: sender?.username,
+                    message: saved,
+                  }),
+                );
+              } catch {
+                // ignore individual socket errors
+              }
+            }
+          }
+
+          // --- STEP 5: ACK to sender for optimistic UI reconciliation ---
+          ws.send(
+            JSON.stringify({
+              type: "MESSAGE_ACK",
+              tempId,
+              savedMessage: saved,
+            }),
+          );
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : "internal server error";
+          fastify.log?.error?.({ err }, "friend chat handler error");
+          ws.send(
+            JSON.stringify({
+              type: "MESSAGE_ERR",
+              friendshipId,
+              tempId,
+              error: message,
+            }),
+          );
+        }
       });
 
       ws.on("close", (code, reason) => {
@@ -222,4 +306,83 @@ export async function notifyFriendshipUpdateToUsers(
       }),
     );
   }
+}
+
+// HELPER FUNCTIONS FOR MESSAGE EVENT
+function parseIncomingMessage(raw: WebSocket.RawData) {
+  let msg: OutgoingMessageMsg;
+  // 1) Validate JSON
+  try {
+    msg = JSON.parse(raw.toString());
+  } catch {
+    throw new Error("malformed json");
+  }
+
+  // 2) Validate message fields
+  if (
+    msg?.type !== "OUTGOING_MESSAGE" ||
+    typeof msg?.tempId !== "number" ||
+    typeof msg?.friendshipId !== "number" ||
+    typeof msg?.message !== "string"
+  ) {
+    throw new Error("invalid message shape");
+  }
+
+  const tempId = msg.tempId;
+  const friendshipId = msg.friendshipId;
+  const message = msg.message.trim();
+
+  // 3) Validate message length
+  if (!message || message.length === 0 || message.length > 200) {
+    throw new Error("invalid message length");
+  }
+
+  return { tempId, friendshipId, message };
+}
+
+async function validateFriendshipAndPermissions(
+  fastify: FastifyInstance,
+  userId: number,
+  friendshipId: number,
+) {
+  // 1) Fetch friendship and check friendship status
+  const friendship = await fastify.db.friendship.findUnique({
+    where: { id: friendshipId },
+    select: {
+      requesterId: true,
+      accepterId: true,
+      status: true,
+    },
+  });
+
+  if (!friendship || friendship.status !== "accepted") {
+    throw new Error("invalid or unaccepted friendship");
+  }
+
+  const { requesterId, accepterId } = friendship;
+  const participants = [requesterId, accepterId];
+
+  // 2) Verify user is participant
+  if (!participants.includes(userId)) {
+    throw new Error("unauthorized");
+  }
+
+  const otherUserId = requesterId === userId ? accepterId : requesterId;
+
+  // 3) Verify neither party is blocked
+  const isBlocked = await fastify.db.blockedFriendship.findFirst({
+    where: {
+      OR: [
+        { blockerId: userId, blockedId: otherUserId },
+        { blockerId: otherUserId, blockedId: userId },
+      ],
+    },
+    select: { id: true },
+  });
+
+  if (isBlocked) {
+    throw new Error("cannot send to blocked user");
+  }
+
+  return { participants, otherUserId };
 }

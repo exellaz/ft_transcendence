@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginForm } from "../hooks/useLoginForm";
+import { useClearGameMode } from "../hooks/useClearGameMode";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -33,6 +34,7 @@ const LoginView: React.FC = () => {
     translate,
   } = useLoginForm();
 
+  useClearGameMode();
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !isLoading) {
       if (step === "login") handleLogin();

@@ -277,7 +277,7 @@
   },
   "ApiState": {
     "loading": "Loading...",
-    "error": "Error",
+    "something_went_wrong": "Something went wrong",
     "try_again": "Try Again",
     "not_found": "Record not found"
   },
@@ -295,6 +295,9 @@
   "ChooseSpriteContents": {
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
+  },
+  "CustomToast": {
+    "message_from": "New message from {{username}}"
   },
   "LiveChat": {
     "live_chat": "Live Chat",
@@ -347,7 +350,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends",
+    "friends": "Friends",
     "choose_sprite": "Choose Sprite"
   }
 }

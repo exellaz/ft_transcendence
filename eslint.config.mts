@@ -25,5 +25,15 @@ export default defineConfig([
       "@typescript-eslint/no-empty-interface": "off",
     },
   },
+  // disable react/prop-types for TS files
+  // ESLint’s React plugin (eslint-plugin-react) assumes you’re using PropTypes for runtime prop validation,
+  // even though you’re using TypeScript interfaces.
+  // TypeScript already enforces prop types at compile time, so this rule is redundant.
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "react/prop-types": "off",
+    },
+  },
   eslintConfigPrettier,
 ]);
