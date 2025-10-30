@@ -104,11 +104,16 @@ export function useGameWebSocket({
                 try { callback?.(ws); } catch (err) {};
             }
 
-            if (msg && msg.type === "handshakePing") {
-                console.log("[game ws] handshakePing received");
-                ws.send(JSON.stringify({ type: "handshakePong" }));
+            if (msg.type === "ready_ack") {
+                console.log("ready acknowledged by server for clientId=", msg.payload.clientId); ////debug
                 return;
             }
+
+            //if (msg && msg.type === "handshakePing") {
+            //    console.log("[game ws] handshakePing received");
+            //    ws.send(JSON.stringify({ type: "handshakePong" }));
+            //    return;
+            //}
 
             if (msg.type === "tournamentNextRound") {
                 const players = msg.players as { id: number }[] | undefined;

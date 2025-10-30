@@ -236,13 +236,14 @@ const GameView: React.FC<GameViewProps> = () => {
   };
   // console.log("params", params); ////debug
 
-  const { socket } = useGameWebSocket(params);
-  // console.log("socket has been create: ", socket); ////debug
-
   const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameRoomWebSocket({
     ...params,
     isOffline: delayForGameOver,
   });
+
+  const { socket } = useGameWebSocket(params);
+//   console.log("socket has been create: ", socket); ////debug
+
 
 // -------------------------------- Effect --------------------------------
   // determine if there is a next stage (used to change button text/action for final)

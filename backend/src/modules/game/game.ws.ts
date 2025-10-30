@@ -41,28 +41,18 @@ function compile(
 export default async function gameWsRoute(fastify: FastifyInstance) {
   fastify.get("/ws-game", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
     const context = await validateConnection(socket, req);
-    if (!context) return; // Invalid connection, already closed in validateConnection
+    if (!context) {
+        console.log("[game.ws] invalid connection, closing socket");
+        return; // Invalid connection, already closed in validateConnection
+    }
 
     // Step 1: Assign role to client (player, spectator, etc.)
     const { clientId, room, side, playerName, playerSprite } = context;
     console.log(`[game websocket] New connection: clientId=${clientId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
 
-    ////after validate the connection and extract room info, check for duplicate connections
-    //for (const [s, id] of room.sockets.entries()) {
-    //  if (id === clientId && s !== socket) {
-    //    try {
-    //      console.log(`[game.ws] duplicate connection for clientId=${clientId}, closing old socket`);
-    //      s.close(1000, "duplicate connection");
-    //    } catch {}
-    //    room.sockets.delete(s);
-    //    room.clients.delete(s);
-    //    break;
-    //  }
-    //}
-
-    ////? implement socket for tournament use
-    //room.sockets.set(socket, clientId);
-    //room.clients.add(socket);
+    //? implement socket for tournament use
+    room.sockets.set(socket, clientId);
+    room.clients.add(socket);
 
     //const heartbeat = createAppHeartbeat(socket, { heartbeatMs: 1000, receiveTimeoutMs: 5000, maxMissed: 3 });
     //heartbeat.start();
@@ -105,7 +95,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
     });
 
     socket.on("message", (raw: WebSocket.Data) => {
-      // console.log("Game WebSocket received:", raw.toString()); //// debug
+       console.log("Game WebSocket received:", raw.toString()); //// debug
 
       try {
         let msg;
@@ -150,7 +140,14 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         };
 
         if (msg.type === "ready") {
-           console.log("player added ", clientId); ////debug
+          console.log("player added =>", clientId, msg); ////debug
+
+          // Verify socket is still open
+          if (socket.readyState !== WebSocket.OPEN) {
+            console.error(`Socket for clientId=${clientId} is not open, state=${socket.readyState}`);
+            return;
+          }
+
           room.game.addPlayer(
             new Player({
               id: clientId,
@@ -164,11 +161,11 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           //ensure the socket is up to date
           room.sockets.set(socket, clientId);
 
-        //   console.log("concluding handshake"); ////debug
+           console.log("concluding handshake =>", clientId); ////debug
           socket.send(
             JSON.stringify({
-              type: "ready",
-              payload: {},
+              type: "ready_ack",
+              payload: { clientId },
             }),
           );
 
@@ -182,7 +179,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
             }
           }
         } else if (msg.type === "fetch_world") {
-        //   console.log("requested for full world"); ////debug
+           console.log("requested for full world =>", clientId); ////debug
 
           const output = compile(room.game, true, room.setting);
         //   console.log(`compiled ${output.length} bytes`); ////debug

@@ -100,6 +100,18 @@ export function startRoomLoop(room: Room) {
 
   // mark room as in-game and notify clients once
   room.inGame = true;
+
+  // debug: log who will receive the start message
+  try {
+    const recipients = Array.from(room.sockets.keys()).map((s: any, idx) => {
+      const remote = (s as any)?._socket?.remoteAddress ?? (s as any)?.remoteAddress ?? `socket#${idx}`;
+      return remote;
+    });
+    console.log(`[room] startRoomLoop sending gameStart to ${recipients.length} sockets:`, recipients);
+  } catch (err) {
+    console.warn("[room] failed to enumerate room.sockets for debug:", err);
+  }
+
   const startMsg = JSON.stringify({ type: "gameStart", roomId: room.id });
   for (const s of room.sockets.keys()) {
     try { s.send(startMsg); } catch (e) { console.warn("failed notify start", e); }
@@ -134,7 +146,14 @@ export function startRoomLoop(room: Room) {
         ...room.game.teamLeft.getPaddles(),
         ...room.game.teamRight.getPaddles(),
       ]) {
-        paddle.player.socket.send(output);
+        //console.log(`[room.broadcast] sending frame to client ${paddle.player.id}`);
+        const sock = paddle.player.socket;
+        if (!sock) continue;
+        try {
+            sock.send(output);
+        } catch (err) {
+            console.warn(`[room.broadcast] failed to send frame to client ${paddle.player.id}:`, err);
+        }
       }
     }
 

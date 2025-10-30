@@ -21,7 +21,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
     const context = await validateConnection(socket, req);
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
-    //console.log(`[room websocket] New connection: clientId=${clientId}, roomId=${roomId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
+    console.log(`[room websocket] New connection: clientId=${clientId}, roomId=${roomId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug
 
 	//wait client to be reachable before assigning role
 	type PlayerRole = {
@@ -389,7 +389,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 	  cleanupTimer();
 
 
-	  if (room.game.state === 3) return;
+	  if (room.game.state === 0 || room.game.state === 3) return;
     //  console.log("room game state: ", socket.readyState); ////debug
       wsHandler.handleDisconnect(socket, room, clientId, room.id);
     });
