@@ -14,7 +14,7 @@ const AdvanceView: React.FC = () => {
   const translate = (key: string) => t(`AdvanceView.${key}`);
   const navigate = useNavigate();
   const [isAdvancing, setIsAdvancing] = React.useState(false);
-  console.log("AdvanceView location.state:", location.state); ////debug
+//  console.log("AdvanceView location.state:", location.state); ////debug
 
   async function handleContinueClick() {
     const lastTournamentId = Number(location.state?.lastTournamentId ?? 0);
@@ -22,6 +22,7 @@ const AdvanceView: React.FC = () => {
     const roomId = Number(location.state?.roomId ?? -1);
     const tournamentDb = location.state?.tournamentDb ?? null;
 
+    // move to next round if winner
     setIsAdvancing(true);
     try {
       if (lastTournamentId) {
@@ -40,6 +41,7 @@ const AdvanceView: React.FC = () => {
     }
   }
 
+  // helper to get basename from path ( for png name )
   function basename(path?: string): string {
     if (!path) return "";
     // normalize backslashes and split by slash, return last segment

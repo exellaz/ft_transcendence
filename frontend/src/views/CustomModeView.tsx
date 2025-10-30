@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
+import { useClearGameMode } from "../hooks/useClearGameMode";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -34,6 +35,8 @@ const CustomModeView: React.FC = () => {
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
   const [showJoinDoublesGame, setShowJoinDoublesGame] = useState(false);
   const [roomError, setRoomError] = useState<string | null>(null);
+
+  useClearGameMode();
 
   // ------------------------------- Helper Functions -------------------------------
   //get room path base on team size

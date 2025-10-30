@@ -40,7 +40,7 @@ function compile(
  */
 export default async function gameWsRoute(fastify: FastifyInstance) {
   fastify.get("/ws-game", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
-    const context = await validateConnection(socket, req);
+    const context = await validateConnection(socket, req, fastify);
     if (!context) {
         console.log("[game.ws] invalid connection, closing socket");
         return; // Invalid connection, already closed in validateConnection

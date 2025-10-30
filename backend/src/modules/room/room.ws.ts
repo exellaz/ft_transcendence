@@ -18,7 +18,7 @@ const wsHandler = new WebSocketHandler();
 
 export default async function roomWsRoutes(fastify: FastifyInstance) {
   fastify.get("/ws-room", { websocket: true }, async (socket: WebSocket, req: FastifyRequest) => {
-    const context = await validateConnection(socket, req);
+    const context = await validateConnection(socket, req, fastify);
     if (!context) return; // Invalid connection, already closed in validateConnection
 	const { clientId, roomId, room, side, playerName, playerSprite } = context;
     console.log(`[room websocket] New connection: clientId=${clientId}, roomId=${roomId}, side=${side}, playerName=${playerName}, playerSprite=${playerSprite}`); ////debug

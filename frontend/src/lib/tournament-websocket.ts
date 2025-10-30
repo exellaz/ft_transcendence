@@ -57,8 +57,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
   const wsRef = useRef<WebSocket | null>(null);
   const [lock, setLock] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [stage, setStage] = useState<"QF" | "SF" | "F" | null>(null);
-  const [maxPlayer, setMaxPlayer] = useState<number | null>(null);
   const [eliminated, setEliminated] = useState(false);
   const [lastLobbyData, setLastLobbyData] = useState<any | null>(null);
   const [matchAssigned, setMatchAssigned] = useState<{
@@ -81,8 +79,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         if (snap?.id === tournamentId) {
           setLastLobbyData(snap);
           if (Array.isArray(snap.players)) setPlayers(snap.players);
-          if (snap.stage) setStage(snap.stage);
-          if (typeof snap.maxPlayer === "number") setMaxPlayer(snap.maxPlayer);
           if (typeof snap.countdown === "number") setCountdown(snap.countdown);
         }
       }
@@ -121,20 +117,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
         data = JSON.parse(event.data);
       } catch {
         console.warn("invalid tournament ws msg:", event.data);
-        return;
-      }
-
-      // server sends new tournament lobby info
-      if (data.type === "tournamentNewLobby") {
-        console.log("[tournamnent websocket] new lobby: ", data); ////debug
-        setPlayers(Array.isArray(data.players) ? data.players : []);
-        setStage(data.nextStage ?? data.stage ?? null);
-        setMaxPlayer(typeof data.maxPlayer === "number" ? data.maxPlayer : null);
-        setLock(false);
-        setCountdown(typeof data.countdown === "number" ? data.countdown : null);
-        setLastLobbyData(data);
-        // persist snapshot for quick render if navigation happens
-        try { sessionStorage.setItem("lastTournamentLobby", JSON.stringify({ id: tournamentId, stage: data.nextStage ?? data.stage, players: data.players, maxPlayer: data.maxPlayer ?? null, countdown: data.countdown ?? null })); } catch {}
         return;
       }
 
@@ -241,8 +223,6 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
     countdown,
     toggleReady,
     onleave,
-    stage,
-    maxPlayer,
     eliminated,
     lastLobbyData,
     refreshLobby,

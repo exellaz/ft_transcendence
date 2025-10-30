@@ -51,6 +51,8 @@ model User {
   status     userStatus     @default(offline) @map("status")
   joinedAt   DateTime       @default(now()) @map("joined_at")
   updatedAt  DateTime       @default(now()) @map("updated_at")
+  twoFactorSecret String?   @map("two_factor_secret")
+  twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
 
   // Relations
   settings   UserSettings?

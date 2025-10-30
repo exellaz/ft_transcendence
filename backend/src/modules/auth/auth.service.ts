@@ -1,6 +1,8 @@
 import { OAuth2Client } from "google-auth-library";
 import { userPublicSelect } from "../users/users.select";
-import { PrismaClient } from "@prisma/client";
+import { ApiError } from "../../utils/response";
+import { FastifyInstance } from "fastify";
+import { TwoFactorService } from "../twoFactor/twoFactor.service";
 
 const clientId: string = process.env.GOOGLE_CLIENT_ID || "";
 const client = new OAuth2Client(clientId);
@@ -14,31 +16,54 @@ export async function verifyGoogleIdToken(idToken: string) {
   return ticket.getPayload();
 }
 
-const prisma = new PrismaClient();
-
 export async function findOrCreateGoogleUser(
   googleId: string,
   email: string,
   name: string,
+  fastify: FastifyInstance,
+  twoFactorCode?: string,
 ) {
-  let user = await prisma.user.findUnique({
+  let user = await fastify.db.user.findUnique({
     where: { googleId: googleId },
-    select: userPublicSelect,
+    select: {
+      ...userPublicSelect,
+      twoFactorEnabled: true,
+      twoFactorSecret: true,
+    },
   });
 
   if (user) {
+    if (user.twoFactorEnabled) {
+      if (!twoFactorCode) {
+        throw ApiError.unauthorized(
+          "Two-factor authentication required",
+          "TWO_FACTOR_REQUIRED",
+        );
+      }
+
+      const isValid2FA = TwoFactorService.verifyToken(
+        twoFactorCode,
+        user.twoFactorSecret,
+      );
+      if (!isValid2FA) {
+        throw ApiError.unauthorized(
+          "Invalid two-factor authentication token",
+          "INVALID_TWO_FACTOR_TOKEN",
+        );
+      }
+    }
     return user;
   }
 
   // Check if user exists with this email (regular signup first)
-  user = await prisma.user.findUnique({
+  user = await fastify.db.user.findUnique({
     where: { email: email.toLowerCase().trim() },
     select: userPublicSelect,
   });
 
   if (user) {
     // Link Google account to existing user
-    user = await prisma.user.update({
+    user = await fastify.db.user.update({
       where: { id: user.id },
       data: { googleId: googleId },
       select: userPublicSelect,
@@ -46,7 +71,7 @@ export async function findOrCreateGoogleUser(
     return user;
   }
 
-  user = await prisma.user.findUnique({
+  user = await fastify.db.user.findUnique({
     where: { username: name },
     select: userPublicSelect,
   });
@@ -56,7 +81,7 @@ export async function findOrCreateGoogleUser(
   }
 
   // Create new Google user with default settings
-  user = await prisma.user.create({
+  user = await fastify.db.user.create({
     data: {
       googleId: googleId,
       email: email.toLowerCase().trim(),
@@ -68,17 +93,6 @@ export async function findOrCreateGoogleUser(
   });
 
   return user;
-}
-
-export async function updateLastLogin(userId: number): Promise<void> {
-  try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { updatedAt: new Date() },
-    });
-  } catch (error) {
-    console.error(`Failed to update last login for user ${userId}:`, error);
-  }
 }
 
 export function sanitizeUsername(name: string, googleId: string): string {

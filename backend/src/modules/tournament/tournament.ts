@@ -64,10 +64,10 @@ export async function startTournamentCountdown(
     tournament.countdownRemaining = undefined;
     tournament.lock = true;
 
-    // Shuffle players and create matches
     const shuffled = [...tournament.players].sort(() => 0.5 - Math.random());
     const matches: TournamentMatch[] = [];
 
+    //shuffle players and pair them into match rooms
     for (let i = 0; i < shuffled.length; i += 2) {
       const pair = shuffled.slice(i, i + 2);
       const room = createGameRoom(tournamentId, pair, tournament, TournamentLobbyDb);
@@ -83,6 +83,7 @@ export async function startTournamentCountdown(
             room.clients.add(ws);
             room.sockets.set(ws, info.playerId);
 
+            //get player team info and send to client
             const playerInfo = room.clientRoles.get(info.playerId);
             if (playerInfo) {
               ws.send(JSON.stringify({
@@ -93,6 +94,7 @@ export async function startTournamentCountdown(
               }));
             }
 
+            //assign a pair of players to match room
             ws.send(JSON.stringify({
                 type: "matchAssigned",
                 roomId: room.id,
@@ -299,7 +301,7 @@ async function saveMatchResult(
                 success: true,
                 data: {
                     ...TournamentPlayer.data,
-                    ranking: TournamentPlayer.data.ranking ?? 0 // Ensure ranking is a number
+                    ranking: TournamentPlayer.data.ranking ?? 0,
                 }
             });
 			tournament.playerMap.set(userId, TournamentPlayer.data.id);
@@ -492,18 +494,6 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
 
           console.log(`Tournament ${tournamentId} prepared NEW lobby for stage ${nextStage} with players:`, winnerIds);
 
-          // notify winners / clients
-          const bc = tournament.broadcast;
-          if (typeof bc === "function") {
-            bc(JSON.stringify({
-              type: "tournamentNewLobby",
-              tournamentId,
-              nextStage,
-              players: winners,
-              maxPlayer: tournament.maxPlayer ?? winners.length,
-            }));
-          }
-
           console.log(`Tournament ${tournamentId} completed.`);
           const updateTournamentDB = await updateTournamentStatus("COMPLETED", TournamentLobbyDb.id);
           if (updateTournamentDB.success)
@@ -514,28 +504,14 @@ async function handleNextRound(tournamentId: number, currentStage: "QF" | "SF" |
           tournaments.delete(tournamentId);
           return;
       }
-
-      // notify winners / clients
-      const bc = tournament.broadcast;
-      console.log(`[tournament] handleNextRound: broadcasting new lobby for ${tournamentId}`, {
-       bcType: typeof bc,
-       clientMapSize: tournament.clientMap ? (tournament.clientMap.size ?? 0) : "no-clientMap",
-       allowedPlayersSize: tournament.allowedPlayers ? tournament.allowedPlayers.size : 0,
-     });
-      if (typeof bc === "function") {
-        bc(JSON.stringify({
-          type: "tournamentNewLobby",
-          tournamentId,
-          nextStage,
-          players: winners,
-          maxPlayer: tournament.maxPlayer ?? winners.length,
-        }));
-      }
-
       return;
     }
 }
 
+/**
+ * @brief Apply precomputed placements to the database. (player rankings)
+ * @param tournamentId - The ID of the tournament.
+*/
 async function applyPlacementsToDB(tournamentId: number): Promise<void> {
   const tournament = tournaments.get(tournamentId);
   if (!tournament) return;

@@ -7,17 +7,17 @@ import { TournamentPlayerWs } from "../../types/interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
 //! temporary helper function to get user info by id
-import { GetUserRequest, GetUserResponse } from "../../../../frontend/src/types/usersApi";
-export async function getUserInfoById({
-  id,
-}: GetUserRequest): Promise<GetUserResponse> {
-  const res = await fetch(`http://localhost:3000/users/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
+//import { GetUserRequest, GetUserResponse } from "../../../../frontend/src/types/usersApi";
+//export async function getUserInfoById({
+//  id,
+//}: GetUserRequest): Promise<GetUserResponse> {
+//  const res = await fetch(`http://localhost:3000/users/${id}`, {
+//    method: "GET",
+//    headers: { "Content-Type": "application/json" },
+//  });
 
-  return res.json();
-}
+//  return res.json();
+//}
 
 const client = new Map<WebSocket, { tournamentId: number; playerId: number }>();
 
@@ -39,18 +39,20 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         }
 
         const playerId = decode.userId as number;
-        const user = await getUserInfoById({ id: playerId });
-        if (!user || !user.data) {
+        const user = await fastify.db.user.findUnique({
+          where: { id: playerId },
+        });
+        if (!user) {
           socket.close(1008, "User not found");
           return null;
         }
 
-        const playerName = user.data.username;
+        const playerName = user.username;
         if (!playerName) {
             socket.close(1008, "Invalid user name");
             return null;
         }
-        const playerSprite = user.data.avatarUrl;
+        const playerSprite = user.avatarUrl;
         if (!playerSprite) {
             socket.close(1008, "Invalid user sprite");
             return null;

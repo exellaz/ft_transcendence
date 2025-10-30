@@ -99,7 +99,7 @@ export function useApiMutation<TRequest, TResponse>(
         error: response.error,
         errorCode: response.errorCode,
       };
-    } catch (err) {
+    } catch {
       return {
         success: false,
         error: "Network error",

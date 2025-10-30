@@ -1,18 +1,16 @@
-import React, { useState, useParams, useRef, useEffect } from "react";
-import { useTranslation, withSSR } from "react-i18next";
+import React, { useState, useRef, useEffect } from "react";
 import Background from "../components/Background";
+import { useTranslation } from "react-i18next";
 import { getUserById } from "../lib/usersApiClient";
 import { useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button";
-import { GameClient } from "./Gameclient";
 import { useLocation } from "react-router-dom";
 import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
-import { ImageObject } from "@shared/objects/ImageObject";
 import type { GameObject } from "@shared/objects/GameObject";
 import { SKIN_PATHS } from "@shared/game/Skins";
 import type { User } from "@/types/usersApi";
@@ -121,11 +119,8 @@ const GameView: React.FC<GameViewProps> = () => {
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [hasNextStage, setHasNextStage] = useState<boolean | null>(null);
   useBlockLeave();
- const { t } = useTranslation();
- const translate = (key: string) => t(`GameView.${key}`);
-//  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals" | "custom">(
-//    "quarterfinals",
-//  );
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`GameView.${key}`);
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const navigate = useNavigate();
@@ -350,7 +345,7 @@ const GameView: React.FC<GameViewProps> = () => {
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
 
-        {gameOver && !isWinner && (
+        {gameOver && !isWinner && !lastTournamentId && (
           <div>
             <Button
               variant="bigYellow"
@@ -374,46 +369,6 @@ const GameView: React.FC<GameViewProps> = () => {
               }}
             >
               Back to Lobby
-            </Button>
-          </div>
-        )}
-
-        {/* Winner: button adapts for final vs next-stage */}
-        {isWinner && lastTournamentId && (
-          <div className="flex items-center gap-4">
-            <Button
-              variant="bigYellow"
-              className="px-3 py-4 text-2xl"
-              onClick={() => {
-                if (hasNextStage === false) {
-                  // final finished — go back to tournament page / results (or main-menu)
-                  sessionStorage.removeItem("playerSide");
-                  sessionStorage.removeItem("RoomId");
-                  sessionStorage.removeItem("RoomLeaderId");
-                  sessionStorage.removeItem("RoomName");
-                  sessionStorage.removeItem("RoomType");
-                  navigate(`/tournament/${lastTournamentId}`);
-                  return;
-                }
-                // otherwise attempt to advance to next round
-                //goToNextRound(tournamentDb);
-                navigate("/advance", { state: {
-                    playerSprite,
-                    lastTournamentId,
-                    tournamentDb,
-                    clientId,
-                    roomId,
-                    winnerRank,
-                } });
-
-              }}
-              disabled={isAdvancing || hasNextStage === null}
-            >
-              {isAdvancing
-                ? "Redirecting..."
-                : hasNextStage === false
-                ? "Back to Lobby"
-                : "Next Stage"}
             </Button>
           </div>
         )}
@@ -446,7 +401,146 @@ const GameView: React.FC<GameViewProps> = () => {
       </div>
     </Background>
   );
- }
+ } else if (mode === "local") {
+    const location = useLocation();
+    const state = location.state;
+
+    console.log("state", state);
+
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const viewport = new Viewport({
+        ctx,
+        width: canvas.width,
+        height: canvas.height,
+      });
+
+      const settings = location.state?.gameSettings ?? {};
+      const game = new PongGame(false, settings, () => {}, 1);
+
+      const player1Settings = location.state?.player1 ?? {};
+      const player2Settings = location.state?.player2 ?? {};
+
+      game.addPlayer(
+        new Player({
+          team: 0,
+          name: "Player1",
+          id: 0,
+          skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
+        }),
+      );
+
+      game.addPlayer(
+        new Player({
+          team: 1,
+          name: "Player2",
+          id: 1,
+          skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
+        }),
+      );
+
+      // --- ✅ Track pressed keys for smooth motion ---
+      const keysPressed = new Set<string>();
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (["w", "s", "ArrowUp", "ArrowDown"].includes(event.key)) {
+          keysPressed.add(event.key);
+        }
+      };
+
+      const handleKeyUp = (event: KeyboardEvent) => {
+        keysPressed.delete(event.key);
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+
+      function updateObjectClient(obj: GameObject) {
+        obj.clientUpdate();
+        for (const children of obj.children) {
+          updateObjectClient(children);
+        }
+      }
+
+      const FIXED_TIMESTEP = 1 / 60;
+      let lastTime = performance.now();
+      let accumulator = 0;
+
+      // --- 🎮 Game Loop ---
+      function loop(now: number) {
+        const frameTime = (now - lastTime) / 1000; // seconds
+        lastTime = now;
+        accumulator += frameTime;
+
+        while (accumulator >= FIXED_TIMESTEP) {
+          if (keysPressed.has("w")) game.movePaddle("ArrowUp", 0);
+          if (keysPressed.has("s")) game.movePaddle("ArrowDown", 0);
+          if (keysPressed.has("ArrowDown")) game.movePaddle("ArrowDown", 1);
+          if (keysPressed.has("ArrowUp")) game.movePaddle("ArrowUp", 1);
+
+          game.update({ deltaOverride: FIXED_TIMESTEP });
+          accumulator -= FIXED_TIMESTEP;
+        }
+
+        // --- 🎨 Render phase ---
+        viewport.ctx.clearRect(0, 0, viewport.width, viewport.height);
+        viewport.ctx.fillStyle = "#000";
+        viewport.ctx.fillRect(0, 0, viewport.width, viewport.height);
+
+        const renderList = Array.from(game.world.gameObjects.values()).sort(
+          (a, b) => a.zIndex - b.zIndex,
+        );
+        for (const obj of renderList) {
+          updateObjectClient(obj);
+          obj.draw(viewport);
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      requestAnimationFrame(loop);
+      // --- 🧹 Cleanup ---
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+      };
+    }, []);
+
+    return (
+      <Background variant="plain">
+        <div className="w-full h-full flex-col-center gap-10 px-25">
+          <canvas
+            ref={canvasRef}
+            width={1200}
+            height={500}
+            className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
+          />
+          {/* ✅ Back to Lobby Button */}
+          <div>
+            <Button
+              variant="bigYellow"
+              className="px-3 py-4 text-2xl"
+              onClick={() => {
+                navigate("/main-menu");
+                sessionStorage.removeItem("playerSide");
+                sessionStorage.removeItem("RoomId");
+                sessionStorage.removeItem("RoomLeaderId");
+                sessionStorage.removeItem("RoomName");
+                sessionStorage.removeItem("RoomType");
+              }}
+            >
+              Back to Lobby
+            </Button>
+          </div>
+        </div>
+      </Background>
+    );
+  }
 }
 
 export default GameView;

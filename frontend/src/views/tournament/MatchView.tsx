@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../../context/UserProvider";
 import { getUserById } from "../../lib/usersApiClient";
 import type { MatchPlayer } from "../../types/apiInterfaces";
 import type { User } from "../../types/usersApi";
-//import { mockMatchPlayers } from "../../data/mockUsers";
 
 import Avatar from "../../components/Avatar";
 import Background from "../../components/Background";
@@ -29,9 +28,6 @@ const MatchView: React.FC = () => {
   const [userInfo, setUserinfo] = useState<User | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-
-  // TODO: Remove mock data when integrating real API
-
   React.useEffect (() => {
     if (sessionStorage.getItem("reloading") !== null) {
         sessionStorage.removeItem("reloading");
@@ -39,21 +35,20 @@ const MatchView: React.FC = () => {
     }
   }, []);
 
-  // Fetch user info when the component mounts
+  // Fetch user info
   React.useEffect(() => {
-    if (!user) return; // Ensure `user` is available
-
+    if (!user) return;
     (async () => {
         try {
-            const response = await getUserById({ id: Number(user.id) }); // Call the API
+            const response = await getUserById({ id: Number(user.id) });
         if (response.success && response.data) {
-          setUserinfo(response.data); // Store the user info
+          setUserinfo(response.data);
         } else {
-          console.log("Failed to fetch user info"); // Handle API error
+          console.log("Failed to fetch user info");
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
-        console.error("An error occurred while fetching user info"); // Handle fetch error
+        console.error("An error occurred while fetching user info");
       }
     })();
 
@@ -61,14 +56,14 @@ const MatchView: React.FC = () => {
 
 
   const authId = user?.id ?? userInfo?.id;
-  // numeric compare to avoid string/number mismatch and to be stable across async userInfo updates
   const userPlayer = initialPlayers?.find((p: MatchPlayer) => Number(p.id) === Number(authId));
   const playerId = userPlayer ? Number(userPlayer.clientId ?? userPlayer.id) : -1;
   const playerName = userPlayer ? (userPlayer.playerName || userPlayer.username || "") : "";
   const playerSprite = userPlayer ? (userPlayer.spriteUrl || "") : "";
-  console.log("[MatchView] userPlayer:", userPlayer);
-  console.log("[MatchView] playerId:", playerId, " playerName:", playerName, " playerSprite:", playerSprite);
+//  console.log("[MatchView] userPlayer:", userPlayer); //// debug
+//  console.log("[MatchView] playerId:", playerId, " playerName:", playerName, " playerSprite:", playerSprite); ////debug
 
+  // match websocket
   const { roomReady, handleRoomReady, players: wsPlayers } = useMatchWebsocket(
     roomId ?? -1,
     {
@@ -78,6 +73,7 @@ const MatchView: React.FC = () => {
     },
   );
 
+  // navigate to /game when match room is ready
   React.useEffect(() => {
     console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
@@ -93,7 +89,7 @@ const MatchView: React.FC = () => {
           },
         },
       });
-    }, 2000);
+    }, 1000);
     // only clear when roomReady flips back or component unmounts
     return () => clearTimeout(id);
   }, [roomReady, navigate]);
@@ -120,18 +116,11 @@ const MatchView: React.FC = () => {
     );
   }
 
-//  if (players.length < 2) {
-//    return <div>{translate("loading")}</div>;
-//  }
-
   // choose websocket players when available, otherwise fall back to initialPlayers
   const players = wsPlayers;
-
-  // use the same numeric id source everywhere (prefer clientId)
   const userClientId = Number(userPlayer?.clientId ?? userPlayer?.id ?? -1);
   const getClientId = (p: MatchPlayer) => Number((p as unknown as Record<string, unknown>).clientId ?? (p as unknown as Record<string, unknown>).id ?? -1);
   const userDetails = players.find((p: MatchPlayer) => getClientId(p) === userClientId);
-//  const opponentDetails = players.find((p: MatchPlayer) => getClientId(p) !== userClientId);
   const isUserReady = userDetails?.ready || false;
   const leftPlayer = players.find((p: MatchPlayer) => (p as unknown as playerInfo).team === "left");
   const rightPlayer = players.find((p: MatchPlayer) => (p as unknown as playerInfo).team === "right");
@@ -145,7 +134,7 @@ const MatchView: React.FC = () => {
     onClick: (id: number) => void;
   }> = ({ player, onClick }) => {
     const displayName = player.username;
-    console.log("[ MatchPlayerCard ] player:", player);
+    //console.log("[ MatchPlayerCard ] player:", player); ////debug
     return (
       <div key={player.id} className="flex-col-center gap-4">
         {/* player status */}

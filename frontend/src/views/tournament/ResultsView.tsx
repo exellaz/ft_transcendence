@@ -43,7 +43,6 @@ const ResultsView: React.FC = () => {
       position,
     });
 
-  // TODO: Replace with actual ranking from props, state, or API
   const ranking = location.state.winnerRank || location.state.loserRank;
 
   // Usage:

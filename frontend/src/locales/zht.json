@@ -64,6 +64,7 @@
     "login": "登入",
     "loading": "載入中...",
     "continue_with_google": "使用 Google 繼續",
+    "google_login_failed": "Google 登入失敗",
     "signup_prompt": "還沒有帳號？註冊",
     "2fa": "雙重驗證",
     "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
@@ -79,6 +80,7 @@
   "MatchView": {
     "loading": "載入中...",
     "ready": "準備",
+    "unready": "取消準備",
     "pending": "等待中",
     "quarterfinals": "四分之一決賽",
     "semifinals": "準決賽",
@@ -144,6 +146,7 @@
     "finals": "決賽",
     "tournament_lobby": "錦標賽大廳",
     "ready": "準備",
+    "unready": "取消準備",
     "quit": "退出",
     "quit_confirmation": "你確定要退出錦標賽嗎？"
   },
@@ -274,6 +277,7 @@
     "no_history_yet": "尚無比賽紀錄"
   },
   "TwoFAPopup": {
+    "loading": "載入中...",
     "header": "雙重驗證設定",
     "2fa_not_enabled_message": "尚未啟用雙重驗證（2FA）。",
     "enable_2fa": "啟用雙重驗證",
@@ -281,11 +285,12 @@
     "verify_code": "驗證代碼",
     "2fa_enabled_message": "雙重驗證（2FA）已啟用。",
     "disable_2fa": "停用雙重驗證",
-    "invalid_code_error": "代碼無效或伺服器錯誤"
+    "invalid_code_error": "代碼無效或伺服器錯誤",
+    "verification_failed": "驗證失敗"
   },
   "ApiState": {
     "loading": "載入中...",
-    "error": "錯誤",
+    "something_went_wrong": "發生錯誤",
     "try_again": "重試",
     "not_found": "未找到記錄"
   },
@@ -303,6 +308,9 @@
   "ChooseSpriteContents": {
     "choose_sprite": "選擇一個角色",
     "confirm": "確認"
+  },
+  "CustomToast": {
+    "message_from": "來自 {{username}} 的新訊息"
   },
   "LiveChat": {
     "live_chat": "即時聊天",
@@ -355,7 +363,7 @@
   },
   "RoomLayout": {
     "game_settings": "遊戲設定",
-    "invite_friends": "邀請好友",
+    "friends": "好友",
     "choose_sprite": "選擇角色"
   }
 }

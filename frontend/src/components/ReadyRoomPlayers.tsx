@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import type { WaitingRoomPlayer } from "../types/apiInterfaces";
-import { getUserColor } from "../utils/colorUtils";
+import { getUserColor } from "../utils/color";
 
 import Avatar from "./Avatar";
 

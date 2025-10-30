@@ -192,6 +192,7 @@ const DoublesRoomView: React.FC = () => {
           role.startsWith("left") ? "left" : "right",
         );
         sessionStorage.setItem("playerSprite", sprite);
+        sessionStorage.setItem("gameMode", "custom");
         navigate("/game");
       }, 1000);
       return () => clearTimeout(timer);

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserProvider";
-import { getUserColor } from "../utils/colorUtils";
+import { getUserColor } from "../utils/color";
 
 import Avatar from "../components/Avatar";
 import ProfilePopup from "../popups/ProfilePopup";

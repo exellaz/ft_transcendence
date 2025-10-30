@@ -6,19 +6,21 @@ import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
 import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import fastify, { FastifyInstance } from "fastify";
 
 //! temporary helper function to get user info by id
-import { GetUserRequest, GetUserResponse } from "../../../frontend/src/types/usersApi";
-export async function getUserInfoById({
-  id,
-}: GetUserRequest): Promise<GetUserResponse> {
-  const res = await fetch(`http://localhost:3000/users/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
+//import { GetUserRequest, GetUserResponse } from "../../../frontend/src/types/usersApi";
+//import { getUserByIdSchema } from "src/modules/users/users.schema";
+//export async function getUserInfoById({
+//  id,
+//}: GetUserRequest): Promise<GetUserResponse> {
+//  const res = await fetch(`http://localhost:3000/users/${id}`, {
+//    method: "GET",
+//    headers: { "Content-Type": "application/json" },
+//  });
 
-  return res.json();
-}
+//  return res.json();
+//}
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -27,7 +29,7 @@ export async function getUserInfoById({
  * @return WSContext if valid, otherwise null (and closes socket)
  * @note Close the socket with appropriate code/message if validation fails
  */
-export async function validateConnection(socket: WSWebSocket, req: FastifyRequest): Promise<WSContext | null> {
+export async function validateConnection(socket: WSWebSocket, req: FastifyRequest, fastify: FastifyInstance): Promise<WSContext | null> {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
 //  console.log("WebSocket connection URL:", url.href); ////debug
   const roomId = url.searchParams.get("room") || "-1";
@@ -54,20 +56,28 @@ export async function validateConnection(socket: WSWebSocket, req: FastifyReques
   const clientId: number = decode.userId;
 //  console.log("[validate token] Authenticated user id: ", clientId); ////debug
   //! need to validate user later
-  const user = await getUserInfoById({ id: clientId });
-  if (!user || !user.data) {
-    socket.close(1008, "User not found");
+//  const user = await getUserInfoById({ id: clientId });
+//  if (!user || !user.data) {
+//    socket.close(1008, "User not found");
+//    return null;
+//  }
+
+  const user = await fastify.db.user.findUnique({
+    where: { id: clientId },
+  });
+  if (!user) {
+    socket.close(1008, "User not found in database");
     return null;
   }
-//  console.log("[validate token] Authenticated user: ", user); ////debug
+  console.log("[validate token] Authenticated user: ", user); ////debug
 
-  const playerName = user.data.username;
+  const playerName = user.username;
   if (!playerName) {
     socket.close(1008, "User has no username");
     return null;
   }
 
-  const playerSprite = user.data.avatarUrl;
+  const playerSprite = user.avatarUrl;
   if (!playerSprite) {
     socket.close(1008, "User has no sprite");
     return null;

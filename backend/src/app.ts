@@ -20,6 +20,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
 import onlineStatusRoutes from "./modules/online-status/online-status.routes";
+import { twoFactorRoutes } from "./modules/twoFactor/twoFactor.routes";
 
 const app = Fastify({
   logger: false,
@@ -42,6 +43,7 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(onlineStatusRoutes);
+app.register(twoFactorRoutes);
 
 app.register(testRoutes);
 

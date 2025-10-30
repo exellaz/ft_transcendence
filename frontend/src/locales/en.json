@@ -66,6 +66,7 @@
     "login": "LOGIN",
     "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
+    "google_login_failed": "Google login failed",
     "signup_prompt": "Don’t have an account? Sign up",
     "2fa": "Two-Factor Authentication",
     "enter_code": "Enter the 6-digit code from your authenticator app.",
@@ -81,6 +82,7 @@
   "MatchView": {
     "loading": "Loading...",
     "ready": "Ready",
+    "unready": "Unready",
     "pending": "Pending",
     "quarterfinals": "Quarterfinals",
     "semifinals": "Semifinals",
@@ -146,6 +148,7 @@
     "finals": "Finals",
     "tournament_lobby": "Tournament Lobby",
     "ready": "Ready",
+    "unready": "Unready",
     "quit": "Quit",
     "quit_confirmation": "Are you sure you want to quit the tournament?"
   },
@@ -276,6 +279,7 @@
     "no_history_yet": "No tournament history yet"
   },
   "TwoFAPopup": {
+    "loading": "Loading...",
     "header": "2FA Settings",
     "2fa_not_enabled_message": "Two-Factor Authentication (2FA) is not enabled yet.",
     "enable_2fa": "Enable 2FA",
@@ -283,11 +287,12 @@
     "verify_code": "Verify Code",
     "2fa_enabled_message": "Two-Factor Authentication (2FA) is enabled.",
     "disable_2fa": "Disable 2FA",
-    "invalid_code_error": "Invalid code or server error"
+    "invalid_code_error": "Invalid code or server error",
+    "verification_failed": "Verification failed"
   },
   "ApiState": {
     "loading": "Loading...",
-    "error": "Error",
+    "something_went_wrong": "Something went wrong",
     "try_again": "Try Again",
     "not_found": "Record not found"
   },
@@ -305,6 +310,9 @@
   "ChooseSpriteContents": {
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
+  },
+  "CustomToast": {
+    "message_from": "New message from {{username}}"
   },
   "LiveChat": {
     "live_chat": "Live Chat",
@@ -357,7 +365,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends",
+    "friends": "Friends",
     "choose_sprite": "Choose Sprite"
   }
 }

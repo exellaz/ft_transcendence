@@ -35,7 +35,8 @@ const TournamentLobbyView: React.FC = () => {
 //  console.log("Tournament ID:", tournamentId); ////debug
 //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
- const {
+  //live chat websocket
+  const {
     chatMessages,
     message,
     setMessage,
@@ -48,6 +49,7 @@ const TournamentLobbyView: React.FC = () => {
     }
   );
 
+  //tournament websocket
   const {
     players: currentPlayer,
     ready,
@@ -55,8 +57,6 @@ const TournamentLobbyView: React.FC = () => {
     countdown,
     toggleReady,
     onleave,
-    stage: wsStage,
-    maxPlayer,
     eliminated,
     lastLobbyData,
     refreshLobby,
@@ -97,7 +97,7 @@ const TournamentLobbyView: React.FC = () => {
     navigate("/main-menu");
   }, [user, tournamentId, navigate]);
 
-  //update session storage when paramTournamentId change
+  //update session storage when TournamentId change
   React.useEffect(() => {
     if (paramTournamentId) {
       sessionStorage.setItem("tournamentId", paramTournamentId);
@@ -112,6 +112,7 @@ const TournamentLobbyView: React.FC = () => {
         }
   }, []);
 
+  //navigate to match when start tournament
   React.useEffect(() => {
     if (matchAssigned) {
         navigate(`/match/${matchAssigned.roomId}`, {
@@ -123,20 +124,11 @@ const TournamentLobbyView: React.FC = () => {
         });
     }
   });
-
 //  console.log ("Current players from WebSocket:", currentPlayer); ////debug
 
-//  React.useEffect(() => {
-//    setPlayers(currentPlayer);
-//  }, [currentPlayer]);
-  // prefer server snapshot when available (winners arriving) otherwise keep WS players
+  //update players list when websocket data change
   React.useEffect(() => {
     console.log("[ lobby snapshot ]:", lastLobbyData?.players, "ws players:", currentPlayer);
-
-    //if (lastLobbyData && Array.isArray(lastLobbyData.players) && lastLobbyData.players.length > 0) {
-    //  setPlayers(lastLobbyData.players);
-    //  return;
-    //}
 
     // if server sent an empty snapshot, ask the server for a fresh one and fallback to WS players shortly
     if (lastLobbyData && Array.isArray(lastLobbyData.players) && lastLobbyData.players.length === 0) {
@@ -169,6 +161,7 @@ const TournamentLobbyView: React.FC = () => {
     }
   }, [currentPlayer, lastLobbyData, refreshLobby]);
 
+  //update stage when move to next stage
   React.useEffect(() => {
     if (location.state.tournament.stage) {
         setStage(location.state.tournament.stage);

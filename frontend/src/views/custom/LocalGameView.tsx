@@ -108,6 +108,7 @@ const LocalGameView: React.FC = () => {
                 player2,
                 gameSettings,
               };
+              sessionStorage.setItem("gameMode", "local");
               navigate("/local-game", { state: gameDetails });
             }}
           >

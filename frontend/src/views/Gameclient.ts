@@ -9,7 +9,7 @@ import { GameObject } from "@shared/objects/GameObject";
 import { Arrow } from "@shared/game/Padel";
 import { Player } from "@shared/game/Player";
 import { Point2D, Vector2D } from "@shared/objects/Coordinates";
-import { PongGame, Team } from "@shared/game/pong";
+import { PongGame } from "@shared/game/pong";
 import type { Component } from "@shared/objects/Component";
 import { Viewport } from "@shared/objects/Viewport";
 import type { Camera } from "@shared/objects/Camera";
@@ -168,7 +168,7 @@ export class GameClient {
       const chunk = gameObjects.slice(i, i + chunkSize);
       for (const stateObj of chunk) {
         const id = stateObj.id;
-        let obj = this.getObject(id);
+        const obj = this.getObject(id);
 
         if (!obj) {
           const revived = revive(stateObj);
@@ -262,7 +262,7 @@ export class GameClient {
     window.addEventListener("keyup", this.handleKey);
 
     let lastKeyTime = 0;
-    document.addEventListener("keydown", (e) => {
+    document.addEventListener("keydown", () => {
       const t = performance.now();
       console.log("Input delay since last key:", t - lastKeyTime);
       lastKeyTime = t;
