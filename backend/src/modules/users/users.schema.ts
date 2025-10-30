@@ -88,6 +88,20 @@ export const patchUserSettingsByIdSchema = {
   },
 };
 
+// GET /users/settings - get all user settings
+export const getAllUserSettingsSchema = {
+  tags: ["user"],
+  summary: "Get all user settings",
+
+  response: {
+    200: successResponseSchema({
+      type: "array",
+      items: userSettingsResponseSchema,
+    }),
+    400: errorResponseSchema,
+  },
+};
+
 // ------------------------------ User Schemas ------------------------------
 
 // GET /users/:id
@@ -123,6 +137,22 @@ export const patchUserByIdSchema = {
     },
     additionalProperties: false,
   },
+
+  response: {
+    200: successResponseSchema(userResponseSchema),
+    404: errorResponseSchema,
+    400: errorResponseSchema,
+  },
+};
+
+// PATCH /users/:id/avatar  (upload user avatar)
+export const patchUserAvatarByIdSchema = {
+  tags: ["user"],
+  summary: "Upload or update a user's avatar by their ID",
+
+  params: idParamSchema,
+
+  consumes: ["multipart/form-data"],
 
   response: {
     200: successResponseSchema(userResponseSchema),

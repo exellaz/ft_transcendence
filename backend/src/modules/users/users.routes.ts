@@ -2,9 +2,11 @@ import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../utils/response";
 import {
   deleteUserByIdSchema,
+  getAllUserSettingsSchema,
   getUserByIdSchema,
   getUserSettingsByIdSchema,
   getUsersSchema,
+  patchUserAvatarByIdSchema,
   patchUserByIdSchema,
   patchUserSettingsByIdSchema,
 } from "./users.schema";
@@ -14,6 +16,7 @@ import { request } from "http";
 import { authenticate } from "../../plugins/authenticate";
 import { MultipartFile } from "@fastify/multipart";
 import { uploadFileToServerUploadsDir } from "./users.service";
+import { AvatarFileValidator } from "src/utils/avatar-file-validator";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -84,7 +87,10 @@ async function userRoutes(fastify: FastifyInstance) {
   );
 
   // GET all userSettings (NEEDS TO BE BEFORE /user/:id)
-  fastify.get("/users/settings", async () => {
+  fastify.get(
+    "/users/settings", 
+    {schema: getAllUserSettingsSchema},
+    async () => {
     const userSettings = await fastify.db.userSettings.findMany({
       select: userSettingsPublicSelect,
     });
@@ -153,7 +159,10 @@ async function userRoutes(fastify: FastifyInstance) {
   );
 
   // PATCH /users/:id/avatar  (upload user avatar)
-  fastify.patch('/users/:id/avatar', async (request, reply) => {
+  fastify.patch(
+    '/users/:id/avatar', 
+    { schema: patchUserAvatarByIdSchema },
+    async (request, reply) => {
 
     console.log("Uploading avatar for user...");
     // get userId from param
@@ -164,6 +173,15 @@ async function userRoutes(fastify: FastifyInstance) {
     const data: MultipartFile | undefined = await request.file();
     if (!data)
       throw ApiError.badRequest('No file uploaded', 'NO_FILE_UPLOADED');
+
+
+    
+    // Validate the file
+    
+    const validator = new AvatarFileValidator();
+    const validation = validator.validateFile(data.filename);
+    if (!validation.valid)
+      throw ApiError.badRequest('Invalid file extension', 'FILE_VALIDATION_FAILED');
   
     const filename = data.filename;
   
