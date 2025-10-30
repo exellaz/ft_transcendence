@@ -212,7 +212,7 @@ const DoublesRoomView: React.FC = () => {
                     <div className="flex-row-center gap-2">
                       <p>{translate("doubles_room")}</p>
                       <img
-                        src="/assets/link.png"
+                        src="/assets/copy.png"
                         className="w-6 h-6 cursor-pointer hover:scale-110 transition-all duration-200 active:scale-95"
                         onClick={() => {
                           if (roomId) {

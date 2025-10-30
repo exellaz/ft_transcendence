@@ -16,7 +16,6 @@ import ResultsView from "./views/tournament/ResultsView";
 import SinglesRoomView from "./views/custom/SinglesRoomView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
-import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 import BouncingSprites from "./components/BouncingSprites";
 
@@ -175,8 +174,6 @@ const App: React.FC = () => {
                 </RequireAuth>
               }
             />
-            {/* Miscellaneous routes */}
-            <Route path="/test" element={<TestView />} />
           </Routes>
         </PreLoginWrapper>
       </BrowserRouter>
