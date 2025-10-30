@@ -2,7 +2,7 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
-  code?: string;
+  errorCode?: string;
 }
 
 export interface ApiError {
@@ -51,9 +51,9 @@ export const apiRequest = async <T>(
       return { success: true, data: data.data };
     } else {
       return {
-        success: false,
-        error: data.error || "Request failed",
-        code: data.code,
+      success: false,
+      error: data.error || "Request failed",
+      errorCode: data.errorCode,
       };
     }
   } catch (error) {
