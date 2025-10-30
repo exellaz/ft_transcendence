@@ -49,3 +49,7 @@ prisma/database
 *.njsproj
 *.sln
 *.sw?
+
+
+# avatar uploads
+uploads/

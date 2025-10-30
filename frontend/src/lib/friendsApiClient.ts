@@ -21,13 +21,13 @@ import type {
   UpdateFriendshipResponse,
 } from "../types/friendsApi";
 
-const API_BASE = import.meta.env.API_BASE || "http://localhost:3000";
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 // GET /friendships/:userId/pending (get friends that send friend request to u)
 export async function getPendingFriendshipsByUserId({
   userId,
 }: GetPendingFriendshipsRequest): Promise<GetPendingFriendshipsResponse> {
-  const res = await fetch(`${API_BASE}/friendships/${userId}/pending`, {
+  const res = await fetch(`${VITE_API_URL}/friendships/${userId}/pending`, {
     method: "GET",
   });
 
@@ -38,7 +38,7 @@ export async function getPendingFriendshipsByUserId({
 export async function getAcceptedFriendshipsByUserId({
   userId,
 }: GetAcceptedFriendshipsRequest): Promise<GetAcceptedFriendshipsResponse> {
-  const res = await fetch(`${API_BASE}/friendships/${userId}/accepted`, {
+  const res = await fetch(`${VITE_API_URL}/friendships/${userId}/accepted`, {
     method: "GET",
   });
 
@@ -49,7 +49,7 @@ export async function getAcceptedFriendshipsByUserId({
 export async function createFriendship(
   payload: CreateFriendshipRequest,
 ): Promise<CreateFriendshipResponse> {
-  const res = await fetch(`${API_BASE}/friendships`, {
+  const res = await fetch(`${VITE_API_URL}/friendships`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -64,7 +64,7 @@ export async function updateFriendship(
 ): Promise<UpdateFriendshipResponse> {
   const { requesterId, accepterId, ...data } = payload;
   const res = await fetch(
-    `${API_BASE}/friendships/${requesterId}/${accepterId}`,
+    `${VITE_API_URL}/friendships/${requesterId}/${accepterId}`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +81,7 @@ export async function deleteFriendship({
   accepterId,
 }: DeleteFriendshipRequest): Promise<DeleteFriendshipResponse> {
   const res = await fetch(
-    `${API_BASE}/friendships/${requesterId}/${accepterId}`,
+    `${VITE_API_URL}/friendships/${requesterId}/${accepterId}`,
     {
       method: "DELETE",
     },
@@ -94,7 +94,7 @@ export async function deleteFriendship({
 export async function getBlockedFriendshipsByUserId({
   userId,
 }: GetBlockedFriendshipsRequest): Promise<GetBlockedFriendshipsResponse> {
-  const res = await fetch(`${API_BASE}/blockedFriendships/${userId}`, {
+  const res = await fetch(`${VITE_API_URL}/blockedFriendships/${userId}`, {
     method: "GET",
   });
 
@@ -105,7 +105,7 @@ export async function getBlockedFriendshipsByUserId({
 export async function createBlockedFriendship(
   payload: CreateBlockedFriendshipRequest,
 ): Promise<CreateBlockedFriendshipResponse> {
-  const res = await fetch(`${API_BASE}/blockedFriendships`, {
+  const res = await fetch(`${VITE_API_URL}/blockedFriendships`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -119,7 +119,7 @@ export async function deleteBlockedFriendship({
   blockedId,
 }: DeleteBlockedFriendshipRequest): Promise<DeleteBlockedFriendshipResponse> {
   const res = await fetch(
-    `${API_BASE}/blockedFriendships/${blockerId}/${blockedId}`,
+    `${VITE_API_URL}/blockedFriendships/${blockerId}/${blockedId}`,
     {
       method: "DELETE",
     },
@@ -132,9 +132,12 @@ export async function deleteBlockedFriendship({
 export async function getAllFriendChatMessages({
   friendshipId,
 }: GetAllFriendChatMessagesRequest): Promise<GetAllFriendChatMessagesResponse> {
-  const res = await fetch(`${API_BASE}/friendChatMessages/${friendshipId}`, {
-    method: "GET",
-  });
+  const res = await fetch(
+    `${VITE_API_URL}/friendChatMessages/${friendshipId}`,
+    {
+      method: "GET",
+    },
+  );
 
   return res.json();
 }
@@ -144,7 +147,7 @@ export async function getLastFriendChatMessage({
   friendshipId,
 }: GetLastFriendChatMessageRequest): Promise<GetLastFriendChatMessageResponse> {
   const res = await fetch(
-    `${API_BASE}/friendChatMessages/${friendshipId}/lastMessage`,
+    `${VITE_API_URL}/friendChatMessages/${friendshipId}/lastMessage`,
     {
       method: "GET",
     },

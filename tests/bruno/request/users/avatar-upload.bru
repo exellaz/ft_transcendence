@@ -1,0 +1,25 @@
+meta {
+  name: avatar-upload
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/users/1/avatar
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  : @file(./test_assets/42-ghost.png)
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

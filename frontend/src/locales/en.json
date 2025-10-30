@@ -150,16 +150,11 @@
     "joined": "Joined",
     "change_avatar": "Change Avatar",
     "username": "Username",
-    "username_available": "Username is available",
     "email": "Email",
     "save_changes": "Save Changes",
     "cancel": "Cancel",
-    "upload_avatar": "Upload a new avatar",
-    "upload_avatar_button": "Upload Avatar",
-    "confirm_upload": "Confirm Upload",
-    "avatar_updated": "Avatar has been updated",
-    "avatar_update_error": "Avatar could not be updated",
-    "back": "Back"
+    "invalid_file_type_error": "Only JPG and PNG images are allowed.",
+    "file_too_large_error": "File too large! Max size is 2MB."
   },
   "ConfirmationPopup": {
     "yes": "YES",

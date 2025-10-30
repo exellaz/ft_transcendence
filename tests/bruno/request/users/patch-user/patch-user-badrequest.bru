@@ -12,8 +12,7 @@ patch {
 
 body:json {
   {
-    "username": "updatedName",
-    "avatarUrl": "https://example.com/avatar.png"
+    "username": "updatedName"
   }
 }
 
@@ -24,4 +23,5 @@ assert {
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

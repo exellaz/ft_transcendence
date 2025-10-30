@@ -25,7 +25,6 @@ import ResultsView from "./views/tournament/ResultsView";
 import SinglesRoomView from "./views/custom/SinglesRoomView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
-import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
@@ -239,8 +238,6 @@ const App: React.FC = () => {
               </RequireAuth>
             }
           />
-          {/* Miscellaneous routes */}
-          <Route path="/test" element={<TestView />} />
           {/* Handles all other routes */}
           {/* - redirects to /login or /main-menu depending on auth status */}
           <Route path="*" element={<CatchAllRedirect />} />
