@@ -40,7 +40,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } = useApiQuery<User>(
     () => getUserById({ id: userId }),
     [open],
-    userId !== 0
+    userId !== 0,
   );
 
   // API mutation to update user data
@@ -133,14 +133,14 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
         setSaveError(
           response.errorCode && typeof response.errorCode === "string"
             ? errorMessages[response.errorCode] || translate("save_failed")
-            : translate("save_failed")
+            : translate("save_failed"),
         );
         return;
       }
       refetch();
       // notify ProfileDropdown about updated user data
       window.dispatchEvent(new CustomEvent("userUpdated"));
-    } catch (err) {
+    } catch {
       setSaveError(translate("save_failed"));
     }
   };
@@ -154,7 +154,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   let children: React.ReactNode;
 
   if (loading) children = <LoadingState />;
-  else if (error) children = <ErrorState error={error} onRetry={refetch} />;
+  else if (error) children = <ErrorState onRetry={refetch} />;
   else if (!user) children = <NotFoundState />;
   else
     children = (

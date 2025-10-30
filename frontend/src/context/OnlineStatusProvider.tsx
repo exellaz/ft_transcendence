@@ -9,10 +9,12 @@ import React, {
   useContext,
   type ReactNode,
 } from "react";
-import { useUser } from "../context/UserProvider";
+import { useUser } from "@/context/UserProvider";
+import { useQueryClient } from "@tanstack/react-query";
 import { useApiQuery } from "@/hooks/useApi";
 import { getAcceptedFriendshipsByUserId } from "@/lib/friendsApiClient";
 import type { UserWithFriendshipId } from "@/types/friendsApi";
+import type { FriendChatMessage } from "@/types/friendsApi";
 
 // -------------------------
 // Define WebSocket message types
@@ -33,10 +35,32 @@ interface FriendshipUpdateMsg {
   userId: number;
 }
 
+export interface FriendMessageMsg {
+  type: "FRIEND_MESSAGE";
+  username: string;
+  message: FriendChatMessage;
+}
+
+interface MessageAckMsg {
+  type: "MESSAGE_ACK";
+  tempId: number;
+  savedMessage: FriendChatMessage;
+}
+
+interface MessageErrMsg {
+  type: "MESSAGE_ERR";
+  friendshipId: number;
+  tempId: number;
+  error: string;
+}
+
 type ServerMessage =
   | OnlineFriendsListMsg
   | FriendStatusMsg
-  | FriendshipUpdateMsg;
+  | FriendshipUpdateMsg
+  | FriendMessageMsg
+  | MessageAckMsg
+  | MessageErrMsg;
 
 // -------------------------
 // Context value interface
@@ -44,6 +68,11 @@ type ServerMessage =
 interface OnlineStatusContextType {
   friendStatusMap: Map<number, boolean>;
   isFriendOnline: (friendId: number) => boolean;
+  wsSendMessage: (
+    tempId: number,
+    friendshipId: number,
+    message: string,
+  ) => void;
 }
 
 // -------------------------
@@ -70,6 +99,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const { user, isAuthenticated, token } = useUser();
 
   const userId = user?.id ?? 0;
+
+  const qc = useQueryClient();
 
   // API query for friends list
   const { data: friends, refetch: refetchFriends } = useApiQuery<
@@ -128,6 +159,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
       console.log("[Online Status websocket] 📩 Received:", data);
 
       switch (data.type) {
+        // Online status events
         case "ONLINE_FRIENDS_LIST":
           setFriendStatusMap((prev) => {
             const updated = new Map(prev);
@@ -160,6 +192,54 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           );
           break;
 
+        // Friend chat events
+        case "FRIEND_MESSAGE": {
+          const { message } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", message.friendshipId],
+            // add new message to the cache
+            (old = []) => [...old, message],
+          );
+          window.dispatchEvent(
+            new CustomEvent<FriendChatMessage>("updateLastMessage", {
+              detail: message,
+            }),
+          );
+          window.dispatchEvent(
+            new CustomEvent<FriendMessageMsg>("newMessage", {
+              detail: data,
+            }),
+          );
+          break;
+        }
+        case "MESSAGE_ACK": {
+          const { tempId, savedMessage } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", savedMessage.friendshipId],
+            // optimistic message in cache is replaced with savedMessage from server
+            // .map() creates a new array
+            (old = []) =>
+              old.map((msg) => (msg.id === tempId ? savedMessage : msg)),
+          );
+          window.dispatchEvent(
+            new CustomEvent<FriendChatMessage>("updateLastMessage", {
+              detail: savedMessage,
+            }),
+          );
+          break;
+        }
+        case "MESSAGE_ERR": {
+          const { friendshipId, tempId } = data;
+          qc.setQueryData<FriendChatMessage[]>(
+            ["friendMessages", friendshipId],
+            // client removes the optimistic message that failed to send from the cache
+            // old is the current cached array
+            // .filter() creates a new array
+            (old = []) => old.filter((m) => m.id !== tempId),
+          );
+          break;
+        }
+
         default:
           console.warn("⚠️ Unknown message type:", data);
       }
@@ -187,8 +267,30 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const isFriendOnline = (friendId: number) =>
     friendStatusMap.get(friendId) ?? false;
 
+  // -------------------------
+  // Helper to send a message through the websocket
+  // -------------------------
+  const wsSendMessage = (
+    tempId: number,
+    friendshipId: number,
+    message: string,
+  ) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type: "OUTGOING_MESSAGE",
+          tempId,
+          friendshipId,
+          message,
+        }),
+      );
+    }
+  };
+
   return (
-    <OnlineStatusContext.Provider value={{ friendStatusMap, isFriendOnline }}>
+    <OnlineStatusContext.Provider
+      value={{ friendStatusMap, isFriendOnline, wsSendMessage }}
+    >
       {children}
     </OnlineStatusContext.Provider>
   );

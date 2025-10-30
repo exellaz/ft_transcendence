@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
+import { useClearGameMode } from "../hooks/useClearGameMode";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -14,6 +15,7 @@ import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
 import { createRoomAPI, fetchRooms } from "../lib/requestBackend.api";
+
 /**
  * @brief casual game
  * - Create private room
@@ -33,6 +35,8 @@ const CustomModeView: React.FC = () => {
   const [showJoinSinglesGame, setShowJoinSinglesGame] = useState(false);
   const [showJoinDoublesGame, setShowJoinDoublesGame] = useState(false);
   const [roomError, setRoomError] = useState<string | null>(null);
+
+  useClearGameMode();
 
   // ------------------------------- Helper Functions -------------------------------
   //get room path base on team size

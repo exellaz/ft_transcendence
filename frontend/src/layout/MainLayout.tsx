@@ -9,6 +9,7 @@ import FriendsPopup from "../popups/FriendsPopup";
 import HowToPlayPopup from "../popups/HowToPlayPopup";
 import ProfilePopup from "../popups/ProfilePopup";
 import TournamentStatsPopup from "../popups/TournamentStatsPopup";
+import TwoFAPopup from "../popups/TwoFAPopup";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showProfile, setShowProfile] = useState(false);
   const [showBasicInfo, setShowBasicInfo] = useState(false);
+  const [showTwoFA, setShowTwoFA] = useState(false);
   const [showTournamentStats, setShowTournamentStats] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
@@ -29,6 +31,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <ProfileDropdown
         setShowProfile={setShowProfile}
         setShowBasicInfo={setShowBasicInfo}
+        setShowTwoFA={setShowTwoFA}
         setShowTournamentStats={setShowTournamentStats}
         setShowFriends={setShowFriends}
         setShowHowToPlay={setShowHowToPlay}
@@ -43,6 +46,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <BasicInfoPopup
         open={showBasicInfo}
         onClose={() => setShowBasicInfo(false)}
+        userId={userId}
+      />
+      <TwoFAPopup
+        open={showTwoFA}
+        onClose={() => setShowTwoFA(false)}
         userId={userId}
       />
       <TournamentStatsPopup

@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useApiQuery, useApiMutation } from "../hooks/useApi";
+import { useQueryClient } from "@tanstack/react-query";
+import { useOnlineStatus } from "../context/OnlineStatusProvider";
 import {
   createFriendship,
   deleteFriendship,
@@ -11,8 +13,10 @@ import {
   updateFriendship,
 } from "../lib/friendsApiClient";
 import type { User } from "../types/usersApi";
-import type { UserWithFriendshipId } from "../types/friendsApi";
-import { formatTimestamp } from "../utils/date";
+import type {
+  UserWithFriendshipId,
+  FriendChatMessage,
+} from "../types/friendsApi";
 
 import {
   LoadingState,
@@ -27,7 +31,6 @@ import FriendTile from "../components/FriendTile";
 import Input from "../components/Input";
 import PopupCard from "../components/PopupCard";
 import Status from "../components/Status";
-import { useOnlineStatus } from "@/context/OnlineStatusProvider";
 
 interface PopupProps {
   open: boolean;
@@ -38,6 +41,8 @@ interface PopupProps {
 const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`FriendsPopup.${key}`);
+
+  const queryClient = useQueryClient();
 
   // Selected user and active tab states
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -53,6 +58,16 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const [addFriendError, setAddFriendError] = useState<string | null>(null);
   const [addFriendSuccess, setAddFriendSuccess] = useState(false);
 
+  type LastMessage = {
+    message: string;
+    timestamp: Date;
+  };
+  const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
+    {},
+  );
+  // maps userId to unread status boolean
+  const [unreadMap, setUnreadMap] = useState<Record<number, boolean>>({});
+
   // API query for friends list
   const {
     data: friends,
@@ -65,15 +80,9 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
     userId !== 0,
   );
 
-  type LastMessage = {
-    message: string;
-    timestamp: string;
-  };
-  const [lastMessages, setLastMessages] = useState<Record<number, LastMessage>>(
-    {},
-  );
-
   // secondary API call to fetch last message for each friend
+  // this API is independent so that we don't have to fetch the entire chat history
+  // if the Messaging component is never opened.
   useEffect(() => {
     if (!friends || friends.length === 0) return;
 
@@ -95,7 +104,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
             if (res.success && res.data) {
               results[friend.friendshipId] = {
                 message: res.data.message,
-                timestamp: formatTimestamp(res.data.timestamp),
+                timestamp: res.data.timestamp,
               };
             }
           } catch (err) {
@@ -117,6 +126,98 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       isMounted = false;
     };
   }, [friends]);
+
+  // update last message when FRIEND_MESSAGE or MESSAGE_ACK received
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const msg = (event as CustomEvent<FriendChatMessage>).detail;
+
+      // update last message
+      setLastMessages((prev) => ({
+        ...prev,
+        [msg.friendshipId]: {
+          message: msg.message,
+          timestamp: msg.timestamp,
+        },
+      }));
+
+      // mark sender as unread
+      setUnreadMap((prev) => ({
+        ...prev,
+        [msg.senderId]: true,
+      }));
+    };
+
+    window.addEventListener("updateLastMessage", handler);
+    return () => window.removeEventListener("updateLastMessage", handler);
+  }, []);
+
+  // update last message when Messaging component refetches messages
+  useEffect(() => {
+    // listen for query cache update
+    const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+      if (event?.type !== "updated") return;
+
+      const query = event.query;
+      // check that query.queryKey[] is an array for safe destructuring
+      // ["friendMessages", 1] → FriendChatMessage[]
+      // ["friendMessages", 2] → FriendChatMessage[]
+      if (!Array.isArray(query.queryKey)) return;
+      // Only care about friendMessages queries
+      if (query.queryKey[0] !== "friendMessages") return;
+
+      const [, friendshipId] = query.queryKey;
+      const messages = query.state.data as FriendChatMessage[] | undefined;
+      if (!messages || messages.length === 0) return;
+
+      // gets last message from the cache
+      const last = messages[messages.length - 1];
+      setLastMessages((prev) => ({
+        ...prev,
+        [friendshipId]: {
+          message: last.message,
+          timestamp: last.timestamp,
+        },
+      }));
+    });
+
+    // cleanup function - similar logic to removeEventListener
+    return () => unsubscribe();
+  }, [queryClient]);
+
+  // useMemo lets you cache the result of an expensive computation
+  // and only recompute it when certain dependencies change.
+  // prevents sorting and filtering every time the popup is opened.
+  const sortedFilteredFriends = useMemo(() => {
+    if (!friends) return [];
+    return (
+      [...friends]
+        // filters friends list based on search term
+        .filter((user) =>
+          user.username.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
+        // sort friend list by timestamp and username
+        .sort((a, b) => {
+          const lastA = lastMessages[a.friendshipId];
+          const lastB = lastMessages[b.friendshipId];
+
+          // If both have timestamps, most recent first
+          if (lastA?.timestamp && lastB?.timestamp) {
+            return (
+              new Date(lastB.timestamp).getTime() -
+              new Date(lastA.timestamp).getTime()
+            );
+          }
+
+          // If only one has timestamp, that one goes first
+          if (lastA?.timestamp && !lastB?.timestamp) return -1;
+          if (!lastA?.timestamp && lastB?.timestamp) return 1;
+
+          // Otherwise, sort alphabetically by username
+          return a.username.localeCompare(b.username);
+        })
+    );
+  }, [friends, lastMessages, searchTerm]);
 
   // API query for friend requests list
   const {
@@ -215,7 +316,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
       }
       setAddFriendSuccess(true);
       handleCloseCascadeCard();
-    } catch (err) {
+    } catch {
       setAddFriendError(translate("add_friend_failed"));
     }
   };
@@ -247,9 +348,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (friendsLoading) {
     friendsContent = <LoadingState />;
   } else if (friendsError) {
-    friendsContent = (
-      <ErrorState error={friendsError} onRetry={refetchFriends} />
-    );
+    friendsContent = <ErrorState onRetry={refetchFriends} />;
   } else if (!friends) {
     friendsContent = <NotFoundState />;
   } else if (friends.length === 0) {
@@ -263,37 +362,36 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   } else {
     friendsContent = (
       <div className="flex-col-center gap-4 p-1">
-        {friends
-          // filters friends list based on search term
-          .filter((user) =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase()),
-          )
-          .map((user) => {
-            const last = lastMessages[user.friendshipId] ?? {
-              message: translate("no_messages_yet"),
-              timestamp: "",
-            };
-            return (
-              <FriendTile
-                key={user.username}
-                username={user.username}
-                avatarUrl={user.avatarUrl}
-                lastMessage={
-                  last.message.length > 40
-                    ? last.message.slice(0, 40) + "..."
-                    : last.message
-                }
-                timestamp={last.timestamp}
-                online={isFriendOnline(user.id)} // ! TO CHANGE
-                onClick={() =>
-                  selectedUser === user
-                    ? setSelectedUser(null)
-                    : setSelectedUser(user)
-                }
-                active={selectedUser === user}
-              />
-            );
-          })}
+        {sortedFilteredFriends.map((user) => {
+          const last = lastMessages[user.friendshipId] ?? {
+            message: translate("no_messages_yet"),
+            timestamp: "",
+          };
+          return (
+            <FriendTile
+              key={user.username}
+              username={user.username}
+              avatarUrl={user.avatarUrl}
+              lastMessage={
+                last.message.length > 40
+                  ? last.message.slice(0, 40) + "..."
+                  : last.message
+              }
+              timestamp={last.timestamp}
+              online={isFriendOnline(user.id)} // ! TO CHANGE
+              onClick={() => {
+                // clear unread when clicked
+                setUnreadMap((prev) => ({
+                  ...prev,
+                  [user.id]: false,
+                }));
+                setSelectedUser(selectedUser === user ? null : user);
+              }}
+              active={selectedUser === user}
+              unread={unreadMap[user.id]}
+            />
+          );
+        })}
       </div>
     );
   }
@@ -303,9 +401,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (requestsLoading) {
     requestsContent = <LoadingState />;
   } else if (requestsError) {
-    requestsContent = (
-      <ErrorState error={requestsError} onRetry={refetchRequests} />
-    );
+    requestsContent = <ErrorState onRetry={refetchRequests} />;
   } else if (!requests) {
     requestsContent = <NotFoundState />;
   } else if (requests.length === 0) {
@@ -343,9 +439,7 @@ const FriendsPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   if (blockedLoading) {
     blockedContent = <LoadingState />;
   } else if (blockedError) {
-    blockedContent = (
-      <ErrorState error={blockedError} onRetry={refetchBlocked} />
-    );
+    blockedContent = <ErrorState onRetry={refetchBlocked} />;
   } else if (!blocked) {
     blockedContent = <NotFoundState />;
   } else if (blocked.length === 0) {

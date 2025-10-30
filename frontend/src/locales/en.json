@@ -58,7 +58,11 @@
     "login": "LOGIN",
     "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
-    "signup_prompt": "Don’t have an account? Sign up"
+    "signup_prompt": "Don’t have an account? Sign up",
+    "2fa": "Two-Factor Authentication",
+    "enter_code": "Enter the 6-digit code from your authenticator app.",
+    "verify_code": "Verify Code",
+    "invalid_code_error": "Invalid code or server error"
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",
@@ -196,7 +200,7 @@
     "header": "How to Play",
     "objective_title": "Objective",
     "objective_text": [
-      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach five points wins the match."
+      "The goal is simple - hit the ball past your opponent’s paddle to score a point. Each match begins with a serve. Use your paddle to deflect the ball and outmaneuver your opponent. First player to reach three points wins the match."
     ],
     "controls_title": "Controls",
     "controls_text": [
@@ -256,9 +260,19 @@
     "lost": "Lost",
     "no_history_yet": "No tournament history yet"
   },
+  "TwoFAPopup": {
+    "header": "2FA Settings",
+    "2fa_not_enabled_message": "Two-Factor Authentication (2FA) is not enabled yet.",
+    "enable_2fa": "Enable 2FA",
+    "authenticator_instructions": "Set up your authenticator, then enter the 6-digit code below.",
+    "verify_code": "Verify Code",
+    "2fa_enabled_message": "Two-Factor Authentication (2FA) is enabled.",
+    "disable_2fa": "Disable 2FA",
+    "invalid_code_error": "Invalid code or server error"
+  },
   "ApiState": {
     "loading": "Loading...",
-    "error": "Error",
+    "something_went_wrong": "Something went wrong",
     "try_again": "Try Again",
     "not_found": "Record not found"
   },
@@ -276,6 +290,9 @@
   "ChooseSpriteContents": {
     "choose_sprite": "Choose a sprite",
     "confirm": "Confirm"
+  },
+  "CustomToast": {
+    "message_from": "New message from {{username}}"
   },
   "LiveChat": {
     "live_chat": "Live Chat",
@@ -309,6 +326,7 @@
     "loading": "Loading...",
     "my_profile": "MY PROFILE",
     "basic_info": "BASIC INFO",
+    "2fa_settings": "2FA SETTINGS",
     "tournament_stats": "TOURNAMENT STATS",
     "friends": "FRIENDS",
     "how_to_play": "HOW TO PLAY",
@@ -327,7 +345,7 @@
   },
   "RoomLayout": {
     "game_settings": "Game Settings",
-    "invite_friends": "Invite Friends",
+    "friends": "Friends",
     "choose_sprite": "Choose Sprite"
   }
 }

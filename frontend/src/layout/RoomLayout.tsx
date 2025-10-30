@@ -26,7 +26,7 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
   const translate = (key: string) => t(`RoomLayout.${key}`);
   const [showChooseSprite, setShowChooseSprite] = useState(false);
   const [showGameSettings, setShowGameSettings] = useState(false);
-  const [showInviteFriends, setShowInviteFriends] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
 
   const { user } = useUser();
   const userId = user?.id ?? 0;
@@ -45,8 +45,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
             {translate("game_settings")}
           </Button>
         )}
-        <Button variant="profile" onClick={() => setShowInviteFriends(true)}>
-          {translate("invite_friends")}
+        <Button variant="profile" onClick={() => setShowFriends(true)}>
+          {translate("friends")}
         </Button>
       </div>
       {children}
@@ -62,8 +62,8 @@ const RoomLayout: React.FC<RoomLayoutProps> = ({
         roomId={roomId}
       />
       <FriendsPopup
-        open={showInviteFriends}
-        onClose={() => setShowInviteFriends(false)}
+        open={showFriends}
+        onClose={() => setShowFriends(false)}
         userId={userId}
       />
     </Background>
