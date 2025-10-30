@@ -120,12 +120,15 @@ export async function doesUserIdExist(userId: number): Promise<boolean> {
   }
 }
 
-export async function uploadFileToServerUploadsDir(file: any, filename: string) {
+export async function uploadFileToServerUploadsDir(
+  file: any,
+  filename: string,
+) {
   const filepath = path.join(uploadsDir, filename);
   try {
     await pipeline(file, createWriteStream(filepath));
     console.log(`[avatar upload] Saved uploaded avatar file to ${filepath}`);
   } catch (err) {
-    throw ApiError.internal('Failed to save file', 'FILE_SAVE_ERROR');
+    throw ApiError.internal("Failed to save file", "FILE_SAVE_ERROR");
   }
 }

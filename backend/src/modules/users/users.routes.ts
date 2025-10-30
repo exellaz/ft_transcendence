@@ -88,15 +88,16 @@ async function userRoutes(fastify: FastifyInstance) {
 
   // GET all userSettings (NEEDS TO BE BEFORE /user/:id)
   fastify.get(
-    "/users/settings", 
-    {schema: getAllUserSettingsSchema},
+    "/users/settings",
+    { schema: getAllUserSettingsSchema },
     async () => {
-    const userSettings = await fastify.db.userSettings.findMany({
-      select: userSettingsPublicSelect,
-    });
+      const userSettings = await fastify.db.userSettings.findMany({
+        select: userSettingsPublicSelect,
+      });
 
-    return ok(userSettings); // even if empty array, success response
-  });
+      return ok(userSettings); // even if empty array, success response
+    },
+  );
 
   // ============================ USER =================================
 
@@ -160,52 +161,51 @@ async function userRoutes(fastify: FastifyInstance) {
 
   // PATCH /users/:id/avatar  (upload user avatar)
   fastify.patch(
-    '/users/:id/avatar', 
+    "/users/:id/avatar",
     { schema: patchUserAvatarByIdSchema },
     async (request, reply) => {
+      // get userId from param
+      const { id } = request.params as { id: string };
+      const userId = Number(id);
+      // TODO: check if the user is uploading avatar for themselves
 
-    console.log("Uploading avatar for user...");
-    // get userId from param
-    const { id } = request.params as { id: string };
-    const userId = Number(id);
-    // TODO: check if the user is uploading avatar for themselves
+      const data: MultipartFile | undefined = await request.file();
+      if (!data)
+        throw ApiError.badRequest("No file uploaded", "NO_FILE_UPLOADED");
 
-    const data: MultipartFile | undefined = await request.file();
-    if (!data)
-      throw ApiError.badRequest('No file uploaded', 'NO_FILE_UPLOADED');
+      // Validate the file
+      const validator = new AvatarFileValidator();
+      const validation = validator.validateFile(data.filename);
+      if (!validation.valid)
+        throw ApiError.badRequest(
+          "Invalid file extension",
+          "FILE_VALIDATION_FAILED",
+        );
 
+      const filename = data.filename;
 
-    
-    // Validate the file
-    
-    const validator = new AvatarFileValidator();
-    const validation = validator.validateFile(data.filename);
-    if (!validation.valid)
-      throw ApiError.badRequest('Invalid file extension', 'FILE_VALIDATION_FAILED');
-  
-    const filename = data.filename;
-  
-    try {
-      // upload file to Server /uploads/avatars
-      uploadFileToServerUploadsDir(data.file, filename);
-      
-      // save relative filepath of avatar image to user's avatarUrl in database
-      const updatedUser = await fastify.db.user.update({
-        where: { id: userId },
-        data: { avatarUrl: `/uploads/avatars/${filename}` },
-        select: userPublicSelect
-      });
+      try {
+        // upload file to Server /uploads/avatars
+        uploadFileToServerUploadsDir(data.file, filename);
 
-      return ok(updatedUser);
-    } catch (err: unknown) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === "P2025")
-          throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        // save relative filepath of avatar image to user's avatarUrl in database
+        const updatedUser = await fastify.db.user.update({
+          where: { id: userId },
+          data: { avatarUrl: `/uploads/avatars/${filename}` },
+          select: userPublicSelect,
+        });
+
+        return ok(updatedUser);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
+        }
+
+        throw err; // let Fastify handle other errors
       }
-
-      throw err; // let Fastify handle other errors
-    }
-  });
+    },
+  );
 
   // DELETE
   fastify.delete(

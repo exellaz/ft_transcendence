@@ -68,9 +68,10 @@ export async function updateUserById(
 }
 
 // PATCH /users/:id/avatar
-export async function uploadUserAvatar(
-  {id, avatarFile}: UpdateUserAvatarRequest,
-): Promise<UpdateUserAvatarResponse> {
+export async function uploadUserAvatar({
+  id,
+  avatarFile,
+}: UpdateUserAvatarRequest): Promise<UpdateUserAvatarResponse> {
   const formData = new FormData();
 
   // 👇 This is required:
@@ -84,7 +85,6 @@ export async function uploadUserAvatar(
 
   return res.json();
 }
-
 
 // GET /users/:id/settings
 export async function getUserSettingsById({

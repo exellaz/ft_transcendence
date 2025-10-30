@@ -132,9 +132,12 @@ export async function deleteBlockedFriendship({
 export async function getAllFriendChatMessages({
   friendshipId,
 }: GetAllFriendChatMessagesRequest): Promise<GetAllFriendChatMessagesResponse> {
-  const res = await fetch(`${VITE_API_URL}/friendChatMessages/${friendshipId}`, {
-    method: "GET",
-  });
+  const res = await fetch(
+    `${VITE_API_URL}/friendChatMessages/${friendshipId}`,
+    {
+      method: "GET",
+    },
+  );
 
   return res.json();
 }

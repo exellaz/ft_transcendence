@@ -11,15 +11,13 @@ const __dirname = path.dirname(__filename);
 export const uploadsDir = path.join(__dirname, "../../uploads/avatars");
 
 async function avatarUploadStaticPlugin(fastify: FastifyInstance) {
-
   await fs.mkdir(uploadsDir, { recursive: true });
 
   fastify.register(fastifyStatic, {
     root: uploadsDir,
     prefix: "/uploads/avatars/",
-    decorateReply: false // needed
+    decorateReply: false, // needed
   });
-
-};
+}
 
 export default fp(avatarUploadStaticPlugin);

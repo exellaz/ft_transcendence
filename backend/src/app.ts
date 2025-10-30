@@ -19,7 +19,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
 import { swaggerOptions, swaggerUiOptions } from "./plugins/swagger";
 import { corsOptions } from "./plugins/cors";
 import onlineStatusRoutes from "./modules/online-status/online-status.routes";
-import multipart from '@fastify/multipart';
+import multipart from "@fastify/multipart";
 import avatarUploadStaticPlugin from "./plugins/avatar-upload";
 import assetsStaticPlugin from "./plugins/assets.static";
 
