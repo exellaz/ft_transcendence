@@ -211,8 +211,8 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
       );
       if (!isValid2FA) {
         throw ApiError.unauthorized(
-          "Invalid two-factor authentication code",
-          "INVALID_TWO_FACTOR_CODE",
+          "Invalid two-factor authentication token",
+          "INVALID_TWO_FACTOR_TOKEN",
         );
       }
 

@@ -93,8 +93,8 @@ export const useLoginForm = () => {
       if (response.success && response.data) {
         await handleLoginSuccess(response.data);
       } else {
-        if (response.errorCode === "INVALID_TWO_FACTOR_CODE") {
-          setVerifyError(translate("invalid_2fa_code"));
+        if (response.errorCode === "INVALID_TWO_FACTOR_TOKEN") {
+          setVerifyError(translate("invalid_code_error"));
         } else {
           setVerifyError(response.error || translate("verification_failed"));
         }
@@ -122,8 +122,8 @@ export const useLoginForm = () => {
       if (verifyResponse.success && verifyResponse.data) {
         await handleLoginSuccess(verifyResponse.data);
       } else {
-        if (verifyResponse.errorCode === "INVALID_TWO_FACTOR_CODE") {
-          setVerifyError(translate("invalid_2fa_code"));
+        if (verifyResponse.errorCode === "INVALID_TWO_FACTOR_TOKEN") {
+          setVerifyError(translate("invalid_code_error"));
         } else {
           setVerifyError(
             verifyResponse.error || translate("verification_failed"),
@@ -173,7 +173,7 @@ export const useLoginForm = () => {
           setAuthMethod("google");
           setStep("2FA");
         } else {
-          setError(response.error || translate("google_login_failed"));
+          setError(response.errorCode || translate("google_login_failed"));
         }
       }
     } catch {
