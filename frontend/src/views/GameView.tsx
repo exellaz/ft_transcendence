@@ -144,12 +144,7 @@ const GameView: React.FC<GameViewProps> = () => {
   }, []);
 
   if (mode === "remote") {
-    // TODO: Replace with actual JWT
-    // console.log("useUser() returned:", user);
-    // if (!user) {
-    // 	console.log("user not loaded"); ////debug
-    // 	return;
-    // }
+
     // Fetch user info when the component mounts
     React.useEffect(() => {
       console.log("mode used: ", mode);
@@ -224,21 +219,12 @@ const GameView: React.FC<GameViewProps> = () => {
     clientId,
     initialRole,
     callback: () => {},
-    onError: (msg: string) => {
-      setDisconnectMessage(msg);
-      setRoomError(true);
-    },
     canvasRef
   };
   // console.log("params", params); ////debug
 
-//  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameRoomWebSocket({
-//    ...params,
-//    isOffline: delayForGameOver,
-//  });
-
-  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(
-	params);
+  // game websocket
+  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(params);
 //   console.log("socket has been create: ", socket); ////debug
 
 
@@ -268,6 +254,7 @@ const GameView: React.FC<GameViewProps> = () => {
   React.useEffect(() => {
     if (!isWinner || !lastTournamentId) return;
     const timer = setTimeout(() => {
+      //if rank 1 (go to results), else go to advance page
       if (winnerRank === 1) {
         navigate("/results", { state: { roomId, clientId, lastTournamentId, winnerRank } });
         return;
@@ -283,6 +270,7 @@ const GameView: React.FC<GameViewProps> = () => {
     return () => clearTimeout(timer);
   }, [isWinner, lastTournamentId, tournamentDb, clientId, roomId, playerSprite, winnerRank]); // navigate is safe to omit here (stable)
 
+  // navigate the player end game rank
   React.useEffect(() => {
     if (lastTournamentId === null) return;
     if (gameOver && !isWinner) {
@@ -298,28 +286,6 @@ const GameView: React.FC<GameViewProps> = () => {
       return () => clearTimeout(timer);
     }
   }, [gameOver, isWinner]);
-
-//  React.useEffect(() => {
-//    if (!socket) {
-//       console.warn("waiting for socket connection:", socket); ////debug
-//      return;
-//    }
-
-//      if (socket.readyState !== WebSocket.OPEN) {
-//		console.warn("socket -> open the game");
-//        socket.addEventListener( "open", () => {
-//          let gameClient = new GameClient(canvasRef.current, socket);
-//          gameClient.start();
-//        });
-//        return;
-//      }
-//      let gameClient = new GameClient(canvasRef.current, socket);
-
-//      gameClient.start();
-//      return () => {
-//        gameClient.destroy(); // ✅ cleanup
-//      };
-//    }, [socket]);
 
 // -------------------------------- Helper Functions --------------------------------
   function renderRoomErrorText(): string | null {

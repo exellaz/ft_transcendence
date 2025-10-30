@@ -28,9 +28,7 @@ const TournamentLobbyView: React.FC = () => {
   const { user } = useUser();
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
-  const [stage, setStage] = useState<"QF" | "SF" | "F">(
-    "QF"
-);
+  const [stage, setStage] = useState<"QF" | "SF" | "F">("QF");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
 //  console.log("Tournament ID:", tournamentId); ////debug
 //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
@@ -61,6 +59,7 @@ const TournamentLobbyView: React.FC = () => {
     lastLobbyData,
     refreshLobby,
     matchAssigned,
+    roomError,
   } = useTournamentWebSocket({
     tournamentId,
     player: {
@@ -173,6 +172,19 @@ const TournamentLobbyView: React.FC = () => {
   else if (stage === "SF") stageHeader = translate("semifinals");
   else if (stage === "F") stageHeader = translate("finals");
 
+// -------------------------------- Helper Functions --------------------------------
+  function renderRoomErrorText(): string | null {
+	if (!roomError) return null;
+
+	if (roomError === "Room is full") {
+		return translate("room_is_full");
+	} else if (roomError === "offline_error") {
+		return translate("offline_error");
+	} else {
+		return roomError;
+	}
+  }
+
   return (
     <Background>
     <div className="relative w-full flex justify-center">
@@ -202,7 +214,7 @@ const TournamentLobbyView: React.FC = () => {
               {!eliminated ? (
                 <>
                   <Button variant="green" onClick={toggleReady}>
-                    {ready ? translate("Unready") : translate("ready")}
+                    {ready ? translate("unready") : translate("ready")}
                   </Button>
                     <Button variant="red" onClick={() => setShowQuitTournament(true)}>
                       {translate("quit")}
@@ -238,6 +250,31 @@ const TournamentLobbyView: React.FC = () => {
           navigate("/main-menu");
         }}
       />
+
+        {/* error popup */}
+	    {roomError && (
+           <div className="fixed inset-0 z-50 flex items-center justify-center">
+             {/* Background image using your Background component */}
+             <Background variant="grass">
+               {/* Optional dark overlay on top of the background */}
+               <div className="absolute inset-0 bg-black opacity-70"></div>
+               {/* Popup content */}
+               <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+                 <p className="text-center text-white text-2xl px-4">
+                   {renderRoomErrorText()}
+                 </p>
+                 <Button
+                   variant="red"
+                   onClick={() => {
+                     navigate("/main-menu");
+                   }}
+                 >
+                   {translate("close")}
+                 </Button>
+               </div>
+             </Background>
+           </div>
+        )}
 
     </div>
     </Background>

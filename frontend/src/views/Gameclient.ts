@@ -212,19 +212,21 @@ export class GameClient {
   }
   private processingPromise: Promise<void> = Promise.resolve();
   constructor(canvasRef: HTMLCanvasElement | null, websocketRef: WebSocket) {
-     console.log("[game] created game client"); ////debug
+    //console.log("[game] created game client"); ////debug
 
+    //check for websocket
 	if (!websocketRef) {
 		throw new Error("[game] websocketRef is required");
 	}
 
+    //check websocket state
 	if (websocketRef.readyState === WebSocket.CLOSING || websocketRef.readyState === WebSocket.CLOSED) {
 		throw new Error(`[game] websocketRef is not open (readyState: ${websocketRef.readyState})`);
 	}
 
     this.id = GameClient.globalId;
     GameClient.globalId++;
-    console.log("[game] assigned client id:", this.id); ////debug
+    //console.log("[game] assigned client id:", this.id); ////debug
     this.websocketRef = websocketRef;
 
     // -- WEBSOCKET --
@@ -233,6 +235,7 @@ export class GameClient {
       this.data = data;
     //  console.log("[game] received data", data); ////debug
 
+      //check for handshakePing
 	  if (data.type === "handshakePing") {
 		console.log("[game] 📤 received handshakePing, sending handshakePong"); ////debug
 		this.sendData("handshakePong");

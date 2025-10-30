@@ -13,7 +13,7 @@ interface UseGameWebSocketParams {
   callback: (socket: WebSocket) => void;
   isOffline?: boolean;
   onError?: (msg: string) => void;
-  canvasRef: React.RefObject<HTMLCanvasElement>; //add canvas ref
+  canvasRef: React.RefObject<HTMLCanvasElement | null>; //add canvas ref
 }
 
 /**

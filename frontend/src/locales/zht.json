@@ -148,7 +148,10 @@
     "ready": "準備",
     "unready": "取消準備",
     "quit": "退出",
-    "quit_confirmation": "你確定要退出錦標賽嗎？"
+    "quit_confirmation": "你確定要退出錦標賽嗎？",
+    "room_is_full": "房間已滿",
+	"offline_error": "你處於離線狀態。請檢查你的連接。",
+    "close": "關閉"
   },
   "BasicInfoPopup": {
     "username_invalid": "用戶名只能包含字母、數字、底線和連字號",
