@@ -122,7 +122,7 @@ export const useLoginForm = () => {
       if (verifyResponse.success && verifyResponse.data) {
         await handleLoginSuccess(verifyResponse.data);
       } else {
-        if (verifyResponse.code === "INVALID_TWO_FACTOR_CODE") {
+        if (verifyResponse.errorCode === "INVALID_TWO_FACTOR_CODE") {
           setVerifyError(translate("invalid_2fa_code"));
         } else {
           setVerifyError(

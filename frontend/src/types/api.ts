@@ -20,7 +20,6 @@ export const apiRequest = async <T>(
 
   const requestHeaders: Record<string, string> = {};
 
-
   if (fetchOptions.body) {
     requestHeaders["Content-Type"] = "application/json";
   }
@@ -51,9 +50,9 @@ export const apiRequest = async <T>(
       return { success: true, data: data.data };
     } else {
       return {
-      success: false,
-      error: data.error || "Request failed",
-      errorCode: data.errorCode,
+        success: false,
+        error: data.error || "Request failed",
+        errorCode: data.errorCode,
       };
     }
   } catch (error) {

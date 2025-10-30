@@ -11,7 +11,9 @@ export interface GoogleLoginResponse {
   user: User;
 }
 
-export const googleLogin = (params: GoogleLoginRequest): Promise<ApiResponse<GoogleLoginResponse>> =>
+export const googleLogin = (
+  params: GoogleLoginRequest,
+): Promise<ApiResponse<GoogleLoginResponse>> =>
   apiRequest<GoogleLoginResponse>("/auth/google", {
     method: "POST",
     body: JSON.stringify(params),
