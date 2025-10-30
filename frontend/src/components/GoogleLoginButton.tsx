@@ -30,7 +30,7 @@ interface GoogleCredentialResponse {
 }
 
 interface Props {
-  onSuccess?: () => void;
+  onSuccess?: (idToken: string) => void;
   onError?: (error: string) => void;
 }
 
@@ -48,27 +48,17 @@ export default function GoogleLoginButton({ onSuccess, onError }: Props) {
       try {
         const idToken = response.credential;
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/google`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken }),
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          localStorage.setItem("authToken", data.data.token);
-          setUser(data.data.user);
-          onSuccess?.();
-          navigate("/main-menu");
-        } else {
-          onError?.(data.code || "google_signin_failed");
+        if (!idToken) {
+          onError?.("no_credential");
+          return;
         }
+        onSuccess?.(idToken);
       } catch (error) {
         console.error("Google OAuth error:", error);
+        onError?.("google_signin_failed");
       }
     },
-    [onSuccess, onError, setUser, navigate, translate],
+    [onSuccess, onError],
   );
 
   const handleGoogleLogin = useCallback(() => {

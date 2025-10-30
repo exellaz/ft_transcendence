@@ -88,6 +88,12 @@ export const postGoogleAuthSchema = {
         minLength: 1,
         description: "Google ID token from OAuth flow",
       },
+      twoFactorCode: {
+        type: "string",
+        minLength: 6,
+        maxLength: 6,
+        description: "Authenticator code",
+      },
     },
     required: ["idToken"],
     additionalProperties: false,

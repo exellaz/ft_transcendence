@@ -61,6 +61,7 @@ export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}
 export interface LoginRequest {
   identifier: string;
   password: string;
+  twoFactorCode?: string;
 }
 
 export interface LoginResponse extends ApiResponse<LoginData> {
