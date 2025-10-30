@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { playerInfo } from "../../../backend/src/types/interface";
+import { GameClient } from "../views/Gameclient";
 
 
 // game structure
@@ -12,6 +13,7 @@ interface UseGameWebSocketParams {
   callback: (socket: WebSocket) => void;
   isOffline?: boolean;
   onError?: (msg: string) => void;
+  canvasRef: React.RefObject<HTMLCanvasElement>; //add canvas ref
 }
 
 /**
@@ -30,6 +32,7 @@ export function useGameWebSocket({
   isOffline = false,
   onError,
   callback,
+  canvasRef,
 }: UseGameWebSocketParams) {
   const [gameOver, setGameOver] = useState(false);
   const [isWinner, setIsWinner] = useState(false);
@@ -40,6 +43,7 @@ export function useGameWebSocket({
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
   const socketRef = useRef(false); // to avoid multiple callbacks
+  const gameClientRef = useRef<GameClient | null>(null);
 //  console.log("[game]allinfo:"); ////debug
 //  console.log("[game]roomId:", roomId); ////debug
 //  console.log("[game]initialRole:", initialRole); ////debug
@@ -86,7 +90,19 @@ export function useGameWebSocket({
     ws.addEventListener("open", () => {
       console.log("Game ws connected");
       setSocket(ws);
-      console.log("!created socket: ", socket);
+
+	  //initialize GameClient
+	  if (canvasRef.current) {
+		console.log("[game-websocket] Creating GameClient");
+		try {
+			gameClientRef.current = new GameClient(canvasRef.current, ws);
+			console.log("[game-websocket] GameClient created successfully");
+		} catch (err) {
+			console.error("Error creating GameClient:", err);
+		}
+	  } else {
+		console.error("Canvas ref is not available, cannot create GameClient");
+	  };
       try { callback?.(ws); } catch (err) {};
     });
 
@@ -98,6 +114,14 @@ export function useGameWebSocket({
 
     ws.addEventListener("close", (ev) => {
       console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
+
+	  // destroy GameClient when socket closes
+	  if (gameClientRef.current) {
+		console.log("[game-websocket] Destroying GameClient");
+		gameClientRef.current.destroy();
+		gameClientRef.current = null;
+	  }
+
       setSocket(null);
     });
 
@@ -129,57 +153,53 @@ export function useGameWebSocket({
                 return;
             }
 
-				  if (msg.type === "game_over") {
-	            	console.log("==================================================== Game over message received:", msg); //// debug
-                    //isCleanUp = true;
+			if (msg.type === "game_over") {
+	            console.log("==================================================== Game over message received:", msg); //// debug
 
-                    // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
-                    const isTournamentRoom = roomId.toString().startsWith("1111");
-                    setGameOver(!!msg.canLeave);
-                    if (isTournamentRoom) {
-                        try {
-                            const leftId: number[] = Array.isArray(msg.playerLeft) ? msg.playerLeft.map((p: playerInfo) => p.clientId) : [];
-                            const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
-                            const winnerSide = msg.result?.winner;
-                            const tournamentIdFromMsg = msg.tournamentId ?? null;
-	            			setTournamentDb(msg.tournamentDb || null);
-                            setLastTournamentId(tournamentIdFromMsg);
-
-                            let winnerClientIds: number | null = null;
-                            if (winnerSide === "left") winnerClientIds = leftId[0] || null;
-                            else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
-
-                            // if this client is the winner
-                            if (winnerClientIds === clientId) {
-                                console.log("you are the winner - waiting for tournament next-round");
-                                setIsWinner(true);
-                                const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
-                                if (placement) {
-                                    console.log(`winner [${clientId}] placement: ${placement.rank}`); ////debug
-                                    setWinnerRank(placement.rank);
-                                }
-                                ws.close(1000, "game over - winner");
-                                return;
-                            }
-
-                            // loser: setGameOver and navigate to tournament page
-                            setIsWinner(false);
+                // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
+                const isTournamentRoom = roomId.toString().startsWith("1111");
+                setGameOver(!!msg.canLeave);
+                if (isTournamentRoom) {
+                    try {
+                        const leftId: number[] = Array.isArray(msg.playerLeft) ? msg.playerLeft.map((p: playerInfo) => p.clientId) : [];
+                        const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
+                        const winnerSide = msg.result?.winner;
+                        const tournamentIdFromMsg = msg.tournamentId ?? null;
+	            		setTournamentDb(msg.tournamentDb || null);
+                        setLastTournamentId(tournamentIdFromMsg);
+                        let winnerClientIds: number | null = null;
+                        if (winnerSide === "left") winnerClientIds = leftId[0] || null;
+                        else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
+                        // if this client is the winner
+                        if (winnerClientIds === clientId) {
+                            console.log("you are the winner - waiting for tournament next-round");
+                            setIsWinner(true);
                             const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
-                                if (placement) {
-                                    console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
-                                    setLoserRank(placement.rank);
-                                }
-                            try {
-                                ws.close(1000, "game over - loser");
-                            } catch (err) {}
+                            if (placement) {
+                                console.log(`winner [${clientId}] placement: ${placement.rank}`); ////debug
+                                setWinnerRank(placement.rank);
+                            }
+                            ws.close(1000, "game over - winner");
                             return;
-                        } catch (err) {
-                            console.error("Error handling tournament game over:", err);
                         }
+                        // loser: setGameOver and navigate to tournament page
+                        setIsWinner(false);
+                        const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
+                            if (placement) {
+                                console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
+                                setLoserRank(placement.rank);
+                            }
+                        try {
+                            ws.close(1000, "game over - loser");
+                        } catch (err) {}
+                        return;
+                    } catch (err) {
+                        console.error("Error handling tournament game over:", err);
                     }
-                    try { ws.close(1000, "game over"); } catch {}
-                    setIsWinner(false);
-                  }
+                }
+                try { ws.close(1000, "game over"); } catch {}
+                setIsWinner(false);
+            }
         } catch (err) {
             console.error("Error handling WebSocket message:", err);
         }
@@ -201,7 +221,7 @@ export function useGameWebSocket({
             ws.removeEventListener("error", () => {});
         }
     };
-  }, [roomId, clientId, initialRole, navigate, isOffline]); //re-run effect if any of these change
+  }, [roomId, clientId, initialRole, navigate, isOffline, canvasRef]); //re-run effect if any of these change
 
   return {
     socket,

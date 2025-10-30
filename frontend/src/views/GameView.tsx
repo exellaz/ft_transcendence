@@ -229,10 +229,11 @@ const GameView: React.FC<GameViewProps> = () => {
     clientId,
     initialRole,
     callback: () => {},
-  onError: (msg: string) => {
-    setDisconnectMessage(msg);
-    setRoomError(true);
-  },
+    onError: (msg: string) => {
+      setDisconnectMessage(msg);
+      setRoomError(true);
+    },
+    canvasRef
   };
   // console.log("params", params); ////debug
 
@@ -241,7 +242,7 @@ const GameView: React.FC<GameViewProps> = () => {
 //    isOffline: delayForGameOver,
 //  });
 
-  const { socket, gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(
+  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(
 	params);
 //   console.log("socket has been create: ", socket); ////debug
 
@@ -303,27 +304,27 @@ const GameView: React.FC<GameViewProps> = () => {
     }
   }, [gameOver, isWinner]);
 
-  React.useEffect(() => {
-    if (!socket) {
-       console.warn("waiting for socket connection:", socket); ////debug
-      return;
-    }
+//  React.useEffect(() => {
+//    if (!socket) {
+//       console.warn("waiting for socket connection:", socket); ////debug
+//      return;
+//    }
 
-      if (socket.readyState !== WebSocket.OPEN) {
-		console.warn("socket -> open the game");
-        socket.addEventListener( "open", () => {
-          let gameClient = new GameClient(canvasRef.current, socket);
-          gameClient.start();
-        });
-        return;
-      }
-      let gameClient = new GameClient(canvasRef.current, socket);
+//      if (socket.readyState !== WebSocket.OPEN) {
+//		console.warn("socket -> open the game");
+//        socket.addEventListener( "open", () => {
+//          let gameClient = new GameClient(canvasRef.current, socket);
+//          gameClient.start();
+//        });
+//        return;
+//      }
+//      let gameClient = new GameClient(canvasRef.current, socket);
 
-      gameClient.start();
-      return () => {
-        gameClient.destroy(); // ✅ cleanup
-      };
-    }, [socket]);
+//      gameClient.start();
+//      return () => {
+//        gameClient.destroy(); // ✅ cleanup
+//      };
+//    }, [socket]);
 
 // -------------------------------- Helper Functions --------------------------------
   function renderRoomErrorText(): string | null {

@@ -112,10 +112,24 @@ export function startRoomLoop(room: Room) {
     console.warn("[room] failed to enumerate room.sockets for debug:", err);
   }
 
-  const startMsg = JSON.stringify({ type: "gameStart", roomId: room.id });
-  for (const s of room.sockets.keys()) {
-    try { s.send(startMsg); } catch (e) { console.warn("failed notify start", e); }
-  }
+
+  // ✅ Send gameStart signals sequentially with 400ms delay between each
+  const socketsArray = Array.from(room.sockets.entries());
+
+  socketsArray.forEach(([socket, clientId], index) => {
+    setTimeout(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        try {
+          socket.send(JSON.stringify({ type: "gameStart" }));
+          console.log(`[room] ✅ Sent gameStart to clientId=${clientId} (${index + 1}/${socketsArray.length}) after ${index * 400}ms`);
+        } catch (err) {
+          console.error(`[room] ❌ Failed to send gameStart to clientId=${clientId}:`, err);
+        }
+      } else  {
+		console.warn(`[room] ⚠️ Socket not open for clientId=${clientId}`);
+	  }
+    }, index * 500); // 500ms stagger per player
+  });
 
   roomStartGame(room);
 

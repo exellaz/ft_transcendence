@@ -213,30 +213,33 @@ export class GameClient {
   private processingPromise: Promise<void> = Promise.resolve();
   constructor(canvasRef: HTMLCanvasElement | null, websocketRef: WebSocket) {
      console.log("[game] created game client"); ////debug
+
+	if (!websocketRef) {
+		throw new Error("[game] websocketRef is required");
+	}
+
+	if (websocketRef.readyState === WebSocket.CLOSING || websocketRef.readyState === WebSocket.CLOSED) {
+		throw new Error(`[game] websocketRef is not open (readyState: ${websocketRef.readyState})`);
+	}
+
     this.id = GameClient.globalId;
     GameClient.globalId++;
     console.log("[game] assigned client id:", this.id); ////debug
     this.websocketRef = websocketRef;
 
     // -- WEBSOCKET --
-    const sendReady = () => {
-        this.sendData("ready");
-    };
-
-    // send initial handshake
-    // console.log("asking for ready"); ////debug
-    if (this.websocketRef.readyState === WebSocket.OPEN) {
-      sendReady();
-    } else {
-      this.websocketRef.addEventListener("open", () => {
-        sendReady();
-      }, { once: true }); // use once to avoid multiple sends
-    }
-
     this.websocketRef.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       this.data = data;
     //  console.log("[game] received data", data); ////debug
+
+	  if (data.type === "handshakePing") {
+		console.log("[game] 📤 received handshakePing, sending handshakePong"); ////debug
+		this.sendData("handshakePong");
+		console.log("[game] 📤 Sending ready after handshakePong");
+		this.sendData("ready");
+		return;
+	  }
 
       this.processingPromise = this.processingPromise.then(async () => {
         if (data["state"]?.type === "full") {
