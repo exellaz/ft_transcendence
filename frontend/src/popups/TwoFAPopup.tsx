@@ -133,7 +133,16 @@ const TwoFAPopup: React.FC<PopupProps> = ({ open, onClose }) => {
         )}
         <p className="text-sm text-gray-500">Secret: {secret}</p>
         <p className="text-xl">{translate("authenticator_instructions")}</p>
-        <OtpInputField value={code} onChange={setCode} />
+        <OtpInputField
+          value={code}
+          onChange={setCode}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && code.length === 6 && !loading) {
+              e.preventDefault();
+              handleVerifyCode();
+            }
+          }}
+        />
         {verifyError && <Status color="red" text={verifyError} />}
         <Button onClick={handleVerifyCode}>{translate("verify_code")}</Button>
       </div>
