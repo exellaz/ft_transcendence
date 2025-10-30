@@ -32,4 +32,8 @@ export class TwoFactorService {
       return false;
     }
   }
+
+  static generateToken(secret: string): string {
+    return authenticator.generate(secret);
+  }
 }

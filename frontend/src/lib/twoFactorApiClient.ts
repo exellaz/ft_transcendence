@@ -150,20 +150,25 @@ export const getTwoFactorStatus = async (): Promise<{
   }
 };
 
-export const verifyTwoFactor = async (params: TwoFactorVerifyRequest): Promise<{
+export const verifyTwoFactor = async (
+  params: TwoFactorVerifyRequest,
+): Promise<{
   success: boolean;
   data?: TwoFactorVerifyResponse;
   error?: string;
   code?: string;
 }> => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/two-factor/verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/auth/two-factor/verify`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(params),
       },
-      body: JSON.stringify(params),
-    });
+    );
 
     const data = await response.json();
 
@@ -172,12 +177,12 @@ export const verifyTwoFactor = async (params: TwoFactorVerifyRequest): Promise<{
     } else {
       return {
         success: false,
-        error: data.error || 'Failed to verify 2FA',
-        code: data.code
+        error: data.error || "Failed to verify 2FA",
+        code: data.code,
       };
     }
   } catch (error) {
-    console.error('2FA verify request error:', error);
-    return { success: false, error: 'Network error' };
+    console.error("2FA verify request error:", error);
+    return { success: false, error: "Network error" };
   }
 };

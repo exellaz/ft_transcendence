@@ -150,12 +150,12 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
           properties: {
             identifier: { type: "string", minLength: 1 },
             password: { type: "string", minLength: 1 },
-            twoFactorCode: { type: "string", minLength: 6, maxLength: 6 }
+            twoFactorCode: { type: "string", minLength: 6, maxLength: 6 },
           },
           required: ["identifier", "password", "twoFactorCode"],
-          additionalProperties: false
-        }
-      }
+          additionalProperties: false,
+        },
+      },
     },
     async (request) => {
       const { identifier, password, twoFactorCode } = request.body as {
@@ -181,24 +181,39 @@ export async function twoFactorRoutes(fastify: FastifyInstance) {
       });
 
       if (!user || !user.password) {
-        throw ApiError.unauthorized("Invalid credentials", "INVALID_CREDENTIALS");
+        throw ApiError.unauthorized(
+          "Invalid credentials",
+          "INVALID_CREDENTIALS",
+        );
       }
 
       // Verify password
       const isValidPassword = await verifyPassword(password, user.password);
       if (!isValidPassword) {
-        throw ApiError.unauthorized("Invalid credentials", "INVALID_CREDENTIALS");
+        throw ApiError.unauthorized(
+          "Invalid credentials",
+          "INVALID_CREDENTIALS",
+        );
       }
 
       // Verify 2FA is enabled
       if (!user.twoFactorEnabled || !user.twoFactorSecret) {
-        throw ApiError.badRequest("Two-factor authentication not enabled", "TWO_FACTOR_NOT_ENABLED");
+        throw ApiError.badRequest(
+          "Two-factor authentication not enabled",
+          "TWO_FACTOR_NOT_ENABLED",
+        );
       }
 
       // Verify 2FA code
-      const isValid2FA = TwoFactorService.verifyToken(twoFactorCode, user.twoFactorSecret);
+      const isValid2FA = TwoFactorService.verifyToken(
+        twoFactorCode,
+        user.twoFactorSecret,
+      );
       if (!isValid2FA) {
-        throw ApiError.unauthorized("Invalid two-factor authentication code", "INVALID_TWO_FACTOR_CODE");
+        throw ApiError.unauthorized(
+          "Invalid two-factor authentication code",
+          "INVALID_TWO_FACTOR_CODE",
+        );
       }
 
       // Remove sensitive data

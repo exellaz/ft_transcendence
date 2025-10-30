@@ -16,7 +16,11 @@ import PreLoginLayout from "../layout/PreLoginLayout";
 import Status from "../components/Status";
 import TextButton from "../components/TextButton";
 import GoogleLoginButton from "../components/GoogleLoginButton";
-import { verifyTwoFactor, type TwoFactorVerifyResponse } from "@/lib/twoFactorApiClient";
+import {
+  verifyTwoFactor,
+  type TwoFactorVerifyResponse,
+} from "@/lib/twoFactorApiClient";
+import { googleLogin } from "@/lib/googleApiClient";
 
 const LoginView: React.FC = () => {
   const { t } = useTranslation();
@@ -37,6 +41,11 @@ const LoginView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [googleIdToken, setGoogleIdToken] = useState<string | null>(null);
+  const [authMethod, setAuthMethod] = useState<"standard" | "google">(
+    "standard",
+  );
 
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +97,35 @@ const LoginView: React.FC = () => {
     }
   };
 
-  const handleTwoFactorVerify = async () => {
+  const handleGoogleTwoFactorVerify = async () => {
+    if (code.length !== 6 || !googleIdToken) return;
+
+    setIsLoading(true);
+    setVerifyError(null);
+
+    try {
+      const response = await googleLogin({
+        idToken: googleIdToken,
+        twoFactorCode: code,
+      });
+
+      if (response.success && response.data) {
+        await handleLoginSuccess(response.data);
+      } else {
+        if (response.errorCode === "INVALID_TWO_FACTOR_CODE") {
+          setVerifyError(translate("invalid_2fa_code"));
+        } else {
+          setVerifyError(response.error || translate("verification_failed"));
+        }
+      }
+    } catch {
+      setVerifyError(translate("verification_failed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStandardTwoFactorVerify = async () => {
     if (code.length !== 6) return;
 
     setIsLoading(true);
@@ -107,7 +144,9 @@ const LoginView: React.FC = () => {
         if (verifyResponse.code === "INVALID_TWO_FACTOR_CODE") {
           setVerifyError(translate("invalid_2fa_code"));
         } else {
-          setVerifyError(verifyResponse.error || translate("verification_failed"));
+          setVerifyError(
+            verifyResponse.error || translate("verification_failed"),
+          );
         }
       }
     } catch {
@@ -117,6 +156,13 @@ const LoginView: React.FC = () => {
     }
   };
 
+  const handleTwoFactorVerify = async () => {
+    if (authMethod === "google") {
+      await handleGoogleTwoFactorVerify();
+    } else {
+      await handleStandardTwoFactorVerify();
+    }
+  };
 
   const handleLoginSuccess = async (loginData: TwoFactorVerifyResponse) => {
     localStorage.setItem("authToken", loginData.token);
@@ -134,6 +180,31 @@ const LoginView: React.FC = () => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !isLoading) {
       handleLogin();
+    }
+  };
+
+  const handleGoogleSignIn = async (idToken: string) => {
+    setIsLoading(true);
+    setError(null);
+    setGoogleIdToken(idToken);
+
+    try {
+      const response = await googleLogin({ idToken });
+
+      if (response.success && response.data) {
+        await handleLoginSuccess(response.data);
+      } else {
+        if (response.errorCode === "TWO_FACTOR_REQUIRED") {
+          setAuthMethod("google");
+          setStep("2FA");
+        } else {
+          setError(response.error || translate("google_login_failed"));
+        }
+      }
+    } catch {
+      setError(translate("google_login_failed"));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -173,7 +244,7 @@ const LoginView: React.FC = () => {
         </Button>
         <Divider />
         <GoogleLoginButton
-          onSuccess={handleGoogleSuccess}
+          onSuccess={handleGoogleSignIn}
           onError={handleGoogleError}
         />
         <TextButton onClick={() => navigate("/signup")}>
@@ -191,7 +262,9 @@ const LoginView: React.FC = () => {
         </p>
         <OtpInputField value={code} onChange={setCode} />
         {verifyError && <Status color="red" text={verifyError} />}
-        <Button onClick={handleTwoFactorVerify}>{translate("verify_code")}</Button>
+        <Button onClick={handleTwoFactorVerify}>
+          {translate("verify_code")}
+        </Button>
       </>
     );
   }
