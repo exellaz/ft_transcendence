@@ -46,7 +46,7 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   // API mutation to update user data
   const { mutate } = useApiMutation(updateUserById);
 
-  // Avatar upload states
+  // Avatar upload file input ref
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Form states
@@ -61,6 +61,27 @@ const BasicInfoPopup: React.FC<PopupProps> = ({ open, onClose, userId }) => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+
+    // frontend file validation
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+    const ALLOWED_TYPES = ["image/jpeg", "image/png"];
+    const ext = file.name.split(".").pop()?.toLowerCase();
+
+    // file can only be .jpg/.jpeg/.png
+    if (
+      !ALLOWED_TYPES.includes(file.type) ||
+      // || "" ensures you’re always passing a string into .includes()
+      // because ext could be undefined
+      !["jpg", "jpeg", "png"].includes(ext || "")
+    ) {
+      alert(translate("invalid_file_type_error"));
+      return;
+    }
+    // file must be under 2MB
+    if (file.size > MAX_FILE_SIZE) {
+      alert(translate("file_too_large_error"));
+      return;
+    }
 
     try {
       const response = await uploadUserAvatar({ id: userId, avatarFile: file });
