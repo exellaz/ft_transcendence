@@ -1,15 +1,22 @@
+import type React from "react";
 import OtpInput from "react-otp-input";
 
 interface OtpInputFieldProps {
   value: string;
   onChange: (value: string) => void;
   numInputs?: number;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+type OtpInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function OtpInputField({
   value,
   onChange,
   numInputs = 6,
+  onKeyDown,
 }: OtpInputFieldProps) {
   return (
     <OtpInput
@@ -18,7 +25,15 @@ export default function OtpInputField({
       numInputs={numInputs}
       shouldAutoFocus
       inputType="tel"
-      renderInput={(props) => <input {...props} />}
+      renderInput={(props: OtpInputProps) => (
+        <input
+          {...props}
+          onKeyDown={(e) => {
+            props.onKeyDown?.(e);
+            onKeyDown?.(e);
+          }}
+        />
+      )}
       containerStyle={{
         display: "flex",
         justifyContent: "center",
