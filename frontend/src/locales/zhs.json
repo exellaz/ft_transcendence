@@ -57,6 +57,7 @@
     "password": "密码",
     "login": "登录",
     "loading": "加载中...",
+    "google_login_failed": "谷歌登录失败",
     "continue_with_google": "使用谷歌继续",
     "signup_prompt": "还没有账号？注册",
     "2fa": "双重验证",
@@ -261,6 +262,7 @@
     "no_history_yet": "暂无比赛记录"
   },
   "TwoFAPopup": {
+    "loading": "加载中...",
     "header": "双重验证设置",
     "2fa_not_enabled_message": "尚未启用双重验证（2FA）。",
     "enable_2fa": "启用双重验证",
@@ -268,7 +270,8 @@
     "verify_code": "验证代码",
     "2fa_enabled_message": "双重验证（2FA）已启用。",
     "disable_2fa": "停用双重验证",
-    "invalid_code_error": "代码无效或服务器错误"
+    "invalid_code_error": "代码无效或服务器错误",
+    "verification_failed": "验证失败"
   },
   "ApiState": {
     "loading": "加载中...",

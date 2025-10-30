@@ -14,6 +14,7 @@ import {
   updateLastLogin,
   sanitizeUsername,
 } from "../auth/auth.service";
+import { TwoFactorService } from "../twoFactor/twoFactor.service";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -95,6 +96,7 @@ async function authRoutes(fastify: FastifyInstance) {
         select: {
           ...userPublicSelect,
           password: true,
+          twoFactorEnabled: true,
         },
       });
 
@@ -110,6 +112,13 @@ async function authRoutes(fastify: FastifyInstance) {
         throw ApiError.unauthorized(
           "Invalid credentials",
           "INVALID_CREDENTIALS",
+        );
+      }
+
+      if (user.twoFactorEnabled) {
+        throw ApiError.unauthorized(
+          "Two-factor authentication required",
+          "TWO_FACTOR_REQUIRED",
         );
       }
 
@@ -130,8 +139,10 @@ async function authRoutes(fastify: FastifyInstance) {
     "/auth/google",
     { schema: postGoogleAuthSchema },
     async (request) => {
-      const body = request.body as { idToken?: string };
-      const idToken = body?.idToken;
+      const { idToken, twoFactorCode } = request.body as {
+        idToken?: string;
+        twoFactorCode?: string;
+      };
 
       if (!idToken) {
         throw ApiError.badRequest("idToken is required", "MISSING_ID_TOKEN");
@@ -160,8 +171,10 @@ async function authRoutes(fastify: FastifyInstance) {
           googleId,
           email,
           sanitizedUsername,
+          fastify,
+          twoFactorCode,
         );
-        await updateLastLogin(user.id);
+
         const token = generateAuthToken(user.id, user.email);
         request.log.info(`Google OAuth login successful: ${user.email}`);
 

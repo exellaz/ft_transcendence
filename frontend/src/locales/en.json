@@ -58,6 +58,7 @@
     "login": "LOGIN",
     "loading": "Loading...",
     "continue_with_google": "CONTINUE WITH GOOGLE",
+    "google_login_failed": "Google login failed",
     "signup_prompt": "Don’t have an account? Sign up",
     "2fa": "Two-Factor Authentication",
     "enter_code": "Enter the 6-digit code from your authenticator app.",
@@ -261,6 +262,7 @@
     "no_history_yet": "No tournament history yet"
   },
   "TwoFAPopup": {
+    "loading": "Loading...",
     "header": "2FA Settings",
     "2fa_not_enabled_message": "Two-Factor Authentication (2FA) is not enabled yet.",
     "enable_2fa": "Enable 2FA",
@@ -268,7 +270,8 @@
     "verify_code": "Verify Code",
     "2fa_enabled_message": "Two-Factor Authentication (2FA) is enabled.",
     "disable_2fa": "Disable 2FA",
-    "invalid_code_error": "Invalid code or server error"
+    "invalid_code_error": "Invalid code or server error",
+    "verification_failed": "Verification failed"
   },
   "ApiState": {
     "loading": "Loading...",

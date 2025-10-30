@@ -22,9 +22,10 @@ import onlineStatusRoutes from "./modules/online-status/online-status.routes";
 import multipart from "@fastify/multipart";
 import avatarUploadStaticPlugin from "./plugins/avatar-upload";
 import assetsStaticPlugin from "./plugins/assets.static";
+import { twoFactorRoutes } from "./modules/twoFactor/twoFactor.routes";
 
 const app = Fastify({
-  logger: false,
+  logger: true,
 });
 app.register(websocketPlugin);
 app.register(fastifyCors, corsOptions);
@@ -48,6 +49,7 @@ app.register(liveChatRoutes);
 app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(onlineStatusRoutes);
+app.register(twoFactorRoutes);
 
 app.register(testRoutes);
 

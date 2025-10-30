@@ -58,6 +58,7 @@
     "login": "登入",
     "loading": "載入中...",
     "continue_with_google": "使用 Google 繼續",
+    "google_login_failed": "Google 登入失敗",
     "signup_prompt": "還沒有帳號？註冊",
     "2fa": "雙重驗證",
     "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
@@ -261,6 +262,7 @@
     "no_history_yet": "尚無比賽紀錄"
   },
   "TwoFAPopup": {
+    "loading": "載入中...",
     "header": "雙重驗證設定",
     "2fa_not_enabled_message": "尚未啟用雙重驗證（2FA）。",
     "enable_2fa": "啟用雙重驗證",
@@ -268,7 +270,8 @@
     "verify_code": "驗證代碼",
     "2fa_enabled_message": "雙重驗證（2FA）已啟用。",
     "disable_2fa": "停用雙重驗證",
-    "invalid_code_error": "代碼無效或伺服器錯誤"
+    "invalid_code_error": "代碼無效或伺服器錯誤",
+    "verification_failed": "驗證失敗"
   },
   "ApiState": {
     "loading": "載入中...",
