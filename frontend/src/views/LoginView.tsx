@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserProvider";
 import { useLanguage } from "../context/LanguageProvider";
 import { login, getUserSettingsById } from "../lib/usersApiClient";
+import { useClearGameMode } from "../hooks/useClearGameMode";
 
 import Button from "../components/Button";
 import Card from "../components/Card";
@@ -38,6 +39,8 @@ const LoginView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useClearGameMode();
 
   const handleInputChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +97,7 @@ const LoginView: React.FC = () => {
       }
 
       navigate("/main-menu");
-    } catch (err) {
+    } catch {
       setError(translate("login_failed"));
     } finally {
       setIsLoading(false);

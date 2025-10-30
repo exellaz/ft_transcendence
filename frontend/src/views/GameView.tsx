@@ -1,5 +1,4 @@
-import React, { useState, useParams, useRef, useEffect } from "react";
-import { useTranslation, withSSR } from "react-i18next";
+import React, { useState, useRef, useEffect } from "react";
 import Background from "../components/Background";
 import { getUserById } from "../lib/usersApiClient";
 import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
@@ -12,9 +11,7 @@ import { useLocation } from "react-router-dom";
 import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
-import { ImageObject } from "@shared/objects/ImageObject";
 import type { GameObject } from "@shared/objects/GameObject";
-import { SKIN_PATHS } from "@shared/game/Skins";
 
 interface GameViewProps {
   mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
@@ -34,11 +31,7 @@ const SKIN_MAPPING: Record<string, number> = {
 const GameView: React.FC<GameViewProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useBlockLeave();
-  const { t } = useTranslation();
-  const translate = (key: string) => t(`GameView.${key}`);
-  const [stage, setStage] = useState<"quarterfinals" | "semifinals" | "finals">(
-    "quarterfinals",
-  );
+
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<any>(null);
   const navigate = useNavigate();
@@ -105,12 +98,12 @@ const GameView: React.FC<GameViewProps> = () => {
 
       if (socket.readyState !== WebSocket.OPEN) {
         socket.onopen = () => {
-          let gameClient = new GameClient(canvasRef.current, socket);
+          const gameClient = new GameClient(canvasRef.current, socket);
           gameClient.start();
         };
         return;
       }
-      let gameClient = new GameClient(canvasRef.current, socket);
+      const gameClient = new GameClient(canvasRef.current, socket);
 
       gameClient.start();
       return () => {

@@ -277,7 +277,7 @@
   },
   "ApiState": {
     "loading": "加载中...",
-    "error": "错误",
+    "something_went_wrong": "发生错误",
     "try_again": "重试",
     "not_found": "未找到记录"
   },
@@ -295,6 +295,9 @@
   "ChooseSpriteContents": {
     "choose_sprite": "选择一个角色",
     "confirm": "确认"
+  },
+  "CustomToast": {
+    "message_from": "来自 {{username}} 的新消息"
   },
   "LiveChat": {
     "live_chat": "实时聊天",
@@ -347,7 +350,7 @@
   },
   "RoomLayout": {
     "game_settings": "游戏设置",
-    "invite_friends": "邀请好友",
+    "friends": "好友",
     "choose_sprite": "选择角色"
   }
 }
