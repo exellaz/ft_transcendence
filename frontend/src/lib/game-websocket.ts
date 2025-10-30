@@ -31,6 +31,12 @@ export function useGameWebSocket({
   onError,
   callback,
 }: UseGameWebSocketParams) {
+  const [gameOver, setGameOver] = useState(false);
+  const [isWinner, setIsWinner] = useState(false);
+  const [loserRank, setLoserRank] = useState<number | null>(null);
+  const [winnerRank, setWinnerRank] = useState<number | null>(null);
+  const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
+  const [tournamentDb, setTournamentDb] = useState<{ id: number; status: string; createdAt: Date } | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const navigate = useNavigate();
   const socketRef = useRef(false); // to avoid multiple callbacks
@@ -122,6 +128,58 @@ export function useGameWebSocket({
                 }
                 return;
             }
+
+				  if (msg.type === "game_over") {
+	            	console.log("==================================================== Game over message received:", msg); //// debug
+                    //isCleanUp = true;
+
+                    // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
+                    const isTournamentRoom = roomId.toString().startsWith("1111");
+                    setGameOver(!!msg.canLeave);
+                    if (isTournamentRoom) {
+                        try {
+                            const leftId: number[] = Array.isArray(msg.playerLeft) ? msg.playerLeft.map((p: playerInfo) => p.clientId) : [];
+                            const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
+                            const winnerSide = msg.result?.winner;
+                            const tournamentIdFromMsg = msg.tournamentId ?? null;
+	            			setTournamentDb(msg.tournamentDb || null);
+                            setLastTournamentId(tournamentIdFromMsg);
+
+                            let winnerClientIds: number | null = null;
+                            if (winnerSide === "left") winnerClientIds = leftId[0] || null;
+                            else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
+
+                            // if this client is the winner
+                            if (winnerClientIds === clientId) {
+                                console.log("you are the winner - waiting for tournament next-round");
+                                setIsWinner(true);
+                                const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
+                                if (placement) {
+                                    console.log(`winner [${clientId}] placement: ${placement.rank}`); ////debug
+                                    setWinnerRank(placement.rank);
+                                }
+                                ws.close(1000, "game over - winner");
+                                return;
+                            }
+
+                            // loser: setGameOver and navigate to tournament page
+                            setIsWinner(false);
+                            const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
+                                if (placement) {
+                                    console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
+                                    setLoserRank(placement.rank);
+                                }
+                            try {
+                                ws.close(1000, "game over - loser");
+                            } catch (err) {}
+                            return;
+                        } catch (err) {
+                            console.error("Error handling tournament game over:", err);
+                        }
+                    }
+                    try { ws.close(1000, "game over"); } catch {}
+                    setIsWinner(false);
+                  }
         } catch (err) {
             console.error("Error handling WebSocket message:", err);
         }
@@ -147,171 +205,7 @@ export function useGameWebSocket({
 
   return {
     socket,
-  };
-}
-
-//socket for game over from room
-export function useGameRoomWebSocket({
-  roomId,
-  roomName,
-  clientId,
-  initialRole,
-  isOffline = false,
-}: UseGameWebSocketParams) {
-  const [gameOver, setGameOver] = useState(false);
-  const [isWinner, setIsWinner] = useState(false);
-  const [loserRank, setLoserRank] = useState<number | null>(null);
-  const [winnerRank, setWinnerRank] = useState<number | null>(null);
-  const [lastTournamentId, setLastTournamentId] = useState<number | null>(null);
-  const [tournamentDb, setTournamentDb] = useState<{ id: number; status: string; createdAt: Date } | null>(null);
-  const navigate = useNavigate();
-  const socketRoomRef = useRef(false); // to avoid multiple callbacks
-  console.log("[gameRoom]allinfo:");
-  console.log("[gameRoom]roomId:", roomId);
-  console.log("[gameRoom]clientId:", clientId);
-  console.log("[gameRoom]initialRole:", initialRole);
-
-  useEffect(() => {
-    if (!roomId || roomId <= 0 || !clientId || clientId <= 0) {
-      console.warn("[useGameRoomWebSocket] skipping websocket: invalid params", { roomId, clientId });
-      return;
-    }
-
-    //get JWT
-    const userJWT = localStorage.getItem("authToken");
-    if (!userJWT) {
-        console.warn("No JWT found, cannot connect to game Room WebSocket");
-        return;
-    }
-    console.log("Game ws connecting with JWT:", userJWT); ////debug
-
-    const ws = new WebSocket(
-      import.meta.env.VITE_WS_URL +
-        `/ws-room?room=${roomId}&side=${initialRole}`, [userJWT]
-    );
-    socketRoomRef.current = true;
-
-    let isCleanUp = false;
-
-	ws.addEventListener("open", () => console.log("Game Room ws connected"));
-
-    ws.addEventListener("error", (e) => console.error("Game Room ws error", e));
-
-	ws.addEventListener("close", (ev) => {
-	  console.log(`Game Room ws disconnected: code=${ev.code}, reason=${ev.reason}`);
-      isCleanUp = true;
-	});
-
-    ws.addEventListener("message", (event) => {
-      if (isCleanUp) return;
-      const msg = JSON.parse(event.data);
-    //  console.log("Game WebSocket message received:", msg); //// debug
-
-	  if (msg && msg.type === "handshakePing") {
-        if (ws.readyState === WebSocket.OPEN && (!isOffline || navigator.onLine))
-		    ws.send(JSON.stringify({ type: "handshakePong", clientId: clientId }));
-		return;
-	  }
-
-	  if (msg && msg.type === "heartbeat") {
-        if (ws.readyState === WebSocket.OPEN && (!isOffline || navigator.onLine))
-		    ws.send(JSON.stringify({ type: "returnHeartbeat", clientId: clientId }));
-		return;
-	  }
-
-	  if (msg.type === "game_over") {
-		console.log("==================================================== Game over message received:", msg); //// debug
-        //isCleanUp = true;
-
-        // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
-        const isTournamentRoom = roomId.toString().startsWith("1111");
-        setGameOver(!!msg.canLeave);
-        if (isTournamentRoom) {
-            try {
-                const leftId: number[] = Array.isArray(msg.playerLeft) ? msg.playerLeft.map((p: playerInfo) => p.clientId) : [];
-                const rightId: number[] = Array.isArray(msg.playerRight) ? msg.playerRight.map((p: playerInfo) => p.clientId) : [];
-                const winnerSide = msg.result?.winner;
-                const tournamentIdFromMsg = msg.tournamentId ?? null;
-				setTournamentDb(msg.tournamentDb || null);
-                setLastTournamentId(tournamentIdFromMsg);
-
-                let winnerClientIds: number | null = null;
-                if (winnerSide === "left") winnerClientIds = leftId[0] || null;
-                else if (winnerSide === "right") winnerClientIds = rightId[0] || null;
-
-                // if this client is the winner
-                if (winnerClientIds === clientId) {
-                    console.log("you are the winner - waiting for tournament next-round");
-                    setIsWinner(true);
-                    const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
-                    if (placement) {
-                        console.log(`winner [${clientId}] placement: ${placement.rank}`); ////debug
-                        setWinnerRank(placement.rank);
-                    }
-                    ws.close(1000, "game over - winner");
-                    return;
-                }
-
-                // loser: setGameOver and navigate to tournament page
-                setIsWinner(false);
-                const placement = msg.placements.find((p: { clientId: number; }) => p.clientId === clientId);
-                    if (placement) {
-                        console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
-                        setLoserRank(placement.rank);
-                    }
-                try {
-                    ws.close(1000, "game over - loser");
-                } catch (err) {}
-                isCleanUp = true;
-                return;
-            } catch (err) {
-                console.error("Error handling tournament game over:", err);
-            }
-        }
-        try { ws.close(1000, "game over"); } catch {}
-        isCleanUp = true;
-        setIsWinner(false);
-      }
-    });
-
-    // Handle offline detection for this WebSocket
-    function handleOffline() {
-      if (!isOffline) {
-        console.log("Room WebSocket: Player went offline");
-      }
-    }
-
-    function handleOnline() {
-      console.log("Room WebSocket: Player back online");
-    }
-
-    if (!isOffline) {
-      window.addEventListener("offline", handleOffline);
-      window.addEventListener("online", handleOnline);
-    }
-    // close socket when component unmount
-    return () => {
-        isCleanUp = true;
-        if (!isOffline) {
-            window.removeEventListener("offline", handleOffline);
-            window.removeEventListener("online", handleOnline);
-        }
-		if (socketRoomRef.current) {
-            try {
-                ws.close(1000, "game room component unmount");
-            } catch (err) {
-               console.error("Error closing WebSocket on cleanup:", err);
-            }
-            ws.removeEventListener("open", () => {});
-            ws.removeEventListener("message", () => {});
-            ws.removeEventListener("close", () => {});
-            ws.removeEventListener("error", () => {});
-        }
-	}
-  }, [roomId, clientId, initialRole, roomName, isOffline, navigate]); //re-run effect if any of these change
-
-  return {
-    gameOver,
+	gameOver,
     isWinner,
     lastTournamentId,
 	tournamentDb,

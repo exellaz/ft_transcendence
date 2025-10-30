@@ -2,7 +2,7 @@ import React, { useState, useParams, useRef, useEffect } from "react";
 import { useTranslation, withSSR } from "react-i18next";
 import Background from "../components/Background";
 import { getUserById } from "../lib/usersApiClient";
-import { useGameRoomWebSocket, useGameWebSocket } from "../lib/game-websocket";
+import { useGameWebSocket } from "../lib/game-websocket";
 import { useBlockLeave } from "../utils/blockRefresh";
 import { useUser } from "../context/UserProvider";
 import { useNavigate } from "react-router-dom";
@@ -236,12 +236,13 @@ const GameView: React.FC<GameViewProps> = () => {
   };
   // console.log("params", params); ////debug
 
-  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameRoomWebSocket({
-    ...params,
-    isOffline: delayForGameOver,
-  });
+//  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameRoomWebSocket({
+//    ...params,
+//    isOffline: delayForGameOver,
+//  });
 
-  const { socket } = useGameWebSocket(params);
+  const { socket, gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(
+	params);
 //   console.log("socket has been create: ", socket); ////debug
 
 
