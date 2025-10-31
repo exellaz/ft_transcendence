@@ -25,7 +25,6 @@ import ResultsView from "./views/tournament/ResultsView";
 import SinglesRoomView from "./views/custom/SinglesRoomView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
-import TestView from "./views/TestView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 import RoomList from "./views/testRoomList";
 
@@ -241,7 +240,7 @@ const App: React.FC = () => {
             }
           />
           {/* Miscellaneous routes */}
-          <Route path="/test" element={<TestView />} />
+          {/*<Route path="/test" element={<TestView />} />*/}
           <Route path="/roomList" element={<RoomList />} />
           {/* Handles all other routes */}
           {/* - redirects to /login or /main-menu depending on auth status */}

@@ -15,7 +15,6 @@ import {
   updateTournamentStatus,
 } from "./tournament.service";
 
-//TODO refactor: check these function had redundant or not
 /**
  * @brief Start the countdown for a tournament.
  * @param tournamentId - The ID of the tournament to start the countdown for.
@@ -302,7 +301,7 @@ async function saveMatchResult(
     scoreRight: number;
     winnerId: string | number | "draw";
     duration: number;
-    rank?: number;
+    rank?: number | undefined;
   },
   TournamentLobbyDb: { id: number; status: string; createdAt: Date },
   playerPair: { id: number; username: string; spriteUrl: string }[],

@@ -163,16 +163,11 @@
     "joined": "加入時間",
     "change_avatar": "更換頭像",
     "username": "用戶名",
-    "username_available": "用戶名可用",
     "email": "電子郵件",
     "save_changes": "儲存更改",
     "cancel": "取消",
-    "upload_avatar": "上傳新頭像",
-    "upload_avatar_button": "上傳頭像",
-    "confirm_upload": "確認上傳",
-    "avatar_updated": "頭像已更新",
-    "avatar_update_error": "頭像更新失敗",
-    "back": "返回"
+    "invalid_file_type_error": "僅允許上傳 JPG 和 PNG 圖片。",
+    "file_too_large_error": "檔案過大！最大限制為 2MB。"
   },
   "ConfirmationPopup": {
     "yes": "是",

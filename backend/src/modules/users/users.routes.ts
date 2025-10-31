@@ -2,9 +2,11 @@ import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../utils/response";
 import {
   deleteUserByIdSchema,
+  getAllUserSettingsSchema,
   getUserByIdSchema,
   getUserSettingsByIdSchema,
   getUsersSchema,
+  patchUserAvatarByIdSchema,
   patchUserByIdSchema,
   patchUserSettingsByIdSchema,
 } from "./users.schema";
@@ -12,6 +14,9 @@ import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 import { Prisma } from "@prisma/client";
 import { request } from "http";
 import { authenticate } from "../../plugins/authenticate";
+import { MultipartFile } from "@fastify/multipart";
+import { uploadFileToServerUploadsDir } from "./users.service";
+import { AvatarFileValidator } from "src/utils/avatar-file-validator";
 
 async function userRoutes(fastify: FastifyInstance) {
   // ============================ USER SETTINGS =================================
@@ -82,13 +87,17 @@ async function userRoutes(fastify: FastifyInstance) {
   );
 
   // GET all userSettings (NEEDS TO BE BEFORE /user/:id)
-  fastify.get("/users/settings", async () => {
-    const userSettings = await fastify.db.userSettings.findMany({
-      select: userSettingsPublicSelect,
-    });
+  fastify.get(
+    "/users/settings",
+    { schema: getAllUserSettingsSchema },
+    async () => {
+      const userSettings = await fastify.db.userSettings.findMany({
+        select: userSettingsPublicSelect,
+      });
 
-    return ok(userSettings); // even if empty array, success response
-  });
+      return ok(userSettings); // even if empty array, success response
+    },
+  );
 
   // ============================ USER =================================
 
@@ -110,19 +119,16 @@ async function userRoutes(fastify: FastifyInstance) {
     { schema: patchUserByIdSchema },
     async (request) => {
       const { id } = request.params as { id: string };
-      const { username, avatarUrl } = request.body as {
+      const { username } = request.body as {
         username?: string;
-        avatarUrl?: string;
       };
 
       interface UserPatchData {
         username?: string;
-        avatarUrl?: string;
       }
       // Build update object dynamically
       const data: UserPatchData = {};
       if (username !== undefined) data.username = username;
-      if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
 
       if (Object.keys(data).length === 0)
         throw ApiError.badRequest("No fields to update", "NO_UPDATE_FIELDS");
@@ -146,6 +152,54 @@ async function userRoutes(fastify: FastifyInstance) {
               "Username already exists",
               "USERNAME_CONFLICT",
             );
+        }
+
+        throw err; // let Fastify handle other errors
+      }
+    },
+  );
+
+  // PATCH /users/:id/avatar  (upload user avatar)
+  fastify.patch(
+    "/users/:id/avatar",
+    { schema: patchUserAvatarByIdSchema },
+    async (request, reply) => {
+      // get userId from param
+      const { id } = request.params as { id: string };
+      const userId = Number(id);
+      // TODO: check if the user is uploading avatar for themselves
+
+      const data: MultipartFile | undefined = await request.file();
+      if (!data)
+        throw ApiError.badRequest("No file uploaded", "NO_FILE_UPLOADED");
+
+      // Validate the file
+      const validator = new AvatarFileValidator();
+      const validation = validator.validateFile(data.filename);
+      if (!validation.valid)
+        throw ApiError.badRequest(
+          "Invalid file extension",
+          "FILE_VALIDATION_FAILED",
+        );
+
+      const filename = data.filename;
+
+      try {
+        // upload file to Server /uploads/avatars
+        uploadFileToServerUploadsDir(data.file, filename);
+
+        // save relative filepath of avatar image to user's avatarUrl in database
+        const updatedUser = await fastify.db.user.update({
+          where: { id: userId },
+          data: { avatarUrl: `/uploads/avatars/${filename}` },
+          select: userPublicSelect,
+        });
+
+        return ok(updatedUser);
+      } catch (err: unknown) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2025")
+            throw ApiError.notFound("User not found", "USER_NOT_FOUND");
         }
 
         throw err; // let Fastify handle other errors
