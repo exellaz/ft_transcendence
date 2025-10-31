@@ -134,35 +134,6 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     },
   );
 
-  app.post(
-    "/delete-tournament",
-    async (req: FastifyRequest, reply: FastifyReply) => {
-      const { id } = req.body as { id: number };
-      if (typeof id !== "number") {
-        return reply.status(400).send({ error: "Invalid tournament id" });
-      }
-
-      const tournament = tournaments.get(id);
-      if (!tournament) {
-        return reply.status(404).send({ error: "Tournament not found" });
-      }
-
-      try {
-        tournaments.delete(id);
-        console.log(
-          `[ remove inactive tournament lobby ]Tournament ${id} deleted`,
-        );
-        return { success: true };
-      } catch (error) {
-        console.error(
-          `[ remove inactive tournament lobby ]Error deleting tournament ${id}:`,
-          error,
-        );
-        return reply.status(500).send({ error: "Failed to delete tournament" });
-      }
-    },
-  );
-
   // GET /list-tournaments - list all tournaments
   app.get("/list-tournaments", async () => {
     const response = Array.from(tournaments.values()).map((tournament) => ({

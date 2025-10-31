@@ -232,18 +232,3 @@ export async function createNextTournament(
     return null;
   }
 }
-
-export async function deleteTournament(tournamentId: number) {
-  try {
-    const res = await fetch(`${API_URL}/delete-tournament`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: tournamentId }),
-    });
-    if (!res.ok) throw new Error("Failed to delete tournament");
-    return await res.json();
-  } catch (error) {
-    console.error("Failed to delete tournament:", error);
-    return null;
-  }
-}
