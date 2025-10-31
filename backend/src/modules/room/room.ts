@@ -303,6 +303,7 @@ export function roomEndGame(
   }
 
   // update tournament eliminated order and placements
+  let loserRank: number | undefined = undefined; // ✅ Track loser's rank
   try {
     const tId = tournamentId ?? -1;
     const tournament = tournaments.get(tId);
@@ -346,6 +347,15 @@ export function roomEndGame(
         losersOrderedClientIds,
       );
       payload.placements = placements;
+
+      // ✅ Extract the loser's rank for immediate DB update
+      if (losersOrderedClientIds.length > 0) {
+        const loserClientId = losersOrderedClientIds[0];
+        const loserPlacement = placements.find(p => p.clientId === loserClientId);
+        if (loserPlacement) {
+          loserRank = loserPlacement.rank;
+        }
+      }
     }
   } catch (err) {
     console.error("roomEndGame: failed computing tournament placements:", err);
@@ -428,10 +438,7 @@ export function roomEndGame(
     scoreLeft: room.game.scoreLeft,
     scoreRight: room.game.scoreRight,
     duration: room.duration,
-    rank:
-      winner !== "left"
-        ? placementMap.get(parseInt(leftPlayer))
-        : placementMap.get(parseInt(rightPlayer)),
+    rank: loserRank,
   };
 }
 

@@ -55,6 +55,7 @@ export interface TournamentLobby {
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
   eliminatedOrder?: number[];
   placements?: { clientId: number; rank: number }[];
+  rankUpdatedPlayers?: Set<number>; // ✅ Track players whose rank has been updated
 }
 
 export interface TournamentGameRoom {

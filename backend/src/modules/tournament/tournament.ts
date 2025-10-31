@@ -302,6 +302,7 @@ async function saveMatchResult(
     scoreRight: number;
     winnerId: string | number | "draw";
     duration: number;
+    rank?: number;
   },
   TournamentLobbyDb: { id: number; status: string; createdAt: Date },
   playerPair: { id: number; username: string; spriteUrl: string }[],
@@ -310,6 +311,11 @@ async function saveMatchResult(
   const tournament = tournaments.get(tournamentInfo.id);
   if (!tournament) return;
   tournament.playerMap = tournament.playerMap || new Map<number, number>();
+
+  // ✅ Initialize tracking set for players whose rank has been updated
+  if (!tournament.rankUpdatedPlayers) {
+    tournament.rankUpdatedPlayers = new Set<number>();
+  }
 
   //build createdPlayer array by reusing existing players in playerMap if any
   const createdPlayer: {
@@ -399,6 +405,35 @@ async function saveMatchResult(
       );
   }
 
+  // ✅ NEW: Update loser's ranking immediately after game ends
+  if (result.rank !== undefined && result.winnerId !== "draw") {
+    const loserId = result.winnerId === result.leftPlayerId
+      ? result.rightPlayerId
+      : result.leftPlayerId;
+
+    const loserTournamentPlayerId = tournament.playerMap.get(loserId);
+    if (loserTournamentPlayerId) {
+      console.log(
+        `[tournament player database] IMMEDIATE rank update for loser ${loserId} (tournamentPlayerId=${loserTournamentPlayerId}) to rank ${result.rank}`,
+      );
+      const updateResult = await updateTournamentPlayerRanking(
+        result.rank,
+        loserTournamentPlayerId,
+      );
+      if (updateResult.success) {
+        tournament.rankUpdatedPlayers.add(loserId);
+        console.log(
+          `[tournament player database] ✅ Successfully updated loser ranking in DB immediately`,
+        );
+      } else {
+        console.warn(
+          `[tournament player database] ❌ Failed to update loser ranking:`,
+          updateResult.error,
+        );
+      }
+    }
+  }
+
   //after create player and save match result, update player rank
   const resultCopy = {
     playerId:
@@ -469,6 +504,11 @@ async function handleNextRound(
   const tournament = tournaments.get(tournamentId);
   if (!tournament) return;
 
+  // ✅ Ensure tracking set exists
+  if (!tournament.rankUpdatedPlayers) {
+    tournament.rankUpdatedPlayers = new Set<number>();
+  }
+
   // If placements were computed by roomEndGame, apply them instead of recalculating.
   if (
     Array.isArray(tournament.placements) &&
@@ -490,6 +530,8 @@ async function handleNextRound(
         "[tournament database] Tournament status updated to COMPLETED: ",
         updateTournamentDB,
       );
+      // ✅ Clear tracking set when tournament completes
+      tournament.rankUpdatedPlayers.clear();
     }
   } else {
     //collect winners and losers and results from current stage
@@ -548,26 +590,33 @@ async function handleNextRound(
       rank: loserStartRank + i,
     }));
 
-    //update the loser rankings in database before proceeding to next stage
-    const updatePromises = rankedLosers.map(async (rl) => {
-      if (!tournament.playerMap) {
-        console.warn(
-          `No playerMap for tournament ${tournamentId}; cannot update ranking for ${rl.playerId}`,
+   //update the loser rankings in database before proceeding to next stage
+    // ✅ Skip players whose rank was already updated immediately
+    const updatePromises = rankedLosers
+      .filter(rl => !tournament.rankUpdatedPlayers?.has(rl.playerId))
+      .map(async (rl) => {
+        if (!tournament.playerMap) {
+          console.warn(
+            `No playerMap for tournament ${tournamentId}; cannot update ranking for ${rl.playerId}`,
+          );
+          return;
+        }
+        const tournamentPlayerId = tournament.playerMap.get(rl.playerId);
+        if (!tournamentPlayerId) {
+          console.warn(
+            `No tournament player id for user ${rl.playerId} in tournament ${tournamentId}`,
+          );
+          return;
+        }
+        console.log(
+          `[BATCH] Update player id ${tournamentPlayerId} (${rl.playerId}) ranking to ${rl.rank}`,
         );
-        return;
-      }
-      const tournamentPlayerId = tournament.playerMap.get(rl.playerId);
-      if (!tournamentPlayerId) {
-        console.warn(
-          `No tournament player id for user ${rl.playerId} in tournament ${tournamentId}`,
-        );
-        return;
-      }
-      console.log(
-        `Update player id ${tournamentPlayerId} (${rl.playerId}) ranking to ${rl.rank}`,
-      );
-      return updateTournamentPlayerRanking(rl.rank, tournamentPlayerId);
-    });
+        const result = await updateTournamentPlayerRanking(rl.rank, tournamentPlayerId);
+        if (result.success) {
+          tournament.rankUpdatedPlayers?.add(rl.playerId);
+        }
+        return result;
+      });
 
     await Promise.all(updatePromises);
 
@@ -580,22 +629,29 @@ async function handleNextRound(
     const nextStage = nextStageMap[currentStage];
 
     // If this was the final (no nextStage), update the rank of the winners
-    if (!nextStage) {
-      const winnerRankPromises = winners.map(async (w, idx) => {
-        if (!tournament.playerMap) return;
-        const tournamentPlayerId = tournament.playerMap.get(w.id);
-        if (!tournamentPlayerId) {
-          console.warn(
-            `No tournament player id for winner ${w.id} in tournament ${tournamentId}`,
+ if (!nextStage) {
+      // ✅ Skip winners whose rank was already updated
+      const winnerRankPromises = winners
+        .filter(w => !tournament.rankUpdatedPlayers?.has(w.id))
+        .map(async (w, idx) => {
+          if (!tournament.playerMap) return;
+          const tournamentPlayerId = tournament.playerMap.get(w.id);
+          if (!tournamentPlayerId) {
+            console.warn(
+              `No tournament player id for winner ${w.id} in tournament ${tournamentId}`,
+            );
+            return;
+          }
+          const winnerRank = idx + 1; // first winner = 1
+          console.log(
+            `[BATCH] Update winner id ${tournamentPlayerId} (${w.id}) ranking to ${winnerRank}`,
           );
-          return;
-        }
-        const winnerRank = idx + 1; // first winner = 1
-        console.log(
-          `Update winner id ${tournamentPlayerId} (${w.id}) ranking to ${winnerRank}`,
-        );
-        return updateTournamentPlayerRanking(winnerRank, tournamentPlayerId);
-      });
+          const result = await updateTournamentPlayerRanking(winnerRank, tournamentPlayerId);
+          if (result.success) {
+            tournament.rankUpdatedPlayers?.add(w.id);
+          }
+          return result;
+        });
       await Promise.all(winnerRankPromises);
     }
 
@@ -639,6 +695,7 @@ async function handleNextRound(
       console.log(
         `[ update tournament DB ] Deleting tournament ${tournamentId} from memory.`,
       );
+      tournament.rankUpdatedPlayers.clear();
       tournaments.delete(tournamentId);
       return;
     }
@@ -665,27 +722,37 @@ async function applyPlacementsToDB(tournamentId: number): Promise<void> {
   }
 
   tournament.playerMap = tournament.playerMap || new Map<number, number>();
+  // ✅ Ensure tracking set exists
+  if (!tournament.rankUpdatedPlayers) {
+    tournament.rankUpdatedPlayers = new Set<number>();
+  }
 
-  const updates = tournament.placements.map(async (p: PlacementEntry) => {
-    const userId =
-      typeof p?.clientId === "number"
-        ? p.clientId
-        : typeof p?.playerId === "number"
-          ? p.playerId
-          : null;
-    const rank =
-      typeof p?.rank === "number"
-        ? p.rank
-        : typeof p?.position === "number"
-          ? p.position
-          : null;
-    if (userId == null || rank == null) {
-      console.warn(
-        `[tournament player database] skip invalid placement entry`,
-        p,
-      );
-      return;
-    }
+  // ✅ Filter out players whose rank was already updated
+ const updates = tournament.placements
+    .filter(p => {
+      const userId = typeof p?.clientId === "number" ? p.clientId : null;
+      return userId !== null && !tournament.rankUpdatedPlayers?.has(userId);
+    })
+    .map(async (p: PlacementEntry) => {
+      const userId =
+        typeof p?.clientId === "number"
+          ? p.clientId
+          : typeof p?.playerId === "number"
+            ? p.playerId
+            : null;
+      const rank =
+        typeof p?.rank === "number"
+          ? p.rank
+          : typeof p?.position === "number"
+            ? p.position
+            : null;
+      if (userId == null || rank == null) {
+        console.warn(
+          `[tournament player database] skip invalid placement entry`,
+          p,
+        );
+        return;
+      }
 
     const tournamentPlayerId = tournament.playerMap?.get(userId);
     if (!tournamentPlayerId) {
@@ -704,6 +771,8 @@ async function applyPlacementsToDB(tournamentId: number): Promise<void> {
         tournamentPlayerId,
       );
       if (tournamentPlayerDb.success) {
+        // ✅ Mark this player as ranked
+        tournament.rankUpdatedPlayers?.add(userId);
         console.log(
           `[tournament player database] updated player ranking in DB:`,
           tournamentPlayerDb.data,
