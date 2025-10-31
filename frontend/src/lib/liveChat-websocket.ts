@@ -33,9 +33,15 @@ export function useLiveChatWebSocket(
 
     ws.addEventListener("open", () => console.log("Chat ws connected"));
 
-    ws.addEventListener("error", (e) => console.error("Live chat WebSocket error", e));
+    ws.addEventListener("error", (e) =>
+      console.error("Live chat WebSocket error", e),
+    );
 
-    ws.addEventListener("close", (ev) => console.log(`live chat ws disconnected: code=${ev.code}, reason=${ev.reason}`));
+    ws.addEventListener("close", (ev) =>
+      console.log(
+        `live chat ws disconnected: code=${ev.code}, reason=${ev.reason}`,
+      ),
+    );
 
     // handle incoming message / event from server
     ws.addEventListener("message", (ev) => {
@@ -83,7 +89,7 @@ export function useLiveChatWebSocket(
         ws.readyState === WebSocket.OPEN ||
         ws.readyState === WebSocket.CONNECTING
       )
-      ws.close(1000, "Chat closed");
+        ws.close(1000, "Chat closed");
       ws.removeEventListener("open", () => {});
       ws.removeEventListener("message", () => {});
       ws.removeEventListener("close", () => {});

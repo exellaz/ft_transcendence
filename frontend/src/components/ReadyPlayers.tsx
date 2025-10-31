@@ -8,14 +8,15 @@ import ProfilePopup from "../popups/ProfilePopup";
 import type { WaitingTournamentPlayer } from "@/types/apiInterfaces";
 
 interface ReadyPlayersProps {
-  players: (WaitingTournamentPlayer)[];
+  players: WaitingTournamentPlayer[];
 }
 
 const ReadyPlayers: React.FC<ReadyPlayersProps> = ({ players }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyPlayers.${key}`);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-//  console.log("Players in ReadyPlayers component:", players); ////debug
+  const userId = useUser().user?.id;
+  //  console.log("Players in ReadyPlayers component:", players); ////debug
 
   return (
     <>

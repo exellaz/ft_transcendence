@@ -14,7 +14,7 @@ const AdvanceView: React.FC = () => {
   const translate = (key: string) => t(`AdvanceView.${key}`);
   const navigate = useNavigate();
   const [isAdvancing, setIsAdvancing] = React.useState(false);
-//  console.log("AdvanceView location.state:", location.state); ////debug
+  //  console.log("AdvanceView location.state:", location.state); ////debug
 
   async function handleContinueClick() {
     const lastTournamentId = Number(location.state?.lastTournamentId ?? 0);
@@ -35,7 +35,7 @@ const AdvanceView: React.FC = () => {
         });
         return; // goToNextRoundExternal will navigate
       }
-      navigate("/tournament",);
+      navigate("/tournament");
     } finally {
       setIsAdvancing(false);
     }
@@ -63,7 +63,11 @@ const AdvanceView: React.FC = () => {
               className="w-full h-full scale-150"
             />
           </div>
-          <Button variant="green" onClick={handleContinueClick} disabled={isAdvancing}>
+          <Button
+            variant="green"
+            onClick={handleContinueClick}
+            disabled={isAdvancing}
+          >
             {translate("continue")}
           </Button>
         </div>

@@ -4,23 +4,14 @@ import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
 import { FastifyRequest } from "fastify/types/request";
 import WebSocket, { WebSocket as WSWebSocket } from "ws";
-import { BroadcastMessage, WSContext, playerInfo, Room } from "../types/interface";
+import {
+  BroadcastMessage,
+  WSContext,
+  playerInfo,
+  Room,
+} from "../types/interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import fastify, { FastifyInstance } from "fastify";
-
-//! temporary helper function to get user info by id
-//import { GetUserRequest, GetUserResponse } from "../../../frontend/src/types/usersApi";
-//import { getUserByIdSchema } from "src/modules/users/users.schema";
-//export async function getUserInfoById({
-//  id,
-//}: GetUserRequest): Promise<GetUserResponse> {
-//  const res = await fetch(`http://localhost:3000/users/${id}`, {
-//    method: "GET",
-//    headers: { "Content-Type": "application/json" },
-//  });
-
-//  return res.json();
-//}
+import { FastifyInstance } from "fastify";
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -29,9 +20,13 @@ import fastify, { FastifyInstance } from "fastify";
  * @return WSContext if valid, otherwise null (and closes socket)
  * @note Close the socket with appropriate code/message if validation fails
  */
-export async function validateConnection(socket: WSWebSocket, req: FastifyRequest, fastify: FastifyInstance): Promise<WSContext | null> {
+export async function validateConnection(
+  socket: WSWebSocket,
+  req: FastifyRequest,
+  fastify: FastifyInstance,
+): Promise<WSContext | null> {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-//  console.log("WebSocket connection URL:", url.href); ////debug
+  //  console.log("WebSocket connection URL:", url.href); ////debug
   const roomId = url.searchParams.get("room") || "-1";
   const side = url.searchParams.get("side") as "left" | "right" | undefined;
 
@@ -54,13 +49,13 @@ export async function validateConnection(socket: WSWebSocket, req: FastifyReques
   }
 
   const clientId: number = decode.userId;
-//  console.log("[validate token] Authenticated user id: ", clientId); ////debug
+  //  console.log("[validate token] Authenticated user id: ", clientId); ////debug
   //! need to validate user later
-//  const user = await getUserInfoById({ id: clientId });
-//  if (!user || !user.data) {
-//    socket.close(1008, "User not found");
-//    return null;
-//  }
+  //  const user = await getUserInfoById({ id: clientId });
+  //  if (!user || !user.data) {
+  //    socket.close(1008, "User not found");
+  //    return null;
+  //  }
 
   const user = await fastify.db.user.findUnique({
     where: { id: clientId },
@@ -134,7 +129,8 @@ export function updateCanStart(room: Room): {
   const teamsBalanced =
     leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
 
- const enoughPlayers = leftPlayers.length + rightPlayers.length >= room.teamSize * 2;
+  const enoughPlayers =
+    leftPlayers.length + rightPlayers.length >= room.teamSize * 2;
 
   // --- decide why ---
   let reason: string | null = null;
@@ -145,19 +141,19 @@ export function updateCanStart(room: Room): {
   } else if (!allReady) {
     reason = "Not all players are ready";
   } else if (!enoughPlayers) {
-	reason = "Not enough players to start the game";
+    reason = "Not enough players to start the game";
   }
 
   // set canStart based on conditions
   room.canStart = reason === null;
 
-//   console.log("updateCanStart:", { ////debug
-//       allPlayers,
-//       nonLeaderPlayers,
-//   	teamsBalanced,
-//       allReady,
-//       canStart: room.canStart
-//   });
+  //   console.log("updateCanStart:", { ////debug
+  //       allPlayers,
+  //       nonLeaderPlayers,
+  //   	teamsBalanced,
+  //       allReady,
+  //       canStart: room.canStart
+  //   });
 
   return { canStart: room.canStart, reason };
 }
@@ -228,7 +224,10 @@ export function handleSwitchSide(
   else rightPlayers.push({ ...player });
 
   // 2. rebuild team role + update mapping
-  function rebuildSide(players: playerInfo[], side: "left" | "right"): playerInfo[] {
+  function rebuildSide(
+    players: playerInfo[],
+    side: "left" | "right",
+  ): playerInfo[] {
     return players.map((p, i) => {
       const newRole = `${side}_player${i + 1}`;
       // preserve readiness from gameState if available
@@ -303,20 +302,22 @@ export function handlePlayerDisconnect(
   if (player) {
     player.online = false;
 
-   //update team status
-   room.gameState.teams.left = room.gameState.teams.left.map(
-     (p: playerInfo) => (p.clientId === clientId ? { ...p, online: false } : p),
-   );
-   room.gameState.teams.right = room.gameState.teams.right.map(
-     (p: playerInfo) => (p.clientId === clientId ? { ...p, online: false } : p),
-   );
+    //update team status
+    room.gameState.teams.left = room.gameState.teams.left.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
+    room.gameState.teams.right = room.gameState.teams.right.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
 
-   //broadcast to all players about disconnection
-   broadcast(room, {
-     type: "playerOffline",
-     clientId,
-     playerName: player.playerName,
-   });
+    //broadcast to all players about disconnection
+    broadcast(room, {
+      type: "playerOffline",
+      clientId,
+      playerName: player.playerName,
+    });
   }
 
   // start time for end game

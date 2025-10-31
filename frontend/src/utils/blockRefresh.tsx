@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 export function useBlockLeave() {
-
   useEffect(() => {
     // Prevent refresh (F5 / Ctrl+R)
     const keyHandler = (e: KeyboardEvent) => {

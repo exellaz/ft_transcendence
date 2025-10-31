@@ -24,28 +24,22 @@ const TournamentLobbyView: React.FC = () => {
   const translate = (key: string) => t(`TournamentLobbyView.${key}`);
   const navigate = useNavigate();
   const { tournamentId: paramTournamentId } = useParams();
-  const tournamentId = Number(paramTournamentId ?? location.state?.tournamentId) || -1;
+  const tournamentId =
+    Number(paramTournamentId ?? location.state?.tournamentId) || -1;
   const { user } = useUser();
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [stage, setStage] = useState<"QF" | "SF" | "F">("QF");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
-//  console.log("Tournament ID:", tournamentId); ////debug
-//  console.log("User info in TournamentLobbyView:", userinfo); ////debug
+  //  console.log("Tournament ID:", tournamentId); ////debug
+  //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
   //live chat websocket
-  const {
-    chatMessages,
-    message,
-    setMessage,
-    handleSendMsg
-  } = useLiveChatWebSocket(
-    tournamentId || -1,
-    {
+  const { chatMessages, message, setMessage, handleSendMsg } =
+    useLiveChatWebSocket(tournamentId || -1, {
       id: userinfo?.id || -1,
       name: userinfo?.username || "",
-    }
-  );
+    });
 
   //tournament websocket
   const {
@@ -66,7 +60,7 @@ const TournamentLobbyView: React.FC = () => {
       id: userinfo?.id || -1,
       username: userinfo?.username || "",
       avatarUrl: userinfo?.avatarUrl || "",
-    }
+    },
   });
 
   // Fetch user info when the component mounts
@@ -75,20 +69,20 @@ const TournamentLobbyView: React.FC = () => {
 
     //use context user if available
     if (user) {
-        //setUserinfo(user);
-        (async () => {
-          try {
-            const response = await getUserById({ id: Number(user.id) }); // Call the API
-            if (response.success && response.data) {
-              console.log("Fetched user info:", response.data); ////debug
-              setUserinfo(response.data); // Store the user info
-            }
-          } catch (err) {
-            console.error("Error fetching user info:", err);
-            console.error("An error occurred while fetching user info"); // Handle fetch error
+      //setUserinfo(user);
+      (async () => {
+        try {
+          const response = await getUserById({ id: Number(user.id) }); // Call the API
+          if (response.success && response.data) {
+            console.log("Fetched user info:", response.data); ////debug
+            setUserinfo(response.data); // Store the user info
           }
-        })();
-        return;
+        } catch (err) {
+          console.error("Error fetching user info:", err);
+          console.error("An error occurred while fetching user info"); // Handle fetch error
+        }
+      })();
+      return;
     }
 
     //if no context user, navigate to main menu
@@ -104,41 +98,56 @@ const TournamentLobbyView: React.FC = () => {
   }, [paramTournamentId]);
 
   // prevent player from reloading the page
-  React.useEffect (() => {
+  React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
-        sessionStorage.removeItem("reloading");
-        navigate("/main-menu");
-        }
+      sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
+    }
   }, []);
 
   //navigate to match when start tournament
   React.useEffect(() => {
     if (matchAssigned) {
-        navigate(`/match/${matchAssigned.roomId}`, {
-          state: {
-            players: matchAssigned.players,
-            stage: matchAssigned.stage,
-            roomId: matchAssigned.roomId,
-          },
-        });
+      navigate(`/match/${matchAssigned.roomId}`, {
+        state: {
+          players: matchAssigned.players,
+          stage: matchAssigned.stage,
+          roomId: matchAssigned.roomId,
+        },
+      });
     }
   });
-//  console.log ("Current players from WebSocket:", currentPlayer); ////debug
+  //  console.log ("Current players from WebSocket:", currentPlayer); ////debug
 
   //update players list when websocket data change
   React.useEffect(() => {
-    console.log("[ lobby snapshot ]:", lastLobbyData?.players, "ws players:", currentPlayer);
+    console.log(
+      "[ lobby snapshot ]:",
+      lastLobbyData?.players,
+      "ws players:",
+      currentPlayer,
+    );
 
     // if server sent an empty snapshot, ask the server for a fresh one and fallback to WS players shortly
-    if (lastLobbyData && Array.isArray(lastLobbyData.players) && lastLobbyData.players.length === 0) {
+    if (
+      lastLobbyData &&
+      Array.isArray(lastLobbyData.players) &&
+      lastLobbyData.players.length === 0
+    ) {
       console.warn("Empty lobby snapshot received — requesting refresh");
-      try { refreshLobby?.(); } catch {}
+      try {
+        refreshLobby?.();
+      } catch {}
       // try persisted snapshot (from navigation) as immediate fallback
       try {
         const raw = sessionStorage.getItem("lastTournamentLobby");
         if (raw) {
           const snap = JSON.parse(raw);
-          if (snap?.id === tournamentId && Array.isArray(snap.players) && snap.players.length > 0) {
+          if (
+            snap?.id === tournamentId &&
+            Array.isArray(snap.players) &&
+            snap.players.length > 0
+          ) {
             setPlayers(snap.players);
             return;
           }
@@ -163,7 +172,7 @@ const TournamentLobbyView: React.FC = () => {
   //update stage when move to next stage
   React.useEffect(() => {
     if (location.state.tournament.stage) {
-        setStage(location.state.tournament.stage);
+      setStage(location.state.tournament.stage);
     }
   }, [location.state.tournament.stage]);
 
@@ -172,111 +181,114 @@ const TournamentLobbyView: React.FC = () => {
   else if (stage === "SF") stageHeader = translate("semifinals");
   else if (stage === "F") stageHeader = translate("finals");
 
-// -------------------------------- Helper Functions --------------------------------
+  // -------------------------------- Helper Functions --------------------------------
   function renderRoomErrorText(): string | null {
-	if (!roomError) return null;
+    if (!roomError) return null;
 
-	if (roomError === "Room is full") {
-		return translate("room_is_full");
-	} else if (roomError === "offline_error") {
-		return translate("offline_error");
-	} else {
-		return roomError;
-	}
+    if (roomError === "Room is full") {
+      return translate("room_is_full");
+    } else if (roomError === "offline_error") {
+      return translate("offline_error");
+    } else {
+      return roomError;
+    }
   }
 
   return (
     <Background>
-    <div className="relative w-full flex justify-center">
-      <Card size="large">
-        <div className="w-full h-full flex-row-center gap-6">
+      <div className="relative w-full flex justify-center">
+        <Card size="large">
+          <div className="w-full h-full flex-row-center gap-6">
+            {/* countdown */}
+            {countdown !== null && !lock && (
+              <p className="absolute -top-8 text-6xl font-bold text-white">
+                {countdown > 0 ? countdown : translate("game_start")}
+              </p>
+            )}
 
-          {/* countdown */}
-          {countdown !== null && !lock && (
-            <p className="absolute -top-8 text-6xl font-bold text-white">
-              {countdown > 0 ? countdown : translate("game_start")}
-            </p>
-          )}
+            {/* Main tournament content */}
+            <div className="w-[50%] h-full flex-col-between">
+              {/* lobby tittle */}
+              <TournamentHeader>
+                <span>{stageHeader}</span>
+                <span>{translate("tournament_lobby")}</span>
+              </TournamentHeader>
 
-          {/* Main tournament content */}
-          <div className="w-[50%] h-full flex-col-between">
-            {/* lobby tittle */}
-            <TournamentHeader>
-              <span>{stageHeader}</span>
-              <span>{translate("tournament_lobby")}</span>
-            </TournamentHeader>
+              {/* players ready status */}
+              <ReadyPlayers players={players} />
 
-            {/* players ready status */}
-            <ReadyPlayers players={players} />
-
-            {/* ready and leave button */}
-            <div className="flex-row-center gap-6">
-              {!eliminated ? (
-                <>
-                  <Button variant="green" onClick={toggleReady}>
-                    {ready ? translate("unready") : translate("ready")}
-                  </Button>
-                    <Button variant="red" onClick={() => setShowQuitTournament(true)}>
+              {/* ready and leave button */}
+              <div className="flex-row-center gap-6">
+                {!eliminated ? (
+                  <>
+                    <Button variant="green" onClick={toggleReady}>
+                      {ready ? translate("unready") : translate("ready")}
+                    </Button>
+                    <Button
+                      variant="red"
+                      onClick={() => setShowQuitTournament(true)}
+                    >
                       {translate("quit")}
                     </Button>
-                </>
-              ) : (
-                // eliminated players get a direct back button
-                <Button variant="bigYellow" onClick={() => navigate("/main-menu")}>
-                  {translate("back_to_lobby") || "Back to Lobby"}
-                </Button>
-              )}
+                  </>
+                ) : (
+                  // eliminated players get a direct back button
+                  <Button
+                    variant="bigYellow"
+                    onClick={() => navigate("/main-menu")}
+                  >
+                    {translate("back_to_lobby") || "Back to Lobby"}
+                  </Button>
+                )}
+              </div>
             </div>
+
+            {/* live chat */}
+            <LiveChat
+              players={players}
+              chatMessages={chatMessages}
+              message={message}
+              setMessage={setMessage}
+              onSendMessage={handleSendMsg}
+            />
           </div>
+        </Card>
 
-          {/* live chat */}
-          <LiveChat
-            players={players}
-            chatMessages={chatMessages}
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMsg}
-          />
-
-        </div>
-      </Card>
-
-      <ConfirmationPopup
-        text={translate("quit_confirmation")}
-        open={showQuitTournament}
-        onClose={() => setShowQuitTournament(false)}
-        onConfirm={() => {
-          onleave();
-          navigate("/main-menu");
-        }}
-      />
+        <ConfirmationPopup
+          text={translate("quit_confirmation")}
+          open={showQuitTournament}
+          onClose={() => setShowQuitTournament(false)}
+          onConfirm={() => {
+            onleave();
+            navigate("/main-menu");
+          }}
+        />
 
         {/* error popup */}
-	    {roomError && (
-           <div className="fixed inset-0 z-50 flex items-center justify-center">
-             {/* Background image using your Background component */}
-             <Background variant="grass">
-               {/* Optional dark overlay on top of the background */}
-               <div className="absolute inset-0 bg-black opacity-70"></div>
-               {/* Popup content */}
-               <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
-                 <p className="text-center text-white text-2xl px-4">
-                   {renderRoomErrorText()}
-                 </p>
-                 <Button
-                   variant="red"
-                   onClick={() => {
-                     navigate("/main-menu");
-                   }}
-                 >
-                   {translate("close")}
-                 </Button>
-               </div>
-             </Background>
-           </div>
+        {roomError && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            {/* Background image using your Background component */}
+            <Background variant="grass">
+              {/* Optional dark overlay on top of the background */}
+              <div className="absolute inset-0 bg-black opacity-70"></div>
+              {/* Popup content */}
+              <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
+                <p className="text-center text-white text-2xl px-4">
+                  {renderRoomErrorText()}
+                </p>
+                <Button
+                  variant="red"
+                  onClick={() => {
+                    navigate("/main-menu");
+                  }}
+                >
+                  {translate("close")}
+                </Button>
+              </div>
+            </Background>
+          </div>
         )}
-
-    </div>
+      </div>
     </Background>
   );
 };

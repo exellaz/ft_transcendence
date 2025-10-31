@@ -52,11 +52,11 @@ const SinglesRoomView: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   // prevent player from reloading the page
-  React.useEffect (() => {
+  React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
-        sessionStorage.removeItem("reloading");
-        navigate("/main-menu");
-        }
+      sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
+    }
   }, []);
 
   //function to toggle private and public room
@@ -139,7 +139,7 @@ const SinglesRoomView: React.FC = () => {
   React.useEffect(() => {
     const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
     if (isOnline) {
-        setCanConnect(true);
+      setCanConnect(true);
     }
   }, []);
 
@@ -168,21 +168,22 @@ const SinglesRoomView: React.FC = () => {
     role,
     countdown,
     roomError,
-  } = useRoomWebSocket({
-    roomId: roomInfo?.id ?? -1,
-    roomName: roomInfo?.name ?? "",
-    leaderId: roomInfo?.leaderId ?? -1,
-    player: {
-      id: userInfo?.id ?? -1,
-      name: userInfo?.username ?? "",
-      sprite: sprite,
+  } = useRoomWebSocket(
+    {
+      roomId: roomInfo?.id ?? -1,
+      roomName: roomInfo?.name ?? "",
+      leaderId: roomInfo?.leaderId ?? -1,
+      player: {
+        id: userInfo?.id ?? -1,
+        name: userInfo?.username ?? "",
+        sprite: sprite,
+      },
+      setRoomInfo,
     },
-    setRoomInfo,
-  },
-  { autoConnect: canConnect }
+    { autoConnect: canConnect },
   );
 
-// -------------------------------- Effect --------------------------------
+  // -------------------------------- Effect --------------------------------
   //navigate to game view if game started
   React.useEffect(() => {
     //when count down finish delay 1 sec to start game
@@ -202,53 +203,53 @@ const SinglesRoomView: React.FC = () => {
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-	type RemotePlayer = {
-		clientId?: number;
-		id?: number;
-		username?: string;
-		playerName?: string;
-		spriteUrl: string;
-		avatarUrl?: string;
-		role?: string;
-		team?: "left" | "right" | "spectator";
-		leader?: boolean;
-		ready?: boolean;
-		online?: boolean;
-	};
-	const leftTeam = Array.isArray(leftTeamHtml)
-		? (leftTeamHtml as unknown as RemotePlayer[])
-		: [];
-	console.log("leftTeam:", leftTeam); //// debug
-	const rightTeam = Array.isArray(rightTeamHtml)
-		? (rightTeamHtml as unknown as RemotePlayer[])
-		: [];
-	console.log("rightTeam:", rightTeam); //// debug
-	const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
-		leader: !!p.leader,
-		id: p.id || -1,
-		username: p.username || p.playerName || "Unknown",
-		spriteUrl: p.spriteUrl || p.avatarUrl || "../../assets/green-ghost.png",
-		team: p.team === "left" ? "left" : p.team === "right" ? "right" : "right",
-		ready: !!p.ready,
-	});
+    type RemotePlayer = {
+      clientId?: number;
+      id?: number;
+      username?: string;
+      playerName?: string;
+      spriteUrl: string;
+      avatarUrl?: string;
+      role?: string;
+      team?: "left" | "right" | "spectator";
+      leader?: boolean;
+      ready?: boolean;
+      online?: boolean;
+    };
+    const leftTeam = Array.isArray(leftTeamHtml)
+      ? (leftTeamHtml as unknown as RemotePlayer[])
+      : [];
+    console.log("leftTeam:", leftTeam); //// debug
+    const rightTeam = Array.isArray(rightTeamHtml)
+      ? (rightTeamHtml as unknown as RemotePlayer[])
+      : [];
+    console.log("rightTeam:", rightTeam); //// debug
+    const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
+      leader: !!p.leader,
+      id: p.id || -1,
+      username: p.username || p.playerName || "Unknown",
+      spriteUrl: p.spriteUrl || p.avatarUrl || "../../assets/green-ghost.png",
+      team: p.team === "left" ? "left" : p.team === "right" ? "right" : "right",
+      ready: !!p.ready,
+    });
 
-	setPlayers([...leftTeam.map(mapToWaiting), ...rightTeam.map(mapToWaiting)]);
+    setPlayers([...leftTeam.map(mapToWaiting), ...rightTeam.map(mapToWaiting)]);
   }, [leftTeamHtml, rightTeamHtml]);
 
-// ---------------------------------- helper functions ----------------------------------
+  // ---------------------------------- helper functions ----------------------------------
   function renderRoomErrorText(): string | null {
-	if (!roomError) return null;
+    if (!roomError) return null;
 
-	if (roomError === "Room is full") {
-		return translate("room_is_full");
-	} else if (roomError === "offline_error") {
-		return translate("offline_error");
-	} else {
-		return roomError;
-	}
+    if (roomError === "Room is full") {
+      return translate("room_is_full");
+    } else if (roomError === "offline_error") {
+      return translate("offline_error");
+    } else {
+      return roomError;
+    }
   }
 
-//-------------------------------------- Render -------------------------------------
+  //-------------------------------------- Render -------------------------------------
   return (
     <>
       {!roomId ? (

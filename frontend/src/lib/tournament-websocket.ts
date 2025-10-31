@@ -5,12 +5,18 @@ import type { WaitingTournamentPlayer } from "../types/apiInterfaces";
 // new: shared cache so sockets can be closed from other modules
 const tournamentWebsocket = new Map<string, WebSocket>();
 
-export function closeTournamentWebsocket(tournamentId: number, playerId: number) {
+export function closeTournamentWebsocket(
+  tournamentId: number,
+  playerId: number,
+) {
   const key = `${tournamentId}-${playerId}`;
   let ws = tournamentWebsocket.get(key);
 
   // debug: list stored keys
-  console.debug("[tournament-websocket] stored keys:", Array.from(tournamentWebsocket.keys()));
+  console.debug(
+    "[tournament-websocket] stored keys:",
+    Array.from(tournamentWebsocket.keys()),
+  );
 
   // fallback: scan entries to find matching playerId (handles key mismatches)
   if (!ws) {
@@ -18,7 +24,12 @@ export function closeTournamentWebsocket(tournamentId: number, playerId: number)
       const parts = k.split("-");
       const tId = Number(parts[0]);
       const pId = Number(parts.slice(1).join("-"));
-      if (!Number.isNaN(tId) && !Number.isNaN(pId) && tId === tournamentId && pId === playerId) {
+      if (
+        !Number.isNaN(tId) &&
+        !Number.isNaN(pId) &&
+        tId === tournamentId &&
+        pId === playerId
+      ) {
         ws = socket;
         break;
       }
@@ -29,9 +40,23 @@ export function closeTournamentWebsocket(tournamentId: number, playerId: number)
     }
   }
 
-  console.log("[tournament-websocket] close called for", tournamentId, playerId, "found ws:", !!ws);
+  console.log(
+    "[tournament-websocket] close called for",
+    tournamentId,
+    playerId,
+    "found ws:",
+    !!ws,
+  );
   if (ws) {
-    try { ws.close(1000, "Tournament closed"); } catch (e) { console.error("[tournament-websocket] error closing websocket for", key, e); }
+    try {
+      ws.close(1000, "Tournament closed");
+    } catch (e) {
+      console.error(
+        "[tournament-websocket] error closing websocket for",
+        key,
+        e,
+      );
+    }
     for (const [k, socket] of tournamentWebsocket.entries()) {
       if (socket === ws) tournamentWebsocket.delete(k);
     }
@@ -42,30 +67,33 @@ export function closeTournamentWebsocket(tournamentId: number, playerId: number)
 }
 
 export interface useTournamentWebSocketParams {
-    tournamentId: number;
-    player: {
-        id: number;
-        username: string;
-        avatarUrl: string;
-    };
+  tournamentId: number;
+  player: {
+    id: number;
+    username: string;
+    avatarUrl: string;
+  };
 }
 
-export function useTournamentWebSocket({ tournamentId, player }: useTournamentWebSocketParams) {
+export function useTournamentWebSocket({
+  tournamentId,
+  player,
+}: useTournamentWebSocketParams) {
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [ready, setReady] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const [lock, setLock] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [eliminated, setEliminated] = useState(false);
-  const [lastLobbyData, setLastLobbyData] = useState<any | null>(null);
+  const [lastLobbyData, setLastLobbyData] = useState<WaitingTournamentPlayer[] | null>(null);
   const [roomError, setRoomError] = useState<string | null>(null);
   const [matchAssigned, setMatchAssigned] = useState<{
-    roomId: number,
-    players: [],
-    stage: string,
+    roomId: number;
+    players: WaitingTournamentPlayer[];
+    stage: string;
   } | null>(null);
-//  console.log("Tournament ID in useTournamentWebSocket:", tournamentId); ////debug
-//  console.log("Player info in useTournamentWebSocket:", player); ////debug
+  //  console.log("Tournament ID in useTournamentWebSocket:", tournamentId); ////debug
+  //  console.log("Player info in useTournamentWebSocket:", player); ////debug
 
   useEffect(() => {
     // Listen for online/offline events
@@ -76,7 +104,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       console.warn("[room-websocket] navigator offline, closing ws");
       setRoomError("offline_error");
       try {
-      	wsRef.current?.close(1000, "offline");
+        wsRef.current?.close(1000, "offline");
       } catch {}
     }
 
@@ -110,33 +138,38 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
           if (typeof snap.countdown === "number") setCountdown(snap.countdown);
         }
       }
-    } catch (err) { /* ignore parse errors */ }
+    } catch (err) {
+      console.error("[tournament websocket] failed to hydrate snapshot:", err);
+    }
 
     //get JWT
     const userJWT = localStorage.getItem("authToken");
     if (!userJWT) {
-        console.warn("No JWT found, cannot connect to tournament WebSocket");
-        return;
+      console.warn("No JWT found, cannot connect to tournament WebSocket");
+      return;
     }
     console.log("Tournament ws connecting with JWT:", userJWT); ////debug
 
     const key = `${tournamentId}-${player.id}`;
     let ws = tournamentWebsocket.get(key);
     if (!ws || ws.readyState === WebSocket.CLOSED) {
-        ws = new WebSocket(
-            `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}`, [userJWT],
-        );
-        tournamentWebsocket.set(key, ws);
+      ws = new WebSocket(
+        `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}`,
+        [userJWT],
+      );
+      tournamentWebsocket.set(key, ws);
     }
     wsRef.current = ws;
 
     ws.addEventListener("open", () => {
-        console.log("Tournament WS connected", tournamentId, player.id);
+      console.log("Tournament WS connected", tournamentId, player.id);
+      try {
+        ws.send(JSON.stringify({ type: "requestLobby" }));
+        //persist current tournament id so UI page can close ;ater
         try {
-            ws.send(JSON.stringify({ type: "requestLobby" }));
-            //persist current tournament id so UI page can close ;ater
-            try { sessionStorage.setItem("tournamentId", String(tournamentId));} catch {}
+          sessionStorage.setItem("tournamentId", String(tournamentId));
         } catch {}
+      } catch {}
     });
 
     ws.addEventListener("message", (event) => {
@@ -179,7 +212,7 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       //countdown timer
       if (data.type === "countdown") {
         if (typeof data.remaining === "number") {
-            setCountdown(data.remaining);
+          setCountdown(data.remaining);
         }
       }
 
@@ -189,39 +222,48 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
       }
 
       //get player team info
-	  if (data.type === "getPlayerTeam") {
-		//console.log("Received getPlayerTeam message:", data.roomId); ////debug
-		sessionStorage.setItem("playerSide", data.team === "left" ? "left" : "right");
-		sessionStorage.setItem("RoomId", data.roomId);
-		sessionStorage.setItem("RoomName", data.roomName);
-	  }
+      if (data.type === "getPlayerTeam") {
+        //console.log("Received getPlayerTeam message:", data.roomId); ////debug
+        sessionStorage.setItem(
+          "playerSide",
+          data.team === "left" ? "left" : "right",
+        );
+        sessionStorage.setItem("RoomId", data.roomId);
+        sessionStorage.setItem("RoomName", data.roomName);
+      }
 
       //get player pair in match
       if (data.type === "matchAssigned") {
         //console.log("======================== Match assigned data:", data); ////debug
         setMatchAssigned({
-            roomId: data.roomId,
-            players: data.players,
-            stage: data.stage,
+          roomId: data.roomId,
+          players: data.players,
+          stage: data.stage,
         });
       }
     });
 
     ws.addEventListener("close", (ev) => {
-        console.log("Tournament WS disconnected", { code: (ev as CloseEvent).code, reason: (ev as CloseEvent).reason });
-        setRoomError("offline_error");
-        if (tournamentWebsocket.get(key) === ws) tournamentWebsocket.delete(key);
-        wsRef.current = null;
-        // remove persisted id only if this is the same ws we created
-        try {
-            const persisted = Number(sessionStorage.getItem("tournamentId") ?? -1);
-            if (persisted === tournamentId) sessionStorage.removeItem("tournamentId");
-        } catch {}
+      console.log("Tournament WS disconnected", {
+        code: (ev as CloseEvent).code,
+        reason: (ev as CloseEvent).reason,
+      });
+      setRoomError("offline_error");
+      if (tournamentWebsocket.get(key) === ws) tournamentWebsocket.delete(key);
+      wsRef.current = null;
+      // remove persisted id only if this is the same ws we created
+      try {
+        const persisted = Number(sessionStorage.getItem("tournamentId") ?? -1);
+        if (persisted === tournamentId)
+          sessionStorage.removeItem("tournamentId");
+      } catch {}
     });
 
     ws.addEventListener("error", (e) => {
       console.error("Tournament WS error", e);
-      try { ws.close(1000, "Tournament error"); } catch {}
+      try {
+        ws.close(1000, "Tournament error");
+      } catch {}
     });
 
     return () => {
@@ -232,28 +274,27 @@ export function useTournamentWebSocket({ tournamentId, player }: useTournamentWe
 
   function toggleReady() {
     if (wsRef.current?.readyState !== WebSocket.OPEN) {
-        setRoomError("offline_error");
-        return;
+      setRoomError("offline_error");
+      return;
     }
     setReady((prev) => {
-        const newReady = !prev;
-        wsRef.current?.send(JSON.stringify({ type: "ready", ready: newReady }));
-        return newReady;
+      const newReady = !prev;
+      wsRef.current?.send(JSON.stringify({ type: "ready", ready: newReady }));
+      return newReady;
     });
   }
 
   function refreshLobby() {
     const ws = wsRef.current;
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "requestLobby" }));
+      ws.send(JSON.stringify({ type: "requestLobby" }));
     }
   }
 
   function onleave() {
     try {
-        closeTournamentWebsocket(tournamentId, player.id);
-    }
-    catch {}
+      closeTournamentWebsocket(tournamentId, player.id);
+    } catch {}
     sessionStorage.removeItem("tournamentId");
   }
 

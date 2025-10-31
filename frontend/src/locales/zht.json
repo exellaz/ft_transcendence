@@ -25,7 +25,7 @@
     "join_doubles_game": "加入雙人遊戲？",
     "room_not_found": "房間未找到",
     "room_is_full": "房間已滿",
-	"offline_error": "你處於離線狀態。請檢查你的連接。",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉"
   },
   "DoublesRoomView": {
@@ -38,7 +38,7 @@
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
-	"offline_error": "你處於離線狀態。請檢查你的連接。",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉",
     "private": "私人",
     "public": "公開",
@@ -51,8 +51,8 @@
     "start": "開始"
   },
   "GameView": {
-	"offline_error": "你處於離線狀態。請檢查你的連接。",
-	"close": "關閉"
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
+    "close": "關閉"
   },
   "LoginView": {
     "username_or_email_required": "必須輸入用戶名或電子郵件",
@@ -134,7 +134,7 @@
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
     "unknown_error": "未知錯誤",
-	"offline_error": "你處於離線狀態。請檢查你的連接。",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉",
     "private": "私人",
     "public": "公開",
@@ -150,7 +150,7 @@
     "quit": "退出",
     "quit_confirmation": "你確定要退出錦標賽嗎？",
     "room_is_full": "房間已滿",
-	"offline_error": "你處於離線狀態。請檢查你的連接。",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉"
   },
   "BasicInfoPopup": {

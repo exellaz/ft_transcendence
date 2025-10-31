@@ -1,12 +1,8 @@
-import {
-  FastifyInstance,
-  FastifyRequest,
-  FastifyReply,
-} from "fastify";
+import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { generateRoomId } from "../room/room";
 import { Prisma, TournamentPlayer, TournamentStatus } from "@prisma/client";
 import { ok } from "src/utils/response";
-import { TournamentPlayerWs, TournamentLobby } from "src/types/interface";
+import { TournamentLobby } from "src/types/interface";
 import {
   getUserTournamentHistorySchema,
   getUserTournamentStatsSchema,
@@ -14,81 +10,94 @@ import {
 
 export const tournaments = new Map<number, TournamentLobby>();
 
-
 function generateTournamentId(): number {
   return parseInt("111" + generateRoomId());
 }
 
 export default async function tournamentRoutes(app: FastifyInstance) {
   // POST /create-tournament - create a new tournament
-  app.post("/create-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
-    const { name } = req.body as { name: string };
+  app.post(
+    "/create-tournament",
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { name } = req.body as { name: string };
 
-    if (typeof name !== "string" || name.trim() === "") {
-      return reply.status(400).send({ error: "Invalid tournament name" });
-    }
+      if (typeof name !== "string" || name.trim() === "") {
+        return reply.status(400).send({ error: "Invalid tournament name" });
+      }
 
-    const tournamentId = generateTournamentId();
+      const tournamentId = generateTournamentId();
 
-    const tournament: TournamentLobby = {
-      id: tournamentId,
-      name,
-      players: [],
-      lock: false,
-      stage: "QF",
-      countdownTimer: undefined,
-      countdownRemaining: undefined,
-      maxPlayer: 8, //? change max players for testing
-    };
+      const tournament: TournamentLobby = {
+        id: tournamentId,
+        name,
+        players: [],
+        lock: false,
+        stage: "QF",
+        countdownTimer: undefined,
+        countdownRemaining: undefined,
+        maxPlayer: 8, //? change max players for testing
+      };
 
-    tournaments.set(tournamentId, tournament);
+      tournaments.set(tournamentId, tournament);
 
-    console.log(`Tournament created: ${name} (${tournamentId}): `, tournament); ////debug
+      console.log(
+        `Tournament created: ${name} (${tournamentId}): `,
+        tournament,
+      ); ////debug
 
-    const res = {
-      id: tournamentId,
-      name,
-      players: tournament.players,
-      lock: tournament.lock,
-      stage: tournament.stage,
-      maxPlayer: tournament.maxPlayer,
-    };
+      const res = {
+        id: tournamentId,
+        name,
+        players: tournament.players,
+        lock: tournament.lock,
+        stage: tournament.stage,
+        maxPlayer: tournament.maxPlayer,
+      };
 
-    return res;
-  });
+      return res;
+    },
+  );
 
   // POST /create-next-tournament - create a new tournament for next stage
-  app.post("/create-next-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
-    const { stage, parentId, tournamentDb } = req.body as { stage: string, parentId?: number, tournamentDb?: { id: number; status: string; createdAt: Date } | null; };
+  app.post(
+    "/create-next-tournament",
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { stage, parentId, tournamentDb } = req.body as {
+        stage: string;
+        parentId?: number;
+        tournamentDb?: { id: number; status: string; createdAt: Date } | null;
+      };
 
-    if (typeof stage !== "string" || stage.trim() === "") {
-      return reply.status(400).send({ error: "Invalid tournament stage" });
-    }
+      if (typeof stage !== "string" || stage.trim() === "") {
+        return reply.status(400).send({ error: "Invalid tournament stage" });
+      }
 
-    //if parent id provide, return existing next tournament if already created
-    if (typeof parentId === "number") {
+      //if parent id provide, return existing next tournament if already created
+      if (typeof parentId === "number") {
         const parent = tournaments.get(parentId);
         if (parent && parent.nextTournamentId) {
-            const existing = tournaments.get(parent.nextTournamentId);
-            if (existing) {
-				const res = {
-					id: existing.id,
-					name: existing.name,
-					players: existing.players,
-					lock: existing.lock,
-					stage: existing.stage,
-					maxPlayer: existing.maxPlayer,
-					tournamentDb: tournamentDb,
-				}
-                console.log(`[ create next tournament ] Reusing existing tournament: ${existing.id} for parent ${parentId}`); ////debug
-                return res;
-            }
+          const existing = tournaments.get(parent.nextTournamentId);
+          if (existing) {
+            const res = {
+              id: existing.id,
+              name: existing.name,
+              players: existing.players,
+              lock: existing.lock,
+              stage: existing.stage,
+              maxPlayer: existing.maxPlayer,
+              tournamentDb: tournamentDb,
+            };
+            console.log(
+              `[ create next tournament ] Reusing existing tournament: ${existing.id} for parent ${parentId}`,
+            ); ////debug
+            return res;
+          }
         }
-    }
+      }
 
-    const tournamentId = generateTournamentId();
+      const tournamentId = generateTournamentId();
 
-    const tournament: TournamentLobby = {
+      const tournament: TournamentLobby = {
         id: tournamentId,
         name: `Tournament ${tournamentId}`,
         players: [],
@@ -97,53 +106,62 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         countdownTimer: undefined,
         countdownRemaining: undefined,
         maxPlayer: stage === "SF" ? 4 : 2,
-		tournamentDb: tournamentDb || null,
-    };
+        tournamentDb: tournamentDb || null,
+      };
 
-    tournaments.set(tournamentId, tournament);
+      tournaments.set(tournamentId, tournament);
 
-    //link back to parent tournament if provided
-    if (typeof parentId === "number") {
+      //link back to parent tournament if provided
+      if (typeof parentId === "number") {
         const parent = tournaments.get(parentId);
         if (parent) {
-            parent.nextTournamentId = tournamentId;
-            tournament.parentTournamentId = parentId;
+          parent.nextTournamentId = tournamentId;
+          tournament.parentTournamentId = parentId;
         }
-    }
+      }
 
-    console.log(`Next tournament created: (${tournamentId}): `, tournament)
-    const res = {
+      console.log(`Next tournament created: (${tournamentId}): `, tournament);
+      const res = {
         id: tournamentId,
         name: tournament.name,
         players: tournament.players,
         lock: tournament.lock,
         stage: tournament.stage,
         maxPlayer: tournament.maxPlayer,
-    };
+      };
 
-    return res;
-  });
+      return res;
+    },
+  );
 
-  app.post("/delete-tournament", async (req: FastifyRequest, reply: FastifyReply) => {
-    const { id } = req.body as { id: number };
-    if (typeof id !== "number") {
+  app.post(
+    "/delete-tournament",
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const { id } = req.body as { id: number };
+      if (typeof id !== "number") {
         return reply.status(400).send({ error: "Invalid tournament id" });
-    }
+      }
 
-    const tournament = tournaments.get(id);
-    if (!tournament) {
-      return reply.status(404).send({ error: "Tournament not found" });
-    }
+      const tournament = tournaments.get(id);
+      if (!tournament) {
+        return reply.status(404).send({ error: "Tournament not found" });
+      }
 
-    try {
+      try {
         tournaments.delete(id);
-        console.log(`[ remove inactive tournament lobby ]Tournament ${id} deleted`);
+        console.log(
+          `[ remove inactive tournament lobby ]Tournament ${id} deleted`,
+        );
         return { success: true };
-    } catch (error) {
-        console.error(`[ remove inactive tournament lobby ]Error deleting tournament ${id}:`, error);
+      } catch (error) {
+        console.error(
+          `[ remove inactive tournament lobby ]Error deleting tournament ${id}:`,
+          error,
+        );
         return reply.status(500).send({ error: "Failed to delete tournament" });
-    }
-  });
+      }
+    },
+  );
 
   // GET /list-tournaments - list all tournaments
   app.get("/list-tournaments", async () => {
@@ -159,25 +177,28 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   });
 
   // GET /tournament/:tournamentId - get a tournament details and join
-  app.get("/tournament/:tournamentId", async (
-    req: FastifyRequest<{ Params: { tournamentId: string } }>,
-    reply: FastifyReply
-  ) => {
-    const tournamentId = parseInt(req.params.tournamentId);
+  app.get(
+    "/tournament/:tournamentId",
+    async (
+      req: FastifyRequest<{ Params: { tournamentId: string } }>,
+      reply: FastifyReply,
+    ) => {
+      const tournamentId = parseInt(req.params.tournamentId);
 
-    const tournament = tournaments.get(tournamentId);
-    if (!tournament) {
-      return reply.status(404).send({ error: "Tournament not found" });
-    }
+      const tournament = tournaments.get(tournamentId);
+      if (!tournament) {
+        return reply.status(404).send({ error: "Tournament not found" });
+      }
 
-    return {
-      id: tournament.id,
-      name: tournament.name,
-      players: tournament.players.length,
-      maxPlayer: tournament.maxPlayer,
-      stage: tournament.stage,
-    };
-  });
+      return {
+        id: tournament.id,
+        name: tournament.name,
+        players: tournament.players.length,
+        maxPlayer: tournament.maxPlayer,
+        stage: tournament.stage,
+      };
+    },
+  );
 
   // GET /users/:id/tournament-history  - tournament history + matches
   app.get(

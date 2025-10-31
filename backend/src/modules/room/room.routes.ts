@@ -1,10 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import {
-  rooms,
-  createRoom,
-  generateRoomId,
-  DEFAULT_SETTING,
-} from "./room.ts";
+import { rooms, createRoom, generateRoomId, DEFAULT_SETTING } from "./room.ts";
 
 interface RoomParams {
   roomId: number;
@@ -29,7 +24,7 @@ export default async function roomRoutes(app: FastifyInstance) {
 
   // ----------------------- CREATE ROOM -----------------------
   app.post("/create-room", async (req, reply) => {
-     console.log("request /Create-room:", req.body); ////debug
+    console.log("request /Create-room:", req.body); ////debug
 
     //assign body parameters to variables
     const { name, teamSize, leaderId, isPrivate } = req.body as {

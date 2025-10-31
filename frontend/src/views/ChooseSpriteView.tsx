@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 import {
   createTournamentLobby,
   fetchTournaments,
@@ -13,7 +13,7 @@ import ChooseSpriteContents from "../components/ChooseSpriteContents";
 import { updateUserById } from "@/lib/usersApiClient";
 import type { TournamentLobby } from "../../../backend/src/types/interface";
 
-async function handleJoinTournament(user: User | null, navigate: any) {
+async function handleJoinTournament(user: User | null, navigate: NavigateFunction) {
   if (!user) return;
 
   // 1. Fetch existing tournaments
@@ -22,15 +22,13 @@ async function handleJoinTournament(user: User | null, navigate: any) {
   // 2. Find one that isn't full (max 8) and hasn't started
   let tournament = tournaments.find(
     (t: TournamentLobby) =>
-		!t.lock &&
-		t.players.length < 8 &&
-		t.maxPlayer === 8,
-	);
-    console.log("Found tournament:", tournament);
+      !t.lock && t.players.length < 8 && t.maxPlayer === 8,
+  );
+  console.log("Found tournament:", tournament);
 
   // 3. If no suitable tournament, create one
   if (!tournament) {
-    tournament = await createTournamentLobby("Tournament "+ Date.now());
+    tournament = await createTournamentLobby("Tournament " + Date.now());
     console.log("Created new tournament:", tournament);
     if (!tournament) {
       alert("Failed to create tournament");
@@ -75,7 +73,7 @@ const ChooseSpriteView: React.FC = () => {
 
             //update the user avatar in database
             updateUserById(player).catch((err) => {
-                console.error("Failed to update user avatar:", err);
+              console.error("Failed to update user avatar:", err);
             });
             console.log("Chosen sprite:", selectedSprite, "for user:", player);
 

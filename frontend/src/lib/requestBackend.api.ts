@@ -1,7 +1,6 @@
 import type { Room } from "../../../backend/src/types/interface";
 
-const API_URL = ((import.meta as any).env?.VITE_API_URL as string);
-//const API_URL = `/api`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * @brief generate a random player ID and store it in session storage if not already present
@@ -73,7 +72,7 @@ export async function createRoomAPI(
   roomName: string,
   options?: { leaderId?: number; isPrivate?: boolean },
 ) {
-    console.log("Creating room with:", { teamSize, roomName, options }); ////debug
+  console.log("Creating room with:", { teamSize, roomName, options }); ////debug
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",
@@ -100,7 +99,9 @@ export async function createRoomAPI(
  * @return "left" or "right" side to client in Promise format
  * @note it fetches the room details from the backend to make the decision
  */
-export async function determineSide(roomId: number): Promise<"left" | "right" | "unknown"> {
+export async function determineSide(
+  roomId: number,
+): Promise<"left" | "right" | "unknown"> {
   const rooms = await fetchRooms();
   const room = rooms.find((r: Room) => r.id === roomId);
   if (!room) return "unknown";
@@ -168,25 +169,29 @@ export async function createTournamentLobby(name: string) {
   }
 }
 
-export async function updateTournamentLobby(tournamentId: number, maxPlayer: number, stage: string) {
-    try {
-        const res = await fetch(`${API_URL}/update-tournament/${tournamentId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ maxPlayer, stage }),
-        });
-        if (!res.ok) throw new Error("Failed to update tournament");
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to update tournament:", error);
-        return null;
-    }
+export async function updateTournamentLobby(
+  tournamentId: number,
+  maxPlayer: number,
+  stage: string,
+) {
+  try {
+    const res = await fetch(`${API_URL}/update-tournament/${tournamentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ maxPlayer, stage }),
+    });
+    if (!res.ok) throw new Error("Failed to update tournament");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to update tournament:", error);
+    return null;
+  }
 }
 
 /**
  * @brief fetch the list of available tournaments from the backend
  * @return list of tournaments to client in JSON format
-*/
+ */
 export async function fetchTournaments() {
   try {
     const res = await fetch(`${API_URL}/list-tournaments`);
@@ -199,42 +204,46 @@ export async function fetchTournaments() {
 }
 
 export async function getTournamentById(tournamentId: number) {
-    try {
-        const res = await fetch(`${API_URL}/tournament/${tournamentId}`);
-        if (!res.ok) throw new Error("Failed to fetch tournament");
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to fetch tournament:", error);
-        return null;
-    }
+  try {
+    const res = await fetch(`${API_URL}/tournament/${tournamentId}`);
+    if (!res.ok) throw new Error("Failed to fetch tournament");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch tournament:", error);
+    return null;
+  }
 }
 
-export async function createNextTournament(stage: string, parentId: number, tournamentDb: { id: number; status: string; createdAt: Date } | null) {
-    try {
-        const res = await fetch(`${API_URL}/create-next-tournament`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ stage, parentId, tournamentDb }),
-        });
-        if (!res.ok) throw new Error("Failed to create next tournament");
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to create next tournament:", error);
-        return null;
-    }
+export async function createNextTournament(
+  stage: string,
+  parentId: number,
+  tournamentDb: { id: number; status: string; createdAt: Date } | null,
+) {
+  try {
+    const res = await fetch(`${API_URL}/create-next-tournament`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stage, parentId, tournamentDb }),
+    });
+    if (!res.ok) throw new Error("Failed to create next tournament");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to create next tournament:", error);
+    return null;
+  }
 }
 
 export async function deleteTournament(tournamentId: number) {
-    try {
-        const res = await fetch(`${API_URL}/delete-tournament`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: tournamentId }),
-        });
-        if (!res.ok) throw new Error("Failed to delete tournament");
-        return await res.json();
-    } catch (error) {
-        console.error("Failed to delete tournament:", error);
-        return null;
-    }
+  try {
+    const res = await fetch(`${API_URL}/delete-tournament`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: tournamentId }),
+    });
+    if (!res.ok) throw new Error("Failed to delete tournament");
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to delete tournament:", error);
+    return null;
+  }
 }

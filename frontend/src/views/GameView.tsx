@@ -12,28 +12,33 @@ import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
 import type { GameObject } from "@shared/objects/GameObject";
-import { SKIN_PATHS } from "@shared/game/Skins";
 import type { User } from "@/types/usersApi";
-import { createNextTournament, deleteTournament, getTournamentById, updateTournamentLobby } from "@/lib/requestBackend.api";
+import {
+  createNextTournament,
+  getTournamentById,
+} from "@/lib/requestBackend.api";
 import { closeMatchWebsocket } from "../lib/match-websocket";
 import { closeTournamentWebsocket } from "@/lib/tournament-websocket";
 
 import type { NavigateFunction } from "react-router-dom";
+import type { TournamentLobby, TournamentDb } from "../../../backend/src/types/interface";
 
-function nextRoundFromTournament(tournament: any) {
+function nextRoundFromTournament(tournament: TournamentLobby) {
   if (!tournament) return null;
-  const max = typeof tournament.maxPlayer === "number" ? tournament.maxPlayer : undefined;
+  const max =
+    typeof tournament.maxPlayer === "number" ? tournament.maxPlayer : undefined;
   if (max === 8) return { code: "SF", size: 4 };
   if (max === 4) return { code: "F", size: 2 };
   const stage = (tournament.stage || "").toString().toLowerCase();
-  if (stage.includes("quarter") || stage === "qf") return { code: "SF", size: 4 };
+  if (stage.includes("quarter") || stage === "qf")
+    return { code: "SF", size: 4 };
   if (stage.includes("semi") || stage === "sf") return { code: "F", size: 2 };
   return null;
 }
 
 export async function goToNextRoundExternal(opts: {
   lastTournamentId: number;
-  tournamentDb: any | null;
+  tournamentDb: TournamentDb | null;
   clientId: number;
   roomId: number;
   navigate: NavigateFunction;
@@ -56,6 +61,7 @@ export async function goToNextRoundExternal(opts: {
     try {
       parentTournament = await getTournamentById(lastTournamentId);
     } catch (err) {
+      console.error("failed to get parent tournament:", err);
       parentTournament = null;
     }
     const next = nextRoundFromTournament(parentTournament);
@@ -64,13 +70,23 @@ export async function goToNextRoundExternal(opts: {
       return;
     }
 
-    const res = await createNextTournament(next.code, lastTournamentId, tournamentDb);
+    const res = await createNextTournament(
+      next.code,
+      lastTournamentId,
+      tournamentDb,
+    );
     if (res && res.id) {
-      const currentTournamentId = Number(sessionStorage.getItem("tournamentId") ?? lastTournamentId ?? -1);
+      const currentTournamentId = Number(
+        sessionStorage.getItem("tournamentId") ?? lastTournamentId ?? -1,
+      );
       if (currentTournamentId > 0) {
-        try { closeTournamentWebsocket(currentTournamentId, clientId); } catch {}
+        try {
+          closeTournamentWebsocket(currentTournamentId, clientId);
+        } catch {}
       }
-      try { closeMatchWebsocket(roomId, clientId); } catch {}
+      try {
+        closeMatchWebsocket(roomId, clientId);
+      } catch {}
       navigate(`/tournament/${res.id}`, { state: { tournament: res } });
       return;
     }
@@ -78,7 +94,9 @@ export async function goToNextRoundExternal(opts: {
     // fallback to parent.nextTournamentId if present
     const parent = await getTournamentById(lastTournamentId);
     if (parent && parent.nextTournamentId) {
-      navigate(`/tournament/${parent.nextTournamentId}`, { state: { tournament: parent } });
+      navigate(`/tournament/${parent.nextTournamentId}`, {
+        state: { tournament: parent },
+      });
       return;
     }
 
@@ -88,7 +106,9 @@ export async function goToNextRoundExternal(opts: {
     try {
       const parent = await getTournamentById(lastTournamentId);
       if (parent && parent.nextTournamentId) {
-        navigate(`/tournament/${parent.nextTournamentId}`, { state: { tournament: parent } });
+        navigate(`/tournament/${parent.nextTournamentId}`, {
+          state: { tournament: parent },
+        });
         return;
       }
     } catch {}
@@ -116,7 +136,6 @@ const GameView: React.FC<GameViewProps> = () => {
   const [delayForGameOver, setDelayForGameOver] = useState(false);
   const [roomError, setRoomError] = useState(false);
   const [disconnectMessage, setDisconnectMessage] = useState("");
-  const [isAdvancing, setIsAdvancing] = useState(false);
   const [hasNextStage, setHasNextStage] = useState<boolean | null>(null);
   useBlockLeave();
   const { t } = useTranslation();
@@ -129,179 +148,202 @@ const GameView: React.FC<GameViewProps> = () => {
   const navState = (location.state ?? {}) as {
     roomId?: number;
     player?: {
-        id: number;
-        name: string;
-        spriteUrl: string;
+      id: number;
+      name: string;
+      spriteUrl: string;
     };
-  }
+  };
 
   //check for reload
-  React.useEffect (() => {
+  React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
-        sessionStorage.removeItem("reloading");
-        navigate("/main-menu");
-        }
+      sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
+    }
   }, []);
 
   if (mode === "remote") {
-
     // Fetch user info when the component mounts
     React.useEffect(() => {
       console.log("mode used: ", mode);
 
       if (!user) return; // Ensure `user` is available
 
-    (async () => {
+      (async () => {
         try {
-            const response = await getUserById({ id: Number(user.id) }); // Call the API
-        if (response.success && response.data) {
-          setUserInfo(response.data); // Store the user info
-        } else {
-          console.log("Failed to fetch user info"); // Handle API error
+          const response = await getUserById({ id: Number(user.id) }); // Call the API
+          if (response.success && response.data) {
+            setUserInfo(response.data); // Store the user info
+          } else {
+            console.log("Failed to fetch user info"); // Handle API error
+          }
+        } catch (err) {
+          console.error("Error fetching user info:", err);
+          console.error("An error occurred while fetching user info"); // Handle fetch error
         }
-      } catch (err) {
-        console.error("Error fetching user info:", err);
-        console.error("An error occurred while fetching user info"); // Handle fetch error
-      }
-    })();
-  }, [user]);
+      })();
+    }, [user]);
 
-  React.useEffect(() => {
-    function handleOnline() {
+    React.useEffect(() => {
+      function handleOnline() {
         setDelayForGameOver(false);
         console.log("Player is back online");
-    }
+      }
 
-    function handleOffline() {
+      function handleOffline() {
         setDelayForGameOver(true);
 
         setTimeout(() => {
-            if (!navigator.onLine) {
-                console.log("player offline, navigate to main menu");
-				setDisconnectMessage("offline_error");
-				setRoomError(true);
-            }
+          if (!navigator.onLine) {
+            console.log("player offline, navigate to main menu");
+            setDisconnectMessage("offline_error");
+            setRoomError(true);
+          }
         }, 5000); //wait 5 second to confirm player is still offline
-    }
-
-    if (typeof window !== "undefined") {
-      window.addEventListener("online", handleOnline);
-      window.addEventListener("offline", handleOffline);
-    }
-
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("online", handleOnline);
-        window.removeEventListener("offline", handleOffline);
       }
-    };
-  }, [navigate]);
 
-  // console.log("user loaded", user); ////debug
-  const roomId = Number(navState.roomId ?? sessionStorage.getItem("RoomId") ?? "1");
-  const roomName = sessionStorage.getItem("RoomName") || "Room 1";
-  const clientId = Number(navState.player?.id ?? userInfo?.id ?? -1);
-  const playerName = navState.player?.name ?? userInfo?.username ?? "";
-  const playerSprite = sessionStorage.getItem("playerSprite") || navState.player?.spriteUrl;
-  const initialRole = sessionStorage.getItem("playerSide") || "";
-  console.log("room id from session:", roomId); ////debug
-  console.log("room name from session:", roomName); ////debug
-  console.log("client id from session:", clientId); ////debug
-  console.log("player name from session:", playerName); ////debug
-  console.log("player sprite from session:", playerSprite); ////debug
-  console.log("initial role from session:", initialRole); ////debug
+      if (typeof window !== "undefined") {
+        window.addEventListener("online", handleOnline);
+        window.addEventListener("offline", handleOffline);
+      }
+
+      return () => {
+        if (typeof window !== "undefined") {
+          window.removeEventListener("online", handleOnline);
+          window.removeEventListener("offline", handleOffline);
+        }
+      };
+    }, [navigate]);
+
+    // console.log("user loaded", user); ////debug
+    const roomId = Number(
+      navState.roomId ?? sessionStorage.getItem("RoomId") ?? "1",
+    );
+    const roomName = sessionStorage.getItem("RoomName") || "Room 1";
+    const clientId = Number(navState.player?.id ?? userInfo?.id ?? -1);
+    const playerName = navState.player?.name ?? userInfo?.username ?? "";
+    const playerSprite =
+      sessionStorage.getItem("playerSprite") || navState.player?.spriteUrl;
+    const initialRole = sessionStorage.getItem("playerSide") || "";
+    console.log("room id from session:", roomId); ////debug
+    console.log("room name from session:", roomName); ////debug
+    console.log("client id from session:", clientId); ////debug
+    console.log("player name from session:", playerName); ////debug
+    console.log("player sprite from session:", playerSprite); ////debug
+    console.log("initial role from session:", initialRole); ////debug
 
     // -------------------------------- Websockets --------------------------------
 
-  const params = {
-    roomId,
-    roomName,
-    clientId,
-    initialRole,
-    callback: () => {},
-    canvasRef
-  };
-  // console.log("params", params); ////debug
-
-  // game websocket
-  const { gameOver, isWinner, lastTournamentId, tournamentDb, winnerRank, loserRank } = useGameWebSocket(params);
-//   console.log("socket has been create: ", socket); ////debug
-
-
-// -------------------------------- Effect --------------------------------
-  // determine if there is a next stage (used to change button text/action for final)
-  React.useEffect(() => {
-    if (!lastTournamentId) {
-      setHasNextStage(null);
-      return;
-    }
-    let mounted = true;
-    (async () => {
-      try {
-        const tournament = await getTournamentById(lastTournamentId || -1);
-        const next = nextRoundFromTournament(tournament);
-        if (mounted) setHasNextStage(!!next);
-      } catch (err) {
-        if (mounted) setHasNextStage(null);
-      }
-    })();
-    return () => {
-      mounted = false;
+    const params = {
+      roomId,
+      roomName,
+      clientId,
+      initialRole,
+      callback: () => {},
+      canvasRef,
     };
-  }, [lastTournamentId]);
+    // console.log("params", params); ////debug
 
-  // auto-navigate winners after a timeout (still possible, but user can click the button to jump early)
-  React.useEffect(() => {
-    if (!isWinner || !lastTournamentId) return;
-    const timer = setTimeout(() => {
-      //if rank 1 (go to results), else go to advance page
-      if (winnerRank === 1) {
-        navigate("/results", { state: { roomId, clientId, lastTournamentId, winnerRank } });
+    // game websocket
+    const {
+      gameOver,
+      isWinner,
+      lastTournamentId,
+      tournamentDb,
+      winnerRank,
+      loserRank,
+    } = useGameWebSocket(params);
+    //   console.log("socket has been create: ", socket); ////debug
+
+    // -------------------------------- Effect --------------------------------
+    // determine if there is a next stage (used to change button text/action for final)
+    React.useEffect(() => {
+      if (!lastTournamentId) {
+        setHasNextStage(null);
         return;
       }
-      navigate("/advance", { state: {
-                      playerSprite,
-                      lastTournamentId,
-                      tournamentDb,
-                      clientId,
-                      roomId,
-                  } });
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [isWinner, lastTournamentId, tournamentDb, clientId, roomId, playerSprite, winnerRank]); // navigate is safe to omit here (stable)
+      let mounted = true;
+      (async () => {
+        try {
+          const tournament = await getTournamentById(lastTournamentId || -1);
+          const next = nextRoundFromTournament(tournament);
+          if (mounted) setHasNextStage(!!next);
+        } catch (err) {
+          console.error("failed to get next round:", err);
+          if (mounted) setHasNextStage(null);
+        }
+      })();
+      return () => {
+        mounted = false;
+      };
+    }, [lastTournamentId]);
 
-  // navigate the player end game rank
-  React.useEffect(() => {
-    if (lastTournamentId === null) return;
-    if (gameOver && !isWinner) {
+    // auto-navigate winners after a timeout (still possible, but user can click the button to jump early)
+    React.useEffect(() => {
+      if (!isWinner || !lastTournamentId) return;
       const timer = setTimeout(() => {
-        console.log("loser back to lobby: ", lastTournamentId); ////debug
-        sessionStorage.removeItem("playerSide");
-        sessionStorage.removeItem("RoomId");
-        sessionStorage.removeItem("RoomLeaderId");
-        sessionStorage.removeItem("RoomName");
-        sessionStorage.removeItem("RoomType");
-        navigate("/results", { state: { roomId, clientId, lastTournamentId, loserRank } });
-      }, 1000); //wait 3 seconds before navigating away
+        //if rank 1 (go to results), else go to advance page
+        if (winnerRank === 1) {
+          navigate("/results", {
+            state: { roomId, clientId, lastTournamentId, winnerRank },
+          });
+          return;
+        }
+        navigate("/advance", {
+          state: {
+            playerSprite,
+            lastTournamentId,
+            tournamentDb,
+            clientId,
+            roomId,
+          },
+        });
+      }, 1000);
       return () => clearTimeout(timer);
+    }, [
+      isWinner,
+      lastTournamentId,
+      tournamentDb,
+      clientId,
+      roomId,
+      playerSprite,
+      winnerRank,
+    ]); // navigate is safe to omit here (stable)
+
+    // navigate the player end game rank
+    React.useEffect(() => {
+      if (lastTournamentId === null) return;
+      if (gameOver && !isWinner) {
+        const timer = setTimeout(() => {
+          console.log("loser back to lobby: ", lastTournamentId); ////debug
+          sessionStorage.removeItem("playerSide");
+          sessionStorage.removeItem("RoomId");
+          sessionStorage.removeItem("RoomLeaderId");
+          sessionStorage.removeItem("RoomName");
+          sessionStorage.removeItem("RoomType");
+          navigate("/results", {
+            state: { roomId, clientId, lastTournamentId, loserRank },
+          });
+        }, 1000); //wait 3 seconds before navigating away
+        return () => clearTimeout(timer);
+      }
+    }, [gameOver, isWinner]);
+
+    // -------------------------------- Helper Functions --------------------------------
+    function renderRoomErrorText(): string | null {
+      if (!disconnectMessage) return null;
+
+      if (disconnectMessage === "offline_error")
+        return translate("offline_error");
+
+      return null;
     }
-  }, [gameOver, isWinner]);
 
-// -------------------------------- Helper Functions --------------------------------
-  function renderRoomErrorText(): string | null {
-  if (!disconnectMessage) return null;
-
-  if (disconnectMessage === "offline_error")
-    return translate("offline_error");
-
-  return null;
-  }
-
-// -------------------------------- Render --------------------------------
-  return (
-    <Background variant="plain">
-      <div className="w-full h-full flex-col-center gap-10 px-25">
-        {/*<TournamentHeader>
+    // -------------------------------- Render --------------------------------
+    return (
+      <Background variant="plain">
+        <div className="w-full h-full flex-col-center gap-10 px-25">
+          {/*<TournamentHeader>
           {stage.charAt(0).toUpperCase() + stage.slice(1)} Match
         </TournamentHeader>*/}
           <canvas
@@ -311,20 +353,28 @@ const GameView: React.FC<GameViewProps> = () => {
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
 
-        {gameOver && !isWinner && !lastTournamentId && (
-          <div>
-            <Button
-              variant="bigYellow"
-              className="px-3 py-4 text-2xl"
-              onClick={() => {
-                console.log("loser back to lobby: ", lastTournamentId);
+          {gameOver && !isWinner && !lastTournamentId && (
+            <div>
+              <Button
+                variant="bigYellow"
+                className="px-3 py-4 text-2xl"
+                onClick={() => {
+                  console.log("loser back to lobby: ", lastTournamentId);
                   // close match socket (room) and tournament lobby socket (if present)
                   closeMatchWebsocket(roomId, clientId);
 
                   // read persisted tournament id (set by tournament-websocket hook)
-                  const tId = Number(sessionStorage.getItem("tournamentId") ?? lastTournamentId ?? -1);
+                  const tId = Number(
+                    sessionStorage.getItem("tournamentId") ??
+                      lastTournamentId ??
+                      -1,
+                  );
                   if (tId > 0) {
-                    try { closeTournamentWebsocket(tId, clientId); } catch (e) { console.warn("failed to close tournament ws", e); }
+                    try {
+                      closeTournamentWebsocket(tId, clientId);
+                    } catch (e) {
+                      console.warn("failed to close tournament ws", e);
+                    }
                   }
                   sessionStorage.removeItem("playerSide");
                   sessionStorage.removeItem("RoomId");
@@ -332,15 +382,15 @@ const GameView: React.FC<GameViewProps> = () => {
                   sessionStorage.removeItem("RoomName");
                   sessionStorage.removeItem("RoomType");
                   navigate("/main-menu");
-              }}
-            >
-              Back to Lobby
-            </Button>
-          </div>
-        )}
+                }}
+              >
+                Back to Lobby
+              </Button>
+            </div>
+          )}
 
-		{/* error popup */}
-		{roomError && (
+          {/* error popup */}
+          {roomError && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               {/* Background image using your Background component */}
               <Background variant="grass">
@@ -363,11 +413,10 @@ const GameView: React.FC<GameViewProps> = () => {
               </Background>
             </div>
           )}
-
-      </div>
-    </Background>
-  );
- } else if (mode === "local") {
+        </div>
+      </Background>
+    );
+  } else if (mode === "local") {
     const location = useLocation();
     const state = location.state;
 
@@ -507,6 +556,6 @@ const GameView: React.FC<GameViewProps> = () => {
       </Background>
     );
   }
-}
+};
 
 export default GameView;

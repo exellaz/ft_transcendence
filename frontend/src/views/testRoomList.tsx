@@ -47,25 +47,24 @@ const RoomList: React.FC = () => {
     }
   }
 
-
   useEffect(() => {
     loadRooms(true); // Initial load
     loadTournaments(true);
     const interval = setInterval(() => {
-        loadRooms();
-        loadTournaments();
+      loadRooms();
+      loadTournaments();
     }, 1000); // poll every 1s
     return () => clearInterval(interval);
   }, []);
 
   if (error) return <p className="text-red-400">{error}</p>;
 
-//  if (rooms.length === 0)
-//    return <p className="text-gray-400">No rooms available.</p>;
+  //  if (rooms.length === 0)
+  //    return <p className="text-gray-400">No rooms available.</p>;
 
-//  if (tournament.length === 0) {
-//    return <p className="text-gray-400">No tournaments available.</p>;
-//  }
+  //  if (tournament.length === 0) {
+  //    return <p className="text-gray-400">No tournaments available.</p>;
+  //  }
 
   return (
     <div className="p-6 w-full max-w-2xl mx-auto flex flex-col gap-4 text-white">
@@ -101,7 +100,7 @@ const RoomList: React.FC = () => {
           </div>
         </div>
       ))}
-        {tournament.map((tour) => (
+      {tournament.map((tour) => (
         <div
           key={tour.id}
           className="border border-gray-700 rounded-xl p-4 bg-gray-900/70 transition-all duration-300"
@@ -112,15 +111,22 @@ const RoomList: React.FC = () => {
                 {tour.name} ({tour.id})
               </h2>
               <p className="text-sm text-gray-400">
-                Players: {tour.players.length}/{tour.maxPlayer} | Stage: {tour.stage === "QF" ? "Quarter Finals" : tour.stage === "SF" ? "Semi Finals" : tour.stage === "F" ? "Finals" : "Unknown"}
+                Players: {tour.players.length}/{tour.maxPlayer} | Stage:{" "}
+                {tour.stage === "QF"
+                  ? "Quarter Finals"
+                  : tour.stage === "SF"
+                    ? "Semi Finals"
+                    : tour.stage === "F"
+                      ? "Finals"
+                      : "Unknown"}
               </p>
             </div>
             <div>
-                {tour.lock ? (
-                    <span className="text-green-400 font-semibold">● lock</span>
-                ) : (
-                    <span className="text-red-400 font-semibold">● unlock</span>
-                )}
+              {tour.lock ? (
+                <span className="text-green-400 font-semibold">● lock</span>
+              ) : (
+                <span className="text-red-400 font-semibold">● unlock</span>
+              )}
             </div>
           </div>
         </div>

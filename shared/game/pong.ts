@@ -385,7 +385,7 @@ export class PongGame {
         if (this.onScreenTitle.text === "-") {
           this.onScreenTitle.text = "";
           this.state = GameState.STARTED;
-        //   console.log("started game"); ////debug
+          //   console.log("started game"); ////debug
           this.ball.start();
         }
       } else if (this.state === GameState.GAMEOVER) {

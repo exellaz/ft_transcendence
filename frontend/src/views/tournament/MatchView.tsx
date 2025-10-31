@@ -28,10 +28,10 @@ const MatchView: React.FC = () => {
   const [userInfo, setUserinfo] = useState<User | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  React.useEffect (() => {
+  React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
-        sessionStorage.removeItem("reloading");
-        navigate("/main-menu");
+      sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
     }
   }, []);
 
@@ -39,8 +39,8 @@ const MatchView: React.FC = () => {
   React.useEffect(() => {
     if (!user) return;
     (async () => {
-        try {
-            const response = await getUserById({ id: Number(user.id) });
+      try {
+        const response = await getUserById({ id: Number(user.id) });
         if (response.success && response.data) {
           setUserinfo(response.data);
         } else {
@@ -51,27 +51,32 @@ const MatchView: React.FC = () => {
         console.error("An error occurred while fetching user info");
       }
     })();
-
   }, [user]);
 
-
   const authId = user?.id ?? userInfo?.id;
-  const userPlayer = initialPlayers?.find((p: MatchPlayer) => Number(p.id) === Number(authId));
-  const playerId = userPlayer ? Number(userPlayer.clientId ?? userPlayer.id) : -1;
-  const playerName = userPlayer ? (userPlayer.playerName || userPlayer.username || "") : "";
-  const playerSprite = userPlayer ? (userPlayer.spriteUrl || "") : "";
-//  console.log("[MatchView] userPlayer:", userPlayer); //// debug
-//  console.log("[MatchView] playerId:", playerId, " playerName:", playerName, " playerSprite:", playerSprite); ////debug
+  const userPlayer = initialPlayers?.find(
+    (p: MatchPlayer) => Number(p.id) === Number(authId),
+  );
+  const playerId = userPlayer
+    ? Number(userPlayer.clientId ?? userPlayer.id)
+    : -1;
+  const playerName = userPlayer
+    ? userPlayer.playerName || userPlayer.username || ""
+    : "";
+  const playerSprite = userPlayer ? userPlayer.spriteUrl || "" : "";
+  //  console.log("[MatchView] userPlayer:", userPlayer); //// debug
+  //  console.log("[MatchView] playerId:", playerId, " playerName:", playerName, " playerSprite:", playerSprite); ////debug
 
   // match websocket
-  const { roomReady, handleRoomReady, players: wsPlayers } = useMatchWebsocket(
-    roomId ?? -1,
-    {
-      id: playerId,
-      name: playerName,
-      spriteUrl: playerSprite,
-    },
-  );
+  const {
+    roomReady,
+    handleRoomReady,
+    players: wsPlayers,
+  } = useMatchWebsocket(roomId ?? -1, {
+    id: playerId,
+    name: playerName,
+    spriteUrl: playerSprite,
+  });
 
   // navigate to /game when match room is ready
   React.useEffect(() => {
@@ -95,12 +100,19 @@ const MatchView: React.FC = () => {
   }, [roomReady, navigate]);
 
   // don't render main UI until required data exists
-  if (!userInfo || !initialPlayers || initialPlayers.length === 0 || !userPlayer) {
+  if (
+    !userInfo ||
+    !initialPlayers ||
+    initialPlayers.length === 0 ||
+    !userPlayer
+  ) {
     // show diagnostic output so you can see which value is missing
     return (
       <div className="p-4 text-white">
         Loading...
-        <pre style={{ whiteSpace: "pre-wrap", maxHeight: 400, overflow: "auto" }}>
+        <pre
+          style={{ whiteSpace: "pre-wrap", maxHeight: 400, overflow: "auto" }}
+        >
           {JSON.stringify(
             {
               userId: user?.id,
@@ -119,11 +131,22 @@ const MatchView: React.FC = () => {
   // choose websocket players when available, otherwise fall back to initialPlayers
   const players = wsPlayers;
   const userClientId = Number(userPlayer?.clientId ?? userPlayer?.id ?? -1);
-  const getClientId = (p: MatchPlayer) => Number((p as unknown as Record<string, unknown>).clientId ?? (p as unknown as Record<string, unknown>).id ?? -1);
-  const userDetails = players.find((p: MatchPlayer) => getClientId(p) === userClientId);
+  const getClientId = (p: MatchPlayer) =>
+    Number(
+      (p as unknown as Record<string, unknown>).clientId ??
+        (p as unknown as Record<string, unknown>).id ??
+        -1,
+    );
+  const userDetails = players.find(
+    (p: MatchPlayer) => getClientId(p) === userClientId,
+  );
   const isUserReady = userDetails?.ready || false;
-  const leftPlayer = players.find((p: MatchPlayer) => (p as unknown as playerInfo).team === "left");
-  const rightPlayer = players.find((p: MatchPlayer) => (p as unknown as playerInfo).team === "right");
+  const leftPlayer = players.find(
+    (p: MatchPlayer) => (p as unknown as playerInfo).team === "left",
+  );
+  const rightPlayer = players.find(
+    (p: MatchPlayer) => (p as unknown as playerInfo).team === "right",
+  );
 
   sessionStorage.setItem("RoomId", roomId);
   sessionStorage.setItem("RoomName", `Room ${roomId}`);
@@ -174,13 +197,19 @@ const MatchView: React.FC = () => {
         <TournamentHeader>{stageHeader}</TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
-          {leftPlayer && <MatchPlayerCard player={leftPlayer} onClick={setSelectedId} />}
+          {leftPlayer && (
+            <MatchPlayerCard player={leftPlayer} onClick={setSelectedId} />
+          )}
           {/* VS */}
           <span className="text-yellow-400 text-8xl font-extrabold">VS</span>
-          {rightPlayer && <MatchPlayerCard player={rightPlayer} onClick={setSelectedId} />}
+          {rightPlayer && (
+            <MatchPlayerCard player={rightPlayer} onClick={setSelectedId} />
+          )}
         </div>
 
-        <Button variant="green" onClick={() => handleRoomReady(!isUserReady)}>{isUserReady ? translate("unready") : translate("ready")}</Button>
+        <Button variant="green" onClick={() => handleRoomReady(!isUserReady)}>
+          {isUserReady ? translate("unready") : translate("ready")}
+        </Button>
       </Card>
       {selectedId && (
         <ProfilePopup

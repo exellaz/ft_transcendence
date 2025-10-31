@@ -67,20 +67,33 @@ const ResultsView: React.FC = () => {
           <div className={ranking <= 3 ? "w-36 h-48" : "w-30 h-40"}>
             <img src={data.imageUrl} alt="result" className="w-full h-full" />
           </div>
-          <Button variant="green" onClick={() =>{
-            const roomId = Number(location.state?.roomId ?? -1);
-            const clientId = Number(location.state?.clientId ?? -1);
-            const lastTournamentId = Number(location.state?.lastTournamentId ?? 0);
-            // close match socket (room) and tournament lobby socket (if present)
-            closeMatchWebsocket(roomId, clientId);
+          <Button
+            variant="green"
+            onClick={() => {
+              const roomId = Number(location.state?.roomId ?? -1);
+              const clientId = Number(location.state?.clientId ?? -1);
+              const lastTournamentId = Number(
+                location.state?.lastTournamentId ?? 0,
+              );
+              // close match socket (room) and tournament lobby socket (if present)
+              closeMatchWebsocket(roomId, clientId);
 
-            // read persisted tournament id (set by tournament-websocket hook)
-            const tId = Number(sessionStorage.getItem("tournamentId") ?? lastTournamentId ?? -1);
-            if (tId > 0) {
-              try { closeTournamentWebsocket(tId, clientId); } catch (e) { console.warn("failed to close tournament ws", e); }
-            }
-            navigate("/main-menu");
-          }}>
+              // read persisted tournament id (set by tournament-websocket hook)
+              const tId = Number(
+                sessionStorage.getItem("tournamentId") ??
+                  lastTournamentId ??
+                  -1,
+              );
+              if (tId > 0) {
+                try {
+                  closeTournamentWebsocket(tId, clientId);
+                } catch (e) {
+                  console.warn("failed to close tournament ws", e);
+                }
+              }
+              navigate("/main-menu");
+            }}
+          >
             {translate("leave")}
           </Button>
         </div>

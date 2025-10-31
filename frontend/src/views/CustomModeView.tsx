@@ -15,7 +15,10 @@ import ConfirmationPopup from "../popups/ConfirmationPopup";
 
 //backend API
 import { createRoomAPI, fetchRooms } from "../lib/requestBackend.api";
-import type { listRoomsResponse, Room } from "../../../backend/src/types/interface";
+import type {
+  listRoomsResponse,
+  Room,
+} from "../../../backend/src/types/interface";
 /**
  * @brief casual game
  * - Create private room
@@ -95,11 +98,11 @@ const CustomModeView: React.FC = () => {
 
     //if had room, navigate to itLiveChat
     const roomIdToUse = room.id || room.roomId || "";
-	if (!roomIdToUse || roomIdToUse === "") {
-		setRoomError(translate("room_not_found"));
-		return;
-	}
-	sessionStorage.setItem("RoomId", roomIdToUse);
+    if (!roomIdToUse || roomIdToUse === "") {
+      setRoomError(translate("room_not_found"));
+      return;
+    }
+    sessionStorage.setItem("RoomId", roomIdToUse);
     navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
@@ -109,8 +112,7 @@ const CustomModeView: React.FC = () => {
     const inputId = roomId.trim();
     const rooms = await fetchRooms();
     const room = rooms.find(
-      (r: Room) =>
-        (r.id && r.id.toString() === inputId) || r.private === true,
+      (r: Room) => (r.id && r.id.toString() === inputId) || r.private === true,
     );
 
     //if no room, show error

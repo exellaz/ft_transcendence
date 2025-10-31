@@ -1,17 +1,31 @@
 import { PongGame } from "@shared/game/pong.ts";
 import type { WebSocket as WSWebSocket } from "ws";
 
-export interface TournamentPlayerWs {
+export interface PlacementEntry {
+  clientId: number;
+  rank: number;
+  playerId?: number;
+  position?: number;
+}
+
+export interface TournamentDb {
     id: number;
-    username: string;
-    spriteUrl: string;
-    ready: boolean;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface TournamentPlayerWs {
+  id: number;
+  username: string;
+  spriteUrl: string;
+  ready: boolean;
 }
 
 export interface TournamentMatch {
-    roomId: number;
-    players: TournamentPlayerWs[];
-    winnerId: number;
+  roomId: number;
+  players: TournamentPlayerWs[];
+  winnerId: number;
 }
 
 export interface TournamentLobby {
@@ -34,7 +48,7 @@ export interface TournamentLobby {
   countdownRemaining?: number | undefined;
   maxPlayer: number;
   broadcast?: (msg: string) => void;
-  clientMap?: Map<WSWebSocket, { tournamentId: number; playerId: number; }>;
+  clientMap?: Map<WSWebSocket, { tournamentId: number; playerId: number }>;
   allowedPlayers?: Set<number> | undefined;
   nextTournamentId?: number;
   parentTournamentId?: number;
@@ -107,7 +121,7 @@ export interface Room {
   private: boolean; // Flag to indicate if the room is private
   countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
   countdownRemaining?: number | null; // Remaining seconds in the countdown
-  inGame?: boolean
+  inGame?: boolean;
 }
 
 export interface GameSettings {
@@ -128,26 +142,25 @@ export interface WSContext {
 }
 
 export interface listRoomsResponse {
-    id: number;
-    name: string;
-    teamSize: number;
-    leftPlayers: number;
-    rightPlayers: number;
-    gameStarted: boolean;
-    gameEnded: boolean;
-    private: boolean;
+  id: number;
+  name: string;
+  teamSize: number;
+  leftPlayers: number;
+  rightPlayers: number;
+  gameStarted: boolean;
+  gameEnded: boolean;
+  private: boolean;
 }
 
 export type BroadcastMessage =
-    | liveChatMessage
-    | gameOver
-    | countdown
-    | countdownCancel
-    | roleUpdate
-    | roomPrivacyUpdate
-    | roleUpdateReadyStatus
-	| playerOfflineStatus
-    ;
+  | liveChatMessage
+  | gameOver
+  | countdown
+  | countdownCancel
+  | roleUpdate
+  | roomPrivacyUpdate
+  | roleUpdateReadyStatus
+  | playerOfflineStatus;
 
 /**
  * @brief Represents a chat message in the game.
@@ -161,49 +174,49 @@ export interface liveChatMessage {
 }
 
 export interface gameOver {
-    type: "game_over";
-    canLeave: boolean;
-    result: Room["result"];
-    playerLeft: Room["gameState"]["teams"]["left"]
-    playerRight: Room["gameState"]["teams"]["right"];
-    tournamentId?: number;
-	tournamentDb?: { id: number; status: string; createdAt: Date } | null;
-    placements: { clientId: number; rank: number }[];
-};
+  type: "game_over";
+  canLeave: boolean;
+  result: Room["result"];
+  playerLeft: Room["gameState"]["teams"]["left"];
+  playerRight: Room["gameState"]["teams"]["right"];
+  tournamentId?: number;
+  tournamentDb?: { id: number; status: string; createdAt: Date } | null;
+  placements: PlacementEntry[]
+}
 
 export interface countdown {
-    type: "countdown";
-    remaining: number;
+  type: "countdown";
+  remaining: number;
 }
 
 export interface countdownCancel {
-    type: "countdownCancel";
+  type: "countdownCancel";
 }
 
 export interface roleUpdate {
-    type: "roleUpdate";
-    newPlayer: playerInfo;
-    gameState: Room["gameState"];
-    leaderId: number;
-    canStart: boolean;
-    readyStatus?: playerInfo["ready"];
+  type: "roleUpdate";
+  newPlayer: playerInfo;
+  gameState: Room["gameState"];
+  leaderId: number;
+  canStart: boolean;
+  readyStatus?: playerInfo["ready"];
 }
 
 export interface roleUpdateReadyStatus {
-    type: "roleUpdate";
-    gameState: Room["gameState"];
-    leaderId: number;
+  type: "roleUpdate";
+  gameState: Room["gameState"];
+  leaderId: number;
 }
 
 export interface roomPrivacyUpdate {
-    type: "roomPrivacyUpdate";
-    data: {
-        type: string;
-    };
+  type: "roomPrivacyUpdate";
+  data: {
+    type: string;
+  };
 }
 
 export interface playerOfflineStatus {
-	type: "playerOffline";
-	clientId: number;
-	playerName: string;
+  type: "playerOffline";
+  clientId: number;
+  playerName: string;
 }

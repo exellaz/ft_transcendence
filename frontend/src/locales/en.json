@@ -25,7 +25,7 @@
     "join_doubles_game": "Join a doubles game?",
     "room_not_found": "Room not found",
     "room_is_full": "Room is full",
-	"offline_error": "You are offline. Please check your connection.",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "DoublesRoomView": {
@@ -40,7 +40,7 @@
     "room_is_full": "Room is full",
     "room_not_found": "Room not found",
     "unknown_error": "Unknown error",
-	"offline_error": "You are offline. Please check your connection.",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -53,8 +53,8 @@
     "start": "Start"
   },
   "GameView": {
-	"offline_error": "You are offline. Please check your connection.",
-	"close": "close"
+    "offline_error": "You are offline. Please check your connection.",
+    "close": "close"
   },
   "LoginView": {
     "username_or_email_required": "Username or email is required",
@@ -136,7 +136,7 @@
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
     "unknown_error": "Unknown error",
-	"offline_error": "You are offline. Please check your connection.",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -152,7 +152,7 @@
     "quit": "Quit",
     "quit_confirmation": "Are you sure you want to quit the tournament?",
     "room_is_full": "Room is full",
-	"offline_error": "You are offline. Please check your connection.",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "BasicInfoPopup": {
