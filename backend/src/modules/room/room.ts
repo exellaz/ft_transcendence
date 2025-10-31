@@ -112,11 +112,19 @@ export function startRoomLoop(room: Room) {
 
   // debug: log who will receive the start message
   try {
-    const recipients = Array.from(room.sockets.keys()).map((s: WebSocket, idx: number) => {
-      const wsSocket = s as WebSocket & { _socket?: { remoteAddress?: string }; remoteAddress?: string };
-      const remote = wsSocket._socket?.remoteAddress ?? wsSocket.remoteAddress ?? `socket#${idx}`;
-      return remote;
-    });
+    const recipients = Array.from(room.sockets.keys()).map(
+      (s: WebSocket, idx: number) => {
+        const wsSocket = s as WebSocket & {
+          _socket?: { remoteAddress?: string };
+          remoteAddress?: string;
+        };
+        const remote =
+          wsSocket._socket?.remoteAddress ??
+          wsSocket.remoteAddress ??
+          `socket#${idx}`;
+        return remote;
+      },
+    );
     console.log(
       `[room] startRoomLoop sending gameStart to ${recipients.length} sockets:`,
       recipients,
@@ -352,7 +360,9 @@ export function roomEndGame(
       // ✅ Extract the loser's rank for immediate DB update
       if (losersOrderedClientIds.length > 0) {
         const loserClientId = losersOrderedClientIds[0];
-        const loserPlacement = placements.find(p => p.clientId === loserClientId);
+        const loserPlacement = placements.find(
+          (p) => p.clientId === loserClientId,
+        );
         if (loserPlacement) {
           loserRank = loserPlacement.rank;
         }
@@ -465,9 +475,9 @@ function updateTournamentEliminatedOrderAndPlacements(
 
   // ✅ Determine rank range based on stage
   const stageRankMap: Record<string, [number, number]> = {
-    QF: [5, 8],  // Quarter-finals: ranks 5-8 (5=best, 8=worst)
-    SF: [3, 4],  // Semi-finals: ranks 3-4
-    F: [2, 2],   // Finals: rank 2 (loser gets 2nd place)
+    QF: [5, 8], // Quarter-finals: ranks 5-8 (5=best, 8=worst)
+    SF: [3, 4], // Semi-finals: ranks 3-4
+    F: [2, 2], // Finals: rank 2 (loser gets 2nd place)
   };
 
   const [minRank, maxRank] = stageRankMap[stage] || [1, 8];
@@ -475,8 +485,8 @@ function updateTournamentEliminatedOrderAndPlacements(
   // ✅ Get already assigned ranks in this stage
   const assignedRanks = new Set(
     tournament.placements
-      .filter(p => p.rank >= minRank && p.rank <= maxRank)
-      .map(p => p.rank)
+      .filter((p) => p.rank >= minRank && p.rank <= maxRank)
+      .map((p) => p.rank),
   );
 
   // ✅ Process each new loser
@@ -500,8 +510,8 @@ function updateTournamentEliminatedOrderAndPlacements(
 
     console.log(
       `[placements] player ${cid} finished in ${gameDuration}ms → ` +
-      `${assignedRanks.size + 1}/${maxRank - minRank + 1} games finished in stage ${stage} → ` +
-      `rank ${assignedRank}`,
+        `${assignedRanks.size + 1}/${maxRank - minRank + 1} games finished in stage ${stage} → ` +
+        `rank ${assignedRank}`,
     );
 
     // ✅ Assign the rank
@@ -528,11 +538,13 @@ function updateTournamentEliminatedOrderAndPlacements(
       );
     if (
       typeof remaining === "number" &&
-      !tournament.placements.some((p: { clientId: number }) => p.clientId === remaining)
+      !tournament.placements.some(
+        (p: { clientId: number }) => p.clientId === remaining,
+      )
     ) {
       tournament.placements.push({
         clientId: remaining,
-        rank: 1
+        rank: 1,
       });
       console.log(`[placements] Winner ${remaining} gets rank 1`);
     }
@@ -564,9 +576,7 @@ export function parsePlacementEntries(
           : typeof p?.position === "number"
             ? p.position
             : null;
-      return id !== null && rank !== null
-        ? [id, rank]
-        : null;
+      return id !== null && rank !== null ? [id, rank] : null;
     })
     .filter((v: [number, number] | null): v is [number, number] => v !== null);
 }
@@ -576,6 +586,8 @@ export function parsePlacementEntries(
  * @param raw Raw placements payload
  * @returns Map of clientId to rank
  */
-export function buildPlacementMap(raw: PlacementEntry[] | undefined): Map<number, number> {
+export function buildPlacementMap(
+  raw: PlacementEntry[] | undefined,
+): Map<number, number> {
   return new Map<number, number>(parsePlacementEntries(raw));
 }

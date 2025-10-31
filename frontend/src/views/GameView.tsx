@@ -21,7 +21,10 @@ import { closeMatchWebsocket } from "../lib/match-websocket";
 import { closeTournamentWebsocket } from "@/lib/tournament-websocket";
 
 import type { NavigateFunction } from "react-router-dom";
-import type { TournamentLobby, TournamentDb } from "../../../backend/src/types/interface";
+import type {
+  TournamentLobby,
+  TournamentDb,
+} from "../../../backend/src/types/interface";
 
 function nextRoundFromTournament(tournament: TournamentLobby) {
   if (!tournament) return null;

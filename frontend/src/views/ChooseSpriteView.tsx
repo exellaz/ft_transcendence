@@ -13,7 +13,10 @@ import ChooseSpriteContents from "../components/ChooseSpriteContents";
 import { updateUserById } from "@/lib/usersApiClient";
 import type { TournamentLobby } from "../../../backend/src/types/interface";
 
-async function handleJoinTournament(user: User | null, navigate: NavigateFunction) {
+async function handleJoinTournament(
+  user: User | null,
+  navigate: NavigateFunction,
+) {
   if (!user) return;
 
   // 1. Fetch existing tournaments

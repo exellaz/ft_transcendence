@@ -9,10 +9,10 @@ export interface PlacementEntry {
 }
 
 export interface TournamentDb {
-    id: number;
-    status: string;
-    createdAt: Date;
-    updatedAt: Date;
+  id: number;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface TournamentPlayerWs {
@@ -182,7 +182,7 @@ export interface gameOver {
   playerRight: Room["gameState"]["teams"]["right"];
   tournamentId?: number;
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
-  placements: PlacementEntry[]
+  placements: PlacementEntry[];
 }
 
 export interface countdown {

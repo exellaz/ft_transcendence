@@ -11,7 +11,7 @@ export function closeMatchWebsocket(roomId: number, playerId: number) {
     try {
       ws.close(1000, "match room disconnected");
     } catch (e) {
-        console.error("[match-websocket] error closing websocket for", key, e);
+      console.error("[match-websocket] error closing websocket for", key, e);
     }
     matchWebsocket.delete(key);
     console.log("[match-websocket] explicitly closed websocket for", key);
