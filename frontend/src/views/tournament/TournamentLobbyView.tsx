@@ -50,7 +50,6 @@ const TournamentLobbyView: React.FC = () => {
     toggleReady,
     onleave,
     eliminated,
-    lastLobbyData,
     refreshLobby,
     matchAssigned,
     roomError,
@@ -121,53 +120,14 @@ const TournamentLobbyView: React.FC = () => {
 
   //update players list when websocket data change
   React.useEffect(() => {
-    console.log(
-      "[ lobby snapshot ]:",
-      lastLobbyData?.players,
-      "ws players:",
-      currentPlayer,
-    );
-
-    // if server sent an empty snapshot, ask the server for a fresh one and fallback to WS players shortly
-    if (
-      lastLobbyData &&
-      Array.isArray(lastLobbyData.players) &&
-      lastLobbyData.players.length === 0
-    ) {
-      console.warn("Empty lobby snapshot received — requesting refresh");
-      try {
-        refreshLobby?.();
-      } catch {}
-      // try persisted snapshot (from navigation) as immediate fallback
-      try {
-        const raw = sessionStorage.getItem("lastTournamentLobby");
-        if (raw) {
-          const snap = JSON.parse(raw);
-          if (
-            snap?.id === tournamentId &&
-            Array.isArray(snap.players) &&
-            snap.players.length > 0
-          ) {
-            setPlayers(snap.players);
-            return;
-          }
-        }
-      } catch {}
-      // wait a short time for the server to reply, then use currentPlayer as fallback
-      const t = setTimeout(() => {
-        if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
-          setPlayers(currentPlayer);
-        }
-      }, 500); // small delay
-      return () => clearTimeout(t);
-    }
-
     if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
       setPlayers(currentPlayer);
-    } else {
-      setPlayers(lastLobbyData?.players ?? currentPlayer ?? []);
+    } else if (currentPlayer.length === 0) {
+      // Empty array from server - request refresh
+      console.warn("Empty player list received — requesting refresh");
+      refreshLobby?.();
     }
-  }, [currentPlayer, lastLobbyData, refreshLobby]);
+  }, [currentPlayer, refreshLobby]);
 
   //update stage when move to next stage
   React.useEffect(() => {

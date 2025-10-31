@@ -85,7 +85,6 @@ export function useTournamentWebSocket({
   const [lock, setLock] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [eliminated, setEliminated] = useState(false);
-  const [lastLobbyData, setLastLobbyData] = useState<WaitingTournamentPlayer[] | null>(null);
   const [roomError, setRoomError] = useState<string | null>(null);
   const [matchAssigned, setMatchAssigned] = useState<{
     roomId: number;
@@ -132,9 +131,8 @@ export function useTournamentWebSocket({
       console.log("[tournament websocket] hydrating from snapshot:", raw);
       if (raw) {
         const snap = JSON.parse(raw);
-        if (snap?.id === tournamentId) {
-          setLastLobbyData(snap);
-          if (Array.isArray(snap.players)) setPlayers(snap.players);
+        if (snap?.id === tournamentId && Array.isArray(snap.players)) {
+          setPlayers(snap.players);
           if (typeof snap.countdown === "number") setCountdown(snap.countdown);
         }
       }
@@ -306,7 +304,6 @@ export function useTournamentWebSocket({
     toggleReady,
     onleave,
     eliminated,
-    lastLobbyData,
     refreshLobby,
     matchAssigned,
     roomError,
