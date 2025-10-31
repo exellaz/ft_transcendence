@@ -345,6 +345,7 @@ export function roomEndGame(
       const placements = updateTournamentEliminatedOrderAndPlacements(
         tournament,
         losersOrderedClientIds,
+        room.duration,
       );
       payload.placements = placements;
 
@@ -449,54 +450,95 @@ export function roomEndGame(
 function updateTournamentEliminatedOrderAndPlacements(
   tournament: TournamentLobby,
   losersOrderedClientIds: number[],
-) {
+  gameDuration: number,
+): PlacementEntry[] {
   if (!Array.isArray(tournament.eliminatedOrder))
     tournament.eliminatedOrder = [];
 
-  // Append new losers in order, avoid duplicates
-  for (const cid of losersOrderedClientIds) {
-    if (!tournament.eliminatedOrder.includes(cid))
-      tournament.eliminatedOrder.push(cid);
+  // ✅ Initialize placements array if not exists
+  if (!Array.isArray(tournament.placements)) {
+    tournament.placements = [];
   }
 
-  // Determine total players count for placement calculation
-  const totalPlayers = Number(tournament.players?.length ?? 2) || 2;
+  // ✅ Get current stage to determine rank range
+  const stage = tournament.stage;
 
-  // Compute placements: first eliminated -> the first end game team gets lowest rank -> highest number
-  // include playerId to satisfy PlacementEntry shape (use same value as clientId)
-  const placements = tournament.eliminatedOrder.map(
-    (cid: number, idx: number) => ({
-      clientId: cid,
-      playerId: cid,
-      rank: Math.max(1, totalPlayers - idx),
-    }),
+  // ✅ Determine rank range based on stage
+  const stageRankMap: Record<string, [number, number]> = {
+    QF: [5, 8],  // Quarter-finals: ranks 5-8 (5=best, 8=worst)
+    SF: [3, 4],  // Semi-finals: ranks 3-4
+    F: [2, 2],   // Finals: rank 2 (loser gets 2nd place)
+  };
+
+  const [minRank, maxRank] = stageRankMap[stage] || [1, 8];
+
+  // ✅ Get already assigned ranks in this stage
+  const assignedRanks = new Set(
+    tournament.placements
+      .filter(p => p.rank >= minRank && p.rank <= maxRank)
+      .map(p => p.rank)
   );
 
-  // when only one player remaining, assign them rank 1
+  // ✅ Process each new loser
+  for (const cid of losersOrderedClientIds) {
+    if (tournament.eliminatedOrder.includes(cid)) {
+      continue; // Already processed
+    }
+
+    // ✅ Add to eliminated order
+    tournament.eliminatedOrder.push(cid);
+
+    // ✅ Assign next available rank from worst to best
+    // First finisher gets maxRank (8), second gets 7, etc.
+    let assignedRank = maxRank;
+    while (assignedRanks.has(assignedRank) && assignedRank >= minRank) {
+      assignedRank--; // Move to better rank
+    }
+
+    // ✅ Safety check: don't go below minRank
+    assignedRank = Math.max(assignedRank, minRank);
+
+    console.log(
+      `[placements] player ${cid} finished in ${gameDuration}ms → ` +
+      `${assignedRanks.size + 1}/${maxRank - minRank + 1} games finished in stage ${stage} → ` +
+      `rank ${assignedRank}`,
+    );
+
+    // ✅ Assign the rank
+    tournament.placements.push({
+      clientId: cid,
+      rank: assignedRank,
+    });
+    assignedRanks.add(assignedRank);
+  }
+
+  // ✅ Handle winner if all others eliminated
+  const totalPlayers = tournament.maxPlayer ?? 8;
   if (tournament.eliminatedOrder.length === totalPlayers - 1) {
     const playersList = Array.isArray(tournament.players)
       ? tournament.players
       : [];
     const extractId = (p: TournamentPlayerWs) =>
-        typeof p?.id === "number" ? p.id : null;
+      typeof p?.id === "number" ? p.id : null;
     const remaining = playersList
       .map(extractId)
       .find(
         (id: number | null): id is number =>
-            id != null && !tournament.eliminatedOrder?.includes(id),
+          id != null && !tournament.eliminatedOrder?.includes(id),
       );
     if (
       typeof remaining === "number" &&
-      !placements.some((p: { clientId: number }) => p.clientId === remaining)
+      !tournament.placements.some((p: { clientId: number }) => p.clientId === remaining)
     ) {
-      // ensure playerId is included
-      placements.push({ clientId: remaining, playerId: remaining, rank: 1 });
+      tournament.placements.push({
+        clientId: remaining,
+        rank: 1
+      });
+      console.log(`[placements] Winner ${remaining} gets rank 1`);
     }
   }
 
-  // Update tournament placements
-  tournament.placements = placements;
-  return placements;
+  return tournament.placements;
 }
 
 /**
