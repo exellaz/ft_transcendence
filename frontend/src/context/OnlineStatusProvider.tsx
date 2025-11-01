@@ -143,7 +143,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
     if (isAuthenticated === false) return;
 
     // const ws = new WebSocket(`ws://localhost:3000/online-status?token=${token}`);
-    const ws = new WebSocket(`ws://localhost:3000/online-status`, [
+    const ws = new WebSocket(`wss://localhost:3000/online-status`, [
       token || "",
     ]);
     wsRef.current = ws;

@@ -1,7 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserProvider";
-import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 
 declare global {
@@ -36,9 +34,8 @@ interface Props {
 
 export default function GoogleLoginButton({ onSuccess, onError }: Props) {
   const { t } = useTranslation();
-  const { setUser } = useUser();
-  const navigate = useNavigate();
   const [isGoogleReady, setIsGoogleReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const hiddenButtonRef = useRef<HTMLDivElement>(null);
 
   const translate = (key: string) => t(`LoginView.${key}`);
@@ -79,6 +76,9 @@ export default function GoogleLoginButton({ onSuccess, onError }: Props) {
   }, [isGoogleReady, onError]);
 
   useEffect(() => {
+    // Prevent re-initialization if already done
+    if (isInitialized) return;
+
     const loadGoogleScript = () => {
       if (window.google) {
         initializeGoogle();
@@ -121,6 +121,7 @@ export default function GoogleLoginButton({ onSuccess, onError }: Props) {
         }
 
         setIsGoogleReady(true);
+        setIsInitialized(true);
       } catch (error) {
         console.error("Error initializing Google:", error);
         onError?.("Failed to initialize Google Sign-In");
@@ -128,8 +129,17 @@ export default function GoogleLoginButton({ onSuccess, onError }: Props) {
     };
 
     loadGoogleScript();
-  }, [handleGoogleResponse, onError]);
+  }, []); // Remove dependencies to prevent re-initialization
 
+  // Update the callback when props change, but don't re-initialize
+  useEffect(() => {
+    if (isInitialized && window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
+        callback: handleGoogleResponse,
+      });
+    }
+  }, [handleGoogleResponse, isInitialized]);
   return (
     <>
       {/* Hidden Google button */}
