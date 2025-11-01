@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-CERT_DIR="backend/certs"
+CERT_DIR="certs"
 DOMAIN="${DOMAIN_NAME:-localhost}"
 
 echo "Generating self-signed certificate for $DOMAIN..."
@@ -15,11 +15,11 @@ if [ ! -f "$CERT_DIR/$DOMAIN.crt" ]; then
         -out "$CERT_DIR/$DOMAIN.crt" \
         -subj "/C=MY/ST=KL/L=KualaLumpur/O=42KL/OU=ft_transcendence/CN=$DOMAIN" \
 
-    echo "✅ Certificate generated successfully!"
+    echo "Certificate generated successfully!"
 else
-    echo "📄 Certificate already exists."
+    echo "Certificate already exists."
 fi
 
-echo "📁 Files in $CERT_DIR/:"
-echo "   - $DOMAIN.crt (Certificate)"
-echo "   - $DOMAIN.key (Private Key)"
+echo "Files in $CERT_DIR/:"
+echo " - $DOMAIN.crt (Certificate)"
+echo " - $DOMAIN.key (Private Key)"
