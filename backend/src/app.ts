@@ -1,4 +1,4 @@
-import Fastify, { FastifyPluginCallback } from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import fastifyCors from "@fastify/cors";
 import websocketPlugin from "@fastify/websocket";
 import dbConnector from "./plugins/db";
@@ -23,10 +23,33 @@ import multipart from "@fastify/multipart";
 import avatarUploadStaticPlugin from "./plugins/avatar-upload";
 import assetsStaticPlugin from "./plugins/assets.static";
 import { twoFactorRoutes } from "./modules/twoFactor/twoFactor.routes";
+import fs from "fs";
+import path from "path";
 
-const app = Fastify({
-  logger: true,
-});
+const createApp = (): FastifyInstance => {
+  const httpsEnabled = process.env.HTTPS_ENABLED === "true";
+
+  if (httpsEnabled) {
+    console.log("Creating HTTPS Fastify instance...");
+
+    const domainName = process.env.DOMAIN_NAME || "localhost";
+    const httpsOptions = {
+      key: fs.readFileSync(path.join("/app/certs", `${domainName}.key`)),
+      cert: fs.readFileSync(path.join("/app/certs", `${domainName}.crt`)),
+    };
+
+    return Fastify({
+      logger: true,
+      https: httpsOptions,
+    });
+  } else {
+    console.log("Creating HTTP Fastify instance...");
+    return Fastify({ logger: true });
+  }
+};
+
+const app: FastifyInstance = createApp();
+
 app.register(websocketPlugin);
 app.register(fastifyCors, corsOptions);
 app.register(errorHandler);
@@ -50,7 +73,6 @@ app.register(roomRoutes);
 app.register(friendChatMessageRoutes);
 app.register(onlineStatusRoutes);
 app.register(twoFactorRoutes);
-
 app.register(testRoutes);
 
 export default app;

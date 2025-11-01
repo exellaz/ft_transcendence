@@ -12,33 +12,9 @@ post {
 
 body:json {
   {
-    "email": "{{email}}",
-    "username": "{{username2}}",
-    "password": "{{password}}"
-  }
-}
-
-script:pre-request {
-  const userId = Math.random().toString(36).substring(2, 8);
-  const baseUrl = bru.getEnvVar('baseUrl');
-  const axios = require('axios');
-
-  bru.setVar('email', `dup${userId}@test.com`);
-  bru.setVar('username1', `user_${userId}a`);
-  bru.setVar('username2', `user_${userId}b`);
-  bru.setVar('password', 'Test123!');
-
-  const firstUser = await axios.post(`${baseUrl}/auth/register`, {
-    email: `dup${userId}@test.com`,
-    username: `user_${userId}a`,
-    password: 'Test123!'
-  }, {
-    headers: { 'Content-Type': 'application/json' },
-    timeout: 5000
-  });
-
-  if (firstUser.status === 201) {
-    console.log(`✅ Created initial user user_${userId}a for duplicate email test`);
+    "email": "duplicate-test@example.com",
+    "username": "sec_user_test",
+    "password": "Test123!"
   }
 }
 
@@ -47,13 +23,13 @@ tests {
     expect(res.status).to.equal(409);
     expect(res.body.success).to.be.false;
   });
-
+  
   test("should return proper error response", function() {
     expect(res.body.error).to.be.a('string');
     expect(res.body.errorCode).to.equal('EMAIL_ALREADY_EXISTS');
     expect(res.body).to.not.have.property('data');
   });
-
+  
   test("should follow ApiResponse error pattern", function() {
     expect(res.body).to.have.property('success', false);
     expect(res.body).to.have.property('error');
