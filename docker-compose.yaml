@@ -13,8 +13,10 @@ services:
       - frontend_node_modules:/app/node_modules
       - ./shared:/shared
       - ./backend/certs:/app/certs
-    env_file:
-      - .env
+    environment:
+      - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - VITE_API_URL=${API_BASE_URL}
+      - VITE_WS_URL=${API_BASE_URL}
 
   backend:
     build: ./backend
@@ -31,8 +33,14 @@ services:
       - ./backend/certs:/app/certs
     environment:
       - FORCE_COLOR=1 # add color to terminal output
-    env_file:
-      - .env
+      - HOST=${HOST}
+      - PORT=${PORT}
+      - HTTPS_ENABLED=${HTTPS_ENABLED}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - DATABASE_URL=${DATABASE_URL}
 
 volumes:
   frontend_node_modules:
