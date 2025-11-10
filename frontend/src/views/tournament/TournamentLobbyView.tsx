@@ -27,6 +27,7 @@ const TournamentLobbyView: React.FC = () => {
   const tournamentId =
     Number(paramTournamentId ?? location.state?.tournamentId) || -1;
   const { user } = useUser();
+  const selectedSprite = location.state?.selectedSprite as string | undefined;
   const [userinfo, setUserinfo] = useState<User | null>(null); // State to hold user info
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [stage, setStage] = useState<"QF" | "SF" | "F">("QF");
@@ -58,7 +59,7 @@ const TournamentLobbyView: React.FC = () => {
     player: {
       id: userinfo?.id || -1,
       username: userinfo?.username || "",
-      avatarUrl: userinfo?.avatarUrl || "",
+      avatarUrl: selectedSprite || "",
     },
   });
 
@@ -121,11 +122,8 @@ const TournamentLobbyView: React.FC = () => {
   //update players list when websocket data change
   React.useEffect(() => {
     if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
+      console.log("Updating players list:", currentPlayer); ////debug
       setPlayers(currentPlayer);
-    } else if (currentPlayer.length === 0) {
-      // Empty array from server - request refresh
-      console.warn("Empty player list received — requesting refresh");
-      refreshLobby?.();
     }
   }, [currentPlayer, refreshLobby]);
 

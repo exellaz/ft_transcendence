@@ -10,12 +10,12 @@ import { useUser } from "@/context/UserProvider";
 import Background from "../components/Background";
 import Card from "../components/Card";
 import ChooseSpriteContents from "../components/ChooseSpriteContents";
-import { updateUserById } from "@/lib/usersApiClient";
 import type { TournamentLobby } from "../../../backend/src/types/interface";
 
 async function handleJoinTournament(
   user: User | null,
   navigate: NavigateFunction,
+  selectedSprite?: string,
 ) {
   if (!user) return;
 
@@ -41,7 +41,7 @@ async function handleJoinTournament(
 
   // 4. Navigate into the tournament lobby
   navigate(`/tournament/${tournament.id}`, {
-    state: { tournament },
+    state: { tournament, selectedSprite },
   });
 }
 
@@ -68,20 +68,8 @@ const ChooseSpriteView: React.FC = () => {
               return;
             }
 
-            //update user avatarUrl
-            const player: User = {
-              ...user,
-              avatarUrl: selectedSprite,
-            };
-
-            //update the user avatar in database
-            updateUserById(player).catch((err) => {
-              console.error("Failed to update user avatar:", err);
-            });
-            console.log("Chosen sprite:", selectedSprite, "for user:", player);
-
             //navigate to the tournament lobby
-            await handleJoinTournament(player, navigate);
+            await handleJoinTournament(user, navigate, selectedSprite);
           }}
         />
       </Card>

@@ -17,6 +17,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
     async (socket: WebSocket, req: FastifyRequest) => {
       const url = new URL(req.url!, `http://${req.headers.host}`);
       const tournamentId = parseInt(url.searchParams.get("id") || "");
+      const customSprite = url.searchParams.get("sprite") || "";
 
       const token = req.headers["sec-websocket-protocol"];
       if (!token) {
@@ -44,7 +45,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         socket.close(1008, "Invalid user name");
         return null;
       }
-      const playerSprite = user.avatarUrl;
+      const playerSprite = customSprite;
       if (!playerSprite) {
         socket.close(1008, "Invalid user sprite");
         return null;

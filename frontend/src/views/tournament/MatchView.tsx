@@ -95,7 +95,7 @@ const MatchView: React.FC = () => {
           },
         },
       });
-    }, 1000);
+    }, 500);
     // only clear when roomReady flips back or component unmounts
     return () => clearTimeout(id);
   }, [roomReady, navigate]);
@@ -195,10 +195,10 @@ const MatchView: React.FC = () => {
   return (
     <Background>
       <Card size="wide">
-        {countdown !== null && countdown > 0 && (
-          <div className="match-countdown">Starting in {countdown}s...</div>
-        )}
         <TournamentHeader>{stageHeader}</TournamentHeader>
+        {countdown !== null && countdown > 0 && (
+          <div className="match-countdown text-white text-6xl font-bold">{countdown}</div>
+        )}
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
           {leftPlayer && (

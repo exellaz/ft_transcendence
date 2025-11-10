@@ -191,6 +191,9 @@ export function useMatchWebsocket(
         if (data.type === "matchCountdown") {
           console.log("[match-websocket] matchCountdown:", data.remaining); ////debug
           setCountdown(data.remaining);
+          if (data.remaining === 0) {
+            setRoomReady(true);
+          }
         }
 
         if (data.type === "matchCountdownCancel") {

@@ -113,8 +113,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             );
 
             hb = createAppHeartbeat(socket, {
-              heartbeatMs: 1000,
-              receiveTimeoutMs: 2000,
+              heartbeatMs: 15000, //send every 15 sec fot network latency and reduce traffic (short time will cause frequent disconnect)
+              receiveTimeoutMs: 8000, // wait 8 sec for client to respond
               maxMissed: 3,
               closeCode: 1003,
               closeReason: "Heartbeat timeout: no response from client",
@@ -128,7 +128,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               const rightPlayer = room.gameState.teams.right.length;
               const totalPlayers = leftPlayer + rightPlayer;
               if (totalPlayers >= 2 && !matchCountdowns.has(room.id)) {
-                let remaining = 5;
+                let remaining = 10;
                 broadcast(room, {
                   type: "matchCountdown",
                   remaining,
@@ -153,6 +153,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
                 matchCountdowns.set(room.id, handle);
               }
             }
+
             return;
           }
 
@@ -447,21 +448,21 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         cleanupTimer();
 
         //cancel match countdown if any //! maybe no need
-        if (matchCountdowns.has(room.id)) {
-          const handle = matchCountdowns.get(room.id);
-          if (handle) {
-            clearInterval(handle);
-            matchCountdowns.delete(room.id);
-            console.log(
-              `[match countdown] cleared countdown for room ${room.id} due to player disconnect`,
-            );
-          }
-          broadcast(room, {
-            type: "matchCountdownCancel",
-          });
-        }
+        //if (matchCountdowns.has(room.id)) {
+        //  const handle = matchCountdowns.get(room.id);
+        //  if (handle) {
+        //    clearInterval(handle);
+        //    matchCountdowns.delete(room.id);
+        //    console.log(
+        //      `[match countdown] cleared countdown for room ${room.id} due to player disconnect`,
+        //    );
+        //  }
+        //  broadcast(room, {
+        //    type: "matchCountdownCancel",
+        //  });
+        //}
 
-        if (room.game.state === 0 || room.game.state === 3) return;
+        if (room.game.state === 3) return;
         //  console.log("room game state: ", socket.readyState); ////debug
         wsHandler.handleDisconnect(socket, room, clientId, room.id);
       });
