@@ -185,7 +185,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             "closeTournament",
           ];
           if (!allowedTypes.includes(msg.type)) {
-            socket.close(1003, `unsupported message type ${msg.type}`);
+            socket.close(1003, `unsupported message type: (${msg.type})`);
             return;
           }
 

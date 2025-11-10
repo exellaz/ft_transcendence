@@ -125,21 +125,6 @@ export function useTournamentWebSocket({
   useEffect(() => {
     if (!tournamentId || tournamentId <= 0 || !player || player.id <= 0) return;
 
-    // hydrate from cached lobby snapshot if present (quick UI render for winners)
-    try {
-      const raw = sessionStorage.getItem("lastTournamentLobby");
-      console.log("[tournament websocket] hydrating from snapshot:", raw);
-      if (raw) {
-        const snap = JSON.parse(raw);
-        if (snap?.id === tournamentId && Array.isArray(snap.players)) {
-          setPlayers(snap.players);
-          if (typeof snap.countdown === "number") setCountdown(snap.countdown);
-        }
-      }
-    } catch (err) {
-      console.error("[tournament websocket] failed to hydrate snapshot:", err);
-    }
-
     //get JWT
     const userJWT = localStorage.getItem("authToken");
     if (!userJWT) {
@@ -161,13 +146,13 @@ export function useTournamentWebSocket({
 
     ws.addEventListener("open", () => {
       console.log("Tournament WS connected", tournamentId, player.id);
-      try {
-        ws.send(JSON.stringify({ type: "requestLobby" }));
-        //persist current tournament id so UI page can close ;ater
+    //  try {
+        //ws.send(JSON.stringify({ type: "requestLobby" }));
+        //persist current tournament id so UI page can close later
         try {
           sessionStorage.setItem("tournamentId", String(tournamentId));
         } catch {}
-      } catch {}
+    //  } catch {}
     });
 
     ws.addEventListener("message", (event) => {
@@ -282,13 +267,6 @@ export function useTournamentWebSocket({
     });
   }
 
-  function refreshLobby() {
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "requestLobby" }));
-    }
-  }
-
   function onleave() {
     try {
       closeTournamentWebsocket(tournamentId, player.id);
@@ -304,7 +282,7 @@ export function useTournamentWebSocket({
     toggleReady,
     onleave,
     eliminated,
-    refreshLobby,
+    //refreshLobby,
     matchAssigned,
     roomError,
   };

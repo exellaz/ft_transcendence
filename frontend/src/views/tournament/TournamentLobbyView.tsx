@@ -51,7 +51,7 @@ const TournamentLobbyView: React.FC = () => {
     toggleReady,
     onleave,
     eliminated,
-    refreshLobby,
+    //refreshLobby,
     matchAssigned,
     roomError,
   } = useTournamentWebSocket({
@@ -125,7 +125,7 @@ const TournamentLobbyView: React.FC = () => {
       console.log("Updating players list:", currentPlayer); ////debug
       setPlayers(currentPlayer);
     }
-  }, [currentPlayer, refreshLobby]);
+  }, [currentPlayer]);
 
   //update stage when move to next stage
   React.useEffect(() => {

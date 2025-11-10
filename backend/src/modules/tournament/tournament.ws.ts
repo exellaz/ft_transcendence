@@ -31,10 +31,13 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         return null;
       }
 
+      //get player id and get the player info
       const playerId = decode.userId as number;
       const user = await fastify.db.user.findUnique({
         where: { id: playerId },
       });
+
+      // ----- validation -----
       if (!user) {
         socket.close(1008, "User not found");
         return null;
@@ -51,16 +54,15 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         return null;
       }
 
-      //validate parameters
       if (!tournamentId || !playerId || !playerName || !playerSprite) {
         socket.close(1008, "Missing parameters");
         return;
       }
 
-      //register client to the tournament
+      //register player with the socket to the tournament
       client.set(socket, { tournamentId, playerId });
 
-      //find the tournament
+      //get the tournament
       const tournament = tournaments.get(tournamentId);
       if (!tournament) {
         socket.send(
@@ -73,14 +75,13 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         return;
       }
 
+      //a broadcast function for the tournament
       const tournamentBroadcast = (msg: string) => {
-        const recipients: number[] = [];
         for (const [ws, info] of client.entries()) {
           if (info.tournamentId === tournamentId) {
             try {
               if (ws.readyState === WebSocket.OPEN) {
                 ws.send(msg);
-                recipients.push(info.playerId);
               }
             } catch (err) {
               console.warn(
@@ -91,12 +92,10 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             }
           }
         }
-        return recipients;
       };
 
-      // expose stable helpers for other modules
-      tournament.broadcast = tournamentBroadcast;
-      tournament.clientMap = client;
+      tournament.broadcast = tournamentBroadcast; // assign broadcast function
+      tournament.clientMap = client; // assign client map
 
       //reject player not in that set (the loser eliminated from tournament)
       const allowed = tournament.allowedPlayers;
@@ -111,7 +110,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         return;
       }
 
-      //add player to the tournament if not already present
+      //add player to the tournament if not exists
       const exists = tournament.players.find(
         (p: TournamentPlayerWs) => p.id === playerId,
       );
@@ -123,6 +122,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           ready: false,
         });
 
+        // tell all player the current player list
         const broadcast = (msg: string) => {
           const recipients = [];
           for (const [ws, info] of client.entries()) {
@@ -145,22 +145,12 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           tournament.players.length === tournament.maxPlayer &&
           !tournament.lock
         ) {
-          // only start countdown automatically if all players are marked ready.
-          const allReady =
-            tournament.players.length > 0 &&
-            tournament.players.every((p) => p.ready === true);
-          if (allReady) {
+          // only start countdown automatically if the lobby are full.
             console.log(
-              "[ player join ] All players are ready, starting tournament immediately",
-            ); //// debug
-            startTournamentCountdown(tournamentId, broadcast, 0, client); // immediate start when everyone is ready
-          } else {
-            console.log(
-              "[ player join ] Not all players are ready, starting tournament with delay",
+              "[ player join ] start tournament countdown as lobby is full",
             ); //// debug
             // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
             startTournamentCountdown(tournamentId, broadcast, 10, client);
-          }
         }
       }
 
@@ -183,6 +173,15 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           }
           if (typeof msg.type !== "string") {
             socket.close(1003, "Invalid message: missing type");
+            return;
+          }
+
+          // --- allow type ---
+          const allowedTypes = [
+            "ready",
+          ];
+          if (!allowedTypes.includes(msg.type)) {
+            socket.close(1003, `unsupported message type: (${msg.type})`);
             return;
           }
 
@@ -231,7 +230,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
                 tournament.countdownRemaining = undefined;
               }
 
-              // All players are ready, start the tournament
+              // All players are ready, start the tournament immediately
               console.log(
                 `All players are ready in tournament ${tournamentId}, starting tournament immediately`,
               ); //// debug
@@ -249,22 +248,34 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         console.log(
           `[tournament websocket] code=${code} reason=${reason} player=${playerId} tournament=${tournamentId}`,
         );
-        //if (tournament.lock) return;
+
+        //a broadcast function for the tournament
+        const tournamentBroadcast = (msg: string) => {
+          for (const [ws, info] of client.entries()) {
+            if (info.tournamentId === tournamentId) {
+              try {
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.send(msg);
+                }
+              } catch (err) {
+                console.warn(
+                  "[tournament] failed to send to socket",
+                  info.playerId,
+                  err,
+                );
+              }
+            }
+          }
+        };
+
+        //remove player from tournament
         tournament.players = tournament.players.filter(
           (p) => p.id !== playerId,
         );
         client.delete(socket);
 
-        const broadcast = (msg: string) => {
-          for (const [ws, info] of client.entries()) {
-            if (info.tournamentId === tournamentId) {
-              ws.send(msg);
-            }
-          }
-        };
-
         //notify all clients in the same tournament about the player leaving
-        broadcast(
+        tournamentBroadcast(
           JSON.stringify({ type: "playerLeft", players: tournament.players }),
         );
         console.log(
@@ -273,11 +284,13 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
 
         //cancel countdown if player less
         if (tournament.players.length < tournament.maxPlayer) {
-          cancelTournamentCountdown(tournamentId, broadcast);
+          cancelTournamentCountdown(tournamentId, tournamentBroadcast);
         }
 
+        //unlock the lock if no players left
         if (tournament.players.length === 0) tournament.lock = false;
 
+        //if the tournament unlock mean no players left, delete the tournament
         if (!tournament.lock && tournament.players.length === 0) {
           tournaments.delete(tournamentId);
           console.log(`Tournament ${tournamentId} deleted due to no players`);
