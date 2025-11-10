@@ -161,7 +161,9 @@ export type BroadcastMessage =
   | roleUpdate
   | roomPrivacyUpdate
   | roleUpdateReadyStatus
-  | playerOfflineStatus;
+  | playerOfflineStatus
+  | matchCountdown
+  | matchCountdownCancel;
 
 /**
  * @brief Represents a chat message in the game.
@@ -220,4 +222,13 @@ export interface playerOfflineStatus {
   type: "playerOffline";
   clientId: number;
   playerName: string;
+}
+
+export interface matchCountdown {
+  type: "matchCountdown";
+  remaining: number;
+}
+
+export interface matchCountdownCancel {
+  type: "matchCountdownCancel";
 }

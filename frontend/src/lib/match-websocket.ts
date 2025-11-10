@@ -24,26 +24,28 @@ export function useMatchWebsocket(
 ) {
   const [roomReady, setRoomReady] = useState<boolean>(false);
   const [players, setPlayers] = useState<MatchPlayer[]>([]);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   //console.log ("[match-websocket] initializing websocket for roomId:", roomId, " playerId:", player.id); ////debug
 
   // helper: normalize unknown/websocket player object -> MatchPlayer
+  // this is needed because the websocket data may have different field names
   const normalizeToMatchPlayer = (raw: unknown): MatchPlayer => {
-    const obj = (raw as Record<string, unknown>) || {};
+    const obj = (raw as Record<string, unknown>) || {}; //get the current object info
     const clientId = Number(obj.clientId ?? obj.id ?? -1);
-    const id = Number(obj.id ?? obj.clientId ?? clientId);
+    const id = Number(obj.id ?? obj.clientId ?? clientId); //get clientId with id or clientId
     const username =
       typeof obj.playerName === "string"
         ? obj.playerName
         : typeof obj.username === "string"
           ? obj.username
-          : "";
+          : ""; //get username with playerName or username
     const spriteUrl =
       typeof obj.spriteUrl === "string"
         ? obj.spriteUrl
         : typeof obj.sprite === "string"
           ? obj.sprite
-          : "";
+          : ""; //get spriteUrl with spriteUrl or sprite
     const ready = Boolean(obj.ready ?? false);
     const team = typeof obj.team === "string" ? obj.team : "unknown";
     // build MatchPlayer — include any extra fields your MatchPlayer expects
@@ -82,75 +84,121 @@ export function useMatchWebsocket(
     }
     socketRef.current = ws;
 
-    ws.onopen = () =>
-      console.log("[match-websocket] WebSocket connection opened");
+    ws.addEventListener("open", () =>
+      console.log("[match-websocket] WebSocket connection opened")
+    );
 
-    ws.onerror = (err) =>
-      console.error("[match-websocket] WebSocket error:", err);
+    ws.addEventListener("error", (err) =>
+      console.error("[match-websocket] WebSocket error:", err)
+    );
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("[match-websocket] received data:", data); ////debug
+    ws.addEventListener("message", (event) => {
+      try {
+        // validate JSON
+        let data;
+        try {
+          data = JSON.parse(event.data);
+        } catch {
+          console.error("Invalid JSON:", event.data);
+          return;
+        }
+        console.log("[match-websocket] received data:", data); ////debug
 
-      // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
-      if (data && data.type === "handshakePing") {
-        //console.log("[room-websocket] received handshakePing"); ////debug
-        ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
+        // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
+        if (data && data.type === "handshakePing") {
+          //console.log("[room-websocket] received handshakePing"); ////debug
+          ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
 
-        const leftPlayer = Array.isArray(data.PlayerInfo.teams.left)
-          ? data.PlayerInfo.teams.left
-          : [];
-        const rightPlayer = Array.isArray(data.PlayerInfo.teams.right)
-          ? data.PlayerInfo.teams.right
-          : [];
-        const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
-        const right = rightPlayer.map((p: unknown) =>
-          normalizeToMatchPlayer(p),
-        );
+          const leftPlayer = Array.isArray(data.PlayerInfo.teams.left)
+            ? data.PlayerInfo.teams.left
+            : [];
+          const rightPlayer = Array.isArray(data.PlayerInfo.teams.right)
+            ? data.PlayerInfo.teams.right
+            : [];
+          const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
+          const right = rightPlayer.map((p: unknown) =>
+            normalizeToMatchPlayer(p),
+          );
 
-        const merged = [...left, ...right];
-        setPlayers(merged);
+          const merged = [...left, ...right];
+          setPlayers(merged);
+          return;
+        }
+
+        // recieve heartbeat from server and send ack back
+        if (data && data.type === "heartbeat") {
+          //console.log(`[room.ws] received heartbeat, sending returnHeartbeat client=${player.id}`); ////debug
+          ws.send(
+            JSON.stringify({ type: "returnHeartbeat", clientId: player.id }),
+          );
+          return;
+        }
+
+        // validate message structure
+        if (typeof data !== "object" || data === null) {
+          console.error("Invalid message format");
+          return;
+        }
+        if (typeof data.type !== "string") {
+          console.error("Invalid message: missing type:", data);
+          return;
+        }
+        const allowedTypes = [
+          "roleUpdate",
+          "gameStart",
+          "matchCountdown",
+          "matchCountdownCancel",
+        ];
+        if (!allowedTypes.includes(data.type)) {
+          if (data.type === "chat") return;
+          console.error(`unsupported message type ${data.type}`);
+          return;
+        }
+
+        if (data.type === "roleUpdate") {
+          console.log(
+            "[match-websocket] roleUpdate data:",
+            data.gameState.teams.left[0].ready,
+            data.gameState.teams.right[0].ready,
+          ); ////debug
+          const leftPlayer = Array.isArray(data.gameState.teams.left)
+            ? data.gameState.teams.left
+            : [];
+          const rightPlayer = Array.isArray(data.gameState.teams.right)
+            ? data.gameState.teams.right
+            : [];
+          const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
+          const right = rightPlayer.map((p: unknown) =>
+            normalizeToMatchPlayer(p),
+          );
+
+          const merged = [...left, ...right];
+          console.log("[match-websocket] normalized merged players:", merged); ////debug
+          setPlayers(merged);
+        }
+
+        if (data.type === "gameStart") {
+          console.log("[match-websocket] all players ready, game starting!"); ////debug
+          setRoomReady(true);
+        }
+
+        if (data.type === "matchCountdown") {
+          console.log("[match-websocket] matchCountdown:", data.remaining); ////debug
+          setCountdown(data.remaining);
+        }
+
+        if (data.type === "matchCountdownCancel") {
+          console.log("[match-websocket] matchCountdownCancel"); ////debug
+          setCountdown(null);
+        }
+      } catch (err) {
+        console.error("[match-websocket] WebSocket error:", err);
+        ws.close(1000, "[[match-websocket]] server error")
         return;
       }
+    });
 
-      // recieve heartbeat from server and send ack back
-      if (data && data.type === "heartbeat") {
-        //console.log(`[room.ws] received heartbeat, sending returnHeartbeat client=${player.id}`); ////debug
-        ws.send(
-          JSON.stringify({ type: "returnHeartbeat", clientId: player.id }),
-        );
-        return;
-      }
-
-      if (data.type === "roleUpdate") {
-        console.log(
-          "[match-websocket] roleUpdate data:",
-          data.gameState.teams.left[0].ready,
-          data.gameState.teams.right[0].ready,
-        ); ////debug
-        const leftPlayer = Array.isArray(data.gameState.teams.left)
-          ? data.gameState.teams.left
-          : [];
-        const rightPlayer = Array.isArray(data.gameState.teams.right)
-          ? data.gameState.teams.right
-          : [];
-        const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
-        const right = rightPlayer.map((p: unknown) =>
-          normalizeToMatchPlayer(p),
-        );
-
-        const merged = [...left, ...right];
-        console.log("[match-websocket] normalized merged players:", merged); ////debug
-        setPlayers(merged);
-      }
-
-      if (data.type === "gameStart") {
-        console.log("[match-websocket] all players ready, game starting!"); ////debug
-        setRoomReady(true);
-      }
-    };
-
-    ws.onclose = (ev) => {
+    ws.addEventListener("close", (ev) => {
       console.log(
         "[match-websocket] WebSocket connection closed for room",
         roomId,
@@ -162,7 +210,7 @@ export function useMatchWebsocket(
       );
       // remove closed socket from cache so next hook call will create a fresh socket
       if (matchWebsocket.get(key) === ws) matchWebsocket.delete(key);
-    };
+    });
 
     return () => {
       if (matchWebsocket.get(key) === ws) {
@@ -184,6 +232,7 @@ export function useMatchWebsocket(
   }
 
   return {
+    countdown,
     roomReady,
     handleRoomReady,
     players,

@@ -13,8 +13,10 @@ import {
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { tournaments } from "../../modules/tournament/tournament.routes";
+import { match } from "assert";
 
 const wsHandler = new WebSocketHandler();
+const matchCountdowns = new Map<number, NodeJS.Timeout>();
 
 export default async function roomWsRoutes(fastify: FastifyInstance) {
   fastify.get(
@@ -119,6 +121,36 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
             });
             hb.start();
 
+            //check is match room to do countdown when both sides have players
+            const isMatchRoom = room.id.toString().startsWith("1111");
+            if (isMatchRoom) {
+              const leftPlayer = room.gameState.teams.left.length;
+              const rightPlayer = room.gameState.teams.right.length;
+              const totalPlayers = leftPlayer + rightPlayer;
+              if (totalPlayers >= 2 && !matchCountdowns.has(room.id)) {
+                let remaining = 5;
+                broadcast(room, {
+                    type: "matchCountdown",
+                    remaining,
+                });
+                const handle = setInterval(() => {
+                  remaining--;
+                  if (remaining > 0) {
+                    broadcast(room, { type: "matchCountdown", remaining });
+                  } else {
+                    clearInterval(handle);
+                    matchCountdowns.delete(room.id);
+                    // start game if not already running
+                    if (room.game.state === 0 || room.game.state === 1) {
+                      console.log(`[match auto-start] countdown finished, starting room ${room.id}`);
+                      roomStartGame(room);
+                      startRoomLoop(room);
+                    }
+                  }
+                }, 1000);
+                matchCountdowns.set(room.id, handle);
+              }
+            }
             return;
           }
 
@@ -411,6 +443,21 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
           console.error("Error stopping heartbeat:", err);
         }
         cleanupTimer();
+
+        //cancel match countdown if any //! maybe no need
+        if (matchCountdowns.has(room.id)) {
+          const handle = matchCountdowns.get(room.id);
+          if (handle) {
+            clearInterval(handle);
+            matchCountdowns.delete(room.id);
+            console.log(
+              `[match countdown] cleared countdown for room ${room.id} due to player disconnect`,
+            );
+          }
+          broadcast(room, {
+            type: "matchCountdownCancel",
+          });
+        }
 
         if (room.game.state === 0 || room.game.state === 3) return;
         //  console.log("room game state: ", socket.readyState); ////debug

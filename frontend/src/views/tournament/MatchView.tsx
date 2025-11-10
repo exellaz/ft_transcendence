@@ -69,6 +69,7 @@ const MatchView: React.FC = () => {
 
   // match websocket
   const {
+	countdown,
     roomReady,
     handleRoomReady,
     players: wsPlayers,
@@ -194,6 +195,11 @@ const MatchView: React.FC = () => {
   return (
     <Background>
       <Card size="wide">
+	    {countdown !== null && countdown > 0 && (
+			<div className="match-countdown">
+				Starting in {countdown}s...
+			</div>
+		)}
         <TournamentHeader>{stageHeader}</TournamentHeader>
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">

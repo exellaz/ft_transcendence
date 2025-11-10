@@ -128,7 +128,7 @@ export function useRoomWebSocket(
             return;
           }
 
-          // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
+          // receive handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
           if (data && data.type === "handshakePing") {
             console.log("[room-websocket] received handshakePing"); ////debug
             ws.send(
