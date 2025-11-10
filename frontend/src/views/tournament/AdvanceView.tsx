@@ -21,6 +21,7 @@ const AdvanceView: React.FC = () => {
     const clientId = Number(location.state?.clientId ?? -1);
     const roomId = Number(location.state?.roomId ?? -1);
     const tournamentDb = location.state?.tournamentDb ?? null;
+    const playerSprite = location.state?.playerSprite ?? "";
 
     // move to next round if winner
     setIsAdvancing(true);
@@ -31,6 +32,7 @@ const AdvanceView: React.FC = () => {
           tournamentDb,
           clientId,
           roomId,
+          playerSprite,
           navigate,
         });
         return; // goToNextRoundExternal will navigate

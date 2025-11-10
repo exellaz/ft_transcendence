@@ -152,6 +152,7 @@ export function useMatchWebsocket(
           "gameStart",
           "matchCountdown",
           "matchCountdownCancel",
+          "state",
         ];
         if (!allowedTypes.includes(data.type)) {
           if (data.type === "chat") return;

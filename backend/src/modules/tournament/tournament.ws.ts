@@ -239,39 +239,6 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             }
           }
 
-          //update player in lobby
-          if (msg.type === "requestLobby") {
-            const broadcast = (msg: string) => {
-              for (const [ws, info] of client.entries()) {
-                if (info.tournamentId === tournamentId) {
-                  try {
-                    ws.send(msg);
-                  } catch {}
-                }
-              }
-            };
-
-            if (
-              tournament.players.length === tournament.maxPlayer &&
-              !tournament.lock
-            ) {
-              // only start countdown automatically if all players are marked ready.
-              const allReady =
-                tournament.players.length > 0 &&
-                tournament.players.every((p) => p.ready === true);
-              if (allReady) {
-                console.log(
-                  "[ request data ] All players are ready, starting tournament immediately",
-                ); //// debug
-                startTournamentCountdown(tournamentId, broadcast, 0, client); // immediate start when everyone is ready
-              } else {
-                console.log(
-                  "[ request data ] Not all players are ready, starting tournament with delay",
-                ); //// debug
-                startTournamentCountdown(tournamentId, broadcast, 10, client); // set 10 seconds countdown for auto-start
-              }
-            }
-          }
         } catch (err) {
           console.error("Error handling message:", err);
           socket.close(1011, "Internal server error");
