@@ -85,11 +85,11 @@ export function useMatchWebsocket(
     socketRef.current = ws;
 
     ws.addEventListener("open", () =>
-      console.log("[match-websocket] WebSocket connection opened")
+      console.log("[match-websocket] WebSocket connection opened"),
     );
 
     ws.addEventListener("error", (err) =>
-      console.error("[match-websocket] WebSocket error:", err)
+      console.error("[match-websocket] WebSocket error:", err),
     );
 
     ws.addEventListener("message", (event) => {
@@ -107,7 +107,9 @@ export function useMatchWebsocket(
         // recieve handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
         if (data && data.type === "handshakePing") {
           //console.log("[room-websocket] received handshakePing"); ////debug
-          ws.send(JSON.stringify({ type: "handshakePong", clientId: player.id }));
+          ws.send(
+            JSON.stringify({ type: "handshakePong", clientId: player.id }),
+          );
 
           const leftPlayer = Array.isArray(data.PlayerInfo.teams.left)
             ? data.PlayerInfo.teams.left
@@ -115,7 +117,9 @@ export function useMatchWebsocket(
           const rightPlayer = Array.isArray(data.PlayerInfo.teams.right)
             ? data.PlayerInfo.teams.right
             : [];
-          const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
+          const left = leftPlayer.map((p: unknown) =>
+            normalizeToMatchPlayer(p),
+          );
           const right = rightPlayer.map((p: unknown) =>
             normalizeToMatchPlayer(p),
           );
@@ -167,7 +171,9 @@ export function useMatchWebsocket(
           const rightPlayer = Array.isArray(data.gameState.teams.right)
             ? data.gameState.teams.right
             : [];
-          const left = leftPlayer.map((p: unknown) => normalizeToMatchPlayer(p));
+          const left = leftPlayer.map((p: unknown) =>
+            normalizeToMatchPlayer(p),
+          );
           const right = rightPlayer.map((p: unknown) =>
             normalizeToMatchPlayer(p),
           );
@@ -193,7 +199,7 @@ export function useMatchWebsocket(
         }
       } catch (err) {
         console.error("[match-websocket] WebSocket error:", err);
-        ws.close(1000, "[[match-websocket]] server error")
+        ws.close(1000, "[[match-websocket]] server error");
         return;
       }
     });

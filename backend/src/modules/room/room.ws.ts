@@ -130,8 +130,8 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               if (totalPlayers >= 2 && !matchCountdowns.has(room.id)) {
                 let remaining = 5;
                 broadcast(room, {
-                    type: "matchCountdown",
-                    remaining,
+                  type: "matchCountdown",
+                  remaining,
                 });
                 const handle = setInterval(() => {
                   remaining--;
@@ -142,7 +142,9 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
                     matchCountdowns.delete(room.id);
                     // start game if not already running
                     if (room.game.state === 0 || room.game.state === 1) {
-                      console.log(`[match auto-start] countdown finished, starting room ${room.id}`);
+                      console.log(
+                        `[match auto-start] countdown finished, starting room ${room.id}`,
+                      );
                       roomStartGame(room);
                       startRoomLoop(room);
                     }
