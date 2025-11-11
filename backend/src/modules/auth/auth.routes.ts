@@ -14,6 +14,7 @@ import {
   updateLastLogin,
   sanitizeUsername,
 } from "../auth/auth.service";
+import { onlineUsers } from "../online-status/online-status.manager";
 
 async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -110,6 +111,15 @@ async function authRoutes(fastify: FastifyInstance) {
         throw ApiError.unauthorized(
           "Invalid credentials",
           "INVALID_CREDENTIALS",
+        );
+      }
+
+      // Check if userId exist in OnlineUsers Map
+      if (onlineUsers.has(user.id)) {
+        console.log(`[DUPLICATE LOGIN] UserId ${user.id} already logged in`);       
+        throw ApiError.conflict(
+          "User is already logged in from another device",
+          "USER_ALREADY_LOGGED_IN",
         );
       }
 
