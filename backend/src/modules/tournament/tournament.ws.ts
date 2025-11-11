@@ -146,11 +146,11 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           !tournament.lock
         ) {
           // only start countdown automatically if the lobby are full.
-            console.log(
-              "[ player join ] start tournament countdown as lobby is full",
-            ); //// debug
-            // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
-            startTournamentCountdown(tournamentId, broadcast, 10, client);
+          console.log(
+            "[ player join ] start tournament countdown as lobby is full",
+          ); //// debug
+          // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
+          startTournamentCountdown(tournamentId, broadcast, 10, client);
         }
       }
 
@@ -177,9 +177,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           }
 
           // --- allow type ---
-          const allowedTypes = [
-            "ready",
-          ];
+          const allowedTypes = ["ready"];
           if (!allowedTypes.includes(msg.type)) {
             socket.close(1003, `unsupported message type: (${msg.type})`);
             return;
@@ -237,7 +235,6 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
               startTournamentCountdown(tournamentId, broadcast, 0, client);
             }
           }
-
         } catch (err) {
           console.error("Error handling message:", err);
           socket.close(1011, "Internal server error");

@@ -197,7 +197,9 @@ const MatchView: React.FC = () => {
       <Card size="wide">
         <TournamentHeader>{stageHeader}</TournamentHeader>
         {countdown !== null && countdown > 0 && (
-          <div className="match-countdown text-white text-6xl font-bold">{countdown}</div>
+          <div className="match-countdown text-white text-6xl font-bold">
+            {countdown}
+          </div>
         )}
 
         <div className="w-full flex-row-between px-2 font-bold text-white text-2xl text-center">
