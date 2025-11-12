@@ -61,7 +61,10 @@ export interface TournamentLobby {
   lobbyTimeoutStarted?: boolean; // ✅ Flag to indicate if timeout has started
   dummyPlayers?: Set<number>;
   nextStageExpectedPlayers?: number[];
-  expectedPlayerInfo?: Map<number, { id:number, username: string; spriteUrl: string }>;
+  expectedPlayerInfo?: Map<
+    number,
+    { id: number; username: string; spriteUrl: string }
+  >;
 }
 
 export interface DummyPlayer extends TournamentPlayerWs {

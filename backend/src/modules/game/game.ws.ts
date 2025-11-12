@@ -76,7 +76,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const playerRole = room.clientRoles.get(clientId);
       const opponentTeam = side === "left" ? "right" : "left";
       const opponentPlayers = room.gameState.teams[opponentTeam];
-      const hasOpponentDummy = opponentPlayers?.some(p => !p.online) || false;
+      const hasOpponentDummy = opponentPlayers?.some((p) => !p.online) || false;
 
       //try {
       //    socket.send(JSON.stringify({ type: "handshakePing"}));
@@ -197,9 +197,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
             // ✅ If opponent is dummy, add dummy player to game automatically
             if (hasOpponentDummy) {
               const dummyTeam = side === "left" ? 1 : 0;
-              const dummyPlayers = opponentTeam === "left"
-                ? room.gameState.teams.left
-                : room.gameState.teams.right;
+              const dummyPlayers =
+                opponentTeam === "left"
+                  ? room.gameState.teams.left
+                  : room.gameState.teams.right;
 
               if (dummyPlayers && dummyPlayers.length > 0) {
                 const dummyPlayer = dummyPlayers[0];
@@ -219,7 +220,9 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
                   }),
                 );
 
-                console.log(`[game] Added dummy player ${dummyPlayer.clientId} to game`);
+                console.log(
+                  `[game] Added dummy player ${dummyPlayer.clientId} to game`,
+                );
 
                 // ✅ Broadcast updated world first
                 const fullWorld = compile(room.game, true, room.setting);
@@ -234,7 +237,9 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
                 // ✅ Wait a bit then immediately force win for real player
                 setTimeout(() => {
                   const winner = side === "left" ? "left" : "right";
-                  console.log(`[game] Dummy opponent detected. Real player ${clientId} (${side}) wins by forfeit.`);
+                  console.log(
+                    `[game] Dummy opponent detected. Real player ${clientId} (${side}) wins by forfeit.`,
+                  );
 
                   // Use existing forceEnd method from pong.ts
                   room.game.forceEnd(winner);
@@ -251,8 +256,6 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
                 console.error("Failed to send full world:", err);
               }
             }
-
-
           } else if (msg.type === "fetch_world") {
             console.log("requested for full world =>", clientId); ////debug
 

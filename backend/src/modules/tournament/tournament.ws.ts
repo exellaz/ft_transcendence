@@ -169,11 +169,11 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           !tournament.lock
         ) {
           // only start countdown automatically if the lobby are full.
-            console.log(
-              "[ player join ] start tournament countdown as lobby is full",
-            ); //// debug
-            // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
-            startTournamentCountdown(tournamentId, broadcast, 1, client);
+          console.log(
+            "[ player join ] start tournament countdown as lobby is full",
+          ); //// debug
+          // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
+          startTournamentCountdown(tournamentId, broadcast, 1, client);
         }
       }
 

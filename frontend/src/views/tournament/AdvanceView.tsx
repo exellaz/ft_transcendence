@@ -20,9 +20,9 @@ const AdvanceView: React.FC = () => {
   // Countdown Timer force to join the next game
   React.useEffect(() => {
     if (countdown <= 0) {
-        // Optional: Auto-click continue OR let backend handle the forfeiture
-         handleContinueClick();
-        return;
+      // Optional: Auto-click continue OR let backend handle the forfeiture
+      handleContinueClick();
+      return;
     }
     const timer = setInterval(() => setCountDown((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
@@ -73,7 +73,7 @@ const AdvanceView: React.FC = () => {
 
           {/* Timer Display */}
           <p className="text-red-500 text-lg font-bold">
-             Please join next round in: {countdown}s
+            Please join next round in: {countdown}s
           </p>
 
           <div className="w-40 h-40">
