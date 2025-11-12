@@ -11,7 +11,9 @@ export function removeOnlineUser(userId: number) {
   onlineUsers.delete(userId);
 }
 
-export function getOnlineSocket(userId: number): HeartbeatWebSocket | undefined {
+export function getOnlineSocket(
+  userId: number,
+): HeartbeatWebSocket | undefined {
   return onlineUsers.get(userId);
 }
 
@@ -45,23 +47,26 @@ export async function notifyFriendsStatus(userId: number, isOnline: boolean) {
   });
 }
 
-export async function sendOnlineFriendsList(userId: number, ws: HeartbeatWebSocket) {
-    const friends: number[] = await getFriendsOfUser(userId);
-    const onlineFriendIds: number[] = friends.filter((friendId) =>
-      onlineUsers.has(friendId),
-    );
-    console.log(
-      `[Online Status websocket] Sending online friends to ${userId}:`,
-      onlineFriendIds,
-    );
-  
-    ws.send(
-      JSON.stringify({
-        type: "ONLINE_FRIENDS_LIST",
-        onlineFriends: onlineFriendIds,
-      }),
-    );
-  }
+export async function sendOnlineFriendsList(
+  userId: number,
+  ws: HeartbeatWebSocket,
+) {
+  const friends: number[] = await getFriendsOfUser(userId);
+  const onlineFriendIds: number[] = friends.filter((friendId) =>
+    onlineUsers.has(friendId),
+  );
+  console.log(
+    `[Online Status websocket] Sending online friends to ${userId}:`,
+    onlineFriendIds,
+  );
+
+  ws.send(
+    JSON.stringify({
+      type: "ONLINE_FRIENDS_LIST",
+      onlineFriends: onlineFriendIds,
+    }),
+  );
+}
 
 // returns a list of friend userIds for a given userId
 export async function getFriendsOfUser(userId: number) {
@@ -71,7 +76,10 @@ export async function getFriendsOfUser(userId: number) {
   return friendIds;
 }
 
-export async function notifyFriendshipUpdateToUsers(requesterId: number, accepterId: number) {
+export async function notifyFriendshipUpdateToUsers(
+  requesterId: number,
+  accepterId: number,
+) {
   const sockets = [onlineUsers.get(requesterId), onlineUsers.get(accepterId)];
   const userIds = [accepterId, requesterId];
 
@@ -89,20 +97,20 @@ export async function notifyFriendshipUpdateToUsers(requesterId: number, accepte
 
 // periodic heartbeat
 setInterval(() => {
-    console.log("[Online Status websocket] Running heartbeat check...");
-    for (const [uid, ws] of onlineUsers.entries()) {
-      if (!ws.isAlive) {
-        console.log(
-          `[Online Status websocket] User ${uid} did not respond. Removing...`,
-        );
-        ws.terminate(); // use ws.close to specify code/reason if needed
-        onlineUsers.delete(uid);
-        notifyFriendsStatus(uid, false);
-        continue;
-      }
-  
-      ws.isAlive = false;
-      ws.ping(); // triggers "pong" event when client replies
-      console.log(`[Online Status websocket] Sent ping to user ${uid}`);
+  console.log("[Online Status websocket] Running heartbeat check...");
+  for (const [uid, ws] of onlineUsers.entries()) {
+    if (!ws.isAlive) {
+      console.log(
+        `[Online Status websocket] User ${uid} did not respond. Removing...`,
+      );
+      ws.terminate(); // use ws.close to specify code/reason if needed
+      onlineUsers.delete(uid);
+      notifyFriendsStatus(uid, false);
+      continue;
     }
-  }, HEARTBEAT_INTERVAL);
+
+    ws.isAlive = false;
+    ws.ping(); // triggers "pong" event when client replies
+    console.log(`[Online Status websocket] Sent ping to user ${uid}`);
+  }
+}, HEARTBEAT_INTERVAL);

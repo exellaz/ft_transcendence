@@ -308,7 +308,12 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 
   return (
     <OnlineStatusContext.Provider
-      value={{ friendStatusMap, isFriendOnline, wsSendMessage, isDuplicateLogin }}
+      value={{
+        friendStatusMap,
+        isFriendOnline,
+        wsSendMessage,
+        isDuplicateLogin,
+      }}
     >
       {children}
     </OnlineStatusContext.Provider>

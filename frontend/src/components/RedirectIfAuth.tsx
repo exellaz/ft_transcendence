@@ -10,7 +10,8 @@ export default function RedirectIfAuth({
 }) {
   const { isAuthenticated } = useUser();
   const { isDuplicateLogin } = useOnlineStatus();
-  if (isAuthenticated && !isDuplicateLogin) { // TODO: add check -> client is not a duplicate login
+  if (isAuthenticated && !isDuplicateLogin) {
+    // TODO: add check -> client is not a duplicate login
     // replace prevents adding a new history entry
     return <Navigate to="/main-menu" replace />;
   }

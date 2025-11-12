@@ -3,7 +3,15 @@ import { WebSocket } from "ws";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { HeartbeatWebSocket, OutgoingMessageMsg } from "./online-status.types";
-import { addOnlineUser, getOnlineCount, getOnlineSocket, isUserOnline, notifyFriendsStatus, removeOnlineUser, sendOnlineFriendsList } from "./online-status.manager";
+import {
+  addOnlineUser,
+  getOnlineCount,
+  getOnlineSocket,
+  isUserOnline,
+  notifyFriendsStatus,
+  removeOnlineUser,
+  sendOnlineFriendsList,
+} from "./online-status.manager";
 
 // map of online users: userId -> WebSocket
 // const onlineUsers = new Map<number, HeartbeatWebSocket>();
@@ -75,7 +83,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         ws.close(4000, "Duplicate login"); // TODO: verify close code
         return;
       }
-      
+
       ws.isAlive = true;
 
       // Add online user to Map

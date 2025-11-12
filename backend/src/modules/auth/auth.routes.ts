@@ -125,7 +125,7 @@ async function authRoutes(fastify: FastifyInstance) {
 
       // Check if userId exist in OnlineUsers Map
       if (onlineUsers.has(user.id)) {
-        console.log(`[DUPLICATE LOGIN] UserId ${user.id} already logged in`);       
+        console.log(`[DUPLICATE LOGIN] UserId ${user.id} already logged in`);
         throw ApiError.conflict(
           "User is already logged in from another device",
           "USER_ALREADY_LOGGED_IN",
