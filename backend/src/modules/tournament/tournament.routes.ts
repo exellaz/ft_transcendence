@@ -7,10 +7,11 @@ import {
   getUserTournamentHistorySchema,
   getUserTournamentStatsSchema,
 } from "./tournament.schema";
+import { startLobbyTimeout } from "./tournament";
 
 export const tournaments = new Map<number, TournamentLobby>();
 
-function generateTournamentId(): number {
+export function generateTournamentId(): number {
   return parseInt("111" + generateRoomId());
 }
 
@@ -86,9 +87,11 @@ export default async function tournamentRoutes(app: FastifyInstance) {
               stage: existing.stage,
               maxPlayer: existing.maxPlayer,
               tournamentDb: tournamentDb,
+              allowedPlayers: Array.from(existing.allowedPlayers || []),
             };
             console.log(
-              `[ create next tournament ] Reusing existing tournament: ${existing.id} for parent ${parentId}`,
+              `[create-next-tournament] Reusing existing tournament: ${existing.id} for parent ${parentId}`,
+              `Expected players: ${res.allowedPlayers.join(", ")}`,
             ); ////debug
             return res;
           }

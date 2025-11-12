@@ -14,7 +14,19 @@ const AdvanceView: React.FC = () => {
   const translate = (key: string) => t(`AdvanceView.${key}`);
   const navigate = useNavigate();
   const [isAdvancing, setIsAdvancing] = React.useState(false);
+  const [countdown, setCountDown] = React.useState(10); // 10s timer
   //  console.log("AdvanceView location.state:", location.state); ////debug
+
+  // Countdown Timer force to join the next game
+  React.useEffect(() => {
+    if (countdown <= 0) {
+        // Optional: Auto-click continue OR let backend handle the forfeiture
+         handleContinueClick();
+        return;
+    }
+    const timer = setInterval(() => setCountDown((prev) => prev - 1), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   async function handleContinueClick() {
     const lastTournamentId = Number(location.state?.lastTournamentId ?? 0);
@@ -58,6 +70,12 @@ const AdvanceView: React.FC = () => {
           <p className="text-center text-yellow-400 text-2xl">
             {translate("congratulations")} <br /> {translate("next_round")}
           </p>
+
+          {/* Timer Display */}
+          <p className="text-red-500 text-lg font-bold">
+             Please join next round in: {countdown}s
+          </p>
+
           <div className="w-40 h-40">
             <img
               src={location.state?.playerSprite}

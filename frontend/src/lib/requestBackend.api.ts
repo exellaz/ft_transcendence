@@ -207,7 +207,9 @@ export async function getTournamentById(tournamentId: number) {
   try {
     const res = await fetch(`${API_URL}/tournament/${tournamentId}`);
     if (!res.ok) throw new Error("Failed to fetch tournament");
-    return await res.json();
+    const data = await res.json();
+    console.log("fetch tournament: ", data);
+    return data;
   } catch (error) {
     console.error("Failed to fetch tournament:", error);
     return null;

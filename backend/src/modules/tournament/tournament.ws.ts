@@ -4,6 +4,7 @@ import { tournaments } from "./tournament.routes";
 import {
   startTournamentCountdown,
   cancelTournamentCountdown,
+  cancelLobbyTimeout,
 } from "./tournament";
 import { TournamentPlayerWs } from "../../types/interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
@@ -115,6 +116,20 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         (p: TournamentPlayerWs) => p.id === playerId,
       );
       if (!exists) {
+        // ✅ NEW: Check if this player was marked as dummy
+        const wasDummy = tournament.dummyPlayers?.has(playerId);
+
+        if (wasDummy) {
+          // Remove dummy placeholder
+          tournament.players = tournament.players.filter(
+            (p) => !(p.id === playerId && tournament.dummyPlayers?.has(p.id)),
+          );
+          tournament.dummyPlayers?.delete(playerId);
+          console.log(
+            `[Tournament ${tournamentId}] Player ${playerId} joined after dummy creation. Replacing dummy.`,
+          );
+        }
+
         tournament.players.push({
           id: playerId,
           username: playerName,
@@ -141,6 +156,14 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         );
         console.log(`Player ${playerName} joined tournament ${tournamentId}`); //// debug
 
+        // ✅ NEW: Cancel timeout if lobby is full with real players
+        if (
+          tournament.players.length === tournament.maxPlayer &&
+          tournament.dummyPlayers?.size === 0
+        ) {
+          cancelLobbyTimeout(tournamentId);
+        }
+
         if (
           tournament.players.length === tournament.maxPlayer &&
           !tournament.lock
@@ -150,7 +173,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
               "[ player join ] start tournament countdown as lobby is full",
             ); //// debug
             // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
-            startTournamentCountdown(tournamentId, broadcast, 10, client);
+            startTournamentCountdown(tournamentId, broadcast, 1, client);
         }
       }
 

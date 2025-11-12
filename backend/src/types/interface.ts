@@ -56,6 +56,17 @@ export interface TournamentLobby {
   eliminatedOrder?: number[];
   placements?: { clientId: number; rank: number }[];
   rankUpdatedPlayers?: Set<number>; // ✅ Track players whose rank has been updated
+  lobbyCreatedAt?: Date;
+  lobbyTimeout?: NodeJS.Timeout | undefined;
+  lobbyTimeoutStarted?: boolean; // ✅ Flag to indicate if timeout has started
+  dummyPlayers?: Set<number>;
+  nextStageExpectedPlayers?: number[];
+  expectedPlayerInfo?: Map<number, { id:number, username: string; spriteUrl: string }>;
+}
+
+export interface DummyPlayer extends TournamentPlayerWs {
+  isDummy: true;
+  originalPlayerId: number;
 }
 
 export interface TournamentGameRoom {

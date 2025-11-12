@@ -5,6 +5,7 @@ import { handlePlayerDisconnect } from "src/utils/utils.ts";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { clear } from "console";
+import { roomEndGame } from "../room/room";
 
 function closeSocket(socket: WebSocket, statusCode: number, errorMsg: string) {
   socket.close(1003, errorMsg);
@@ -70,6 +71,12 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       let expectingHandshake = true;
       let handshakeTimer: NodeJS.Timeout | null = null;
       const HANDSHAKE_MS = 2000;
+
+      // ✅ Check if opponent is dummy
+      const playerRole = room.clientRoles.get(clientId);
+      const opponentTeam = side === "left" ? "right" : "left";
+      const opponentPlayers = room.gameState.teams[opponentTeam];
+      const hasOpponentDummy = opponentPlayers?.some(p => !p.online) || false;
 
       //try {
       //    socket.send(JSON.stringify({ type: "handshakePing"}));
@@ -187,6 +194,54 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
               }),
             );
 
+            // ✅ If opponent is dummy, add dummy player to game automatically
+            if (hasOpponentDummy) {
+              const dummyTeam = side === "left" ? 1 : 0;
+              const dummyPlayers = opponentTeam === "left"
+                ? room.gameState.teams.left
+                : room.gameState.teams.right;
+
+              if (dummyPlayers && dummyPlayers.length > 0) {
+                const dummyPlayer = dummyPlayers[0];
+                if (!dummyPlayer) {
+                  console.error("No dummy player info found");
+                  return;
+                }
+
+                // Add dummy player to game (will be AI-controlled)
+                room.game.addPlayer(
+                  new Player({
+                    id: dummyPlayer.clientId,
+                    name: dummyPlayer.playerName,
+                    skin: SKIN_MAPPING[dummyPlayer.spriteUrl] ?? 0,
+                    team: dummyTeam,
+                    socket: null, // ✅ No socket for dummy
+                  }),
+                );
+
+                console.log(`[game] Added dummy player ${dummyPlayer.clientId} to game`);
+
+                // ✅ Broadcast updated world first
+                const fullWorld = compile(room.game, true, room.setting);
+                for (const s of room.sockets.keys()) {
+                  try {
+                    s.send(fullWorld);
+                  } catch (err) {
+                    console.error("Failed to send full world:", err);
+                  }
+                }
+
+                // ✅ Wait a bit then immediately force win for real player
+                setTimeout(() => {
+                  const winner = side === "left" ? "left" : "right";
+                  console.log(`[game] Dummy opponent detected. Real player ${clientId} (${side}) wins by forfeit.`);
+
+                  // Use existing forceEnd method from pong.ts
+                  room.game.forceEnd(winner);
+                }, 2000); // Give 2 seconds for client to load game scene
+              }
+            }
+
             // ✅ New addition: broadcast updated world to all
             const fullWorld = compile(room.game, true, room.setting);
             for (const s of room.sockets.keys()) {
@@ -196,6 +251,8 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
                 console.error("Failed to send full world:", err);
               }
             }
+
+
           } else if (msg.type === "fetch_world") {
             console.log("requested for full world =>", clientId); ////debug
 

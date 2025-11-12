@@ -32,6 +32,7 @@ const TournamentLobbyView: React.FC = () => {
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [stage, setStage] = useState<"QF" | "SF" | "F">("QF");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
+  const [joinLobbyCountdown, setJoinLobbyCountdown] = useState(60);
   //  console.log("Tournament ID:", tournamentId); ////debug
   //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
@@ -171,6 +172,14 @@ const TournamentLobbyView: React.FC = () => {
                 <span>{stageHeader}</span>
                 <span>{translate("tournament_lobby")}</span>
               </TournamentHeader>
+
+              {/* ✅ NEW: Show waiting message if lobby not full */}
+              {players.length < (stage === "QF" ? 8 : stage === "SF" ? 4 : 2) && (
+                <div className="text-center text-yellow-400 text-sm">
+                  {translate("waiting_for_players")} ({players.length}/
+                  {stage === "QF" ? 8 : stage === "SF" ? 4 : 2})
+                </div>
+              )}
 
               {/* players ready status */}
               <ReadyPlayers players={players} />

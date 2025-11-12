@@ -1,4 +1,4 @@
-import { tournaments } from "./tournament.routes";
+import { tournaments, generateTournamentId } from "./tournament.routes";
 import { rooms, roomEndGame, generateRoomId } from "../room/room";
 import { PongGame } from "@shared/game/pong.ts";
 import {
@@ -7,6 +7,7 @@ import {
   Room,
   TournamentLobby,
   TournamentMatch,
+  TournamentPlayerWs,
 } from "../../types/interface";
 import WebSocket from "ws";
 import {
@@ -16,6 +17,267 @@ import {
   updateTournamentPlayerRanking,
   updateTournamentStatus,
 } from "./tournament.service";
+
+/**
+ * @brief Add a winner to the next tournament's expected players list
+ * @param currentTournamentId - The ID of the current tournament
+ * @param winnerId - The ID of the winner to add to next tournament
+ */
+export function addWinnerToNextTournament(
+  currentTournamentId: number,
+  winnerId: number,
+) {
+  const currentTournament = tournaments.get(currentTournamentId);
+  if (!currentTournament) return;
+
+  // Get or create the next tournament
+  let nextTournamentId = currentTournament.nextTournamentId;
+  if (!nextTournamentId) {
+    console.log(
+      `[Tournament ${currentTournamentId}] No next tournament created yet for winner ${winnerId}`,
+    );
+    return;
+  }
+
+  const nextTournament = tournaments.get(nextTournamentId);
+  if (!nextTournament) {
+    console.warn(
+      `[Tournament ${currentTournamentId}] Next tournament ${nextTournamentId} not found`,
+    );
+    return;
+  }
+
+  // Initialize allowedPlayers and nextStageExpectedPlayers if needed
+  if (!nextTournament.allowedPlayers) {
+    nextTournament.allowedPlayers = new Set<number>();
+  }
+  if (!nextTournament.nextStageExpectedPlayers) {
+    nextTournament.nextStageExpectedPlayers = [];
+  }
+
+    // ✅ NEW: Store winner's full info for later reference
+  if (!nextTournament.expectedPlayerInfo) {
+    nextTournament.expectedPlayerInfo = new Map();
+  }
+
+  // Find winner's info from current tournament
+  const winnerInfo = currentTournament.players.find(p => p.id === winnerId);
+  if (winnerInfo) {
+    nextTournament.expectedPlayerInfo.set(winnerId, {
+      id: winnerInfo.id,
+      username: winnerInfo.username,
+      spriteUrl: winnerInfo.spriteUrl,
+    });
+    console.log(
+      `[Tournament ${nextTournamentId}] Stored info for winner ${winnerId}: ${winnerInfo.username}`,
+    );
+  }
+
+  // Add winner to allowed players
+  nextTournament.allowedPlayers.add(winnerId);
+  if (!nextTournament.nextStageExpectedPlayers.includes(winnerId)) {
+    nextTournament.nextStageExpectedPlayers.push(winnerId);
+  }
+
+  console.log(
+    `[Tournament ${nextTournamentId}] Added winner ${winnerId} to expected players. Current: ${Array.from(nextTournament.allowedPlayers).join(", ")}`,
+  );
+
+  // ✅ ONLY start timeout on FIRST winner AND if timeout not already running
+  const allAllowedPlayer = nextTournament.allowedPlayers.size === nextTournament.maxPlayer;
+  const timeoutNotStarted = !nextTournament.lobbyTimeout && !nextTournament.lobbyTimeoutStarted;
+
+  // If this is the first winner, start the lobby timeout
+  if (allAllowedPlayer && timeoutNotStarted) {
+    const expectedPlayerCount = nextTournament.maxPlayer;
+    const timeoutSeconds = 30;
+    nextTournament.lobbyTimeoutStarted = true; // Mark that timeout has started
+    console.log(
+      `[Tournament ${nextTournamentId}] collected all winners. Starting ${timeoutSeconds}s timeout for ${expectedPlayerCount} players`,
+    );
+    startLobbyTimeout(nextTournamentId, expectedPlayerCount, timeoutSeconds);
+  } else {
+    console.log(
+      `[Tournament ${nextTournamentId}] Winner added, timeout already running (started: ${nextTournament.lobbyTimeoutStarted})`,
+    );
+  }
+}
+
+/**
+ * @brief Start a timeout timer for tournament lobby to handle no-show players
+ * @param tournamentId - The ID of the tournament
+ * @param expectedPlayerCount - Number of players expected in the lobby
+ * @param timeoutSeconds - Timeout duration in seconds (default: 60)
+ */
+export function startLobbyTimeout(
+  tournamentId: number,
+  expectedPlayerCount: number,
+  timeoutSeconds: number,
+) {
+  const tournament = tournaments.get(tournamentId);
+  if (!tournament) return;
+
+  // ✅ Don't restart if already running
+  if (tournament.lobbyTimeout) {
+    console.log(`[Tournament ${tournamentId}] ⚠️ Timeout already running, NOT restarting`);
+    return;
+  }
+
+  const startTime = Date.now();
+  const expectedEndTime = startTime + (timeoutSeconds * 1000);
+
+  console.log(
+    `[Tournament ${tournamentId}] ⏰ Starting ${timeoutSeconds}s timeout`,
+    `\n  Start: ${new Date(startTime).toISOString()}`,
+    `\n  End:   ${new Date(expectedEndTime).toISOString()}`,
+  );
+
+  // Start new timeout
+  tournament.lobbyTimeout = setTimeout(async () => {
+    const actualEndTime = Date.now();
+    const actualDuration = (actualEndTime - startTime) / 1000;
+
+    console.log(
+      `[Tournament ${tournamentId}] ⏰ Timeout FIRED after ${actualDuration.toFixed(2)}s (expected ${timeoutSeconds}s)`,
+      `\n  Expected: ${new Date(expectedEndTime).toISOString()}`,
+      `\n  Actual:   ${new Date(actualEndTime).toISOString()}`,
+    );
+
+    const t = tournaments.get(tournamentId);
+    if (!t || t.lock) return;
+
+    const currentPlayerCount = t.players.length;
+    const missingPlayerCount = expectedPlayerCount - currentPlayerCount;
+
+    console.log(
+      `[Tournament ${tournamentId}] Expected: ${expectedPlayerCount}, Current: ${currentPlayerCount}, Missing: ${missingPlayerCount}`,
+    );
+
+    if (missingPlayerCount > 0) {
+      // Get list of expected players who didn't show up
+      const expectedPlayers = Array.from(t.allowedPlayers || []);
+      console.log(`[Tournament ${tournamentId}] Expected players: ${expectedPlayers.join(", ")}`);
+      const currentPlayerIds = t.players.map((p) => p.id);
+      console.log(`[Tournament ${tournamentId}] Current players: ${currentPlayerIds.join(", ")}`);
+      const noShowPlayers = expectedPlayers.filter(
+        (id) => !currentPlayerIds.includes(id),
+      );
+
+      console.log(`[Tournament ${tournamentId}] Creating dummies for: ${noShowPlayers.join(", ")}`);
+
+
+      // Create dummy players for no-shows
+      for (const noShowPlayerId of noShowPlayers.slice(0, missingPlayerCount)) {
+        // Try to find original player info from parent tournament
+        let playerInfo = t.expectedPlayerInfo?.get(noShowPlayerId);
+        if (!playerInfo) {
+            return;
+        }
+
+        const dummyPlayer: TournamentPlayerWs = {
+          id: noShowPlayerId,
+          username: playerInfo.username,
+          spriteUrl: playerInfo.spriteUrl,
+          ready: true, // Dummies are always "ready"
+        };
+
+        t.players.push(dummyPlayer);
+
+        if (!t.dummyPlayers) {
+          t.dummyPlayers = new Set();
+        }
+        t.dummyPlayers?.add(noShowPlayerId);
+
+        console.log(
+          `[Tournament ${tournamentId}] Created dummy: ${dummyPlayer.username}`,
+        );
+      }
+
+      // Broadcast updated player list
+      if (t.broadcast) {
+        t.broadcast(
+          JSON.stringify({
+            type: "playerJoined",
+            players: t.players,
+          }),
+        );
+      }
+
+      // Now that lobby is full, start countdown
+      if (
+        t.players.length === t.maxPlayer &&
+        t.broadcast &&
+        t.clientMap &&
+        !t.lock
+      ) {
+        console.log(
+          `[Tournament ${tournamentId}] Lobby full after adding dummies. Starting countdown...`,
+        );
+        startTournamentCountdown(tournamentId, t.broadcast, 10, t.clientMap);
+      }
+    }
+
+    // ✅ Clear the timeout reference and flag
+    t.lobbyTimeout = undefined;
+    t.lobbyTimeoutStarted = false;
+  }, timeoutSeconds * 1000);
+}
+
+/**
+ * @brief Assign rank to no-show player based on tournament stage
+ * @param tournamentId - The ID of the tournament
+ * @param playerId - The player who didn't show up
+ * @param stage - Current tournament stage
+ */
+//async function assignNoShowRank(
+//  tournamentId: number,
+//  playerId: number,
+//  stage: "QF" | "SF" | "F",
+//) {
+//  const tournament = tournaments.get(tournamentId);
+//  if (!tournament || !tournament.playerMap) return;
+
+//  // Determine rank based on stage (lowest rank in that stage)
+//  const stageRankMap: Record<"QF" | "SF" | "F", number> = {
+//    QF: 8, // Quarterfinals no-show: 8th place
+//    SF: 4, // Semifinals no-show: 4th place
+//    F: 2, // Finals no-show: 2nd place (runner-up)
+//  };
+
+//  const rank = stageRankMap[stage];
+//  const tournamentPlayerId = tournament.playerMap.get(playerId);
+
+//  if (tournamentPlayerId) {
+//    const result = await updateTournamentPlayerRanking(rank, tournamentPlayerId);
+//    if (result.success) {
+//      console.log(
+//        `[Tournament ${tournamentId}] Assigned rank ${rank} to no-show player ${playerId}`,
+//      );
+//      tournament.rankUpdatedPlayers?.add(playerId);
+//    } else {
+//      console.error(
+//        `[Tournament ${tournamentId}] Failed to assign rank to no-show player ${playerId}:`,
+//        result.error,
+//      );
+//    }
+//  }
+//}
+
+/**
+ * @brief Cancel lobby timeout
+ * @param tournamentId - The ID of the tournament
+ */
+export function cancelLobbyTimeout(tournamentId: number) {
+  const tournament = tournaments.get(tournamentId);
+  if (!tournament) return;
+
+  if (tournament.lobbyTimeout) {
+    clearTimeout(tournament.lobbyTimeout);
+    tournament.lobbyTimeout = undefined;
+    tournament.lobbyTimeoutStarted = false; // Reset the started flag
+    console.log(`[Tournament ${tournamentId}] Lobby timeout cancelled`);
+  }
+}
 
 /**
  * @brief Start the countdown for a tournament.
@@ -196,6 +458,14 @@ export function createGameRoom(
   const roomId = parseInt("1111" + generateRoomId());
   const roomName = `Tournament ${tournamentId} - Room ${roomId}`;
 
+  if (!playerPair[0] || !playerPair[1]) {
+    console.error(`Invalid player pair: ${JSON.stringify(playerPair)}`);
+    return;
+  }
+  const tournament = tournaments.get(tournamentId);
+  const isDummyLeft = tournament?.dummyPlayers?.has(playerPair[0].id) || false;
+  const isDummyRight = tournament?.dummyPlayers?.has(playerPair[1].id) || false;
+
   // Initialize Pong game instance
   const pongGame = new PongGame(
     false,
@@ -236,8 +506,8 @@ export function createGameRoom(
     team: "left",
     leader: false,
     spriteUrl: playerPair[0].spriteUrl,
-    ready: false,
-    online: true,
+    ready: isDummyLeft,
+    online: !isDummyLeft,
   };
 
   const rightPlayer: playerInfo = {
@@ -247,8 +517,8 @@ export function createGameRoom(
     team: "right",
     leader: false,
     spriteUrl: playerPair[1].spriteUrl,
-    ready: false,
-    online: true,
+    ready: isDummyRight,
+    online: !isDummyRight,
   };
 
   // Create the game room with both players and info
@@ -281,7 +551,21 @@ export function createGameRoom(
     private: false,
     inGame: false,
   };
+
   rooms.set(roomId, newRoom);
+
+  // ✅ Handle dummy scenarios
+  if (isDummyLeft && isDummyRight) {
+    // Both players are dummies - end immediately as draw
+    console.log(`[Tournament ${tournamentId}] Both players are dummies in room ${roomId}. Ending as draw.`);
+    setTimeout(async () => {
+      const result = roomEndGame(newRoom, true, "draw", tournamentId);
+      if (result) {
+        await saveMatchResult(result, TournamentLobbyDb, playerPair, tournamentInfo);
+      }
+    }, 1000);
+  }
+
   console.log(
     `Created game room ${roomName} (${roomId}) for tournament ${tournamentId} with players ${leftPlayer.playerName} and ${rightPlayer.playerName}`,
   );
@@ -404,6 +688,59 @@ async function saveMatchResult(
         `[tournament match database] creation failed: `,
         matchResult.error,
       );
+  }
+
+  // ✅ NEW: Create next tournament if this is the first match to finish
+  const isFirstMatchOfStage = !tournament.result || tournament.result.length === 0;
+  const shouldCreateNextTournament =
+    isFirstMatchOfStage &&
+    (tournamentInfo.stage === "QF" || tournamentInfo.stage === "SF");
+
+  if (shouldCreateNextTournament && !tournament.nextTournamentId) {
+    const nextStageMap: Record<string, "SF" | "F" | null> = {
+      QF: "SF",
+      SF: "F",
+      F: null,
+    };
+    const nextStage = nextStageMap[tournamentInfo.stage];
+
+    if (nextStage) {
+      console.log(
+        `[Tournament ${tournamentInfo.id}] Creating next tournament for stage ${nextStage}`,
+      );
+
+      const nextTournamentId = generateTournamentId();
+      const nextTournament: TournamentLobby = {
+        id: nextTournamentId,
+        name: `Tournament ${nextTournamentId}`,
+        players: [],
+        lock: false,
+        stage: nextStage,
+        countdownTimer: undefined,
+        countdownRemaining: undefined,
+        maxPlayer: nextStage === "SF" ? 4 : 2,
+        tournamentDb: TournamentLobbyDb,
+        allowedPlayers: new Set<number>(),
+        nextStageExpectedPlayers: [],
+        parentTournamentId: tournamentInfo.id,
+      };
+
+      tournaments.set(nextTournamentId, nextTournament);
+      tournament.nextTournamentId = nextTournamentId;
+
+      console.log(
+        `[Tournament ${nextTournamentId}] Created next tournament (${nextStage}), waiting for winners...`,
+      );
+    }
+  }
+
+  // ✅ NEW: Add winner to next tournament immediately
+  if (
+    result.winnerId !== "draw" &&
+    typeof result.winnerId === "number" &&
+    tournament.nextTournamentId
+  ) {
+    addWinnerToNextTournament(tournamentInfo.id, result.winnerId);
   }
 
   // ✅ NEW: Update loser's ranking immediately after game ends

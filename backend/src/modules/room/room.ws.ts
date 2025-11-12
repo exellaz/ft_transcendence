@@ -128,7 +128,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
               const rightPlayer = room.gameState.teams.right.length;
               const totalPlayers = leftPlayer + rightPlayer;
               if (totalPlayers >= 2 && !matchCountdowns.has(room.id)) {
-                let remaining = 10;
+                let remaining = 1;
                 broadcast(room, {
                   type: "matchCountdown",
                   remaining,
