@@ -19,6 +19,10 @@ export function getOnlineCount(): number {
   return onlineUsers.size;
 }
 
+export function isUserOnline(userId: number): boolean {
+  return onlineUsers.has(userId);
+}
+
 // notifies all friends of a user about their online/offline status
 export async function notifyFriendsStatus(userId: number, isOnline: boolean) {
   console.log(

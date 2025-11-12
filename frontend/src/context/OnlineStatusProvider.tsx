@@ -15,6 +15,7 @@ import { useApiQuery } from "@/hooks/useApi";
 import { getAcceptedFriendshipsByUserId } from "@/lib/friendsApiClient";
 import type { UserWithFriendshipId } from "@/types/friendsApi";
 import type { FriendChatMessage } from "@/types/friendsApi";
+import { useNavigate } from "react-router-dom";
 
 // -------------------------
 // Define WebSocket message types
@@ -54,13 +55,19 @@ interface MessageErrMsg {
   error: string;
 }
 
+interface DuplicateLoginMsg {
+  type: "DUPLICATE_LOGIN";
+  message: string;
+}
+
 type ServerMessage =
   | OnlineFriendsListMsg
   | FriendStatusMsg
   | FriendshipUpdateMsg
   | FriendMessageMsg
   | MessageAckMsg
-  | MessageErrMsg;
+  | MessageErrMsg
+  | DuplicateLoginMsg;
 
 // -------------------------
 // Context value interface
@@ -73,6 +80,7 @@ interface OnlineStatusContextType {
     friendshipId: number,
     message: string,
   ) => void;
+  isDuplicateLogin: boolean;
 }
 
 // -------------------------
@@ -90,6 +98,8 @@ interface OnlineStatusProviderProps {
   // friendIds: number[];
   children: ReactNode;
 }
+
+export let isDuplicateLogin: boolean = false;
 
 export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   // currentUserId,
@@ -118,6 +128,8 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   const [friendStatusMap, setFriendStatusMap] = useState<Map<number, boolean>>(
     () => new Map(friendIds.map((id) => [id, false])),
   );
+
+  const navigate = useNavigate();
 
   // Rebuild the status map when friends change
   useEffect(() => {
@@ -239,6 +251,14 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
           );
           break;
         }
+        case "DUPLICATE_LOGIN":
+          console.warn(
+            "[Online Status websocket] Duplicate login detected:",
+            data.message,
+          );
+          isDuplicateLogin = true; // TODO:
+          navigate("/login");
+          break;
 
         default:
           console.warn("⚠️ Unknown message type:", data);
@@ -289,7 +309,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
 
   return (
     <OnlineStatusContext.Provider
-      value={{ friendStatusMap, isFriendOnline, wsSendMessage }}
+      value={{ friendStatusMap, isFriendOnline, wsSendMessage, isDuplicateLogin }}
     >
       {children}
     </OnlineStatusContext.Provider>

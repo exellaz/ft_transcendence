@@ -3,7 +3,7 @@ import { WebSocket } from "ws";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { HeartbeatWebSocket, OutgoingMessageMsg } from "./online-status.types";
-import { addOnlineUser, getOnlineCount, getOnlineSocket, notifyFriendsStatus, removeOnlineUser, sendOnlineFriendsList } from "./online-status.manager";
+import { addOnlineUser, getOnlineCount, getOnlineSocket, isUserOnline, notifyFriendsStatus, removeOnlineUser, sendOnlineFriendsList } from "./online-status.manager";
 
 // map of online users: userId -> WebSocket
 // const onlineUsers = new Map<number, HeartbeatWebSocket>();
@@ -56,6 +56,26 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       const uid = await validateUserId(ws, userId);
       if (uid === null) return;
 
+      // check if userId exist in onlineUsers map
+      if (isUserOnline(uid)) {
+        console.log(
+          `[DUPLICATE LOGIN] UserId ${uid} already logged in. Closing current connection.`,
+        );
+
+        try {
+          ws.send(
+            JSON.stringify({
+              type: "DUPLICATE_LOGIN",
+              message: "You have been logged out due to a duplicate login.",
+            }),
+          );
+        } catch {
+          // ignore individual socket errors
+        }
+        ws.close(4000, "Duplicate login"); // TODO: verify close code
+        return;
+      }
+      
       ws.isAlive = true;
 
       // Add online user to Map
@@ -166,6 +186,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         console.log(
           `[Online Status websocket] Remaining Online Users: ${getOnlineCount()}`,
         );
+        console.log(`updated onlineUser map size: ${getOnlineCount()}`);
         // Notify friends about offline status
         notifyFriendsStatus(uid, false);
       });
