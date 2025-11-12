@@ -47,7 +47,14 @@ export async function goToNextRoundExternal(opts: {
   playerSprite?: string;
   navigate: NavigateFunction;
 }) {
-  const { lastTournamentId, tournamentDb, clientId, roomId, playerSprite, navigate } = opts;
+  const {
+    lastTournamentId,
+    tournamentDb,
+    clientId,
+    roomId,
+    playerSprite,
+    navigate,
+  } = opts;
   if (!lastTournamentId) {
     navigate("/main-menu");
     return;
@@ -91,7 +98,9 @@ export async function goToNextRoundExternal(opts: {
       try {
         closeMatchWebsocket(roomId, clientId);
       } catch {}
-      navigate(`/tournament/${res.id}`, { state: { tournament: res, selectedSprite: playerSprite } });
+      navigate(`/tournament/${res.id}`, {
+        state: { tournament: res, selectedSprite: playerSprite },
+      });
       return;
     }
 

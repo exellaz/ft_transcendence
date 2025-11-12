@@ -200,9 +200,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           }
 
           // --- allow type ---
-          const allowedTypes = [
-            "ready",
-          ];
+          const allowedTypes = ["ready"];
           if (!allowedTypes.includes(msg.type)) {
             socket.close(1003, `unsupported message type: (${msg.type})`);
             return;
@@ -260,7 +258,6 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
               startTournamentCountdown(tournamentId, broadcast, 0, client);
             }
           }
-
         } catch (err) {
           console.error("Error handling message:", err);
           socket.close(1011, "Internal server error");

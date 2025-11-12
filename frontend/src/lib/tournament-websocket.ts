@@ -148,13 +148,13 @@ export function useTournamentWebSocket({
 
     ws.addEventListener("open", () => {
       console.log("Tournament WS connected", tournamentId, player.id);
-    //  try {
-        //ws.send(JSON.stringify({ type: "requestLobby" }));
-        //persist current tournament id so UI page can close later
-        try {
-          sessionStorage.setItem("tournamentId", String(tournamentId));
-        } catch {}
-    //  } catch {}
+      //  try {
+      //ws.send(JSON.stringify({ type: "requestLobby" }));
+      //persist current tournament id so UI page can close later
+      try {
+        sessionStorage.setItem("tournamentId", String(tournamentId));
+      } catch {}
+      //  } catch {}
     });
 
     ws.addEventListener("message", (event) => {
