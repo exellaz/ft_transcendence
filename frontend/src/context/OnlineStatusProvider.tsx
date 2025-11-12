@@ -99,14 +99,13 @@ interface OnlineStatusProviderProps {
   children: ReactNode;
 }
 
-export let isDuplicateLogin: boolean = false;
-
 export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   // currentUserId,
   // friendIds,
   children,
 }) => {
   const { user, isAuthenticated, token } = useUser();
+  const [isDuplicateLogin, setIsDuplicateLogin] = useState(false);
 
   const userId = user?.id ?? 0;
 
@@ -256,7 +255,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
             "[Online Status websocket] Duplicate login detected:",
             data.message,
           );
-          isDuplicateLogin = true; // TODO:
+          setIsDuplicateLogin(true);
           navigate("/login");
           break;
 
