@@ -37,10 +37,17 @@ export interface GetUserResponse extends ApiResponse<User> {}
 export interface UpdateUserRequest {
   id: number; // user ID to update
   username?: string; // optional
-  avatarUrl?: string; // optional
 }
 
 export interface UpdateUserResponse extends ApiResponse<User> {}
+
+// PATCH /users/:id/avatar  (upload user avatar)
+export interface UpdateUserAvatarRequest {
+  id: number; // user ID to update
+  avatarFile: File; // avatar file to upload
+}
+
+export interface UpdateUserAvatarResponse extends ApiResponse<User> {}
 
 // GET /users/:id/settings
 export interface GetUserSettingsRequest {
@@ -61,6 +68,7 @@ export interface UpdateUserSettingsResponse extends ApiResponse<UserSettings> {}
 export interface LoginRequest {
   identifier: string;
   password: string;
+  twoFactorCode?: string;
 }
 
 export interface LoginResponse extends ApiResponse<LoginData> {

@@ -2,6 +2,11 @@ import { FastifyInstance } from "fastify";
 import bcrypt from "bcrypt";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
+import path from "path";
+import { uploadsDir } from "../../plugins/avatar-upload";
+import { pipeline } from "stream/promises";
+import { createWriteStream } from "fs";
+import { ApiError } from "src/utils/response";
 
 const prisma = new PrismaClient();
 
@@ -112,5 +117,18 @@ export async function doesUserIdExist(userId: number): Promise<boolean> {
   } catch (err) {
     console.error("Error checking user existence:", err);
     return false;
+  }
+}
+
+export async function uploadFileToServerUploadsDir(
+  file: any,
+  filename: string,
+) {
+  const filepath = path.join(uploadsDir, filename);
+  try {
+    await pipeline(file, createWriteStream(filepath));
+    console.log(`[avatar upload] Saved uploaded avatar file to ${filepath}`);
+  } catch (err) {
+    throw ApiError.internal("Failed to save file", "FILE_SAVE_ERROR");
   }
 }

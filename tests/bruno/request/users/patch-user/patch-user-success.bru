@@ -12,8 +12,7 @@ patch {
 
 body:json {
   {
-    "username": "updatedName",
-    "avatarUrl": "https://example.com/avatar.png"
+    "username": "updatedName"
   }
 }
 
@@ -22,10 +21,10 @@ assert {
   res.body.success: eq true
   res.body.data.id: isNumber
   res.body.data.username: eq "updatedName"
-  res.body.data.avatarUrl: eq "https://example.com/avatar.png"
   res.body.data.joinedAt: isString
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }
