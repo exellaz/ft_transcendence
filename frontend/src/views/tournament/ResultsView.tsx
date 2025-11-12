@@ -78,7 +78,7 @@ const ResultsView: React.FC = () => {
               // close match socket (room) and tournament lobby socket (if present)
               closeMatchWebsocket(roomId, clientId);
 
-              // read persisted tournament id (set by tournament-websocket hook)
+              //close tournament socket
               const tId = Number(
                 sessionStorage.getItem("tournamentId") ??
                   lastTournamentId ??
@@ -91,6 +91,13 @@ const ResultsView: React.FC = () => {
                   console.warn("failed to close tournament ws", e);
                 }
               }
+
+              // Clear tournament ID from session
+              try {
+                sessionStorage.removeItem("tournamentId");
+              } catch {}
+
+              // navigate to main menu
               navigate("/main-menu");
             }}
           >

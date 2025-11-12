@@ -1,6 +1,7 @@
 // lib/tournament-websocket.ts
 import { useEffect, useRef, useState } from "react";
 import type { WaitingTournamentPlayer } from "../types/apiInterfaces";
+import { useNavigate } from "react-router-dom";
 
 // new: shared cache so sockets can be closed from other modules
 const tournamentWebsocket = new Map<string, WebSocket>();
@@ -91,6 +92,7 @@ export function useTournamentWebSocket({
     players: WaitingTournamentPlayer[];
     stage: string;
   } | null>(null);
+  const navigate = useNavigate();
   //  console.log("Tournament ID in useTournamentWebSocket:", tournamentId); ////debug
   //  console.log("Player info in useTournamentWebSocket:", player); ////debug
 
@@ -223,6 +225,41 @@ export function useTournamentWebSocket({
           players: data.players,
           stage: data.stage,
         });
+      }
+
+      if (data.type === "semiFinalEnd") {
+        console.log("[tournament-websocket] Tournament ended:", data);
+
+        // Close WebSocket
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close(1000, "Tournament ended");
+        }
+
+        // Navigate to results page with the winner rank
+        navigate("/results", {
+          state: {
+            winnerRank: data.winnerRank || null,
+            loserRank: null,
+            clientId: data.clientId || player.id,
+            lastTournamentId: data.lastTournamentId || tournamentId,
+            roomId: -1, // No room for tournament end
+          },
+        });
+      }
+
+      if (data.type === "redirectToFinals") {
+        console.log("[tournament-websocket] Advance to finals:", data); ////debug
+
+        if (data.nextTournamentId) {
+          // ✅ Store the finals tournament ID
+          try {
+            sessionStorage.setItem("tournamentId", String(data.nextTournamentId));
+          } catch {}
+
+          // ✅ Navigate to finals WITHOUT closing socket
+          // The socket will automatically reconnect via the useEffect when the component remounts
+          navigate(`/tournament/${data.nextTournamentId}`);
+        }
       }
     });
 
