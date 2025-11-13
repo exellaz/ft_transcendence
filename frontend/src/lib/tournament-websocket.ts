@@ -251,14 +251,30 @@ export function useTournamentWebSocket({
         console.log("[tournament-websocket] Advance to finals:", data); ////debug
 
         if (data.nextTournamentId) {
+          // ✅ Close semi-finals connection IMMEDIATELY before navigation
+          const key = `${tournamentId}-${player.id}`;
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            console.log(`[tournament-websocket] Closing semi-finals connection for player ${player.id}`);
+            wsRef.current.close(1000, "Advancing to finals");
+            tournamentWebsocket.delete(key);
+          }
+
           // ✅ Store the finals tournament ID
           try {
             sessionStorage.setItem("tournamentId", String(data.nextTournamentId));
           } catch {}
 
-          // ✅ Navigate to finals WITHOUT closing socket
-          // The socket will automatically reconnect via the useEffect when the component remounts
-          navigate(`/tournament/${data.nextTournamentId}`);
+          // ✅ Navigate to finals
+          navigate(`/tournament/${data.nextTournamentId}`, {
+            state: {
+              tournament: {
+                id: data.nextTournamentId,
+                maxPlayer: data.maxPlayer,
+                stage: data.stage,
+              },
+              selectedSprite: data.player.spriteUrl,
+            },
+          });
         }
       }
     });
@@ -319,7 +335,6 @@ export function useTournamentWebSocket({
     toggleReady,
     onleave,
     eliminated,
-    //refreshLobby,
     matchAssigned,
     roomError,
   };

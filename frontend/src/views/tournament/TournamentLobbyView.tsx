@@ -32,7 +32,6 @@ const TournamentLobbyView: React.FC = () => {
   const [players, setPlayers] = useState<WaitingTournamentPlayer[]>([]);
   const [stage, setStage] = useState<"QF" | "SF" | "F">("QF");
   const [showQuitTournament, setShowQuitTournament] = useState(false);
-  const [joinLobbyCountdown, setJoinLobbyCountdown] = useState(60);
   //  console.log("Tournament ID:", tournamentId); ////debug
   //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 

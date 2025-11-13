@@ -71,11 +71,6 @@ const AdvanceView: React.FC = () => {
             {translate("congratulations")} <br /> {translate("next_round")}
           </p>
 
-          {/* Timer Display */}
-          <p className="text-red-500 text-lg font-bold">
-             Please join next round in: {countdown}s
-          </p>
-
           <div className="w-40 h-40">
             <img
               src={location.state?.playerSprite}
@@ -88,7 +83,7 @@ const AdvanceView: React.FC = () => {
             onClick={handleContinueClick}
             disabled={isAdvancing}
           >
-            {translate("continue")}
+            {translate("continue")} {`(${countdown})`}
           </Button>
         </div>
       </Card>
