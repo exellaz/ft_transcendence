@@ -173,7 +173,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             "[ player join ] start tournament countdown as lobby is full",
           ); //// debug
           // start a longer countdown (give clients time to mount), or do nothing and wait for ready toggles
-          startTournamentCountdown(tournamentId, broadcast, 1, client);
+          startTournamentCountdown(tournamentId, broadcast, 10, client);
         }
       }
 
