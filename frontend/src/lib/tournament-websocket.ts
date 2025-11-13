@@ -228,7 +228,10 @@ export function useTournamentWebSocket({
       }
 
       if (data.type === "semiFinalEnd") {
-        console.log("[tournament-websocket] Semi-final tournament ended:", data);
+        console.log(
+          "[tournament-websocket] Semi-final tournament ended:",
+          data,
+        );
 
         // Close WebSocket
         if (ws.readyState === WebSocket.OPEN) {
@@ -274,7 +277,9 @@ export function useTournamentWebSocket({
           // ✅ Close semi-finals connection IMMEDIATELY before navigation
           const key = `${tournamentId}-${player.id}`;
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            console.log(`[tournament-websocket] Closing semi-finals connection for player ${player.id}`);
+            console.log(
+              `[tournament-websocket] Closing semi-finals connection for player ${player.id}`,
+            );
             wsRef.current.close(1000, "Advancing to finals");
             tournamentWebsocket.delete(key);
           }
