@@ -60,7 +60,10 @@ export interface TournamentLobby {
   lobbyTimeoutStarted?: boolean;
   dummyPlayers?: Set<number>;
   nextStageExpectedPlayers?: number[];
-  expectedPlayerInfo?: Map<number, { id:number, username: string; spriteUrl: string }>;
+  expectedPlayerInfo?: Map<
+    number,
+    { id: number; username: string; spriteUrl: string }
+  >;
 }
 
 export interface DummyPlayer extends TournamentPlayerWs {

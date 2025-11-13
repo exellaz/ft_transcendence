@@ -281,7 +281,10 @@ export function useTournamentWebSocket({
 
           // ✅ Store the finals tournament ID
           try {
-            sessionStorage.setItem("tournamentId", String(data.nextTournamentId));
+            sessionStorage.setItem(
+              "tournamentId",
+              String(data.nextTournamentId),
+            );
           } catch {}
 
           // ✅ Navigate to finals
