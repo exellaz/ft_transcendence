@@ -84,6 +84,7 @@ const MatchView: React.FC = () => {
     console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
     const id = setTimeout(() => {
+      sessionStorage.setItem("playerSprite", playerSprite);
       console.log("[MatchView] navigating to /game");
       navigate("/game", {
         state: {

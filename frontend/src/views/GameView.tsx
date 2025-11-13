@@ -252,6 +252,7 @@ const GameView: React.FC<GameViewProps> = () => {
       roomName,
       clientId,
       initialRole,
+      playerSprite: playerSprite || "",
       callback: () => {},
       canvasRef,
     };

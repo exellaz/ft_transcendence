@@ -172,14 +172,6 @@ const TournamentLobbyView: React.FC = () => {
                 <span>{translate("tournament_lobby")}</span>
               </TournamentHeader>
 
-              {/* ✅ NEW: Show waiting message if lobby not full */}
-              {players.length < (stage === "QF" ? 8 : stage === "SF" ? 4 : 2) && (
-                <div className="text-center text-yellow-400 text-sm">
-                  {translate("waiting_for_players")} ({players.length}/
-                  {stage === "QF" ? 8 : stage === "SF" ? 4 : 2})
-                </div>
-              )}
-
               {/* players ready status */}
               <ReadyPlayers players={players} />
 

@@ -83,7 +83,7 @@ const AdvanceView: React.FC = () => {
             onClick={handleContinueClick}
             disabled={isAdvancing}
           >
-            {translate("continue")} {`(${countdown})`}
+            {translate("continue")} {`(${countdown} sec)`}
           </Button>
         </div>
       </Card>

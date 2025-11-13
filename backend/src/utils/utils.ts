@@ -29,6 +29,7 @@ export async function validateConnection(
   //  console.log("WebSocket connection URL:", url.href); ////debug
   const roomId = url.searchParams.get("room") || "-1";
   const side = url.searchParams.get("side") as "left" | "right" | undefined;
+  const sprite = url.searchParams.get("sprite") || undefined;
 
   if (!roomId) {
     // console.log("Invalid roomId:", roomId); ////debug
@@ -72,7 +73,8 @@ export async function validateConnection(
     return null;
   }
 
-  const playerSprite = user.avatarUrl;
+  //if have sprite from url param, use it; otherwise use avatarUrl from user profile
+  const playerSprite = sprite || user.avatarUrl;
   if (!playerSprite) {
     socket.close(1008, "User has no sprite");
     return null;

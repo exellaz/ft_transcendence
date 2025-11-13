@@ -9,6 +9,7 @@ interface UseGameWebSocketParams {
   roomName: string;
   clientId: number;
   initialRole: string;
+  playerSprite?: string;
   callback: (socket: WebSocket) => void;
   isOffline?: boolean;
   onError?: (msg: string) => void;
@@ -28,6 +29,7 @@ export function useGameWebSocket({
   roomId,
   initialRole,
   clientId,
+  playerSprite,
   isOffline = false,
   onError,
   callback,
@@ -74,7 +76,7 @@ export function useGameWebSocket({
 
     const ws = new WebSocket(
       import.meta.env.VITE_WS_URL +
-        `/ws-game?room=${roomId}&side=${initialRole}`,
+        `/ws-game?room=${roomId}&side=${initialRole}&sprite=${encodeURIComponent(playerSprite ?? "")}`,
       [userJWT],
     );
     socketRef.current = true;
