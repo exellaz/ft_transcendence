@@ -228,11 +228,31 @@ export function useTournamentWebSocket({
       }
 
       if (data.type === "semiFinalEnd") {
-        console.log("[tournament-websocket] Tournament ended:", data);
+        console.log("[tournament-websocket] Semi-final tournament ended:", data);
 
         // Close WebSocket
         if (ws.readyState === WebSocket.OPEN) {
-          ws.close(1000, "Tournament ended");
+          ws.close(1000, "Semi-final tournament ended");
+        }
+
+        // Navigate to results page with the winner rank
+        navigate("/results", {
+          state: {
+            winnerRank: data.winnerRank || null,
+            loserRank: null,
+            clientId: data.clientId || player.id,
+            lastTournamentId: data.lastTournamentId || tournamentId,
+            roomId: -1, // No room for tournament end
+          },
+        });
+      }
+
+      if (data.type === "FinalEnded") {
+        console.log("[tournament-websocket] Final tournament ended:", data);
+
+        // Close WebSocket
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close(1000, "Final tournament ended");
         }
 
         // Navigate to results page with the winner rank

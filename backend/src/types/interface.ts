@@ -55,10 +55,9 @@ export interface TournamentLobby {
   tournamentDb?: { id: number; status: string; createdAt: Date } | null;
   eliminatedOrder?: number[];
   placements?: { clientId: number; rank: number }[];
-  rankUpdatedPlayers?: Set<number>; // ✅ Track players whose rank has been updated
-  lobbyCreatedAt?: Date;
+  rankUpdatedPlayers?: Set<number>;
   lobbyTimeout?: NodeJS.Timeout | undefined;
-  lobbyTimeoutStarted?: boolean; // ✅ Flag to indicate if timeout has started
+  lobbyTimeoutStarted?: boolean;
   dummyPlayers?: Set<number>;
   nextStageExpectedPlayers?: number[];
   expectedPlayerInfo?: Map<number, { id:number, username: string; spriteUrl: string }>;

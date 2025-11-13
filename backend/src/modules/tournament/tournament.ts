@@ -149,14 +149,15 @@ export function startLobbyTimeout(
       `[Tournament ${tournamentId}] Stage: ${t.stage}, Expected: ${expectedPlayerCount}, Current: ${currentPlayerCount}, Missing: ${missingPlayerCount}`,
     );
 
-    // ✅ SPECIAL CASE: Semi-finals with only 1 or 2 real players
-    if (t.stage === "SF" && expectedPlayerCount === 4) {
-      await handleSemiFinalSpecialCases(tournamentId, t, currentPlayerCount, expectedPlayerCount);
-      return;
+    if (t.stage === "F") {
+        await handleFinalSpecialCases(tournamentId, t, currentPlayerCount, expectedPlayerCount);
+        return;
     }
 
-    if (missingPlayerCount > 0) {
-      await createDummiesForAFK(tournamentId, t, expectedPlayerCount, missingPlayerCount);
+    // handle semi final special cases (0, 1, 2, 3 players)
+    if (t.stage === "SF") {
+      await handleSemiFinalSpecialCases(tournamentId, t, currentPlayerCount, expectedPlayerCount);
+      return;
     }
 
     // ✅ Clear the timeout reference and flag
@@ -166,7 +167,216 @@ export function startLobbyTimeout(
 }
 
 /**
- * @brief Handle special cases in semi-finals when only 1 or 2 players show up
+ * @brief Handle special cases in finals when 0, 1, or 2 players show up
+ */
+async function handleFinalSpecialCases(
+  tournamentId: number,
+  tournament: TournamentLobby,
+  currentPlayerCount: number,
+  expectedPlayerCount: number,
+) {
+  const expectedPlayers = Array.from(tournament.allowedPlayers || []);
+  const currentPlayerIds = tournament.players.map((p) => p.id);
+  const noShowPlayers = expectedPlayers.filter(
+    (id) => !currentPlayerIds.includes(id),
+  );
+
+  console.log(
+    `[Tournament ${tournamentId}] Finals special case: ${currentPlayerCount} players showed up`
+  );
+
+  // ✅ Initialize playerMap if needed
+  if (!tournament.playerMap) {
+    tournament.playerMap = new Map();
+  }
+
+  if (!tournament.rankUpdatedPlayers) {
+    tournament.rankUpdatedPlayers = new Set();
+  }
+
+  // ✅ CASE 1: No players showed up - assign random ranks 1, 2 to no-shows
+  if (currentPlayerCount === 0) {
+    console.log(`[Tournament ${tournamentId}] Finals: No players showed up. Assigning random ranks 1-2.`);
+
+    const AFKRanks = [1, 2];
+
+    for (let i = 0; i < noShowPlayers.length && i < AFKRanks.length; i++) {
+      const playerId = noShowPlayers[i];
+      const rank = AFKRanks[i];
+      if (!playerId || !rank) continue;
+
+    //  console.log(`[Tournament ${tournamentId}] Processing no-show player ${playerId} for rank ${rank}`); ////debug
+
+      // Create tournament player record if needed
+      let tournamentPlayerId = tournament.playerMap.get(playerId);
+
+      if (!tournamentPlayerId && tournament.tournamentDb) {
+        //console.log(`[Tournament ${tournamentId}] Creating tournament player record for no-show player ${playerId}`); ////debug
+
+        const createResult = await createTournamentPlayer({
+          tournamentId: tournament.tournamentDb.id,
+          userId: playerId,
+          ranking: 0,
+        });
+
+        if (createResult.success && createResult.data) {
+          tournamentPlayerId = createResult.data.id;
+          tournament.playerMap.set(playerId, tournamentPlayerId);
+          console.log(`[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`);
+        } else {
+          console.error(`[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK ${playerId}:`, createResult.error);
+          continue;
+        }
+      }
+
+      // Update rank
+      if (tournamentPlayerId) {
+        //console.log(`[Tournament ${tournamentId}] Updating rank ${rank} for tournament player ID ${tournamentPlayerId}`); ////debug
+        const updateResult = await updateTournamentPlayerRanking(rank, tournamentPlayerId);
+        if (updateResult.success) {
+          tournament.rankUpdatedPlayers.add(playerId);
+          console.log(`[Tournament ${tournamentId}] ✅ update rank ${rank} to AFK player id: ${playerId}`);
+        } else {
+          console.error(`[Tournament ${tournamentId}] ❌ Failed to update rank:`, updateResult.error);
+        }
+      }
+    }
+
+    if (tournament.tournamentDb) {
+      const updateResult = await updateTournamentStatus("COMPLETED", tournament.tournamentDb.id);
+      if (updateResult.success) {
+        console.log(`[Tournament ${tournamentId}] Tournament status updated to COMPLETED`);
+      } else {
+        console.error(`[Tournament ${tournamentId}] Failed to update status:`, updateResult.error);
+      }
+    }
+
+    console.log(`[Tournament ${tournamentId}] Finals completed with no players`);
+
+    // Clean up
+    tournament.rankUpdatedPlayers.clear();
+    tournaments.delete(tournamentId);
+    return;
+  }
+
+  // ✅ CASE 2: Only 1 player showed up - they get rank 1, no-show gets rank 2
+  if (currentPlayerCount === 1) {
+    const winner = tournament.players[0];
+    if (!winner) {
+      console.error(`[Tournament ${tournamentId}] No players found despite count 1`);
+      return;
+    }
+
+    console.log(
+      `[Tournament ${tournamentId}] Finals: Only 1 player (${winner.username}) showed up. Awarding 1st place.`,
+    );
+
+    // Ensure winner has tournament player record
+    let winnerTournamentPlayerId = tournament.playerMap.get(winner.id);
+    if (!winnerTournamentPlayerId && tournament.tournamentDb) {
+    //  console.log(`[Tournament ${tournamentId}] Creating tournament player record for winner ${winner.id}`); ////debug
+      const createResult = await createTournamentPlayer({
+        tournamentId: tournament.tournamentDb.id,
+        userId: winner.id,
+        ranking: 0,
+      });
+      if (createResult.success && createResult.data) {
+        winnerTournamentPlayerId = createResult.data.id;
+        tournament.playerMap.set(winner.id, winnerTournamentPlayerId);
+        console.log(`[Tournament ${tournamentId}] Created tournament player ID ${winnerTournamentPlayerId} for winner ${winner.id}`);
+      } else {
+        console.error(`[Tournament ${tournamentId}] Failed to create tournament player:`, createResult.error);
+      }
+    }
+
+    // Update winner's rank
+    if (winnerTournamentPlayerId) {
+      const updateResult = await updateTournamentPlayerRanking(1, winnerTournamentPlayerId);
+      if (updateResult.success) {
+        tournament.rankUpdatedPlayers.add(winner.id);
+        console.log(`[Tournament ${tournamentId}] ✅ update rank ${updateResult.data?.ranking} to ${winner.username}`);
+      } else {
+        console.error(`[Tournament ${tournamentId}] Failed to update winner rank:`, updateResult.error);
+      }
+    }
+
+    // Assign rank 2 to no-show player
+    if (noShowPlayers.length > 0) {
+      const noShowPlayer = noShowPlayers[0];
+      if (noShowPlayer) {
+        //console.log(`[Tournament ${tournamentId}] Processing AFK player ${noShowPlayer} for rank 2`); ////debug
+
+        let tournamentPlayerId = tournament.playerMap.get(noShowPlayer);
+
+        if (!tournamentPlayerId && tournament.tournamentDb) {
+          const createResult = await createTournamentPlayer({
+            tournamentId: tournament.tournamentDb.id,
+            userId: noShowPlayer,
+            ranking: 0,
+          });
+
+          if (createResult.success && createResult.data) {
+            tournamentPlayerId = createResult.data.id;
+            tournament.playerMap.set(noShowPlayer, tournamentPlayerId);
+            console.log(`[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId}for AFK player ${noShowPlayer}`);
+          } else {
+            console.error(`[Tournament ${tournamentId}] ❌ Failed to create tournament player:`, createResult.error);
+          }
+        }
+
+        if (tournamentPlayerId) {
+          const updateResult = await updateTournamentPlayerRanking(2, tournamentPlayerId);
+          if (updateResult.success) {
+            tournament.rankUpdatedPlayers.add(noShowPlayer);
+            console.log(`[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player id: ${noShowPlayer}`);
+          } else {
+            console.error(`[Tournament ${tournamentId}] ❌ Failed to update rank:`, updateResult.error);
+          }
+        }
+      }
+    }
+
+    if (tournament.tournamentDb) {
+      const updateResult = await updateTournamentStatus("COMPLETED", tournament.tournamentDb.id);
+      if (updateResult.success) {
+        console.log(`[Tournament ${tournamentId}] Tournament status updated to COMPLETED`);
+      } else {
+        console.error(`[Tournament ${tournamentId}] Failed to update status:`, updateResult.error);
+      }
+    }
+
+    // Send winner to results page
+    if (tournament.clientMap) {
+      for (const [ws, info] of tournament.clientMap.entries()) {
+        if (info.playerId === winner.id && ws.readyState === WebSocket.OPEN) {
+          try {
+            ws.send(
+              JSON.stringify({
+                type: "FinalEnded",
+                winnerRank: 1,
+                clientId: winner.id,
+                lastTournamentId: tournamentId,
+                tournamentDb: tournament.tournamentDb?.id,
+              }),
+            );
+          } catch (err) {
+            console.error(`[Tournament ${tournamentId}] Failed to send message:`, err);
+          }
+        }
+      }
+    }
+
+    console.log(`[Tournament ${tournamentId}] Finals completed with 1 player`);
+
+    // Clean up
+    tournament.rankUpdatedPlayers.clear();
+    tournaments.delete(tournamentId);
+    return;
+  }
+}
+
+/**
+ * @brief Handle semi-final special cases where players no-show
  */
 async function handleSemiFinalSpecialCases(
   tournamentId: number,
@@ -189,7 +399,7 @@ async function handleSemiFinalSpecialCases(
     tournament.playerMap = new Map();
   }
 
-  // ✅ CASE 1: 0 player showed up - assign random ranks 1-4 to no-shows
+  // ✅ CASE 1: 0 player showed up - assign random ranks 1-4 to AFK player
   if (currentPlayerCount === 0) {
     console.log(`[Tournament ${tournamentId}] No players showed up in semi-finals. Assigning random ranks 1-4 to no-shows.`);
 
@@ -200,7 +410,7 @@ async function handleSemiFinalSpecialCases(
       const rank = AFKRanks[i];
       if (!playerId || !rank) continue;
 
-      console.log(`[Tournament ${tournamentId}] Processing AFK player ${playerId} for rank ${rank}`);
+    //  console.log(`[Tournament ${tournamentId}] Processing AFK player ${playerId} for rank ${rank}`); ////debug
 
       // Check if tournament player record exists
       let tournamentPlayerId = tournament.playerMap.get(playerId);
@@ -221,8 +431,6 @@ async function handleSemiFinalSpecialCases(
           console.error(`[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK ${playerId}:`, createResult.error);
           continue;
         }
-      } else if (tournamentPlayerId) {
-        console.log(`[Tournament ${tournamentId}] Tournament player record already exists: ${tournamentPlayerId} for user ${playerId}`);
       }
 
       // Update the rank
@@ -235,8 +443,6 @@ async function handleSemiFinalSpecialCases(
         } else {
           console.error(`[Tournament ${tournamentId}] ❌ Failed to update rank for player ${playerId}:`, updateResult.error);
         }
-      } else {
-        console.error(`[Tournament ${tournamentId}] ❌ No tournament player ID available for user ${playerId}`);
       }
     }
 
@@ -266,7 +472,7 @@ async function handleSemiFinalSpecialCases(
     // ✅ Ensure winner has tournament player record
     let winnerTournamentPlayerId = tournament.playerMap.get(winner.id);
     if (!winnerTournamentPlayerId && tournament.tournamentDb) {
-      console.log(`[Tournament ${tournamentId}] Creating tournament player record for winner ${winner.id}`);
+    //  console.log(`[Tournament ${tournamentId}] Creating tournament player record for winner ${winner.id}`); ////debug
       const createResult = await createTournamentPlayer({
         tournamentId: tournament.tournamentDb.id,
         userId: winner.id,
@@ -286,7 +492,7 @@ async function handleSemiFinalSpecialCases(
       const updateResult = await updateTournamentPlayerRanking(1, winnerTournamentPlayerId);
       if (updateResult.success) {
         tournament.rankUpdatedPlayers?.add(winner.id);
-        console.log(`[Tournament ${tournamentId}] ✅ Awarded ${updateResult.data?.ranking} to ${winner.username}`);
+        console.log(`[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to ${winner.username}`);
       } else {
         console.error(`[Tournament ${tournamentId}] Failed to update winner rank:`, updateResult.error);
       }
@@ -300,7 +506,7 @@ async function handleSemiFinalSpecialCases(
       const rank = AFKRanks[i];
       if (!playerId || !rank) continue;
 
-      console.log(`[Tournament ${tournamentId}] Processing AFK player ${playerId} for rank ${rank}`);
+    //  console.log(`[Tournament ${tournamentId}] Processing AFK player ${playerId} for rank ${rank}`); ////debug
 
       // Check if tournament player record exists
       let tournamentPlayerId = tournament.playerMap.get(playerId);
@@ -327,11 +533,11 @@ async function handleSemiFinalSpecialCases(
 
       // Update the rank
       if (tournamentPlayerId) {
-        console.log(`[Tournament ${tournamentId}] Updating rank ${rank} for tournament player ID ${tournamentPlayerId} (user ${playerId})`);
+        //console.log(`[Tournament ${tournamentId}] Updating rank ${rank} for tournament player ID ${tournamentPlayerId} (user ${playerId})`); ////debug
         const updateResult = await updateTournamentPlayerRanking(rank, tournamentPlayerId);
         if (updateResult.success) {
           tournament.rankUpdatedPlayers?.add(playerId);
-          console.log(`[Tournament ${tournamentId}] ✅ Awarded rank ${updateResult.data?.ranking} to AFK player ${playerId}`);
+          console.log(`[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player ${playerId}`);
         } else {
           console.error(`[Tournament ${tournamentId}] ❌ Failed to update rank for player ${playerId}:`, updateResult.error);
         }
@@ -388,7 +594,7 @@ async function handleSemiFinalSpecialCases(
       let playerTournamentId = tournament.playerMap.get(player.id);
 
       if (!playerTournamentId && tournament.tournamentDb) {
-        console.log(`[Tournament ${tournamentId}] Creating tournament player record for ${player.username}`);
+        //console.log(`[Tournament ${tournamentId}] Creating tournament player record for ${player.username}`); ////debug
         const createResult = await createTournamentPlayer({
           tournamentId: tournament.tournamentDb.id,
           userId: player.id,
@@ -428,6 +634,7 @@ async function handleSemiFinalSpecialCases(
         }
       };
 
+      // Create finals tournament lobby
       const finalTournament: TournamentLobby = {
         id: finalTournamentId,
         name: `Tournament Finals ${finalTournamentId}`,
@@ -476,14 +683,14 @@ async function handleSemiFinalSpecialCases(
       const rank = noShowRanks[i];
       if (!playerId || !rank) continue;
 
-      console.log(`[Tournament ${tournamentId}] Processing no-show player ${playerId} for rank ${rank}`);
+    //  console.log(`[Tournament ${tournamentId}] Processing AFK player ${playerId} for rank ${rank}`); ////debug
 
       // Check if tournament player record exists
       let tournamentPlayerId = tournament.playerMap.get(playerId);
 
       // If not, create it
       if (!tournamentPlayerId && tournament.tournamentDb) {
-        console.log(`[Tournament ${tournamentId}] Creating tournament player record for no-show player ${playerId}`);
+        //console.log(`[Tournament ${tournamentId}] Creating tournament player record for AFK player ${playerId}`); ////debug
 
         const createResult = await createTournamentPlayer({
           tournamentId: tournament.tournamentDb.id,
@@ -494,20 +701,20 @@ async function handleSemiFinalSpecialCases(
         if (createResult.success && createResult.data) {
           tournamentPlayerId = createResult.data.id;
           tournament.playerMap.set(playerId, tournamentPlayerId);
-          console.log(`[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for no-show player ${playerId}`);
+          console.log(`[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`);
         } else {
-          console.error(`[Tournament ${tournamentId}] ❌ Failed to create tournament player for no-show ${playerId}:`, createResult.error);
+          console.error(`[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK player ${playerId}:`, createResult.error);
           continue;
         }
       }
 
       // Update the rank
       if (tournamentPlayerId) {
-        console.log(`[Tournament ${tournamentId}] Updating rank ${rank} for tournament player ID ${tournamentPlayerId} (user ${playerId})`);
+        //console.log(`[Tournament ${tournamentId}] Updating rank ${rank} for tournament player ID ${tournamentPlayerId} (user ${playerId})`);
         const updateResult = await updateTournamentPlayerRanking(rank, tournamentPlayerId);
         if (updateResult.success) {
           tournament.rankUpdatedPlayers?.add(playerId);
-          console.log(`[Tournament ${tournamentId}] ✅ Awarded rank ${rank} to no-show player ${playerId}`);
+          console.log(`[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player ${playerId}`);
         } else {
           console.error(`[Tournament ${tournamentId}] ❌ Failed to update rank for player ${playerId}:`, updateResult.error);
         }
@@ -538,7 +745,6 @@ async function handleSemiFinalSpecialCases(
                 }
               }),
             );
-            console.log(`[Tournament ${tournamentId}] ✅ Sent redirect message to player ${info.playerId}`);
           } catch (err) {
             console.error(`[Tournament ${tournamentId}] ❌ Failed to send redirect to player ${info.playerId}:`, err);
           }
