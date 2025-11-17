@@ -52,10 +52,10 @@ export interface TournamentLobby {
   allowedPlayers?: Set<number> | undefined;
   nextTournamentId?: number;
   parentTournamentId?: number;
-  tournamentDb?: { id: number; status: string; createdAt: Date } | null;
+  tournamentDb?: { id: number; status: string; createdAt: Date } | null | undefined;
   eliminatedOrder?: number[];
   placements?: { clientId: number; rank: number }[];
-  rankUpdatedPlayers?: Set<number>;
+  rankUpdatedPlayers?: Set<number> | undefined;
   lobbyTimeout?: NodeJS.Timeout | undefined;
   lobbyTimeoutStarted?: boolean;
   dummyPlayers?: Set<number>;
