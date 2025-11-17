@@ -52,7 +52,10 @@ export interface TournamentLobby {
   allowedPlayers?: Set<number> | undefined;
   nextTournamentId?: number;
   parentTournamentId?: number;
-  tournamentDb?: { id: number; status: string; createdAt: Date } | null | undefined;
+  tournamentDb?:
+    | { id: number; status: string; createdAt: Date }
+    | null
+    | undefined;
   eliminatedOrder?: number[];
   placements?: { clientId: number; rank: number }[];
   rankUpdatedPlayers?: Set<number> | undefined;
