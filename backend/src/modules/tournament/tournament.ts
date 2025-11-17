@@ -1043,46 +1043,6 @@ async function createDummiesForAFK(
 }
 
 /**
- * @brief Assign rank to no-show player based on tournament stage
- * @param tournamentId - The ID of the tournament
- * @param playerId - The player who didn't show up
- * @param stage - Current tournament stage
- */
-//async function assignNoShowRank(
-//  tournamentId: number,
-//  playerId: number,
-//  stage: "QF" | "SF" | "F",
-//) {
-//  const tournament = tournaments.get(tournamentId);
-//  if (!tournament || !tournament.playerMap) return;
-
-//  // Determine rank based on stage (lowest rank in that stage)
-//  const stageRankMap: Record<"QF" | "SF" | "F", number> = {
-//    QF: 8, // Quarterfinals no-show: 8th place
-//    SF: 4, // Semifinals no-show: 4th place
-//    F: 2, // Finals no-show: 2nd place (runner-up)
-//  };
-
-//  const rank = stageRankMap[stage];
-//  const tournamentPlayerId = tournament.playerMap.get(playerId);
-
-//  if (tournamentPlayerId) {
-//    const result = await updateTournamentPlayerRanking(rank, tournamentPlayerId);
-//    if (result.success) {
-//      console.log(
-//        `[Tournament ${tournamentId}] Assigned rank ${rank} to no-show player ${playerId}`,
-//      );
-//      tournament.rankUpdatedPlayers?.add(playerId);
-//    } else {
-//      console.error(
-//        `[Tournament ${tournamentId}] Failed to assign rank to no-show player ${playerId}:`,
-//        result.error,
-//      );
-//    }
-//  }
-//}
-
-/**
  * @brief Cancel lobby timeout
  * @param tournamentId - The ID of the tournament
  */
@@ -1421,11 +1381,42 @@ async function saveMatchResult(
 ) {
   const tournament = tournaments.get(tournamentInfo.id);
   if (!tournament) return;
+
   tournament.playerMap = tournament.playerMap || new Map<number, number>();
 
   // ✅ Initialize tracking set for players whose rank has been updated
   if (!tournament.rankUpdatedPlayers) {
     tournament.rankUpdatedPlayers = new Set<number>();
+  }
+
+  // if is a dummy and remove them
+  const isDummyLeft = tournament.dummyPlayers?.has(result.leftPlayerId) || false;
+  const isDummyRight = tournament.dummyPlayers?.has(result.rightPlayerId) || false;
+
+  if (isDummyLeft || isDummyRight) {
+
+    // Remove dummies from players array
+    if (isDummyLeft) {
+      tournament.players = tournament.players.filter(p => p.id !== result.leftPlayerId);
+      tournament.dummyPlayers?.delete(result.leftPlayerId);
+      console.log(`[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.leftPlayerId}`);
+    }
+
+    if (isDummyRight) {
+      tournament.players = tournament.players.filter(p => p.id !== result.rightPlayerId);
+      tournament.dummyPlayers?.delete(result.rightPlayerId);
+      console.log(`[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.rightPlayerId}`);
+    }
+
+    // Broadcast updated player list to remaining clients
+    if (tournament.broadcast) {
+      tournament.broadcast(
+        JSON.stringify({
+          type: "playerLeft",
+          players: tournament.players,
+        }),
+      );
+    }
   }
 
   //build createdPlayer array by reusing existing players in playerMap if any
@@ -1867,6 +1858,7 @@ async function handleNextRound(
       console.log(
         `[ update tournament DB ] Deleting tournament ${tournamentId} from memory.`,
       );
+      tournament.dummyPlayers?.clear();
       tournament.rankUpdatedPlayers.clear();
       tournaments.delete(tournamentId);
       return;

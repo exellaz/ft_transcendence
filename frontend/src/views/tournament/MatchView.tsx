@@ -83,7 +83,6 @@ const MatchView: React.FC = () => {
   React.useEffect(() => {
     console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
-    const id = setTimeout(() => {
       sessionStorage.setItem("playerSprite", playerSprite);
       console.log("[MatchView] navigating to /game");
       navigate("/game", {
@@ -96,9 +95,6 @@ const MatchView: React.FC = () => {
           },
         },
       });
-    }, 500);
-    // only clear when roomReady flips back or component unmounts
-    return () => clearTimeout(id);
   }, [roomReady, navigate]);
 
   // don't render main UI until required data exists
@@ -151,7 +147,6 @@ const MatchView: React.FC = () => {
   );
 
   sessionStorage.setItem("RoomId", roomId);
-  sessionStorage.setItem("RoomName", `Room ${roomId}`);
   sessionStorage.setItem("playerSide", userDetails?.team || "unknown");
 
   const MatchPlayerCard: React.FC<{
