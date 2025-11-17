@@ -83,18 +83,18 @@ const MatchView: React.FC = () => {
   React.useEffect(() => {
     console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
-      sessionStorage.setItem("playerSprite", playerSprite);
-      console.log("[MatchView] navigating to /game");
-      navigate("/game", {
-        state: {
-          roomId: roomId,
-          player: {
-            id: playerId,
-            name: playerName,
-            spriteUrl: playerSprite,
-          },
+    sessionStorage.setItem("playerSprite", playerSprite);
+    console.log("[MatchView] navigating to /game");
+    navigate("/game", {
+      state: {
+        roomId: roomId,
+        player: {
+          id: playerId,
+          name: playerName,
+          spriteUrl: playerSprite,
         },
-      });
+      },
+    });
   }, [roomReady, navigate]);
 
   // don't render main UI until required data exists

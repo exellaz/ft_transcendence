@@ -1390,22 +1390,31 @@ async function saveMatchResult(
   }
 
   // if is a dummy and remove them
-  const isDummyLeft = tournament.dummyPlayers?.has(result.leftPlayerId) || false;
-  const isDummyRight = tournament.dummyPlayers?.has(result.rightPlayerId) || false;
+  const isDummyLeft =
+    tournament.dummyPlayers?.has(result.leftPlayerId) || false;
+  const isDummyRight =
+    tournament.dummyPlayers?.has(result.rightPlayerId) || false;
 
   if (isDummyLeft || isDummyRight) {
-
     // Remove dummies from players array
     if (isDummyLeft) {
-      tournament.players = tournament.players.filter(p => p.id !== result.leftPlayerId);
+      tournament.players = tournament.players.filter(
+        (p) => p.id !== result.leftPlayerId,
+      );
       tournament.dummyPlayers?.delete(result.leftPlayerId);
-      console.log(`[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.leftPlayerId}`);
+      console.log(
+        `[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.leftPlayerId}`,
+      );
     }
 
     if (isDummyRight) {
-      tournament.players = tournament.players.filter(p => p.id !== result.rightPlayerId);
+      tournament.players = tournament.players.filter(
+        (p) => p.id !== result.rightPlayerId,
+      );
       tournament.dummyPlayers?.delete(result.rightPlayerId);
-      console.log(`[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.rightPlayerId}`);
+      console.log(
+        `[Tournament ${tournamentInfo.id}] Removed dummy player id: ${result.rightPlayerId}`,
+      );
     }
 
     // Broadcast updated player list to remaining clients
