@@ -107,32 +107,6 @@ let lastLoopTime = performance.now();
 export function startRoomLoop(room: Room) {
   if (room.loopHandle) return;
 
-  // mark room as in-game and notify clients once
-  room.inGame = true;
-
-  // debug: log who will receive the start message
-  try {
-    const recipients = Array.from(room.sockets.keys()).map(
-      (s: WebSocket, idx: number) => {
-        const wsSocket = s as WebSocket & {
-          _socket?: { remoteAddress?: string };
-          remoteAddress?: string;
-        };
-        const remote =
-          wsSocket._socket?.remoteAddress ??
-          wsSocket.remoteAddress ??
-          `socket#${idx}`;
-        return remote;
-      },
-    );
-    console.log(
-      `[room] startRoomLoop sending gameStart to ${recipients.length} sockets:`,
-      recipients,
-    );
-  } catch (err) {
-    console.warn("[room] failed to enumerate room.sockets for debug:", err);
-  }
-
   // ✅ Send gameStart signals sequentially with 400ms delay between each
   const socketsArray = Array.from(room.sockets.entries());
 
