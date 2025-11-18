@@ -69,7 +69,8 @@
     "2fa": "双重验证",
     "enter_code": "请输入您的验证器应用中的六位数代码。",
     "verify_code": "验证代码",
-    "invalid_code_error": "代码无效或服务器错误"
+    "invalid_code_error": "代码无效或服务器错误",
+    "user_already_logged_in": "用户已从另一台设备登录"
   },
   "MainMenuView": {
     "tournament_mode": "锦标赛模式",
