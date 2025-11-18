@@ -1,11 +1,5 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import {
-  rooms,
-  createRoom,
-  generateRoomId,
-  DEFAULT_SETTING,
-  Room,
-} from "./room.ts";
+import { rooms, createRoom, generateRoomId, DEFAULT_SETTING } from "./room.ts";
 
 interface RoomParams {
   roomId: number;
@@ -20,8 +14,8 @@ export default async function roomRoutes(app: FastifyInstance) {
       teamSize: room.teamSize,
       leftPlayers: room.gameState.teams.left.length,
       rightPlayers: room.gameState.teams.right.length,
-      gameStarted: room.gameState.gameStarted,
-      gameEnded: !!room.gameState.gameEnded,
+      gameStarted: room.game.state === 2 ? true : false,
+      gameEnded: room.game.state === 3 ? true : false,
       private: room.private,
     }));
     // console.log("responding /rooms: ", response); ////debug
@@ -30,12 +24,10 @@ export default async function roomRoutes(app: FastifyInstance) {
 
   // ----------------------- CREATE ROOM -----------------------
   app.post("/create-room", async (req, reply) => {
-    // console.log("request /Create-room:", req.body); ////debug
-    const body: any = req.body;
-    // console.log("body:", body); ////debug
+    console.log("request /Create-room:", req.body); ////debug
 
     //assign body parameters to variables
-    const { name, teamSize, leaderId, isPrivate } = body as {
+    const { name, teamSize, leaderId, isPrivate } = req.body as {
       name: string;
       teamSize: number;
       leaderId?: number;
@@ -63,12 +55,11 @@ export default async function roomRoutes(app: FastifyInstance) {
 
     //initialize game setting
     const initialSetting: Partial<typeof DEFAULT_SETTING> = {}; // set default value to initial setting
-    initialSetting.ballSpeed = body.ballSpeed ?? DEFAULT_SETTING.ballSpeed;
-    initialSetting.ballSize = body.ballSize ?? DEFAULT_SETTING.ballSize;
-    initialSetting.paddleSpeed =
-      body.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed;
-    initialSetting.scorePoint = body.scorePoint ?? DEFAULT_SETTING.scorePoint;
-    initialSetting.map = body.map ?? DEFAULT_SETTING.map;
+    initialSetting.ballSpeed = DEFAULT_SETTING.ballSpeed ?? -1;
+    initialSetting.ballSize = DEFAULT_SETTING.ballSize ?? -1;
+    initialSetting.paddleSpeed = DEFAULT_SETTING.paddleSpeed ?? -1;
+    initialSetting.scorePoint = DEFAULT_SETTING.scorePoint ?? -1;
+    initialSetting.map = DEFAULT_SETTING.map ?? "unknown map";
 
     // Create and store the new room
     const room = createRoom(
@@ -92,7 +83,7 @@ export default async function roomRoutes(app: FastifyInstance) {
       name,
       teamSize,
       leaderId,
-      gameStarted: room.gameState.gameStarted,
+      gameStarted: room.game.state === 2 ? true : false,
       ...(isPrivate ? { leaderId } : {}), // only include leaderId if private
       private: room.private,
       setting: room.setting, // 👈 important for frontend
@@ -175,11 +166,7 @@ export default async function roomRoutes(app: FastifyInstance) {
         id: room.id,
         name: room.name,
         teamSize: room.teamSize,
-        width: room.width,
-        height: room.height,
-        setting: room.setting, // 👈 important for frontend
-        gameStarted: room.gameState.gameStarted,
-        gameEnded: !!room.gameState.gameEnded,
+        setting: room.setting,
         private: room.private,
         leaderId: room.leaderId,
       };

@@ -1,15 +1,22 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 import {
   createTournamentLobby,
   fetchTournaments,
 } from "../lib/requestBackend.api";
+import type { User } from "@/types/usersApi";
+import { useUser } from "@/context/UserProvider";
 
 import Background from "../components/Background";
 import Card from "../components/Card";
 import ChooseSpriteContents from "../components/ChooseSpriteContents";
+import type { TournamentLobby } from "../../../backend/src/types/interface";
 
-async function handleQuickJoinTournament(user: any, navigate: any) {
+async function handleJoinTournament(
+  user: User | null,
+  navigate: NavigateFunction,
+  selectedSprite?: string,
+) {
   if (!user) return;
 
   // 1. Fetch existing tournaments
@@ -17,37 +24,32 @@ async function handleQuickJoinTournament(user: any, navigate: any) {
 
   // 2. Find one that isn't full (max 8) and hasn't started
   let tournament = tournaments.find(
-    (t: any) => !t.started && t.players.length < 8,
+    (t: TournamentLobby) =>
+      !t.lock && t.players.length < 8 && t.maxPlayer === 8,
   );
+  console.log("Found tournament:", tournament);
 
   // 3. If no suitable tournament, create one
   if (!tournament) {
-    tournament = await createTournamentLobby("Weekend Cup");
+    tournament = await createTournamentLobby("Tournament " + Date.now());
+    console.log("Created new tournament:", tournament);
     if (!tournament) {
       alert("Failed to create tournament");
       return;
     }
   }
 
-  // 4. "Join" happens by adding current user to the tournament.players array
-  //    You can simulate this on frontend until you wire backend
-  if (!tournament.players.some((p: any) => p.id === user.id)) {
-    tournament.players.push({
-      id: user.id,
-      name: user.name,
-      sprite: user.sprite,
-    });
-  }
-
-  // 5. Navigate into the tournament lobby
-  navigate(`/tournament/${tournament.id || tournament.tournamentId}`, {
-    state: { tournament, player: user },
+  // 4. Navigate into the tournament lobby
+  navigate(`/tournament/${tournament.id}`, {
+    state: { tournament, selectedSprite },
   });
 }
 
 const ChooseSpriteView: React.FC = () => {
   const [selectedSprite, setSelectedSprite] = useState<string>("");
   const navigate = useNavigate();
+  const { user } = useUser();
+
   return (
     <Background>
       <Card size="wide">
@@ -55,7 +57,19 @@ const ChooseSpriteView: React.FC = () => {
           selected={selectedSprite}
           onSelectSprite={setSelectedSprite}
           onConfirm={async () => {
-            navigate("/tournament");
+            if (!selectedSprite) {
+              alert("Please choose a sprite before continuing");
+              return;
+            }
+
+            // attach the chosen sprite to the user
+            if (!user || typeof user.id !== "number") {
+              alert("User information is incomplete");
+              return;
+            }
+
+            //navigate to the tournament lobby
+            await handleJoinTournament(user, navigate, selectedSprite);
           }}
         />
       </Card>

@@ -45,10 +45,19 @@ const SinglesRoomView: React.FC = () => {
   const { roomId: paramRoomId } = useParams();
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
+  const [canConnect, setCanConnect] = useState<boolean>(false);
   const userId = user?.id ?? 0;
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [sprite, setSprite] = useState<string>("/assets/yellow-ghost.png");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // prevent player from reloading the page
+  React.useEffect(() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+      sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
+    }
+  }, []);
 
   //function to toggle private and public room
   const handleTogglePrivacy = () => {
@@ -126,6 +135,14 @@ const SinglesRoomView: React.FC = () => {
       });
   }, [roomId, navigate]);
 
+  // perform network check before attempting to connect socket
+  React.useEffect(() => {
+    const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+    if (isOnline) {
+      setCanConnect(true);
+    }
+  }, []);
+
   //-------------------------------- Websockets --------------------------------
 
   //live chat websocket
@@ -151,23 +168,22 @@ const SinglesRoomView: React.FC = () => {
     role,
     countdown,
     roomError,
-  } = useRoomWebSocket({
-    roomId: roomInfo?.id ?? -1,
-    roomName: roomInfo?.name ?? "",
-    leaderId: roomInfo?.leaderId ?? -1,
-    player: {
-      id: userInfo?.id ?? -1,
-      name: userInfo?.username ?? "",
-      sprite: sprite,
+  } = useRoomWebSocket(
+    {
+      roomId: roomInfo?.id ?? -1,
+      roomName: roomInfo?.name ?? "",
+      leaderId: roomInfo?.leaderId ?? -1,
+      player: {
+        id: userInfo?.id ?? -1,
+        name: userInfo?.username ?? "",
+        sprite: sprite,
+      },
+      setRoomInfo,
     },
-    setRoomInfo,
-  });
+    { autoConnect: canConnect },
+  );
 
-  //  if (!roomInfo || !userInfo) {
-  //    return <div>Loading...</div>; // or a spinner
-  //  }
   // -------------------------------- Effect --------------------------------
-
   //navigate to game view if game started
   React.useEffect(() => {
     //when count down finish delay 1 sec to start game
@@ -187,13 +203,53 @@ const SinglesRoomView: React.FC = () => {
 
   //get left and right team players from leftTeamHtml and rightTeamHtml
   React.useEffect(() => {
-    const leftTeam = Array.isArray(leftTeamHtml) ? leftTeamHtml : [];
+    type RemotePlayer = {
+      clientId?: number;
+      id?: number;
+      username?: string;
+      playerName?: string;
+      spriteUrl: string;
+      avatarUrl?: string;
+      role?: string;
+      team?: "left" | "right" | "spectator";
+      leader?: boolean;
+      ready?: boolean;
+      online?: boolean;
+    };
+    const leftTeam = Array.isArray(leftTeamHtml)
+      ? (leftTeamHtml as unknown as RemotePlayer[])
+      : [];
     console.log("leftTeam:", leftTeam); //// debug
-    const rightTeam = Array.isArray(rightTeamHtml) ? rightTeamHtml : [];
+    const rightTeam = Array.isArray(rightTeamHtml)
+      ? (rightTeamHtml as unknown as RemotePlayer[])
+      : [];
     console.log("rightTeam:", rightTeam); //// debug
-    setPlayers([...leftTeam, ...rightTeam]);
+    const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
+      leader: !!p.leader,
+      id: p.id || -1,
+      username: p.username || p.playerName || "Unknown",
+      spriteUrl: p.spriteUrl || p.avatarUrl || "../../assets/green-ghost.png",
+      team: p.team === "left" ? "left" : p.team === "right" ? "right" : "right",
+      ready: !!p.ready,
+    });
+
+    setPlayers([...leftTeam.map(mapToWaiting), ...rightTeam.map(mapToWaiting)]);
   }, [leftTeamHtml, rightTeamHtml]);
 
+  // ---------------------------------- helper functions ----------------------------------
+  function renderRoomErrorText(): string | null {
+    if (!roomError) return null;
+
+    if (roomError === "Room is full") {
+      return translate("room_is_full");
+    } else if (roomError === "offline_error") {
+      return translate("offline_error");
+    } else {
+      return roomError;
+    }
+  }
+
+  //-------------------------------------- Render -------------------------------------
   return (
     <>
       {!roomId ? (
@@ -314,7 +370,7 @@ const SinglesRoomView: React.FC = () => {
             </Card>
           </div>
 
-          {/* error popup for if room is full */}
+          {/* error popup */}
           {roomError && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               {/* Background image using your Background component */}
@@ -324,9 +380,7 @@ const SinglesRoomView: React.FC = () => {
                 {/* Popup content */}
                 <div className="relative flex flex-col items-center gap-6 bg-card-blue border-yellow-600 border-10 rounded-3xl shadow-2xl p-10 z-10">
                   <p className="text-center text-white text-2xl px-4">
-                    {roomError === "Room is full"
-                      ? translate("room_is_full")
-                      : roomError}
+                    {renderRoomErrorText()}
                   </p>
                   <Button
                     variant="red"

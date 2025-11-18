@@ -1,8 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function useBlockLeave() {
-  const beforeUnload = useRef<(e: BeforeUnloadEvent) => any>(() => {});
-
   useEffect(() => {
     // Prevent refresh (F5 / Ctrl+R)
     const keyHandler = (e: KeyboardEvent) => {
@@ -19,22 +17,22 @@ export function useBlockLeave() {
     const disableContextMenu = (e: Event) => e.preventDefault();
 
     // Warn before unload
-    window.addEventListener(
-      "beforeunload",
-      (beforeUnload.current = (e: BeforeUnloadEvent) => {
-        e.preventDefault();
-        e.returnValue = "";
-        return "";
-      }),
-    );
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+      sessionStorage.setItem("reloading", "yes"); // Set a flag in sessionStorage
+    };
+
+    //beforeUnload.current = handleBeforeUnload;
 
     window.addEventListener("keydown", keyHandler);
     window.addEventListener("contextmenu", disableContextMenu);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       window.removeEventListener("keydown", keyHandler);
       window.removeEventListener("contextmenu", disableContextMenu);
-      window.removeEventListener("beforeunload", beforeUnload.current as any);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 }

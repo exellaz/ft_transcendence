@@ -25,6 +25,7 @@
     "join_doubles_game": "Join a doubles game?",
     "room_not_found": "Room not found",
     "room_is_full": "Room is full",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "DoublesRoomView": {
@@ -37,6 +38,9 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
+    "room_not_found": "Room not found",
+    "unknown_error": "Unknown error",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -47,6 +51,10 @@
     "local_game": "Local Game",
     "game_settings": "Game Settings",
     "start": "Start"
+  },
+  "GameView": {
+    "offline_error": "You are offline. Please check your connection.",
+    "close": "close"
   },
   "LoginView": {
     "username_or_email_required": "Username or email is required",
@@ -74,6 +82,7 @@
   "MatchView": {
     "loading": "Loading...",
     "ready": "Ready",
+    "unready": "Unready",
     "pending": "Pending",
     "quarterfinals": "Quarterfinals",
     "semifinals": "Semifinals",
@@ -126,6 +135,8 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
+    "unknown_error": "Unknown error",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -137,8 +148,12 @@
     "finals": "Finals",
     "tournament_lobby": "Tournament Lobby",
     "ready": "Ready",
+    "unready": "Unready",
     "quit": "Quit",
-    "quit_confirmation": "Are you sure you want to quit the tournament?"
+    "quit_confirmation": "Are you sure you want to quit the tournament?",
+    "room_is_full": "Room is full",
+    "offline_error": "You are offline. Please check your connection.",
+    "close": "close"
   },
   "BasicInfoPopup": {
     "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
