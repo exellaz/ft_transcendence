@@ -378,18 +378,35 @@ const GameView: React.FC<GameViewProps> = () => {
                     return tournamentData.round === 3 ? "End Tournament" : "Next Round";
                   })()}
                 </Button>
-                {/* Show next matchup below the button */}
                 {(() => {
                   const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
                   const nextRoundIdx = tournamentData.round;
                   const nextPair = tournamentData.rounds?.[nextRoundIdx];
-                  if (nextPair && nextPair[0] && nextPair[1] && tournamentData.round !== 3) {
-                    return (
-                        <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
-                        {nextPair[0].name} vs {nextPair[1].name}
-                        </div>
-                    );
+
+
+                  let nextPlayer1;
+                  let nextPlayer2;
+                  let remainingplayers = tournamentData.allPlayers.filter((_: any, idx: number) => {
+                    return tournamentData.winners.includes(idx) || idx === lastWinnerIdx;
+                  });
+
+                  
+                  if (!nextPair) {
+                    tournamentData.winners[0];
+                    
+                    nextPlayer1 = remainingplayers[0];
+                    nextPlayer2 = remainingplayers[1];
                   }
+                  else {
+                    nextPlayer1 = nextPair[0];
+                    nextPlayer2 = nextPair[1];
+                  }
+
+                  return (
+                    <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
+                      {nextPlayer1.name} vs {nextPlayer2.name} {remainingplayers.length}
+                    </div>
+                  );
                   return null;
                 })()}
               </div>
@@ -406,14 +423,11 @@ const GameView: React.FC<GameViewProps> = () => {
                 <p className="text-xl mb-6">
                   Winner: <span className="font-semibold">{tournamentWinner}</span>
                 </p>
-                {/* Remove winners by round and round recap */}
-                {/* Ranks */}
                 {(() => {
                   const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
                   const allPlayers = tournamentData.allPlayers || [];
                   const winners = tournamentData.winners || [];
                   const rounds = tournamentData.rounds || [];
-                  // Final round is the last element in rounds
                   const finalRound = rounds[rounds.length - 1] || [];
                   const lastWinnerIdx = winners[winners.length - 1]; // winner of last round
                   let rank1Idx = lastWinnerIdx;
@@ -427,8 +441,6 @@ const GameView: React.FC<GameViewProps> = () => {
                     rank2Idx = firstTwoRounds[0];
                   }
 
-
-                  // Rank 3: all others
                   const rank3Idxs = allPlayers
                     .map((_, idx) => idx)
                     .filter(idx => idx !== rank1Idx && idx !== rank2Idx);
