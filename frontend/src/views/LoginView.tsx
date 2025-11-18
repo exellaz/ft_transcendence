@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginForm } from "../hooks/useLoginForm";
 import { useClearGameMode } from "../hooks/useClearGameMode";
@@ -42,6 +42,9 @@ const LoginView: React.FC = () => {
     }
   };
 
+  const memoizedHandleGoogleSignIn = useCallback(handleGoogleSignIn, []);
+  const memoizedHandleGoogleError = useCallback(handleGoogleError, []);
+
   let children: React.ReactNode;
   if (step === "login") {
     children = (
@@ -70,8 +73,8 @@ const LoginView: React.FC = () => {
         </Button>
         <Divider />
         <GoogleLoginButton
-          onSuccess={handleGoogleSignIn}
-          onError={handleGoogleError}
+          onSuccess={memoizedHandleGoogleSignIn}
+          onError={memoizedHandleGoogleError}
         />
         <TextButton onClick={() => navigate("/signup")}>
           {translate("signup_prompt")}

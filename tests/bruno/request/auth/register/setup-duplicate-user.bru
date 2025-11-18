@@ -1,0 +1,37 @@
+meta {
+  name: setup-duplicate-user
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "duplicate-test@example.com",
+    "username": "first_user_test",
+    "password": "Test123!"
+  }
+}
+
+tests {
+  test("Setup user created successfully", function() {
+    expect(res.status).to.equal(201);
+    expect(res.body.success).to.be.true;
+    console.log("Setup user created for duplicate email test");
+  });
+  
+  test("User data should be returned", function() {
+    expect(res.body.data).to.have.property('user');
+    expect(res.body.data.user.email).to.equal('duplicate-test@example.com');
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

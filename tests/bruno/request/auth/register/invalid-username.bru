@@ -1,21 +1,13 @@
 meta {
   name: invalid-username
   type: http
-  seq: 4
+  seq: 5
 }
 
 post {
   url: {{baseUrl}}/auth/register
   body: json
   auth: none
-}
-
-script:pre-request {
-  const userId = Math.random().toString(36).substring(2, 8);
-
-  bru.setVar('email', `invalid${userId}@test.com`);
-  bru.setVar('username', 'user with spaces');
-  bru.setVar('password', 'ValidPass123!');
 }
 
 body:json {
@@ -26,12 +18,20 @@ body:json {
   }
 }
 
+script:pre-request {
+  const userId = Math.random().toString(36).substring(2, 8);
+  
+  bru.setVar('email', `invalid${userId}@test.com`);
+  bru.setVar('username', 'user with spaces');
+  bru.setVar('password', 'ValidPass123!');
+}
+
 tests {
   test("should return 400 status for invalid username format", function() {
     expect(res.status).to.equal(400);
     expect(res.body.success).to.be.false;
   });
-
+  
   test("should return username validation error", function() {
     expect(res.body.error).to.be.a('string');
     expect(res.body.errorCode).to.equal('USERNAME_TOO_LONG');
