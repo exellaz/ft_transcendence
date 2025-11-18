@@ -131,7 +131,23 @@ export class GameClient {
 
   sendData(type: string, payload: Record<string, any> = {}) {
     if (this.websocketRef?.readyState === WebSocket.OPEN) {
-      this.websocketRef.send(JSON.stringify({ type, payload }));
+      const msg = JSON.stringify({ type, payload });
+      console.log("[game] sending data", {
+        type,
+        payload,
+        socketState: this.websocketRef.readyState,
+      }); ////debug
+      try {
+        this.websocketRef.send(msg);
+        console.log("[game] data sent successfully"); ////debug
+      } catch (err) {
+        console.error("[game] failed to send data:", err); ////debug
+      }
+    } else {
+      console.warn(
+        "[game] cannot send data, socket not open:",
+        this.websocketRef?.readyState,
+      ); ////debug
     }
   }
   async processStateAsync(state: any) {
@@ -203,27 +219,42 @@ export class GameClient {
   }
   private processingPromise: Promise<void> = Promise.resolve();
   constructor(canvasRef: HTMLCanvasElement | null, websocketRef: WebSocket) {
-    // console.log("created game client"); ////debug
-    this.id = GameClient.globalId;
-    GameClient.globalId++;
-    this.websocketRef = websocketRef;
-    ``;
-    // -- WEBSOCKET --
+    //console.log("[game] created game client"); ////debug
 
-    // send initial handshake
-    // console.log("asking for ready"); ////debug
-    if (this.websocketRef.readyState === WebSocket.OPEN) {
-      this.sendData("ready");
-    } else {
-      this.websocketRef.addEventListener("open", () => {
-        // console.log("socket opened, now sending ready"); ////debug
-        this.sendData("ready");
-      });
+    //check for websocket
+    if (!websocketRef) {
+      throw new Error("[game] websocketRef is required");
     }
 
-    this.websocketRef.onmessage = (event) => {
+    //check websocket state
+    if (
+      websocketRef.readyState === WebSocket.CLOSING ||
+      websocketRef.readyState === WebSocket.CLOSED
+    ) {
+      throw new Error(
+        `[game] websocketRef is not open (readyState: ${websocketRef.readyState})`,
+      );
+    }
+
+    this.id = GameClient.globalId;
+    GameClient.globalId++;
+    //console.log("[game] assigned client id:", this.id); ////debug
+    this.websocketRef = websocketRef;
+
+    // -- WEBSOCKET --
+    this.websocketRef.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       this.data = data;
+      //  console.log("[game] received data", data); ////debug
+
+      //check for handshakePing
+      if (data.type === "handshakePing") {
+        console.log("[game] 📤 received handshakePing, sending handshakePong"); ////debug
+        this.sendData("handshakePong");
+        console.log("[game] 📤 Sending ready after handshakePong");
+        this.sendData("ready");
+        return;
+      }
 
       this.processingPromise = this.processingPromise.then(async () => {
         if (data["state"]?.type === "full") {
@@ -236,7 +267,7 @@ export class GameClient {
           await this.processStateAsync(data["state"]); // now awaited in sequence
         }
       });
-    };
+    });
     // this.websocketRef.onclose = () => console.log("❌ Disconnected"); ////debug
 
     this.handleKey = this.handleKey.bind(this);

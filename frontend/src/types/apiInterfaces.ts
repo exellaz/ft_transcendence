@@ -109,6 +109,7 @@ export interface MatchPlayer {
   username: string;
   spriteUrl: string;
   ready: boolean;
+  team: "left" | "right" | "unknown";
 }
 
 // Custom Mode Room API interfaces

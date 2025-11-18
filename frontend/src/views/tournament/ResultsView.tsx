@@ -1,16 +1,20 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Background from "../../components/Background";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import TournamentHeader from "../../components/TournamentHeader";
+import { closeMatchWebsocket } from "@/lib/match-websocket";
+import { closeTournamentWebsocket } from "@/lib/tournament-websocket";
 
 const ResultsView: React.FC = () => {
+  const location = useLocation();
   const { t } = useTranslation();
   const translate = (key: string) => t(`ResultsView.${key}`);
   const navigate = useNavigate();
+  console.log("ResultsView location.state:", location.state); ////debug
 
   const rankingData: Record<
     number,
@@ -39,8 +43,7 @@ const ResultsView: React.FC = () => {
       position,
     });
 
-  // TODO: Replace with actual ranking from props, state, or API
-  const ranking = 4;
+  const ranking = location.state.winnerRank || location.state.loserRank;
 
   // Usage:
   const data = rankingData[ranking] || {
@@ -64,7 +67,40 @@ const ResultsView: React.FC = () => {
           <div className={ranking <= 3 ? "w-36 h-48" : "w-30 h-40"}>
             <img src={data.imageUrl} alt="result" className="w-full h-full" />
           </div>
-          <Button variant="green" onClick={() => navigate("/main-menu")}>
+          <Button
+            variant="green"
+            onClick={() => {
+              const roomId = Number(location.state?.roomId ?? -1);
+              const clientId = Number(location.state?.clientId ?? -1);
+              const lastTournamentId = Number(
+                location.state?.lastTournamentId ?? 0,
+              );
+              // close match socket (room) and tournament lobby socket (if present)
+              closeMatchWebsocket(roomId, clientId);
+
+              //close tournament socket
+              const tId = Number(
+                sessionStorage.getItem("tournamentId") ??
+                  lastTournamentId ??
+                  -1,
+              );
+              if (tId > 0) {
+                try {
+                  closeTournamentWebsocket(tId, clientId);
+                } catch (e) {
+                  console.warn("failed to close tournament ws", e);
+                }
+              }
+
+              // Clear tournament ID from session
+              try {
+                sessionStorage.removeItem("tournamentId");
+              } catch {}
+
+              // navigate to main menu
+              navigate("/main-menu");
+            }}
+          >
             {translate("leave")}
           </Button>
         </div>

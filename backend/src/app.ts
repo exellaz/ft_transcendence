@@ -12,6 +12,7 @@ import friendshipRoutes from "./modules/friends/friendship/friendship.routes";
 import blockedFriendshipRoutes from "./modules/friends/blockedFriendship/blockedFriendship.routes";
 import friendChatMessageRoutes from "./modules/friends/friendChatMessage/friendChatMessage.routes";
 import tournamentRoutes from "./modules/tournament/tournament.routes";
+import tournamentWsRoute from "./modules/tournament/tournament.ws";
 import errorHandler from "./plugins/errorHandler";
 import testRoutes from "./modules/test/test.routes";
 import fastifySwagger from "@fastify/swagger";
@@ -25,7 +26,7 @@ import assetsStaticPlugin from "./plugins/assets.static";
 import { twoFactorRoutes } from "./modules/twoFactor/twoFactor.routes";
 
 const app = Fastify({
-  logger: true,
+  logger: false,
 });
 app.register(websocketPlugin);
 app.register(fastifyCors, corsOptions);
@@ -43,6 +44,7 @@ app.register(authRoutes);
 app.register(friendshipRoutes);
 app.register(blockedFriendshipRoutes);
 app.register(tournamentRoutes);
+app.register(tournamentWsRoute);
 app.register(gameWsRoute);
 app.register(roomWsRoutes);
 app.register(liveChatRoutes);

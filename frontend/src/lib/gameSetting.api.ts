@@ -9,7 +9,7 @@ export function useGameSettings(roomId: string) {
     scorePoint: number;
     map: string;
   } | null>(null);
-  const [initialSettings, setInitialSettings] = useState<any | null>(null);
+  const [initialSettings, setInitialSettings] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -1,10 +1,8 @@
-import { Game } from "../modules/game/game";
-import type { playerInfo, Room } from "../modules/room/room";
+import type { playerInfo, Room } from "../types/interface";
 import { rooms } from "../modules/room/room";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
-import { broadcast, handlePlayerDisconnect, cancelCountdown } from "./utils";
-
-const game = new Game(); //create game object
+import { broadcast, cancelCountdown } from "./utils";
+import WebSocket, { WebSocket as WSWebSocket } from "ws";
 
 /**
  * @brief Interface for WebSocketHandler class method
@@ -13,7 +11,7 @@ interface IWebSocketHandler {
   assignRole(
     room: Room,
     clientId: number,
-    socket: any,
+    socket: WSWebSocket,
     roomId: number,
     preferredSide: string,
     playerName: string,
@@ -26,9 +24,10 @@ interface IWebSocketHandler {
     leader: boolean;
     spriteUrl: string;
     ready: boolean;
+    online: boolean;
   };
   handleDisconnect(
-    socket: any,
+    socket: WSWebSocket,
     room: Room,
     clientId: number,
     roomId: number,
@@ -47,7 +46,7 @@ export class WebSocketHandler implements IWebSocketHandler {
   assignRole(
     room: Room,
     clientId: number,
-    socket: any,
+    socket: WebSocket,
     roomId: number,
     preferredSide: string,
     playerName: string,
@@ -60,6 +59,7 @@ export class WebSocketHandler implements IWebSocketHandler {
     leader: boolean;
     spriteUrl: string;
     ready: boolean;
+    online: boolean;
   } {
     // Add socket to room if present
     if (socket) {
@@ -89,6 +89,7 @@ export class WebSocketHandler implements IWebSocketHandler {
           );
           socket.close(1000, "Room full");
         }
+
         return {
           id: clientId,
           role: "spectator",
@@ -97,8 +98,10 @@ export class WebSocketHandler implements IWebSocketHandler {
           leader: false,
           spriteUrl: playerSprite,
           ready: false,
+          online: false,
         };
       }
+
       if (
         preferredSide === "left" &&
         room.gameState.teams.left.length < room.teamSize
@@ -111,8 +114,9 @@ export class WebSocketHandler implements IWebSocketHandler {
           team: "left",
           leader: clientId === room.leaderId,
           spriteUrl: playerSprite,
-          ready: clientId === room.leaderId, // leader is always ready
-        }); // add playerName to playerInfo
+          ready: clientId === room.leaderId,
+          online: true,
+        });
       } else if (
         preferredSide === "right" &&
         room.gameState.teams.right.length < room.teamSize
@@ -126,6 +130,7 @@ export class WebSocketHandler implements IWebSocketHandler {
           leader: clientId === room.leaderId,
           spriteUrl: playerSprite,
           ready: clientId === room.leaderId, // leader is always ready
+          online: true,
         }); // add playerName to playerInfo
       } else {
         roleStr = "spectator";
@@ -140,6 +145,7 @@ export class WebSocketHandler implements IWebSocketHandler {
         leader: clientId === room.leaderId,
         spriteUrl: playerSprite,
         ready: clientId === room.leaderId, // leader is always ready
+        online: true,
       };
       room.clientRoles.set(clientId, player);
 
@@ -170,6 +176,7 @@ export class WebSocketHandler implements IWebSocketHandler {
         });
       }
     }
+
     return {
       id: clientId,
       role: player.role,
@@ -178,6 +185,7 @@ export class WebSocketHandler implements IWebSocketHandler {
       leader: player.leader,
       spriteUrl: player.spriteUrl,
       ready: player.ready,
+      online: player.online,
     };
   }
 
@@ -189,11 +197,16 @@ export class WebSocketHandler implements IWebSocketHandler {
    * @param role The role of the client (player, spectator, etc.)
    * @param roomId The ID of the room
    */
-  handleDisconnect(socket: any, room: Room, clientId: number, roomId: number) {
+  handleDisconnect(
+    socket: WSWebSocket,
+    room: Room,
+    clientId: number,
+    roomId: number,
+  ) {
     // ---- guard check ----
     //if no room, no socket exit this function
     if (!room || !room.sockets) return;
-    console.log("Disconnect event for", clientId); ////debug
+    //console.log("Disconnect event for", clientId); ////debug
 
     // always trust the latest role from the server mapping
     const player = room.clientRoles.get(clientId);
@@ -205,18 +218,40 @@ export class WebSocketHandler implements IWebSocketHandler {
     room.sockets.delete(socket);
     room.clients.delete(socket);
 
+    //mark offline and update the team status
+    player.online = false;
+    room.gameState.teams.left = room.gameState.teams.left.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
+    room.gameState.teams.right = room.gameState.teams.right.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
+
+    //! broadcast offline status (so clients can show disconnected indicator)
+    if (room.game.state !== 2 && room.game.state !== 3) {
+      broadcast(room, {
+        type: "playerOffline",
+        clientId,
+        playerName: player.playerName,
+      });
+    }
+
     // --- handle leader leaving ---
-    if (clientId === room.leaderId && !room.gameState.gameEnded) {
+    if (clientId === room.leaderId && room.game.state !== 3) {
       //check for remaining players except spectators and the leaving leader
       const remainingPlayers = room.clientRoles
-        ? Array.from(room.clientRoles.entries() as Iterable<[any, any]>)
+        ? Array.from(
+            room.clientRoles.entries() as Iterable<[number, playerInfo]>,
+          )
             .filter(([id, p]) => p.role !== "spectator" && id !== clientId)
             .map(([id]) => id)
         : [];
 
       //if have remaining player when leader left pass leader to the player
-      if (remainingPlayers.length > 0 && !room.gameState.gameStarted) {
-        room.leaderId = remainingPlayers[0];
+      if (remainingPlayers.length > 0 && room.game.state !== 2) {
+        room.leaderId = remainingPlayers[0] as number; // assign new leader
         const newLeader = room.clientRoles.get(room.leaderId);
         if (newLeader) {
           newLeader.leader = true;
@@ -239,12 +274,12 @@ export class WebSocketHandler implements IWebSocketHandler {
     }
 
     // ---- case: disconnect during countdown ----
-    if (!room.gameState.gameStarted && !room.gameState.gameEnded) {
+    if (room.game.state !== 2 && room.game.state !== 3) {
       cancelCountdown(room);
     }
 
     // ---- case: leave before game start / game ended ----
-    if (!room.gameState.gameStarted || room.gameState.gameEnded) {
+    if (room.game.state !== 2 && room.game.state !== 3) {
       console.log(
         `Player ${player.playerName} (${role}) [ ${clientId} ] left the room ${room.name} (${roomId}).`,
       );
@@ -259,7 +294,6 @@ export class WebSocketHandler implements IWebSocketHandler {
           (p: playerInfo) => p.role !== role,
         );
         room.clientRoles.delete(clientId);
-        delete room.gameState.paddles[role];
       }
 
       //remove room if no player
@@ -278,7 +312,6 @@ export class WebSocketHandler implements IWebSocketHandler {
         newPlayer: playerInfo,
         gameState: room.gameState,
         leaderId: room.leaderId,
-        disconnectPlayers: room.disconnectPlayers,
       });
       return;
     }

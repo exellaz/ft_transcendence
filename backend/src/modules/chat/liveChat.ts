@@ -1,13 +1,4 @@
-/**
- * @brief Represents a chat message in the game.
- */
-export interface liveChatMessage {
-  type: "chat";
-  id: number;
-  from: string;
-  text: string;
-  time: number;
-}
+import { liveChatMessage } from "../../types/interface";
 
 /**
  * @brief Creates a new chat message
