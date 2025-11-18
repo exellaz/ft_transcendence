@@ -403,9 +403,9 @@ const GameView: React.FC<GameViewProps> = () => {
                   }
 
                   return (
-                    <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
-                      {nextPlayer1.name} vs {nextPlayer2.name} {remainingplayers.length}
-                    </div>
+                    (tournamentData.round !== 3)? <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
+                      {nextPlayer1.name} vs {nextPlayer2.name}
+                    </div>: null
                   );
                   return null;
                 })()}
