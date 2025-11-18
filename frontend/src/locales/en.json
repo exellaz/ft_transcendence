@@ -69,7 +69,8 @@
     "tournament_mode": "TOURNAMENT MODE",
     "custom_mode": "CUSTOM MODE",
     "settings": "SETTINGS",
-    "join_tournament": "Join a tournament?"
+    "join_tournament": "Join a tournament?",
+    "local_tournament": "LOCAL TOURNAMENT"
   },
   "MatchView": {
     "loading": "Loading...",

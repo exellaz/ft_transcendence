@@ -6,7 +6,7 @@ export default function RequireGameMode({
   allowed,
   children,
 }: {
-  allowed: ("local" | "custom" | "tournament")[];
+  allowed: ("local" | "custom" | "tournament" | "local-tournament")[];
   children: React.ReactNode;
 }) {
   const mode = sessionStorage.getItem("gameMode") as

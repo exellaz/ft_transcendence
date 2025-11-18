@@ -36,7 +36,9 @@ const GameView: React.FC<GameViewProps> = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const mode = location.pathname === "/local-game" ? "local" : "remote";
+  const mode = sessionStorage.getItem("gameMode");
+  
+  let round = 0;
 
   if (mode === "remote") {
     // TODO: Replace with actual JWT
@@ -141,11 +143,16 @@ const GameView: React.FC<GameViewProps> = () => {
         </div>
       </Background>
     );
-  } else if (mode === "local") {
+  } else if (mode === "local" || mode === "local-tournament") {
     const location = useLocation();
     const state = location.state;
+    const [showNextRound, setShowNextRound] = useState(false);
+    const [lastWinnerIdx, setLastWinnerIdx] = useState<number | null>(null);
 
-    console.log("state", state);
+    const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+    console.log("Tournament Data:", tournamentData);
+
+
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -161,15 +168,47 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const settings = location.state?.gameSettings ?? {};
-      const game = new PongGame(false, settings, () => {}, 1);
+      console.log("new game")
+      const game = new PongGame(
+        false,
+        settings,
+        () => {},
+        1,
+        (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => {
+          if (mode === "local-tournament") {
+            setShowNextRound(true);
+            // Find winner index in allPlayers and store it
+            const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+            const allPlayers = tournamentData.allPlayers || [];
+            let winnerIdx = null;
+            if (winningPlayer && winnerSide !== "draw") {
+              winnerIdx = allPlayers.findIndex(
+                (p: any) => p.name === winningPlayer.name
+              );
+            }
+            setLastWinnerIdx(winnerIdx);
+          }
+        }
+      );
+      const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
 
-      const player1Settings = location.state?.player1 ?? {};
-      const player2Settings = location.state?.player2 ?? {};
+
+      let player1Settings = location.state?.player1 ?? {};
+      let player2Settings = location.state?.player2 ?? {};
+
+      var gameType = "local";
+
+      if (location.state?.type === "tournament") {
+        gameType = "tournament";
+      }
+
+      const player1Name = player1Settings.name || "Player1";
+      const player2Name = player2Settings.name || "Player2";
 
       game.addPlayer(
         new Player({
           team: 0,
-          name: "Player1",
+          name: player1Name,
           id: 0,
           skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
         }),
@@ -178,7 +217,7 @@ const GameView: React.FC<GameViewProps> = () => {
       game.addPlayer(
         new Player({
           team: 1,
-          name: "Player2",
+          name: player2Name,
           id: 1,
           skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
         }),
@@ -248,12 +287,18 @@ const GameView: React.FC<GameViewProps> = () => {
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("keyup", handleKeyUp);
+        game.destroy?.();
       };
-    }, []);
+    }, [mode, location.state, round]);
 
     return (
       <Background variant="plain">
         <div className="w-full h-full flex-col-center gap-10 px-25">
+          {mode === "local-tournament" && (
+            <h1 className="text-4xl font-bold text-yellow-400 mb-4">
+              {(state?.player1?.name ?? "Player1") + " vs " + (state?.player2?.name ?? "Player2")}
+            </h1>
+          )}
           <canvas
             ref={canvasRef}
             width={1200}
@@ -261,10 +306,10 @@ const GameView: React.FC<GameViewProps> = () => {
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
           {/* ✅ Back to Lobby Button */}
-          <div>
+          <div className="flex flex-row gap-4">
             <Button
               variant="bigYellow"
-              className="px-3 py-4 text-2xl"
+              className="px-3 py-4 text-2xl whitespace-nowrap"
               onClick={() => {
                 navigate("/main-menu");
                 sessionStorage.removeItem("playerSide");
@@ -276,6 +321,68 @@ const GameView: React.FC<GameViewProps> = () => {
             >
               Back to Lobby
             </Button>
+            {showNextRound && (
+              <div className="flex flex-col items-center">
+                <Button
+                  variant="bigYellow"
+                  className="px-8 py-4 text-2xl whitespace-nowrap"
+                  onClick={() => {
+                    round ++;
+                    console.log("Next round started");
+                    setShowNextRound(false);
+
+                    const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+                    tournamentData.round += 1;
+                    // Push winner index to winners array
+                    if (lastWinnerIdx !== null) {
+                      tournamentData.winners.push(lastWinnerIdx);
+                    }
+                    sessionStorage.setItem("tournamentData", JSON.stringify(tournamentData));
+                    
+                    if (tournamentData.round === 3) {
+                      // Use winner indices to get player objects for the final round
+                      const allPlayers = tournamentData.allPlayers || [];
+                      const winner1 = allPlayers[tournamentData.winners[0]];
+                      const winner2 = allPlayers[tournamentData.winners[1]];
+                      navigate("/local-game", {
+                        state: {
+                          player1: winner1,
+                          player2: winner2,
+                          gameSettings: state.gameSettings,
+                          type: "tournament"
+                        }
+                      });
+                    }
+                    else {
+                      navigate("/local-game", {
+                        state: {
+                          player1: tournamentData.rounds[tournamentData.round - 1][0],
+                          player2: tournamentData.rounds[tournamentData.round - 1][1],
+                          gameSettings: state.gameSettings,
+                          type: "tournament"
+                        }
+                      });
+                    }
+                  }}
+                >
+                  Next Round
+                </Button>
+                {/* Show next matchup below the button */}
+                {(() => {
+                  const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+                  const nextRoundIdx = tournamentData.round;
+                  const nextPair = tournamentData.rounds?.[nextRoundIdx];
+                  if (nextPair && nextPair[0] && nextPair[1]) {
+                    return (
+                        <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
+                        {nextPair[0].name} vs {nextPair[1].name}
+                        </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            )}
           </div>
         </div>
       </Background>

@@ -64,6 +64,7 @@ export class GameTeam {
   }
 
   win() {
+    
     this.score++;
     if (this.label) this.label.text = String(this.score);
     if (this.score >= this.game.gameSettings!.winningScore) {
@@ -178,6 +179,7 @@ export class PongGame {
   public id: number = -1;
 
   private onGameEnd?: (winner: "left" | "right" | "draw") => void;
+  public onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void;
 
   public world: GameWorld = new GameWorld();
   public gameSettings: EngineSettings = new EngineSettings();
@@ -241,8 +243,16 @@ export class PongGame {
     // Trigger the standard onGameEnd after short delay
     setTimeout(() => {
       if (this.onGameEnd) {
+        console.log("onGameEnd called after forceEnd");
         this.onGameEnd(winner);
       }
+        let winningPlayer = null;
+        if (winner === "left") {
+          winningPlayer = this.teamLeft.padels[0]?.player;
+        } else if (winner === "right") {
+          winningPlayer = this.teamRight.padels[0]?.player;
+        }
+      
     }, 1000);
   }
 
@@ -285,6 +295,14 @@ export class PongGame {
         const winner = team.team === Team.TEAM_LEFT ? "left" : "right";
         this.onGameEnd(winner);
       }
+
+      if (this.onUserGameEnd) {
+        const winnerSide = this.winningTeam!.team === Team.TEAM_LEFT ? "left" : "right";
+        const winningPlayer = this.winningTeam!.padels[0]?.player;
+        this.onUserGameEnd(winningPlayer, winnerSide);
+
+      }
+
     }, 2000);
   }
 
@@ -318,7 +336,7 @@ export class PongGame {
 
     if (this.state == GameState.GAMEOVER) return;
 
-    this.world.addTimer(this.ballSpawnCooldown, () => {
+    this.world.addTimer("Ball Cooldown", this.ballSpawnCooldown, () => {
       this.ball.start(team);
     });
   }
@@ -376,7 +394,7 @@ export class PongGame {
       }),
     ) as GameTitle;
 
-    this.world.addPeriodicTimer(1, () => {
+    this.world.addPeriodicTimer("title", 1, () => {
       if (this.state === GameState.LOADING) {
         this.onScreenTitle.updateLoad();
       } else if (this.state === GameState.STARTING) {
@@ -395,6 +413,9 @@ export class PongGame {
           const winnerPlayer = this.winningTeam!.padels[0]?.player;
           this.onScreenTitle.text = `${winnerPlayer?.name ?? this.winningTeam!.toString()} Wins!`;
         }
+        this.world.removePeriodicTimer("title"); 
+
+        this.state = GameState.ENDED;
       }
     });
 
@@ -599,16 +620,18 @@ export class PongGame {
     }
   }
 
-  constructor(
+  initGame(
     isClient: boolean,
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
     teamSize: number = 1,
+    onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void,
   ) {
     PongGame.globalId++;
     this.teamSize = teamSize;
     this.initSettings(incomingSettings);
     this.onGameEnd = onGameEnd ?? (() => {});
+    this.onUserGameEnd = onUserGameEnd;
 
     if (isClient) return;
 
@@ -620,5 +643,32 @@ export class PongGame {
     console.log("INITIALIZED");
 
     this.loadMap(this.gameSettings.map);
+  }
+
+
+  
+  constructor(
+    isClient: boolean,
+    incomingSettings: GameSettings,
+    onGameEnd?: (winner: "left" | "right" | "draw") => void,
+    teamSize: number = 1,
+    onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void,
+  ) {
+    this.initGame(isClient, incomingSettings, onGameEnd, teamSize, onUserGameEnd);
+  }
+
+  destroy() {
+    // Clear game world objects and timers
+    if (this.world) {
+      this.world.clear?.();
+    }
+    // Remove references to teams, ball, players, etc.
+    this.teamLeft = undefined as any;
+    this.teamRight = undefined as any;
+    this.ball = undefined as any;
+    this.onScreenTitle = undefined as any;
+    this.winningTeam = undefined as any;
+    this.players.clear();
+    this.state = GameState.ENDED;
   }
 }
