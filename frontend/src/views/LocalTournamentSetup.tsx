@@ -78,8 +78,8 @@ const LocalTournamentSetup = () => {
         player2: rounds[0][1],
         gameSettings: {
           map: "stadium",
-          ballSpeed: 1,
-          ballSize: 1,
+          ballSpeed: 2,
+          ballSize: 0,
           paddleSpeed: 1,
         },
         type: "tournament",

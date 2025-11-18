@@ -148,6 +148,8 @@ const GameView: React.FC<GameViewProps> = () => {
     const state = location.state;
     const [showNextRound, setShowNextRound] = useState(false);
     const [lastWinnerIdx, setLastWinnerIdx] = useState<number | null>(null);
+    const [showTournamentEnd, setShowTournamentEnd] = useState(false);
+    const [tournamentWinner, setTournamentWinner] = useState<string | null>(null);
 
     const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
     console.log("Tournament Data:", tournamentData);
@@ -328,18 +330,24 @@ const GameView: React.FC<GameViewProps> = () => {
                   className="px-8 py-4 text-2xl whitespace-nowrap"
                   onClick={() => {
                     round ++;
-                    console.log("Next round started");
                     setShowNextRound(false);
 
                     const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
                     tournamentData.round += 1;
-                    // Push winner index to winners array
                     if (lastWinnerIdx !== null) {
                       tournamentData.winners.push(lastWinnerIdx);
                     }
                     sessionStorage.setItem("tournamentData", JSON.stringify(tournamentData));
                     
-                    if (tournamentData.round === 3) {
+                    if (tournamentData.round === 4) {
+                      // Tournament ended: show popup
+                      const allPlayers = tournamentData.allPlayers || [];
+                      const winnerIdx = tournamentData.winners[2]; // Final winner index
+                      const winner = allPlayers[winnerIdx];
+                      setTournamentWinner(winner?.name ?? "Unknown");
+                      setShowTournamentEnd(true);
+                    }
+                    else if (tournamentData.round === 3) {
                       // Use winner indices to get player objects for the final round
                       const allPlayers = tournamentData.allPlayers || [];
                       const winner1 = allPlayers[tournamentData.winners[0]];
@@ -365,14 +373,17 @@ const GameView: React.FC<GameViewProps> = () => {
                     }
                   }}
                 >
-                  Next Round
+                  {(() => {
+                    const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+                    return tournamentData.round === 3 ? "End Tournament" : "Next Round";
+                  })()}
                 </Button>
                 {/* Show next matchup below the button */}
                 {(() => {
                   const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
                   const nextRoundIdx = tournamentData.round;
                   const nextPair = tournamentData.rounds?.[nextRoundIdx];
-                  if (nextPair && nextPair[0] && nextPair[1]) {
+                  if (nextPair && nextPair[0] && nextPair[1] && tournamentData.round !== 3) {
                     return (
                         <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
                         {nextPair[0].name} vs {nextPair[1].name}
@@ -384,6 +395,86 @@ const GameView: React.FC<GameViewProps> = () => {
               </div>
             )}
           </div>
+          {/* Tournament End Popup */}
+          {showTournamentEnd && (
+            <div
+              className="fixed inset-0 flex items-center justify-center z-50"
+              style={{ background: "rgba(0,0,0,0.6)" }}
+            >
+              <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center border-4 border-yellow-400 min-w-[320px]">
+                <h2 className="text-3xl font-bold text-yellow-500 mb-4">Tournament Over</h2>
+                <p className="text-xl mb-6">
+                  Winner: <span className="font-semibold">{tournamentWinner}</span>
+                </p>
+                {/* Remove winners by round and round recap */}
+                {/* Ranks */}
+                {(() => {
+                  const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
+                  const allPlayers = tournamentData.allPlayers || [];
+                  const winners = tournamentData.winners || [];
+                  const rounds = tournamentData.rounds || [];
+                  // Final round is the last element in rounds
+                  const finalRound = rounds[rounds.length - 1] || [];
+                  const lastWinnerIdx = winners[winners.length - 1]; // winner of last round
+                  let rank1Idx = lastWinnerIdx;
+                  let rank2Idx = null;
+
+                  let firstTwoRounds = winners.slice(0, 2);
+
+                  if (firstTwoRounds[0] === lastWinnerIdx) {
+                    rank2Idx = firstTwoRounds[1];
+                  } else {
+                    rank2Idx = firstTwoRounds[0];
+                  }
+
+
+                  // Rank 3: all others
+                  const rank3Idxs = allPlayers
+                    .map((_, idx) => idx)
+                    .filter(idx => idx !== rank1Idx && idx !== rank2Idx);
+
+                  return (
+                    <div className="mb-6 w-full">
+                      <div className="text-lg font-semibold text-gray-700 mb-2 text-center">Final Rankings:</div>
+                      <ul className="list-none text-gray-800 text-center">
+                        {rank1Idx !== undefined && rank1Idx !== null && (
+                          <li className="mb-1">
+                            <span className="font-bold text-yellow-600">🥇 1st: {allPlayers[rank1Idx]?.name ?? "Unknown"}</span>
+                          </li>
+                        )}
+                        {rank2Idx !== undefined && rank2Idx !== null && (
+                          <li className="mb-1">
+                            <span className="font-bold text-gray-600">🥈 2nd: {allPlayers[rank2Idx]?.name ?? "Unknown"}</span>
+                          </li>
+                        )}
+                        {rank3Idxs.map((idx) => (
+                          <li key={idx} className="mb-1">
+                            <span className="font-bold text-gray-500">🥉 3rd: {allPlayers[idx]?.name ?? "Unknown"}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
+                <Button
+                  variant="bigYellow"
+                  className="px-6 py-3 text-xl"
+                  onClick={() => {
+                    setShowTournamentEnd(false);
+                    navigate("/main-menu");
+                    sessionStorage.removeItem("playerSide");
+                    sessionStorage.removeItem("RoomId");
+                    sessionStorage.removeItem("RoomLeaderId");
+                    sessionStorage.removeItem("RoomName");
+                    sessionStorage.removeItem("RoomType");
+                    sessionStorage.removeItem("tournamentData");
+                  }}
+                >
+                  Back to Lobby
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Background>
     );
