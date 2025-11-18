@@ -71,7 +71,8 @@
     "2fa": "Two-Factor Authentication",
     "enter_code": "Enter the 6-digit code from your authenticator app.",
     "verify_code": "Verify Code",
-    "invalid_code_error": "Invalid code or server error"
+    "invalid_code_error": "Invalid code or server error",
+    "user_already_logged_in": "User is already logged in from another device"
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",

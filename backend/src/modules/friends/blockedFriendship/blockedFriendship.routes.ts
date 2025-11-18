@@ -7,7 +7,7 @@ import {
   postBlockedFriendshipSchema,
 } from "./blockedFriendship.schema";
 import { Prisma } from "@prisma/client";
-import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.routes";
+import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.manager";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)

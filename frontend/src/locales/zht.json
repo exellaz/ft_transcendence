@@ -69,7 +69,8 @@
     "2fa": "雙重驗證",
     "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
     "verify_code": "驗證代碼",
-    "invalid_code_error": "代碼無效或伺服器錯誤"
+    "invalid_code_error": "代碼無效或伺服器錯誤",
+    "user_already_logged_in": "使用者已從另一台裝置登入"
   },
   "MainMenuView": {
     "tournament_mode": "錦標賽模式",

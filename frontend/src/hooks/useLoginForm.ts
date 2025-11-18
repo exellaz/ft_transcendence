@@ -67,6 +67,8 @@ export const useLoginForm = () => {
           setStep("2FA");
         } else if (loginResponse.errorCode === "INVALID_CREDENTIALS") {
           setError(translate("invalid_credentials"));
+        } else if (loginResponse.errorCode === "USER_ALREADY_LOGGED_IN") {
+          setError(translate("user_already_logged_in"));
         } else {
           setError(loginResponse.error || translate("login_failed"));
         }
@@ -172,6 +174,8 @@ export const useLoginForm = () => {
         if (response.errorCode === "TWO_FACTOR_REQUIRED") {
           setAuthMethod("google");
           setStep("2FA");
+        } else if (response.errorCode === "USER_ALREADY_LOGGED_IN") {
+          setError(translate("user_already_logged_in"));
         } else {
           setError(response.errorCode || translate("google_login_failed"));
         }
@@ -184,7 +188,8 @@ export const useLoginForm = () => {
   };
 
   const handleGoogleError = (errorMessage: string) => {
-    setError(errorMessage);
+    const translatedError = translate(errorMessage) || errorMessage;
+    setError(translatedError);
   };
 
   return {
