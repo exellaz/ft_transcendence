@@ -13,7 +13,7 @@ import {
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 import { Prisma } from "@prisma/client";
 import { request } from "http";
-import { authenticate } from "../../plugins/authenticate";
+import { authenticate, requireOwnership } from "../../plugins/authenticate";
 import { MultipartFile } from "@fastify/multipart";
 import { uploadFileToServerUploadsDir } from "./users.service";
 import { AvatarFileValidator } from "src/utils/avatar-file-validator";
@@ -24,10 +24,12 @@ async function userRoutes(fastify: FastifyInstance) {
   // GET /users/:id/settings
   fastify.get(
     "/users/:id/settings",
-    { schema: getUserSettingsByIdSchema },
+    { schema: getUserSettingsByIdSchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
       const userId = Number(id);
+
+      requireOwnership(request.user?.id, userId);
 
       const settings = await fastify.db.userSettings.findUnique({
         where: { userId: userId },
@@ -47,10 +49,12 @@ async function userRoutes(fastify: FastifyInstance) {
   // PATCH /users/:id/settings  (update single user settings)
   fastify.patch(
     "/users/:id/settings",
-    { schema: patchUserSettingsByIdSchema },
+    { schema: patchUserSettingsByIdSchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
       const userId = Number(id);
+
+      requireOwnership(request.user?.id, userId);
 
       const { language } = request.body as {
         language?: string;
@@ -86,19 +90,6 @@ async function userRoutes(fastify: FastifyInstance) {
     },
   );
 
-  // GET all userSettings (NEEDS TO BE BEFORE /user/:id)
-  fastify.get(
-    "/users/settings",
-    { schema: getAllUserSettingsSchema },
-    async () => {
-      const userSettings = await fastify.db.userSettings.findMany({
-        select: userSettingsPublicSelect,
-      });
-
-      return ok(userSettings); // even if empty array, success response
-    },
-  );
-
   // ============================ USER =================================
 
   // GET /users/:id (Get single user)
@@ -116,9 +107,12 @@ async function userRoutes(fastify: FastifyInstance) {
   // PATCH /users/:id  (update single user)
   fastify.patch(
     "/users/:id",
-    { schema: patchUserByIdSchema },
+    { schema: patchUserByIdSchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
+
+      requireOwnership(request.user?.id, Number(id));
+
       const { username } = request.body as {
         username?: string;
       };
@@ -162,12 +156,12 @@ async function userRoutes(fastify: FastifyInstance) {
   // PATCH /users/:id/avatar  (upload user avatar)
   fastify.patch(
     "/users/:id/avatar",
-    { schema: patchUserAvatarByIdSchema },
+    { schema: patchUserAvatarByIdSchema, preHandler: authenticate },
     async (request, reply) => {
       // get userId from param
       const { id } = request.params as { id: string };
       const userId = Number(id);
-      // TODO: check if the user is uploading avatar for themselves
+      requireOwnership(request.user?.id, userId);
 
       const data: MultipartFile | undefined = await request.file();
       if (!data)
@@ -210,9 +204,10 @@ async function userRoutes(fastify: FastifyInstance) {
   // DELETE
   fastify.delete(
     "/users/:id",
-    { schema: deleteUserByIdSchema },
+    { schema: deleteUserByIdSchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
+      requireOwnership(request.user?.id, Number(id));
       try {
         const user = await fastify.db.user.delete({
           where: { id: Number(id) },
