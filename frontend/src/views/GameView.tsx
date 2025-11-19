@@ -109,7 +109,7 @@ const GameView: React.FC<GameViewProps> = () => {
 
       gameClient.start();
       return () => {
-        gameClient.destroy(); // ✅ cleanup
+        gameClient.destroy();
       };
     }, [socket]);
 
@@ -225,7 +225,7 @@ const GameView: React.FC<GameViewProps> = () => {
         }),
       );
 
-      // --- ✅ Track pressed keys for smooth motion ---
+      // --- Track pressed keys ---
       const keysPressed = new Set<string>();
 
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -384,23 +384,12 @@ const GameView: React.FC<GameViewProps> = () => {
                   const nextPair = tournamentData.rounds?.[nextRoundIdx];
 
 
-                  let nextPlayer1;
-                  let nextPlayer2;
                   let remainingplayers = tournamentData.allPlayers.filter((_: any, idx: number) => {
                     return tournamentData.winners.includes(idx) || idx === lastWinnerIdx;
                   });
-
                   
-                  if (!nextPair) {
-                    tournamentData.winners[0];
-                    
-                    nextPlayer1 = remainingplayers[0];
-                    nextPlayer2 = remainingplayers[1];
-                  }
-                  else {
-                    nextPlayer1 = nextPair[0];
-                    nextPlayer2 = nextPair[1];
-                  }
+                  let nextPlayer1 = !nextPair ? remainingplayers[0] : nextPair[0];
+                  let nextPlayer2 = !nextPair ? remainingplayers[1] : nextPair[1];
 
                   return (
                     (tournamentData.round !== 3)? <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
@@ -412,7 +401,6 @@ const GameView: React.FC<GameViewProps> = () => {
               </div>
             )}
           </div>
-          {/* Tournament End Popup */}
           {showTournamentEnd && (
             <div
               className="fixed inset-0 flex items-center justify-center z-50"
@@ -427,23 +415,18 @@ const GameView: React.FC<GameViewProps> = () => {
                   const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
                   const allPlayers = tournamentData.allPlayers || [];
                   const winners = tournamentData.winners || [];
-                  const rounds = tournamentData.rounds || [];
-                  const finalRound = rounds[rounds.length - 1] || [];
                   const lastWinnerIdx = winners[winners.length - 1]; // winner of last round
-                  let rank1Idx = lastWinnerIdx;
-                  let rank2Idx = null;
+
+                  
+                  // --- determine ranking ---
+                  const rank1Idx = lastWinnerIdx;
 
                   let firstTwoRounds = winners.slice(0, 2);
-
-                  if (firstTwoRounds[0] === lastWinnerIdx) {
-                    rank2Idx = firstTwoRounds[1];
-                  } else {
-                    rank2Idx = firstTwoRounds[0];
-                  }
+                  const rank2Idx = firstTwoRounds[0] === lastWinnerIdx ? firstTwoRounds[1] : firstTwoRounds[0];
 
                   const rank3Idxs = allPlayers
-                    .map((_, idx) => idx)
-                    .filter(idx => idx !== rank1Idx && idx !== rank2Idx);
+                    .map((_: any, idx: number) => idx)
+                    .filter((idx: number) => idx !== rank1Idx && idx !== rank2Idx);
 
                   return (
                     <div className="mb-6 w-full">
@@ -451,17 +434,17 @@ const GameView: React.FC<GameViewProps> = () => {
                       <ul className="list-none text-gray-800 text-center">
                         {rank1Idx !== undefined && rank1Idx !== null && (
                           <li className="mb-1">
-                            <span className="font-bold text-yellow-600">🥇 1st: {allPlayers[rank1Idx]?.name ?? "Unknown"}</span>
+                            <span className="font-bold text-yellow-600">🥇 1st: {allPlayers[rank1Idx]?.name}</span>
                           </li>
                         )}
                         {rank2Idx !== undefined && rank2Idx !== null && (
                           <li className="mb-1">
-                            <span className="font-bold text-gray-600">🥈 2nd: {allPlayers[rank2Idx]?.name ?? "Unknown"}</span>
+                            <span className="font-bold text-gray-600">🥈 2nd: {allPlayers[rank2Idx]?.name}</span>
                           </li>
                         )}
-                        {rank3Idxs.map((idx) => (
+                        {rank3Idxs.map((idx: number) => (
                           <li key={idx} className="mb-1">
-                            <span className="font-bold text-gray-500">🥉 3rd: {allPlayers[idx]?.name ?? "Unknown"}</span>
+                            <span className="font-bold text-gray-500">🥉 3rd: {allPlayers[idx]?.name}</span>
                           </li>
                         ))}
                       </ul>

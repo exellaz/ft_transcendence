@@ -13,6 +13,7 @@ const LocalTournamentSetup = () => {
     { dropdown: 'yellow', input: '' },
     { dropdown: 'yellow', input: '' },
   ]);
+  const [selectedMap, setSelectedMap] = useState("stadium");
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
@@ -41,6 +42,10 @@ const LocalTournamentSetup = () => {
     const newRows = [...rows];
     newRows[index].input = sanitized;
     setRows(newRows);
+  };
+
+  const handleMapChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedMap(e.target.value);
   };
 
   const handleStart = () => {
@@ -77,7 +82,7 @@ const LocalTournamentSetup = () => {
         player1: rounds[0][0],
         player2: rounds[0][1],
         gameSettings: {
-          map: "stadium",
+          map: selectedMap,
           ballSpeed: 2,
           ballSize: 0,
           paddleSpeed: 1,
@@ -111,9 +116,24 @@ const LocalTournamentSetup = () => {
 
   return (
     <MainLayout>
-      <Card className="gap-6">
+      <Card className="gap-2">
         <Logo />
-        <div className="space-y-4 mb-6 w-full">
+        <div className="space-y-2 mb-2 w-full">
+          {/* Map selection */}
+          <div className="flex gap-4 items-center font-semibold text-white text-lg mb-2">
+          </div>
+          <div className="mb-4">
+            <label className="block text-white font-semibold mb-2">Map</label>
+            <select
+              value={selectedMap}
+              onChange={handleMapChange}
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gray-400"
+            >
+              <option value="stadium" className="text-gray-900 bg-gray-200">🏟 Stadium</option>
+              <option value="mansion" className="text-gray-900 bg-gray-200">🏰 Mansion</option>
+              <option value="arcade" className="text-gray-900 bg-gray-200">🕹 Arcade</option>
+            </select>
+          </div>
           {/* Header row */}
           <div className="flex gap-4 items-center font-semibold text-white text-lg mb-2">
             <div className="flex-1 text-center">Skin</div>
