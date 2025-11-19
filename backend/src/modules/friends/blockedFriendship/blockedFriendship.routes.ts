@@ -8,14 +8,17 @@ import {
 } from "./blockedFriendship.schema";
 import { Prisma } from "@prisma/client";
 import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.manager";
+import { authenticate, requireOwnership } from "src/plugins/authenticate";
 
 async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // GET /blockedFriendships/:userId  (get all blocked friends by user)
   fastify.get(
     "/blockedFriendships/:userId",
-    { schema: getBlockedFriendShipsByUserIdSchema },
+    { schema: getBlockedFriendShipsByUserIdSchema, preHandler: authenticate },
     async (request) => {
       const { userId } = request.params as { userId: string };
+
+      requireOwnership(request.user?.id, Number(userId));
 
       const blockedFriendships = await fastify.db.blockedFriendship.findMany({
         where: {
@@ -44,12 +47,13 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // POST /blockedFriendships
   fastify.post(
     "/blockedFriendships",
-    { schema: postBlockedFriendshipSchema },
+    { schema: postBlockedFriendshipSchema, preHandler: authenticate },
     async (request) => {
       const { blockerId, blockedId } = request.body as {
         blockerId: number;
         blockedId: number;
       };
+      requireOwnership(request.user?.id, Number(blockerId));
 
       if (blockerId === blockedId) {
         throw ApiError.badRequest(
@@ -103,12 +107,13 @@ async function blockedFriendshipRoutes(fastify: FastifyInstance) {
   // DELETE /blockedFriendships/:blockerId/:blockedId - unblock (trusts frontend to place params correctly)
   fastify.delete(
     "/blockedFriendships/:blockerId/:blockedId",
-    { schema: deleteBlockedFriendshipSchema },
+    { schema: deleteBlockedFriendshipSchema, preHandler: authenticate },
     async (request) => {
       const { blockerId, blockedId } = request.params as {
         blockerId: string;
         blockedId: string;
       };
+      requireOwnership(request.user?.id, Number(blockerId));
 
       try {
         const deletedBlockedFriendship =

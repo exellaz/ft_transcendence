@@ -11,14 +11,17 @@ import {
   updateFriendshipSchema,
 } from "./friendship.schema";
 import { notifyFriendshipUpdateToUsers } from "src/modules/online-status/online-status.manager";
+import { authenticate, requireOwnership } from "src/plugins/authenticate";
 
 async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:userId/pending (get friends that send friend request to u)
   fastify.get(
     "/friendships/:userId/pending",
-    { schema: getPendingFriendShipsByUserIdSchema },
+    { schema: getPendingFriendShipsByUserIdSchema, preHandler: authenticate },
     async (request) => {
       const { userId } = request.params as { userId: string };
+
+      requireOwnership(request.user?.id, Number(userId));
 
       const requesters = await fastify.db.user.findMany({
         where: {
@@ -39,10 +42,12 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   // GET /friendships/:userId/accepted — get all accepted friends (excluding blocked ones)
   fastify.get(
     "/friendships/:userId/accepted",
-    { schema: getAcceptedFriendShipsByUserIdSchema },
+    { schema: getAcceptedFriendShipsByUserIdSchema, preHandler: authenticate },
     async (request) => {
       const { userId } = request.params as { userId: string };
       const uid = Number(userId);
+
+      requireOwnership(request.user?.id, uid);
 
       const acceptedFriends = await getAcceptedFriends(uid);
 
@@ -142,12 +147,13 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   // PATCH /friendships/:requesterId/:accepterId
   fastify.patch(
     "/friendships/:requesterId/:accepterId",
-    { schema: updateFriendshipSchema },
+    { schema: updateFriendshipSchema, preHandler: authenticate },
     async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
         accepterId: string;
       };
+      requireOwnership(request.user?.id, Number(requesterId));
       const { status } = request.body as {
         status?: FriendshipStatus;
       };
@@ -203,12 +209,13 @@ async function friendshipRoutes(fastify: FastifyInstance) {
   // DELETE /friendships/:requesterId/:accepterId
   fastify.delete(
     "/friendships/:requesterId/:accepterId",
-    { schema: deleteFriendshipSchema },
+    { schema: deleteFriendshipSchema, preHandler: authenticate },
     async (request) => {
       const { requesterId, accepterId } = request.params as {
         requesterId: string;
         accepterId: string;
       };
+      requireOwnership(request.user?.id, Number(requesterId));
 
       try {
         // find the friendship in either direction
