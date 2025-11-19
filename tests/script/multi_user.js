@@ -2,8 +2,8 @@
 const { chromium } = require("playwright");
 
 (async () => {
-  const APP_URL = "http://localhost:5173";
-  const room_list = "http://localhost:5173/roomList";
+  const APP_URL = "https://localhost:5173";
+  const room_list = "https://localhost:5173/roomList";
   const LOGIN_PATH = "/login";
   const SUCCESS_PATH = "/main-menu";
   const TOTAL_TABS = 8;
@@ -28,12 +28,12 @@ const { chromium } = require("playwright");
     const { identifier, password } = USERS[i % USERS.length];
 
     const browser = await chromium.launch({
-      executablePath: "",
+      executablePath: "/opt/google/chrome/chrome",
       headless: false,
     });
     browsers.push(browser);
 
-    const context = await browser.newContext();
+    const context = await browser.newContext({ ignoreHTTPSErrors: true });
     const page = await context.newPage();
     lastPage = page;
 
