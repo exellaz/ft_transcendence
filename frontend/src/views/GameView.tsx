@@ -151,13 +151,19 @@ const GameView: React.FC<GameViewProps> = () => {
   const [disconnectMessage, setDisconnectMessage] = useState("");
   const [hasNextStage, setHasNextStage] = useState<boolean | null>(null);
   useBlockLeave();
-  const { t } = useTranslation();
-  const translate = (key: string) => t(`GameView.${key}`);
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const mode = location.pathname === "/local-game" ? "local" : "remote";
+  const mode = sessionStorage.getItem("gameMode");
+
+  const { t } = useTranslation();
+  const translate = (key: string) =>
+    t(`LocalGameView.${key.replace(/ /g, "_")}`);
+  // const { t } = useTranslation();
+  // const translate = (key: string) => t(`GameView.${key}`);
+
+  let round = 0;
   const navState = (location.state ?? {}) as {
     roomId?: number;
     player?: {
@@ -398,7 +404,7 @@ const GameView: React.FC<GameViewProps> = () => {
                   navigate("/main-menu");
                 }}
               >
-                Back to Lobby
+                {translate("back_to_lobby")}
               </Button>
             </div>
           )}
@@ -430,11 +436,15 @@ const GameView: React.FC<GameViewProps> = () => {
         </div>
       </Background>
     );
-  } else if (mode === "local") {
+  } else if (mode === "local" || mode === "local-tournament") {
     const location = useLocation();
     const state = location.state;
-
-    console.log("state", state);
+    const [showNextRound, setShowNextRound] = useState(false);
+    const [lastWinnerIdx, setLastWinnerIdx] = useState<number | null>(null);
+    const [showTournamentEnd, setShowTournamentEnd] = useState(false);
+    const [tournamentWinner, setTournamentWinner] = useState<string | null>(
+      null,
+    );
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -450,15 +460,44 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const settings = location.state?.gameSettings ?? {};
-      const game = new PongGame(false, settings, () => {}, 1);
+      console.log("new game");
+      const game = new PongGame(
+        false,
+        settings,
+        () => {},
+        1,
+        (
+          winningPlayer: Player | null,
+          winnerSide: "left" | "right" | "draw",
+        ) => {
+          if (mode === "local-tournament") {
+            setShowNextRound(true);
+            // Find winner index in allPlayers and store it
+            const tournamentData = JSON.parse(
+              sessionStorage.getItem("tournamentData") || "{}",
+            );
+            const allPlayers = tournamentData.allPlayers || [];
+            let winnerIdx = null;
+            if (winningPlayer && winnerSide !== "draw") {
+              winnerIdx = allPlayers.findIndex(
+                (p: any) => p.name === winningPlayer.name,
+              );
+            }
+            setLastWinnerIdx(winnerIdx);
+          }
+        },
+      );
 
-      const player1Settings = location.state?.player1 ?? {};
-      const player2Settings = location.state?.player2 ?? {};
+      let player1Settings = location.state?.player1 ?? {};
+      let player2Settings = location.state?.player2 ?? {};
+
+      const player1Name = player1Settings.name || "Player1";
+      const player2Name = player2Settings.name || "Player2";
 
       game.addPlayer(
         new Player({
           team: 0,
-          name: "Player1",
+          name: player1Name,
           id: 0,
           skin: SKIN_MAPPING[player1Settings.spriteUrl] ?? 0,
         }),
@@ -467,13 +506,13 @@ const GameView: React.FC<GameViewProps> = () => {
       game.addPlayer(
         new Player({
           team: 1,
-          name: "Player2",
+          name: player2Name,
           id: 1,
           skin: SKIN_MAPPING[player2Settings.spriteUrl] ?? 0,
         }),
       );
 
-      // --- ✅ Track pressed keys for smooth motion ---
+      // --- Track pressed keys ---
       const keysPressed = new Set<string>();
 
       const handleKeyDown = (event: KeyboardEvent) => {
@@ -537,12 +576,22 @@ const GameView: React.FC<GameViewProps> = () => {
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
         window.removeEventListener("keyup", handleKeyUp);
+        game.destroy?.();
       };
-    }, []);
+    }, [mode, location.state, round]);
 
     return (
       <Background variant="plain">
         <div className="w-full h-full flex-col-center gap-10 px-25">
+          {mode === "local-tournament" && (
+            <h1 className="text-4xl font-bold text-yellow-400 mb-4">
+              {(state?.player1?.name ?? translate("player1")) +
+                " " +
+                translate("vs") +
+                " " +
+                (state?.player2?.name ?? translate("player2"))}
+            </h1>
+          )}
           <canvas
             ref={canvasRef}
             width={1200}
@@ -550,10 +599,10 @@ const GameView: React.FC<GameViewProps> = () => {
             className="rounded-lg shadow-lg border-4 border-cyan-400 bg-gray-800"
           />
           {/* ✅ Back to Lobby Button */}
-          <div>
+          <div className="flex flex-row gap-4">
             <Button
               variant="bigYellow"
-              className="px-3 py-4 text-2xl"
+              className="px-3 py-4 text-2xl whitespace-nowrap"
               onClick={() => {
                 navigate("/main-menu");
                 sessionStorage.removeItem("playerSide");
@@ -563,9 +612,191 @@ const GameView: React.FC<GameViewProps> = () => {
                 sessionStorage.removeItem("RoomType");
               }}
             >
-              Back to Lobby
+              {translate("back_to_lobby")}
             </Button>
+            {showNextRound && (
+              <div className="flex flex-col items-center">
+                <Button
+                  variant="bigYellow"
+                  className="px-8 py-4 text-2xl whitespace-nowrap"
+                  onClick={() => {
+                    round++;
+                    setShowNextRound(false);
+
+                    const tournamentData = JSON.parse(
+                      sessionStorage.getItem("tournamentData") || "{}",
+                    );
+                    tournamentData.round += 1;
+                    if (lastWinnerIdx !== null) {
+                      tournamentData.winners.push(lastWinnerIdx);
+                    }
+                    sessionStorage.setItem(
+                      "tournamentData",
+                      JSON.stringify(tournamentData),
+                    );
+
+                    if (tournamentData.round === 4) {
+                      // Tournament ended: show popup
+                      const allPlayers = tournamentData.allPlayers || [];
+                      const winnerIdx = tournamentData.winners[2]; // Final winner index
+                      const winner = allPlayers[winnerIdx];
+                      setTournamentWinner(winner?.name ?? "Unknown");
+                      setShowTournamentEnd(true);
+                    } else if (tournamentData.round === 3) {
+                      // Use winner indices to get player objects for the final round
+                      const allPlayers = tournamentData.allPlayers || [];
+                      const winner1 = allPlayers[tournamentData.winners[0]];
+                      const winner2 = allPlayers[tournamentData.winners[1]];
+                      navigate("/local-game", {
+                        state: {
+                          player1: winner1,
+                          player2: winner2,
+                          gameSettings: state.gameSettings,
+                          type: "tournament",
+                        },
+                      });
+                    } else {
+                      navigate("/local-game", {
+                        state: {
+                          player1:
+                            tournamentData.rounds[tournamentData.round - 1][0],
+                          player2:
+                            tournamentData.rounds[tournamentData.round - 1][1],
+                          gameSettings: state.gameSettings,
+                          type: "tournament",
+                        },
+                      });
+                    }
+                  }}
+                >
+                  {(() => {
+                    const tournamentData = JSON.parse(
+                      sessionStorage.getItem("tournamentData") || "{}",
+                    );
+                    return tournamentData.round === 3
+                      ? translate("end_tournament")
+                      : translate("next_round");
+                  })()}
+                </Button>
+                {(() => {
+                  const tournamentData = JSON.parse(
+                    sessionStorage.getItem("tournamentData") || "{}",
+                  );
+                  const nextRoundIdx = tournamentData.round;
+                  const nextPair = tournamentData.rounds?.[nextRoundIdx];
+
+                  let remainingplayers = tournamentData.allPlayers.filter(
+                    (_: any, idx: number) => {
+                      return (
+                        tournamentData.winners.includes(idx) ||
+                        idx === lastWinnerIdx
+                      );
+                    },
+                  );
+
+                  let nextPlayer1 = !nextPair
+                    ? remainingplayers[0]
+                    : nextPair[0];
+                  let nextPlayer2 = !nextPair
+                    ? remainingplayers[1]
+                    : nextPair[1];
+
+                  return tournamentData.round !== 3 ? (
+                    <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
+                      {nextPlayer1.name} {translate("vs")} {nextPlayer2.name}
+                    </div>
+                  ) : null;
+                  return null;
+                })()}
+              </div>
+            )}
           </div>
+          {showTournamentEnd && (
+            <div
+              className="fixed inset-0 flex items-center justify-center z-50"
+              style={{ background: "rgba(0,0,0,0.6)" }}
+            >
+              <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center border-4 border-yellow-400 min-w-[320px]">
+                <h2 className="text-3xl font-bold text-yellow-500 mb-4">
+                  {translate("tournament_over")}
+                </h2>
+                <p className="text-xl mb-6">
+                  {translate("winner")}:{" "}
+                  <span className="font-semibold">{tournamentWinner}</span>
+                </p>
+                {(() => {
+                  const tournamentData = JSON.parse(
+                    sessionStorage.getItem("tournamentData") || "{}",
+                  );
+                  const allPlayers = tournamentData.allPlayers || [];
+                  const winners = tournamentData.winners || [];
+                  const lastWinnerIdx = winners[winners.length - 1]; // winner of last round
+
+                  // --- determine ranking ---
+                  const rank1Idx = lastWinnerIdx;
+
+                  let firstTwoRounds = winners.slice(0, 2);
+                  const rank2Idx =
+                    firstTwoRounds[0] === lastWinnerIdx
+                      ? firstTwoRounds[1]
+                      : firstTwoRounds[0];
+
+                  const rank3Idxs = allPlayers
+                    .map((_: any, idx: number) => idx)
+                    .filter(
+                      (idx: number) => idx !== rank1Idx && idx !== rank2Idx,
+                    );
+
+                  return (
+                    <div className="mb-6 w-full">
+                      <div className="text-lg font-semibold text-gray-700 mb-2 text-center">
+                        {translate("final_rankings")}
+                      </div>
+                      <ul className="list-none text-gray-800 text-center">
+                        {rank1Idx !== undefined && rank1Idx !== null && (
+                          <li className="mb-1">
+                            <span className="font-bold text-yellow-600">
+                              🥇 1st: {allPlayers[rank1Idx]?.name}
+                            </span>
+                          </li>
+                        )}
+                        {rank2Idx !== undefined && rank2Idx !== null && (
+                          <li className="mb-1">
+                            <span className="font-bold text-gray-600">
+                              🥈 2nd: {allPlayers[rank2Idx]?.name}
+                            </span>
+                          </li>
+                        )}
+                        {rank3Idxs.map((idx: number) => (
+                          <li key={idx} className="mb-1">
+                            <span className="font-bold text-gray-500">
+                              🥉 3rd: {allPlayers[idx]?.name}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
+                <Button
+                  variant="bigYellow"
+                  className="px-6 py-3 text-xl"
+                  onClick={() => {
+                    setShowTournamentEnd(false);
+                    navigate("/main-menu");
+                    sessionStorage.removeItem("playerSide");
+                    sessionStorage.removeItem("RoomId");
+                    sessionStorage.removeItem("RoomLeaderId");
+                    sessionStorage.removeItem("RoomName");
+                    sessionStorage.removeItem("RoomType");
+                    sessionStorage.removeItem("tournamentData");
+                  }}
+                >
+                  {translate("back_to_lobby")}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Background>
     );

@@ -28,6 +28,7 @@
     "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉"
   },
+
   "DoublesRoomView": {
     "doubles_room": "雙人房間",
     "room_id": "房間ID",
@@ -48,7 +49,38 @@
     "change_sprite": "更換角色",
     "local_game": "本地遊戲",
     "game_settings": "遊戲設定",
-    "start": "開始"
+    "start": "開始",
+    "back_to_lobby": "返回大廳",
+    "player1": "玩家1",
+    "vs": "對",
+    "player2": "玩家2",
+    "end_tournament": "結束錦標賽",
+    "next_round": "下一輪",
+    "tournament_over": "錦標賽結束",
+    "winner": "冠軍",
+    "final_rankings": "最終排名"
+  },
+  "LocalTournamentView": {
+    "please_fill_out_all_player_names_and_select_a_skin_for_each": "請填寫所有玩家名稱並為每位玩家選擇外觀。",
+    "player_names_must_be_unique": "玩家名稱必須是唯一的。",
+    "map": "地圖",
+    "stadium": "🏟️ 體育場",
+    "mansion": "🏰 豪宅",
+    "arcade": "🎮 遊戲廳",
+    "skin": "外觀",
+    "name": "名稱",
+    "yellow": "🟡 黃色",
+    "green": "🟢 綠色",
+    "blue": "🔵 藍色",
+    "red": "🔴 紅色",
+    "purple": "🟣 紫色",
+    "starry": "🌟 星光",
+    "white": "⚪ 白色",
+    "forty_two": "42",
+    "player": "玩家",
+    "start": "開始",
+    "tournament_matchups": "錦標賽對戰組合",
+    "vs": "對"
   },
   "GameView": {
     "offline_error": "你處於離線狀態。請檢查你的連接。",
@@ -76,7 +108,8 @@
     "tournament_mode": "錦標賽模式",
     "custom_mode": "自訂模式",
     "settings": "設定",
-    "join_tournament": "參加錦標賽？"
+    "join_tournament": "參加錦標賽？",
+    "local_tournament": "本地錦標賽"
   },
   "MatchView": {
     "loading": "載入中...",

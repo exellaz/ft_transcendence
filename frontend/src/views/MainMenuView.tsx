@@ -24,6 +24,12 @@ const MainMenuView: React.FC = () => {
     <MainLayout>
       <Card className="gap-6">
         <Logo />
+        <Button
+          variant="bigYellow"
+          onClick={() => navigate("/local-tournament")}
+        >
+          {translate("local_tournament")}
+        </Button>
         <Button variant="bigYellow" onClick={() => setShowJoinTournament(true)}>
           {translate("tournament_mode")}
         </Button>
