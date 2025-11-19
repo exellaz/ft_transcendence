@@ -12,7 +12,6 @@ import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
 import type { GameObject } from "@shared/objects/GameObject";
-import { useTranslation } from "react-i18next";
 import type { User } from "@/types/usersApi";
 import {
   createNextTournament,
@@ -152,8 +151,6 @@ const GameView: React.FC<GameViewProps> = () => {
   const [disconnectMessage, setDisconnectMessage] = useState("");
   const [hasNextStage, setHasNextStage] = useState<boolean | null>(null);
   useBlockLeave();
-  const { t } = useTranslation();
-  const translate = (key: string) => t(`GameView.${key}`);
   const { user } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const navigate = useNavigate();
@@ -162,6 +159,9 @@ const GameView: React.FC<GameViewProps> = () => {
   
   const { t } = useTranslation();
   const translate = (key: string) => t(`LocalGameView.${key.replace(/ /g, "_")}`);
+  // const { t } = useTranslation();
+  // const translate = (key: string) => t(`GameView.${key}`);
+
 
   let round = 0;
   const navState = (location.state ?? {}) as {
