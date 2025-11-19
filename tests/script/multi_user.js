@@ -2,8 +2,8 @@
 const { chromium } = require("playwright");
 
 (async () => {
-  const APP_URL = "https://localhost:5173";
-  const room_list = "https://localhost:5173/roomList";
+  const APP_URL = "https://10.13.1.6:5173";
+  const room_list = "https://10.13.1.6:5173/roomList";
   const LOGIN_PATH = "/login";
   const SUCCESS_PATH = "/main-menu";
   const TOTAL_TABS = 8;
