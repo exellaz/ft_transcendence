@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
 import Button from '../components/Button';
 import MainLayout from '../layout/MainLayout';
 import Card from '../components/Card';
@@ -21,7 +22,9 @@ const LocalTournamentSetup = () => {
   const [matchupPairs, setMatchupPairs] = useState<any[][]>([]);
   const [pendingState, setPendingState] = useState<any>(null);
 
-  // Show and auto-hide error popup
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`LocalTournamentView.${key}`);
+
   useEffect(() => {
     if (error) {
       setShowError(true);
@@ -37,7 +40,6 @@ const LocalTournamentSetup = () => {
   };
 
   const handleInputChange = (index: number, value: string) => {
-    // Only allow alphanumeric characters, max length 15
     const sanitized = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 15);
     const newRows = [...rows];
     newRows[index].input = sanitized;
@@ -56,9 +58,9 @@ const LocalTournamentSetup = () => {
     const hasDuplicates = new Set(names).size !== names.length;
 
     if (!allFilled) {
-      setError("Please fill out all player names and select a skin for each.");
+      setError(translate("please_fill_out_all_player_names_and_select_a_skin_for_each"));
     } else if (hasDuplicates) {
-      setError("Player names must be unique.");
+      setError(translate("player_names_must_be_unique"));
     } else {
       setError(null);
 
@@ -114,30 +116,30 @@ const LocalTournamentSetup = () => {
     }
   };
 
+
+
   return (
     <MainLayout>
       <Card className="gap-2">
         <Logo />
         <div className="space-y-2 mb-2 w-full">
-          {/* Map selection */}
           <div className="flex gap-4 items-center font-semibold text-white text-lg mb-2">
           </div>
           <div className="mb-4">
-            <label className="block text-white font-semibold mb-2">Map</label>
+            <label className="block text-white font-semibold mb-2">{translate("map")}</label>
             <select
               value={selectedMap}
               onChange={handleMapChange}
               className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gray-400"
             >
-              <option value="stadium" className="text-gray-900 bg-gray-200">🏟 Stadium</option>
-              <option value="mansion" className="text-gray-900 bg-gray-200">🏰 Mansion</option>
-              <option value="arcade" className="text-gray-900 bg-gray-200">🕹 Arcade</option>
+              <option value="stadium" className="text-gray-900 bg-gray-200">{translate("stadium")}</option>
+              <option value="mansion" className="text-gray-900 bg-gray-200">{translate("mansion")}</option>
+              <option value="arcade" className="text-gray-900 bg-gray-200">{translate("arcade")}</option>
             </select>
           </div>
-          {/* Header row */}
           <div className="flex gap-4 items-center font-semibold text-white text-lg mb-2">
-            <div className="flex-1 text-center">Skin</div>
-            <div className="flex-1 text-center">Name</div>
+            <div className="flex-1 text-center">{translate("skin")}</div>
+            <div className="flex-1 text-center">{translate("name")}</div>
           </div>
           {rows.map((row, index) => (
             <div key={index} className="flex gap-4 items-center">
@@ -146,20 +148,20 @@ const LocalTournamentSetup = () => {
                 onChange={(e) => handleDropdownChange(index, e.target.value)}
                 className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-gray-400"
               >
-                <option value="yellow" className="text-gray-900 bg-gray-200">🟡 yellow</option>
-                <option value="green" className="text-gray-900 bg-gray-200">🟢 green</option>
-                <option value="blue" className="text-gray-900 bg-gray-200">🔵 blue</option>
-                <option value="red" className="text-gray-900 bg-gray-200">🔴 red</option>
-                <option value="purple" className="text-gray-900 bg-gray-200">🟣 purple</option>
-                <option value="starry" className="text-gray-900 bg-gray-200">🌟 starry</option>
-                <option value="white" className="text-gray-900 bg-gray-200">⚪ white</option>
-                <option value="42" className="text-gray-900 bg-gray-200">🔢 42</option>
+                <option value="yellow" className="text-gray-900 bg-gray-200">{translate("yellow")}</option>
+                <option value="green" className="text-gray-900 bg-gray-200">{translate("green")}</option>
+                <option value="blue" className="text-gray-900 bg-gray-200">{translate("blue")}</option>
+                <option value="red" className="text-gray-900 bg-gray-200">{translate("red")}</option>
+                <option value="purple" className="text-gray-900 bg-gray-200">{translate("purple")}</option>
+                <option value="starry" className="text-gray-900 bg-gray-200">{translate("starry")}</option>
+                <option value="white" className="text-gray-900 bg-gray-200">{translate("white")}</option>
+                <option value="42" className="text-gray-900 bg-gray-200">{translate("forty_two")}</option>
               </select>
               <input
                 type="text"
                 value={row.input}
                 onChange={(e) => handleInputChange(index, e.target.value)}
-                placeholder={`Player ${index + 1} name`}
+                placeholder={translate("player") + ` ${index + 1} ` + translate("name")}
                 maxLength={15}
                 className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-gray-400"
               />
@@ -167,7 +169,7 @@ const LocalTournamentSetup = () => {
           ))}
         </div>
         <Button onClick={handleStart} className="w-full bg-indigo-600 text-white hover:bg-indigo-700">
-          Start
+          {translate("start")}
         </Button>
         {error && (
           <div
@@ -187,14 +189,14 @@ const LocalTournamentSetup = () => {
             <div
               className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center min-w-[320px] "
             >
-              <h2 className="text-4xl font-bold mb-4 text-gray-900">Tournament Matchups</h2>
+              <h2 className="text-4xl font-bold mb-4 text-gray-900">{translate("tournament_matchups")}</h2>
               <div className="mb-6 flex flex-col items-center">
                 {matchupPairs.map((pair, idx) => (
                   <div key={idx} className="flex flex-col items-center">
                   <div className="text-2xl text-gray-800 mb-2">
                     <span className="font-semibold">{` `}</span>
                     <span className="font-semibold">{pair[0].name}</span>
-                    {" vs "}
+                    {" " + translate("vs") + " "}
                     <span className="font-semibold">{pair[1].name}</span>
                   </div>
                   {idx < matchupPairs.length && (

@@ -46,7 +46,38 @@
     "change_sprite": "更换角色",
     "local_game": "本地游戏",
     "game_settings": "游戏设置",
-    "start": "开始"
+    "start": "开始",
+    "back_to_lobby": "返回大厅",
+    "player1": "玩家1",
+    "vs": "对",
+    "player2": "玩家2",
+    "end_tournament": "结束锦标赛",
+    "next_round": "下一轮",
+    "tournament_over": "锦标赛结束",
+    "winner": "冠军",
+    "final_rankings": "最终排名"
+  },
+  "LocalTournamentView": {
+    "please_fill_out_all_player_names_and_select_a_skin_for_each": "请填写所有玩家名称并为每位玩家选择外观。",
+    "player_names_must_be_unique": "玩家名称必须是唯一的。",
+    "map": "地图",
+    "stadium": "🏟️ 体育场",
+    "mansion": "🏰 豪宅",
+    "arcade": "🎮 游戏厅",
+    "skin": "外观",
+    "name": "名称",
+    "yellow": "🟡 黄色",
+    "green": "🟢 绿色",
+    "blue": "🔵 蓝色",
+    "red": "🔴 红色",
+    "purple": "🟣 紫色",
+    "starry": "🌟 星光",
+    "white": "⚪ 白色",
+    "forty_two": "42",
+    "player": "玩家",
+    "start": "开始",
+    "tournament_matchups": "锦标赛对战组合",
+    "vs": "对"
   },
   "LoginView": {
     "username_or_email_required": "必须输入用户名或电子邮件",
@@ -69,7 +100,8 @@
     "tournament_mode": "锦标赛模式",
     "custom_mode": "自定义模式",
     "settings": "设置",
-    "join_tournament": "参加锦标赛？"
+    "join_tournament": "参加锦标赛？",
+    "local_tournament": "本地锦标赛"
   },
   "MatchView": {
     "loading": "加载中...",

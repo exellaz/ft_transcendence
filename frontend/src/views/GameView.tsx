@@ -12,6 +12,7 @@ import { PongGame } from "@shared/game/pong";
 import { Viewport } from "@shared/objects/Viewport";
 import { Player } from "@shared/game/Player";
 import type { GameObject } from "@shared/objects/GameObject";
+import { useTranslation } from "react-i18next";
 
 interface GameViewProps {
   mode?: "local" | "remote"; // or 'multiplayer' vs 'singleplayer', etc.
@@ -38,6 +39,9 @@ const GameView: React.FC<GameViewProps> = () => {
   const location = useLocation();
   const mode = sessionStorage.getItem("gameMode");
   
+  const { t } = useTranslation();
+  const translate = (key: string) => t(`LocalGameView.${key.replace(/ /g, "_")}`);
+
   let round = 0;
 
   if (mode === "remote") {
@@ -136,7 +140,7 @@ const GameView: React.FC<GameViewProps> = () => {
                   sessionStorage.removeItem("RoomType");
                 }}
               >
-                Back to Lobby
+                {translate("back_to_lobby")}
               </Button>
             </div>
           )}
@@ -285,7 +289,7 @@ const GameView: React.FC<GameViewProps> = () => {
         <div className="w-full h-full flex-col-center gap-10 px-25">
           {mode === "local-tournament" && (
             <h1 className="text-4xl font-bold text-yellow-400 mb-4">
-              {(state?.player1?.name ?? "Player1") + " vs " + (state?.player2?.name ?? "Player2")}
+              {(state?.player1?.name ?? translate("player1")) + " " + translate("vs") + " " + (state?.player2?.name ?? translate("player2"))}
             </h1>
           )}
           <canvas
@@ -308,7 +312,7 @@ const GameView: React.FC<GameViewProps> = () => {
                 sessionStorage.removeItem("RoomType");
               }}
             >
-              Back to Lobby
+              {translate("back_to_lobby")}
             </Button>
             {showNextRound && (
               <div className="flex flex-col items-center">
@@ -362,7 +366,7 @@ const GameView: React.FC<GameViewProps> = () => {
                 >
                   {(() => {
                     const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
-                    return tournamentData.round === 3 ? "End Tournament" : "Next Round";
+                    return tournamentData.round === 3 ? translate("end_tournament") : translate("next_round");
                   })()}
                 </Button>
                 {(() => {
@@ -380,7 +384,7 @@ const GameView: React.FC<GameViewProps> = () => {
 
                   return (
                     (tournamentData.round !== 3)? <div className="mt-2 text-lg text-gray-200 font-semibold text-center">
-                      {nextPlayer1.name} vs {nextPlayer2.name}
+                      {nextPlayer1.name} {translate("vs")} {nextPlayer2.name}
                     </div>: null
                   );
                   return null;
@@ -394,9 +398,9 @@ const GameView: React.FC<GameViewProps> = () => {
               style={{ background: "rgba(0,0,0,0.6)" }}
             >
               <div className="bg-white rounded-lg shadow-lg p-8 flex flex-col items-center border-4 border-yellow-400 min-w-[320px]">
-                <h2 className="text-3xl font-bold text-yellow-500 mb-4">Tournament Over</h2>
+                <h2 className="text-3xl font-bold text-yellow-500 mb-4">{translate("tournament_over")}</h2>
                 <p className="text-xl mb-6">
-                  Winner: <span className="font-semibold">{tournamentWinner}</span>
+                  {translate("winner")}: <span className="font-semibold">{tournamentWinner}</span>
                 </p>
                 {(() => {
                   const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
@@ -417,7 +421,7 @@ const GameView: React.FC<GameViewProps> = () => {
 
                   return (
                     <div className="mb-6 w-full">
-                      <div className="text-lg font-semibold text-gray-700 mb-2 text-center">Final Rankings:</div>
+                      <div className="text-lg font-semibold text-gray-700 mb-2 text-center">{translate("final_rankings")}</div>
                       <ul className="list-none text-gray-800 text-center">
                         {rank1Idx !== undefined && rank1Idx !== null && (
                           <li className="mb-1">
@@ -452,7 +456,7 @@ const GameView: React.FC<GameViewProps> = () => {
                     sessionStorage.removeItem("tournamentData");
                   }}
                 >
-                  Back to Lobby
+                  {translate("back_to_lobby")}
                 </Button>
               </div>
             </div>
