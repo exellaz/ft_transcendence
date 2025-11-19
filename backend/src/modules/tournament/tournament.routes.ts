@@ -7,7 +7,7 @@ import {
   getUserTournamentHistorySchema,
   getUserTournamentStatsSchema,
 } from "./tournament.schema";
-import { startLobbyTimeout } from "./tournament";
+import { authenticate } from "src/plugins/authenticate";
 
 export const tournaments = new Map<number, TournamentLobby>();
 
@@ -19,6 +19,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   // POST /create-tournament - create a new tournament
   app.post(
     "/create-tournament",
+    { preHandler: authenticate },
     async (req: FastifyRequest, reply: FastifyReply) => {
       const { name } = req.body as { name: string };
 
@@ -62,6 +63,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   // POST /create-next-tournament - create a new tournament for next stage
   app.post(
     "/create-next-tournament",
+    { preHandler: authenticate },
     async (req: FastifyRequest, reply: FastifyReply) => {
       const { stage, parentId, tournamentDb } = req.body as {
         stage: string;
@@ -177,7 +179,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   // GET /users/:id/tournament-history  - tournament history + matches
   app.get(
     "/users/:id/tournament-history",
-    { schema: getUserTournamentHistorySchema },
+    { schema: getUserTournamentHistorySchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
       const userId = Number(id);
@@ -244,7 +246,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
   // GET /users/:id/tournament-stats
   app.get(
     "/users/:id/tournament-stats",
-    { schema: getUserTournamentStatsSchema },
+    { schema: getUserTournamentStatsSchema, preHandler: authenticate },
     async (request) => {
       const { id } = request.params as { id: string };
       const userId = Number(id);
