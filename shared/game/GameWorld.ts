@@ -13,7 +13,8 @@ export class GameWorld {
   bgColor: string = "#000000";
   viewport: Viewport;
   game: any;
-  timers: Timer[] = [];
+
+  public timers: Record<string, Timer | PeriodicTimer> = {};
 
   constructor(viewport?: Viewport) {
     this.viewport = viewport ?? new Viewport({ width: 800, height: 400 });
@@ -26,12 +27,24 @@ export class GameWorld {
     }
   }
 
-  public addTimer(durationSeconds: number, callback: () => void) {
-    this.timers.push(new Timer(durationSeconds, callback));
+  public addTimer(
+    identifier: string,
+    durationSeconds: number,
+    callback: () => void,
+  ) {
+    this.timers[identifier] = new Timer(durationSeconds, callback);
   }
 
-  public addPeriodicTimer(durationSeconds: number, callback: () => void) {
-    this.timers.push(new PeriodicTimer(durationSeconds, callback));
+  public addPeriodicTimer(
+    identifier: string,
+    durationSeconds: number,
+    callback: () => void,
+  ) {
+    this.timers[identifier] = new PeriodicTimer(durationSeconds, callback);
+  }
+
+  public removePeriodicTimer(identifier: string) {
+    delete this.timers[identifier];
   }
 
   public addObject(object: GameObject) {
@@ -77,7 +90,7 @@ export class GameWorld {
     }
     this.checkCollisions();
 
-    for (const timer of this.timers) {
+    for (const timer of Object.values(this.timers)) {
       timer.update();
     }
   }

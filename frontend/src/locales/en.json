@@ -50,7 +50,38 @@
     "change_sprite": "Change Sprite",
     "local_game": "Local Game",
     "game_settings": "Game Settings",
-    "start": "Start"
+    "start": "Start",
+    "back_to_lobby": "Back to lobby",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "end_tournament": "End Tournament",
+    "next_round": "Next Round",
+    "vs": "vs",
+    "tournament_over": "Tournament Over",
+    "winner": "Winner",
+    "final_rankings": "Final Rankings"
+  },
+  "LocalTournamentView": {
+    "please_fill_out_all_player_names_and_select_a_skin_for_each": "Please fill out all player names and select a skin for each.",
+    "player_names_must_be_unique": "Player names must be unique.",
+    "map": "Map",
+    "stadium": "🏟️ Stadium",
+    "mansion": "🏰 Mansion",
+    "arcade": "🎮 Arcade",
+    "skin": "Skin",
+    "name": "Name",
+    "yellow": "🟡 Yellow",
+    "green": "🟢 Green",
+    "blue": "🔵 Blue",
+    "red": "🔴 Red",
+    "purple": "🟣 Purple",
+    "starry": "🌟 Starry",
+    "white": "⚪ White",
+    "forty_two": "42",
+    "player": "Player",
+    "start": "Start",
+    "tournament_matchups": "Tournament Matchups",
+    "vs": "vs"
   },
   "GameView": {
     "offline_error": "You are offline. Please check your connection.",
@@ -78,7 +109,8 @@
     "tournament_mode": "TOURNAMENT MODE",
     "custom_mode": "CUSTOM MODE",
     "settings": "SETTINGS",
-    "join_tournament": "Join a tournament?"
+    "join_tournament": "Join a tournament?",
+    "local_tournament": "LOCAL TOURNAMENT"
   },
   "MatchView": {
     "loading": "Loading...",

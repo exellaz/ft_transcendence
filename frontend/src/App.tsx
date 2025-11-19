@@ -26,6 +26,7 @@ import SinglesRoomView from "./views/custom/SinglesRoomView";
 import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
+import LocalTournamentSetup from "./views/LocalTournamentSetup"; // Adjust path if needed
 import RoomList from "./views/testRoomList";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
@@ -146,6 +147,14 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/local-tournament"
+            element={
+              <RequireAuth>
+                <LocalTournamentSetup />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/local-game-setup"
             element={
               <RequireAuth>
@@ -157,7 +166,7 @@ const App: React.FC = () => {
             path="/local-game"
             element={
               <RequireAuth>
-                <RequireGameMode allowed={["local"]}>
+                <RequireGameMode allowed={["local", "local-tournament"]}>
                   <GameView />
                 </RequireGameMode>
               </RequireAuth>

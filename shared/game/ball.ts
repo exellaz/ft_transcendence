@@ -168,7 +168,7 @@ export class Ball extends GameObject {
     this.lastPadelHit = null;
     this.velocity.x = 0;
 
-    this.game!.world.addTimer(0.3, () => {
+    this.game!.world.addTimer("Ball Timer", 0.3, () => {
       this.position.x = 0;
       this.velocity.x = 0;
 
