@@ -14,8 +14,6 @@ export class GameWorld {
   viewport: Viewport;
   game: any;
 
-
-  
   public timers: Record<string, Timer | PeriodicTimer> = {};
 
   constructor(viewport?: Viewport) {
@@ -29,11 +27,19 @@ export class GameWorld {
     }
   }
 
-  public addTimer(identifier: string, durationSeconds: number, callback: () => void) {
+  public addTimer(
+    identifier: string,
+    durationSeconds: number,
+    callback: () => void,
+  ) {
     this.timers[identifier] = new Timer(durationSeconds, callback);
   }
 
-  public addPeriodicTimer(identifier: string, durationSeconds: number, callback: () => void) {
+  public addPeriodicTimer(
+    identifier: string,
+    durationSeconds: number,
+    callback: () => void,
+  ) {
     this.timers[identifier] = new PeriodicTimer(durationSeconds, callback);
   }
 
@@ -79,7 +85,6 @@ export class GameWorld {
   }
 
   public update() {
-
     for (const object of this.gameObjects.values()) {
       object.update();
     }

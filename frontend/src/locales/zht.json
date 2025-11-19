@@ -28,7 +28,7 @@
     "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉"
   },
-  
+
   "DoublesRoomView": {
     "doubles_room": "雙人房間",
     "room_id": "房間ID",
@@ -60,7 +60,7 @@
     "winner": "冠軍",
     "final_rankings": "最終排名"
   },
-    "LocalTournamentView": {
+  "LocalTournamentView": {
     "please_fill_out_all_player_names_and_select_a_skin_for_each": "請填寫所有玩家名稱並為每位玩家選擇外觀。",
     "player_names_must_be_unique": "玩家名稱必須是唯一的。",
     "map": "地圖",

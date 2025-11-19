@@ -64,7 +64,6 @@ export class GameTeam {
   }
 
   win() {
-    
     this.score++;
     if (this.label) this.label.text = String(this.score);
     if (this.score >= this.game.gameSettings!.winningScore) {
@@ -179,7 +178,10 @@ export class PongGame {
   public id: number = -1;
 
   private onGameEnd?: (winner: "left" | "right" | "draw") => void;
-  public onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void;
+  public onUserGameEnd?: (
+    winningPlayer: Player | null,
+    winnerSide: "left" | "right" | "draw",
+  ) => void;
 
   public world: GameWorld = new GameWorld();
   public gameSettings: EngineSettings = new EngineSettings();
@@ -246,13 +248,12 @@ export class PongGame {
         console.log("onGameEnd called after forceEnd");
         this.onGameEnd(winner);
       }
-        let winningPlayer = null;
-        if (winner === "left") {
-          winningPlayer = this.teamLeft.padels[0]?.player;
-        } else if (winner === "right") {
-          winningPlayer = this.teamRight.padels[0]?.player;
-        }
-      
+      let winningPlayer = null;
+      if (winner === "left") {
+        winningPlayer = this.teamLeft.padels[0]?.player;
+      } else if (winner === "right") {
+        winningPlayer = this.teamRight.padels[0]?.player;
+      }
     }, 1000);
   }
 
@@ -298,12 +299,11 @@ export class PongGame {
       }
 
       if (this.onUserGameEnd) {
-        const winnerSide = this.winningTeam!.team === Team.TEAM_LEFT ? "left" : "right";
+        const winnerSide =
+          this.winningTeam!.team === Team.TEAM_LEFT ? "left" : "right";
         const winningPlayer = this.winningTeam!.padels[0]?.player;
         this.onUserGameEnd(winningPlayer, winnerSide);
-
       }
-
     }, 2000);
   }
 
@@ -414,7 +414,7 @@ export class PongGame {
           const winnerPlayer = this.winningTeam!.padels[0]?.player;
           this.onScreenTitle.text = `${winnerPlayer?.name ?? this.winningTeam!.toString()} Wins!`;
         }
-        this.world.removePeriodicTimer("title"); 
+        this.world.removePeriodicTimer("title");
 
         this.state = GameState.ENDED;
       }
@@ -626,7 +626,10 @@ export class PongGame {
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
     teamSize: number = 1,
-    onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void,
+    onUserGameEnd?: (
+      winningPlayer: Player | null,
+      winnerSide: "left" | "right" | "draw",
+    ) => void,
   ) {
     PongGame.globalId++;
     this.teamSize = teamSize;
@@ -646,16 +649,23 @@ export class PongGame {
     this.loadMap(this.gameSettings.map);
   }
 
-
-  
   constructor(
     isClient: boolean,
     incomingSettings: GameSettings,
     onGameEnd?: (winner: "left" | "right" | "draw") => void,
     teamSize: number = 1,
-    onUserGameEnd?: (winningPlayer: Player | null, winnerSide: "left" | "right" | "draw") => void,
+    onUserGameEnd?: (
+      winningPlayer: Player | null,
+      winnerSide: "left" | "right" | "draw",
+    ) => void,
   ) {
-    this.initGame(isClient, incomingSettings, onGameEnd, teamSize, onUserGameEnd);
+    this.initGame(
+      isClient,
+      incomingSettings,
+      onGameEnd,
+      teamSize,
+      onUserGameEnd,
+    );
   }
 
   destroy() {

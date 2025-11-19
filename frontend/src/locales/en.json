@@ -60,7 +60,7 @@
     "tournament_over": "Tournament Over",
     "winner": "Winner",
     "final_rankings": "Final Rankings"
-    },
+  },
   "LocalTournamentView": {
     "please_fill_out_all_player_names_and_select_a_skin_for_each": "Please fill out all player names and select a skin for each.",
     "player_names_must_be_unique": "Player names must be unique.",
