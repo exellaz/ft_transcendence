@@ -25,6 +25,7 @@
     "join_doubles_game": "加入雙人遊戲？",
     "room_not_found": "房間未找到",
     "room_is_full": "房間已滿",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉"
   },
   
@@ -38,6 +39,7 @@
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉",
     "private": "私人",
     "public": "公開",
@@ -80,6 +82,10 @@
     "tournament_matchups": "錦標賽對戰組合",
     "vs": "對"
   },
+  "GameView": {
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
+    "close": "關閉"
+  },
   "LoginView": {
     "username_or_email_required": "必須輸入用戶名或電子郵件",
     "password_required": "必須輸入密碼",
@@ -95,7 +101,8 @@
     "2fa": "雙重驗證",
     "enter_code": "請輸入您的驗證器應用中的六位數代碼。",
     "verify_code": "驗證代碼",
-    "invalid_code_error": "代碼無效或伺服器錯誤"
+    "invalid_code_error": "代碼無效或伺服器錯誤",
+    "user_already_logged_in": "使用者已從另一台裝置登入"
   },
   "MainMenuView": {
     "tournament_mode": "錦標賽模式",
@@ -107,6 +114,7 @@
   "MatchView": {
     "loading": "載入中...",
     "ready": "準備",
+    "unready": "取消準備",
     "pending": "等待中",
     "quarterfinals": "四分之一決賽",
     "semifinals": "準決賽",
@@ -159,6 +167,8 @@
     "leave_room": "離開房間",
     "leave_confirmation": "你確定要離開房間嗎？",
     "room_is_full": "房間已滿",
+    "unknown_error": "未知錯誤",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
     "close": "關閉",
     "private": "私人",
     "public": "公開",
@@ -170,8 +180,12 @@
     "finals": "決賽",
     "tournament_lobby": "錦標賽大廳",
     "ready": "準備",
+    "unready": "取消準備",
     "quit": "退出",
-    "quit_confirmation": "你確定要退出錦標賽嗎？"
+    "quit_confirmation": "你確定要退出錦標賽嗎？",
+    "room_is_full": "房間已滿",
+    "offline_error": "你處於離線狀態。請檢查你的連接。",
+    "close": "關閉"
   },
   "BasicInfoPopup": {
     "username_invalid": "用戶名只能包含字母、數字、底線和連字號",

@@ -1,22 +1,20 @@
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
-import { getAcceptedFriends } from "../friends/friendship/friendship.service";
 import { doesUserIdExist } from "../users/users.service";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import { HeartbeatWebSocket, OutgoingMessageMsg } from "./online-status.types";
+import {
+  addOnlineUser,
+  getOnlineCount,
+  getOnlineSocket,
+  isUserOnline,
+  notifyFriendsStatus,
+  removeOnlineUser,
+  sendOnlineFriendsList,
+} from "./online-status.manager";
 
-// Attach a custom isAlive flag to this WebSocket object
-interface HeartbeatWebSocket extends WebSocket {
-  isAlive: boolean;
-}
-
-interface OutgoingMessageMsg {
-  type: "OUTGOING_MESSAGE";
-  tempId: number;
-  friendshipId: number;
-  message: string;
-}
-
-const onlineUsers = new Map<number, HeartbeatWebSocket>();
+// map of online users: userId -> WebSocket
+// const onlineUsers = new Map<number, HeartbeatWebSocket>();
 
 export default async function onlineStatusRoutes(fastify: FastifyInstance) {
   // Define your online status routes here
@@ -66,13 +64,33 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       const uid = await validateUserId(ws, userId);
       if (uid === null) return;
 
+      // check if userId exist in onlineUsers map
+      if (isUserOnline(uid)) {
+        console.log(
+          `[DUPLICATE LOGIN] UserId ${uid} already logged in. Closing current connection.`,
+        );
+
+        try {
+          ws.send(
+            JSON.stringify({
+              type: "DUPLICATE_LOGIN",
+              message: "You have been logged out due to a duplicate login.",
+            }),
+          );
+        } catch {
+          // ignore individual socket errors
+        }
+        ws.close(4000, "Duplicate login"); // TODO: verify close code
+        return;
+      }
+
       ws.isAlive = true;
 
       // Add online user to Map
-      onlineUsers.set(uid, ws);
+      addOnlineUser(uid, ws);
       console.log(`[Online Status websocket] User ${uid} connected.`);
       console.log(
-        `[Online Status websocket] Total Online Users: ${onlineUsers.size}`,
+        `[Online Status websocket] Total Online Users: ${getOnlineCount()}`,
       );
 
       // Send initial online friends list
@@ -123,7 +141,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
           // --- STEP 4: Broadcast to both participants ---
           const friendId = participants.find((id) => id !== userId);
           if (friendId) {
-            const friendSocket = onlineUsers.get(friendId);
+            const friendSocket = getOnlineSocket(friendId);
             if (friendSocket && friendSocket.readyState === friendSocket.OPEN) {
               // fetch friend's username for toast display
               const sender = await fastify.db.user.findUnique({
@@ -168,14 +186,15 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       });
 
       ws.on("close", (code, reason) => {
-        onlineUsers.delete(uid);
+        removeOnlineUser(uid);
         console.log(
           `[Online Status websocket]Client ${clientIP} disconnected - Code: ${code}, Reason: ${reason?.toString() || "none"}`,
         );
         console.log(`[Online Status websocket] User ${uid} disconnected.`);
         console.log(
-          `[Online Status websocket] Remaining Online Users: ${onlineUsers.size}`,
+          `[Online Status websocket] Remaining Online Users: ${getOnlineCount()}`,
         );
+        console.log(`updated onlineUser map size: ${getOnlineCount()}`);
         // Notify friends about offline status
         notifyFriendsStatus(uid, false);
       });
@@ -189,26 +208,6 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
     },
   );
 }
-
-const HEARTBEAT_INTERVAL = 10000; // 10s
-setInterval(() => {
-  console.log("[Online Status websocket] Running heartbeat check...");
-  for (const [uid, ws] of onlineUsers.entries()) {
-    if (!ws.isAlive) {
-      console.log(
-        `[Online Status websocket] User ${uid} did not respond. Removing...`,
-      );
-      ws.terminate(); // use ws.close to specify code/reason if needed
-      onlineUsers.delete(uid);
-      notifyFriendsStatus(uid, false);
-      continue;
-    }
-
-    ws.isAlive = false;
-    ws.ping(); // triggers "pong" event when client replies
-    console.log(`[Online Status websocket] Sent ping to user ${uid}`);
-  }
-}, HEARTBEAT_INTERVAL);
 
 async function validateUserId(
   ws: WebSocket,
@@ -232,80 +231,6 @@ async function validateUserId(
   }
 
   return uid;
-}
-
-async function sendOnlineFriendsList(userId: number, ws: HeartbeatWebSocket) {
-  const friends: number[] = await getFriendsOfUser(userId);
-  const onlineFriendIds: number[] = friends.filter((friendId) =>
-    onlineUsers.has(friendId),
-  );
-  console.log(
-    `[Online Status websocket] Sending online friends to ${userId}:`,
-    onlineFriendIds,
-  );
-
-  ws.send(
-    JSON.stringify({
-      type: "ONLINE_FRIENDS_LIST",
-      onlineFriends: onlineFriendIds,
-    }),
-  );
-}
-
-// notifies all friends of a user about their online/offline status
-async function notifyFriendsStatus(userId: number, isOnline: boolean) {
-  console.log(
-    `[Online Status websocket] Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`,
-  );
-
-  const friends: number[] = await getFriendsOfUser(userId);
-
-  friends.forEach((friendId) => {
-    const friendSocket = onlineUsers.get(friendId);
-    if (friendSocket) {
-      friendSocket.send(
-        JSON.stringify({
-          type: "FRIEND_STATUS", // ? what is type?
-          friendId: userId,
-          online: isOnline,
-        }),
-      );
-    }
-  });
-}
-
-// returns a list of friend userIds for a given userId
-async function getFriendsOfUser(userId: number) {
-  const acceptedFriends = await getAcceptedFriends(userId);
-
-  const friendIds: number[] = acceptedFriends.map((friend) => friend.id);
-  return friendIds;
-}
-
-export async function notifyFriendshipUpdateToUsers(
-  requesterId: number,
-  accepterId: number,
-) {
-  // Notify both users about the friendship update
-  const requesterSocket = onlineUsers.get(requesterId);
-  if (requesterSocket) {
-    requesterSocket.send(
-      JSON.stringify({
-        type: "FRIENDSHIP_UPDATE",
-        userId: accepterId,
-      }),
-    );
-  }
-
-  const accepterSocket = onlineUsers.get(accepterId);
-  if (accepterSocket) {
-    accepterSocket.send(
-      JSON.stringify({
-        type: "FRIENDSHIP_UPDATE",
-        userId: requesterId,
-      }),
-    );
-  }
 }
 
 // HELPER FUNCTIONS FOR MESSAGE EVENT

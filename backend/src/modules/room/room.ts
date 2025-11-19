@@ -1,84 +1,26 @@
-import { WebSocket } from "@fastify/websocket";
-import { liveChatMessage } from "../chat/liveChat"; // import chat message type
-//import { saveMatchResult } from "../../plugins/database";
+import {
+  Room,
+  GameSettings,
+  TournamentLobby,
+  gameOver,
+  playerInfo,
+  TournamentPlayerWs,
+  PlacementEntry,
+} from "../../types/interface";
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
-import { writeFileSync } from "fs";
-import pako from "pako";
+import { tournaments } from "../tournament/tournament.routes";
 import os from "os";
 import { performance } from "perf_hooks";
-
-export interface playerInfo {
-  clientId: number; // client id
-  playerName: string; // player username
-  role: string; // "left" or "right"
-  team: "left" | "right"; // team side
-  leader: boolean; // whether the player is the leader
-  spriteUrl: string; // URL of the player's sprite
-  ready: boolean; // whether the player is ready
-}
-
-/**
- * @brief Room interface ( is like a room information structure)
- */
-export interface Room {
-  id: number; // room id
-  name: string; // room name
-  teamSize: number; // team size (1vs1 or 2vs2)
-  width: number; // game width
-  height: number; // game height
-  setting: {
-    ballSpeed: number; // ball speed
-    ballSize: number; // ball size
-    paddleSpeed: number; // paddle speed
-    scorePoint: number; // points to win the game
-    map: string; // game map
-  };
-  gameState: {
-    ball: { x: number; y: number; dx: number; dy: number }; //x & y => position, dx & dy => direction/speed
-    paddles: { [key: string]: number }; //[key] => left or right player, [value] => paddle position
-    teams: { left: playerInfo[]; right: playerInfo[] }; //[key] => team side, [value] => playerInfo array
-    score: { left: number; right: number }; //[key] => team side, [value] => score
-    gameStarted: boolean; // flag for start game
-    gameEnded?: boolean; // flag for end game
-  };
-  clients: Set<WebSocket>; // Set of WebSocket connections
-  clientRoles: Map<number, playerInfo>; //[key] => client id, [value] => playerInfo
-  sockets: Map<WebSocket, number>; //[key] => socket, [value] => client id
-  chatHistory: liveChatMessage[]; // Array to store chat messages
-  startTime?: Date; //start game time
-  endTime?: Date; //end game time
-  result?: {
-    // game result
-    winner: "left" | "right" | "draw";
-    scoreLeft: number;
-    scoreRight: number;
-  };
-  game: PongGame; // Game instance for game logic
-  loopHandle?: NodeJS.Timeout | null; // Interval handle for the game loop
-  duration?: number; // game duration
-  canStart: boolean; // Flag to indicate if player all ready
-  leaderId: number; // clientId of the room leader
-  private: boolean; // Flag to indicate if the room is private
-  countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
-  countdownRemaining?: number | null; // Remaining seconds in the countdown
-}
-
-export interface GameSettings {
-  ballSpeed?: number;
-  ballSize?: number;
-  paddleSpeed?: number;
-  scorePoint?: number;
-  map?: string;
-}
+import WebSocket from "ws";
 
 //default value for setting
 export const DEFAULT_SETTING: GameSettings = {
   ballSpeed: 1,
-  ballSize: 2,
+  ballSize: 1,
   paddleSpeed: 1,
   scorePoint: 3,
-  map: "mansion",
+  map: "stadium",
 };
 
 /**
@@ -130,32 +72,21 @@ export function createRoom(
     id,
     name,
     teamSize,
-    width: 800,
-    height: 400,
     setting: {
-      ballSpeed: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-      ballSize: initialSetting.ballSize ?? DEFAULT_SETTING.ballSize,
-      paddleSpeed: initialSetting.paddleSpeed ?? DEFAULT_SETTING.paddleSpeed,
-      scorePoint: initialSetting.scorePoint ?? DEFAULT_SETTING.scorePoint,
-      map: initialSetting.map ?? DEFAULT_SETTING.map,
+      ballSpeed: DEFAULT_SETTING.ballSpeed ?? -1,
+      ballSize: DEFAULT_SETTING.ballSize ?? -1,
+      paddleSpeed: DEFAULT_SETTING.paddleSpeed ?? -1,
+      scorePoint: DEFAULT_SETTING.scorePoint ?? -1,
+      map: DEFAULT_SETTING.map ?? "unknown",
     },
     gameState: {
-      ball: {
-        x: 800 / 2,
-        y: 400 / 2,
-        dx: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-        dy: initialSetting.ballSpeed ?? DEFAULT_SETTING.ballSpeed,
-      },
-      paddles: {},
       teams: { left: [], right: [] },
       score: { left: 0, right: 0 },
-      gameStarted: false,
-      gameEnded: false,
     },
     clients: new Set(),
     clientRoles: new Map(),
     sockets: new Map(),
-    chatHistory: [] as any[],
+    chatHistory: [] as [],
     game: game,
     canStart: false,
     leaderId: leaderId,
@@ -175,7 +106,58 @@ let lastLoopTime = performance.now();
  */
 export function startRoomLoop(room: Room) {
   if (room.loopHandle) return;
+
+  // mark room as in-game and notify clients once
+  room.inGame = true;
+
+  // debug: log who will receive the start message
+  try {
+    const recipients = Array.from(room.sockets.keys()).map(
+      (s: WebSocket, idx: number) => {
+        const wsSocket = s as WebSocket & {
+          _socket?: { remoteAddress?: string };
+          remoteAddress?: string;
+        };
+        const remote =
+          wsSocket._socket?.remoteAddress ??
+          wsSocket.remoteAddress ??
+          `socket#${idx}`;
+        return remote;
+      },
+    );
+    console.log(
+      `[room] startRoomLoop sending gameStart to ${recipients.length} sockets:`,
+      recipients,
+    );
+  } catch (err) {
+    console.warn("[room] failed to enumerate room.sockets for debug:", err);
+  }
+
+  // ✅ Send gameStart signals sequentially with 400ms delay between each
+  const socketsArray = Array.from(room.sockets.entries());
+
+  socketsArray.forEach(([socket, clientId], index) => {
+    setTimeout(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        try {
+          socket.send(JSON.stringify({ type: "gameStart" }));
+          console.log(
+            `[room] ✅ Sent gameStart to clientId=${clientId} (${index + 1}/${socketsArray.length}) after ${index * 400}ms`,
+          );
+        } catch (err) {
+          console.error(
+            `[room] ❌ Failed to send gameStart to clientId=${clientId}:`,
+            err,
+          );
+        }
+      } else {
+        console.warn(`[room] ⚠️ Socket not open for clientId=${clientId}`);
+      }
+    }, index * 500); // 500ms stagger per player
+  });
+
   roomStartGame(room);
+
   let sendAccumulator = 0;
 
   room.loopHandle = setInterval(() => {
@@ -203,7 +185,17 @@ export function startRoomLoop(room: Room) {
         ...room.game.teamLeft.getPaddles(),
         ...room.game.teamRight.getPaddles(),
       ]) {
-        paddle.player.socket.send(output);
+        //console.log(`[room.broadcast] sending frame to client ${paddle.player.id}`);
+        const sock = paddle.player.socket;
+        if (!sock) continue;
+        try {
+          sock.send(output);
+        } catch (err) {
+          console.warn(
+            `[room.broadcast] failed to send frame to client ${paddle.player.id}:`,
+            err,
+          );
+        }
       }
     }
 
@@ -224,14 +216,14 @@ export function startRoomLoop(room: Room) {
     const memory = process.memoryUsage();
     const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
 
-    if (Math.random() < 0.05) {
-      // log ~5% of frames to avoid spamming
-      console.log(
-        `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
-          `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
-          `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
-      );
-    }
+    //if (Math.random() < 0.05) {
+    // log ~5% of frames to avoid spamming
+    //  console.log(
+    //    `[PERF] Frame: ${frameTime.toFixed(2)}ms | Loop Δ: ${loopDelta.toFixed(2)}ms | ` +
+    //      `Memory: ${(memory.heapUsed / 1024 / 1024).toFixed(1)}MB | ` +
+    //      `Load: ${cpu.map((v) => v.toFixed(2)).join(", ")}`,
+    //  );
+    //} ////debug
   }, 1000 / 55);
 }
 /**
@@ -239,10 +231,7 @@ export function startRoomLoop(room: Room) {
  * @param room Room object
  */
 export function roomStartGame(room: Room) {
-  if (!room.gameState.gameStarted) {
-    room.startTime = new Date();
-    // room.game.resetBall(room, "left");
-  }
+  room.startTime = new Date();
 }
 
 /**
@@ -254,6 +243,7 @@ export function roomEndGame(
   room: Room,
   forced = false,
   overrideWinner?: "left" | "right" | "draw",
+  tournamentId?: number,
 ) {
   // If game already ended, do nothing
   if (room.result) return;
@@ -297,24 +287,106 @@ export function roomEndGame(
   const ms = end.getTime() - start.getTime(); // milliseconds
   room.duration = ms; // store raw ms (number)
 
-  //braodcast everyone the game is ended
-  broadcast(room, {
+  //broadcast everyone the game is ended
+  //prepare game over payload and include next tournament info if available
+  const payload: gameOver = {
     type: "game_over",
     canLeave: true,
-  });
+    result: room.result,
+    playerLeft: room.gameState.teams.left,
+    playerRight: room.gameState.teams.right,
+    tournamentId: tournamentId || 0,
+    placements: [],
+  };
 
-  const leftPLayer = room.gameState.teams.left
-    .map((p) => p.playerName)
+  // attach current tournament database info to payload and send to next tournament
+  try {
+    const parent = tournaments.get(tournamentId || -1);
+    // console.log("roomEndGame: attaching next tournament info for tournamentId:", tournamentId, parent); ////debug
+    if (parent?.tournamentDb !== undefined) {
+      payload.tournamentDb = parent.tournamentDb || null;
+    }
+  } catch (e) {
+    console.error("roomEndGame: failed to attach next tournament info:", e);
+  }
+
+  // update tournament eliminated order and placements
+  let loserRank: number | undefined = undefined; // ✅ Track loser's rank
+  try {
+    const tId = tournamentId ?? -1;
+    const tournament = tournaments.get(tId);
+    if (tournament) {
+      // determine losers for this match
+      const losersRaw =
+        winner === "left"
+          ? (room.gameState.teams.right ?? [])
+          : (room.gameState.teams.left ?? []);
+
+      // Convert losersRaw -> ordered clientId list:
+      // Priority: server-provided finishTime on each player, else preserve array order
+      let losersOrderedClientIds: number[] = [];
+      const extractClientId = (p: { clientId: number; id?: number }) =>
+        typeof p?.clientId === "number"
+          ? p.clientId
+          : typeof p?.id === "number"
+            ? p.id
+            : null;
+
+      // sort by finishTime if available
+      if (Array.isArray(losersRaw) && losersRaw.length > 0) {
+        const hasFinishTimes = losersRaw.every(
+          (p: { finishTime?: number }) => p && p.finishTime !== undefined,
+        );
+        const losersCopy = losersRaw.slice();
+        if (hasFinishTimes) {
+          losersCopy.sort(
+            (a: { finishTime?: number }, b: { finishTime?: number }) =>
+              (Number(a.finishTime) || 0) - (Number(b.finishTime) || 0),
+          );
+        }
+        // For team matches (doubles) where a team has multiple players, push each member in the same order
+        losersOrderedClientIds = losersCopy
+          .map((p: playerInfo) => extractClientId(p))
+          .filter((c: number | null) => typeof c === "number");
+      }
+
+      const placements = updateTournamentEliminatedOrderAndPlacements(
+        tournament,
+        losersOrderedClientIds,
+        room.duration,
+      );
+      payload.placements = placements;
+
+      // ✅ Extract the loser's rank for immediate DB update
+      if (losersOrderedClientIds.length > 0) {
+        const loserClientId = losersOrderedClientIds[0];
+        const loserPlacement = placements.find(
+          (p) => p.clientId === loserClientId,
+        );
+        if (loserPlacement) {
+          loserRank = loserPlacement.rank;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("roomEndGame: failed computing tournament placements:", err);
+  }
+
+  broadcast(room, payload);
+
+  const leftPlayer = room.gameState.teams.left
+    .map((p) => p.clientId)
     .join(", ");
   const rightPlayer = room.gameState.teams.right
-    .map((p) => p.playerName)
+    .map((p) => p.clientId)
     .join(", ");
+  const placementMap = buildPlacementMap(payload.placements);
 
   console.log("====================== GAME OVER ==================");
-  console.log(`Left team: [${leftPLayer}], Right team: [${rightPlayer}]`);
+  console.log(`Left team: [${leftPlayer}], Right team: [${rightPlayer}]`);
   console.log(`Room ${room.id}`);
   console.log(
-    `Winner: ${winner} => ${winner === "left" ? leftPLayer : winner === "right" ? rightPlayer : ""}`,
+    `Winner: ${winner} => ${winner === "left" ? leftPlayer : winner === "right" ? rightPlayer : ""}`,
   );
   console.log(
     `Final Score - Left: ${room.game.scoreLeft}, Right: ${room.game.scoreRight}`,
@@ -322,14 +394,200 @@ export function roomEndGame(
   console.log(
     `Duration: ${Math.floor(room.duration / 1000)} sec (${room.duration} ms)`,
   );
+
+  console.log(
+    `player left id: ${leftPlayer} is rank ${room.gameState.teams.left
+      .map((p: playerInfo) => `${placementMap.get(p.clientId) ?? "n/a"}`)
+      .join(", ")}`,
+  );
+  console.log(
+    `player right id: ${rightPlayer} is rank ${room.gameState.teams.right
+      .map((p: playerInfo) => `${placementMap.get(p.clientId) ?? "n/a"}`)
+      .join(", ")}`,
+  );
   console.log("===================================================");
 
   const roomId = room.id;
+  const tId = tournamentId ?? -1;
+  const tournament = tournaments.get(tId);
+
+  //check is tournament match or room match
+  if (!tournament) {
+    //console.log(`[room] can't found tournament: ${tId}`); ////debug
+    room.sockets.clear();
+    room.clients.clear();
+    if (rooms.has(roomId)) {
+      console.log(`Deleted room ${roomId} after game end.`); ////debug
+      rooms.delete(roomId);
+    }
+    return;
+  }
+
+  // Close all sockets and clean up room
+  room.sockets.clear();
+  room.clients.clear();
   if (rooms.has(roomId)) {
-    console.log(`Deleted room ${roomId} after game end.`);
+    console.log(`Deleted match room ${roomId} after game end.`);
     rooms.delete(roomId);
   }
 
-  // Save match result to database
-  // saveMatchResult(room, room.duration);
+  return {
+    leftPlayerId: parseInt(leftPlayer),
+    rightPlayerId: parseInt(rightPlayer),
+    winnerId:
+      winner === "left"
+        ? parseInt(leftPlayer)
+        : winner === "right"
+          ? parseInt(rightPlayer)
+          : "draw",
+    loserId:
+      winner === "left"
+        ? parseInt(rightPlayer)
+        : winner === "right"
+          ? parseInt(leftPlayer)
+          : "draw",
+    scoreLeft: room.game.scoreLeft,
+    scoreRight: room.game.scoreRight,
+    duration: room.duration,
+    rank: loserRank,
+  };
+}
+
+/**
+ * @brief Append losers (in order) to tournament.eliminatedOrder and compute placements => [clientId, rank]
+ *
+ */
+function updateTournamentEliminatedOrderAndPlacements(
+  tournament: TournamentLobby,
+  losersOrderedClientIds: number[],
+  gameDuration: number,
+): PlacementEntry[] {
+  if (!Array.isArray(tournament.eliminatedOrder))
+    tournament.eliminatedOrder = [];
+
+  // ✅ Initialize placements array if not exists
+  if (!Array.isArray(tournament.placements)) {
+    tournament.placements = [];
+  }
+
+  // ✅ Get current stage to determine rank range
+  const stage = tournament.stage;
+
+  // ✅ Determine rank range based on stage
+  const stageRankMap: Record<string, [number, number]> = {
+    QF: [5, 8], // Quarter-finals: ranks 5-8 (5=best, 8=worst)
+    SF: [3, 4], // Semi-finals: ranks 3-4
+    F: [2, 2], // Finals: rank 2 (loser gets 2nd place)
+  };
+
+  const [minRank, maxRank] = stageRankMap[stage] || [1, 8];
+
+  // ✅ Get already assigned ranks in this stage
+  const assignedRanks = new Set(
+    tournament.placements
+      .filter((p) => p.rank >= minRank && p.rank <= maxRank)
+      .map((p) => p.rank),
+  );
+
+  // ✅ Process each new loser
+  for (const cid of losersOrderedClientIds) {
+    if (tournament.eliminatedOrder.includes(cid)) {
+      continue; // Already processed
+    }
+
+    // ✅ Add to eliminated order
+    tournament.eliminatedOrder.push(cid);
+
+    // ✅ Assign next available rank from worst to best
+    // First finisher gets maxRank (8), second gets 7, etc.
+    let assignedRank = maxRank;
+    while (assignedRanks.has(assignedRank) && assignedRank >= minRank) {
+      assignedRank--; // Move to better rank
+    }
+
+    // ✅ Safety check: don't go below minRank
+    assignedRank = Math.max(assignedRank, minRank);
+
+    console.log(
+      `[placements] player ${cid} finished in ${gameDuration}ms → ` +
+        `${assignedRanks.size + 1}/${maxRank - minRank + 1} games finished in stage ${stage} → ` +
+        `rank ${assignedRank}`,
+    );
+
+    // ✅ Assign the rank
+    tournament.placements.push({
+      clientId: cid,
+      rank: assignedRank,
+    });
+    assignedRanks.add(assignedRank);
+  }
+
+  // ✅ Handle winner if all others eliminated
+  const totalPlayers = tournament.maxPlayer ?? 8;
+  if (tournament.eliminatedOrder.length === totalPlayers - 1) {
+    const playersList = Array.isArray(tournament.players)
+      ? tournament.players
+      : [];
+    const extractId = (p: TournamentPlayerWs) =>
+      typeof p?.id === "number" ? p.id : null;
+    const remaining = playersList
+      .map(extractId)
+      .find(
+        (id: number | null): id is number =>
+          id != null && !tournament.eliminatedOrder?.includes(id),
+      );
+    if (
+      typeof remaining === "number" &&
+      !tournament.placements.some(
+        (p: { clientId: number }) => p.clientId === remaining,
+      )
+    ) {
+      tournament.placements.push({
+        clientId: remaining,
+        rank: 1,
+      });
+      console.log(`[placements] Winner ${remaining} gets rank 1`);
+    }
+  }
+
+  return tournament.placements;
+}
+
+/**
+ * @brief Parse raw placements payload into array of [clientId, rank] tuples
+ * @param raw Raw placements payload
+ * @returns Array of [clientId, rank] tuples
+ */
+export function parsePlacementEntries(
+  raw: PlacementEntry[] | undefined,
+): [number, number][] {
+  const arr = raw ?? [];
+  return arr
+    .map((p: PlacementEntry): [number, number] | null => {
+      const id =
+        typeof p?.clientId === "number"
+          ? p.clientId
+          : typeof p?.playerId === "number"
+            ? p.playerId
+            : null;
+      const rank =
+        typeof p?.rank === "number"
+          ? p.rank
+          : typeof p?.position === "number"
+            ? p.position
+            : null;
+      return id !== null && rank !== null ? [id, rank] : null;
+    })
+    .filter((v: [number, number] | null): v is [number, number] => v !== null);
+}
+
+/**
+ * @brief Build a Map from clientId to rank from raw placements payload
+ * @param raw Raw placements payload
+ * @returns Map of clientId to rank
+ */
+export function buildPlacementMap(
+  raw: PlacementEntry[] | undefined,
+): Map<number, number> {
+  return new Map<number, number>(parsePlacementEntries(raw));
 }

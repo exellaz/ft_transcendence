@@ -27,6 +27,7 @@ import SignUpSuccessView from "./views/SignUpSuccessView";
 import SignUpView from "./views/SignUpView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 import LocalTournamentSetup from "./views/LocalTournamentSetup"; // Adjust path if needed
+import RoomList from "./views/testRoomList";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
 // including BouncingSprites at the App level ensures animation consistency
@@ -198,7 +199,7 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/tournament"
+            path="/tournament/:tournamentId"
             element={
               <RequireAuth>
                 <RequireGameMode allowed={["tournament"]}>
@@ -208,7 +209,7 @@ const App: React.FC = () => {
             }
           />
           <Route
-            path="/match"
+            path="/match/:matchId"
             element={
               <RequireAuth>
                 <RequireGameMode allowed={["tournament"]}>
@@ -247,6 +248,9 @@ const App: React.FC = () => {
               </RequireAuth>
             }
           />
+          {/* Miscellaneous routes */}
+          {/*<Route path="/test" element={<TestView />} />*/}
+          <Route path="/roomList" element={<RoomList />} />
           {/* Handles all other routes */}
           {/* - redirects to /login or /main-menu depending on auth status */}
           <Route path="*" element={<CatchAllRedirect />} />

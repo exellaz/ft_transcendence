@@ -16,7 +16,7 @@ services:
     environment:
       - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - VITE_API_URL=${API_BASE_URL}
-      - VITE_WS_URL=${API_BASE_URL}
+      - VITE_WS_URL=${WS_URL}
 
   backend:
     build: ./backend

@@ -1,28 +1,17 @@
 import { chatRooms } from "../modules/chat/liveChat.ws";
-import {
-  rooms,
-  roomEndGame,
-  type Room,
-  playerInfo,
-} from "../modules/room/room";
-import { Game } from "../modules/game/game";
+import { rooms, roomEndGame } from "../modules/room/room";
 import { createLiveChatMessage } from "../modules/chat/liveChat";
 import { URL } from "url";
-
-export interface WSContext {
-  clientId: number;
-  roomId: number;
-  room: Room;
-  side?: "left" | "right";
-  playerName: string;
-  playerSprite: string;
-}
-
-function error(socket: WebSocket, code: number, message: string) {
-  console.log("❌ |" + message);
-  socket.close(code, message);
-  return null;
-}
+import { FastifyRequest } from "fastify/types/request";
+import WebSocket, { WebSocket as WSWebSocket } from "ws";
+import {
+  BroadcastMessage,
+  WSContext,
+  playerInfo,
+  Room,
+} from "../types/interface";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { FastifyInstance } from "fastify";
 
 /**
  * @brief Validate WebSocket connection parameters
@@ -31,45 +20,67 @@ function error(socket: WebSocket, code: number, message: string) {
  * @return WSContext if valid, otherwise null (and closes socket)
  * @note Close the socket with appropriate code/message if validation fails
  */
-export function validateConnection(socket: any, req: any): WSContext | null {
+export async function validateConnection(
+  socket: WSWebSocket,
+  req: FastifyRequest,
+  fastify: FastifyInstance,
+): Promise<WSContext | null> {
   const url = new URL(req.url!, `http://${req.headers.host}`); // Parse URL from client request
-  const clientId = Number(url.searchParams.get("id"));
-  const roomId = Number(url.searchParams.get("room"));
-  const side = url.searchParams.get("side") as "left" | "right" | null;
-  const playerName = url.searchParams.get("name");
-  const playerSprite = url.searchParams.get("sprite");
+  //  console.log("WebSocket connection URL:", url.href); ////debug
+  const roomId = url.searchParams.get("room") || "-1";
+  const side = url.searchParams.get("side") as "left" | "right" | undefined;
+  const sprite = url.searchParams.get("sprite") || undefined;
 
-  if (isNaN(clientId)) {
-    // console.log("Invalid clientId:", clientId); ////debug
-    socket.close(1008, "Client id is required");
-    return null;
-  }
-
-  if (isNaN(roomId)) {
+  if (!roomId) {
     // console.log("Invalid roomId:", roomId); ////debug
     socket.close(1008, "Room id is required");
     return null;
   }
 
-  if (!side || (side && side !== "left" && side !== "right")) {
-    // console.log("Invalid side:", side); ////debug
-    socket.close(1008, "Side is required");
+  const token = req.headers["sec-websocket-protocol"];
+  if (!token) {
+    socket.close(1008, "Authentication token is required");
+    return null;
+  }
+  const secret = process.env.JWT_SECRET as string;
+  const decode = jwt.verify(token, secret) as JwtPayload;
+  if (decode === null || !decode.userId) {
+    socket.close(1008, "Invalid authentication token");
     return null;
   }
 
-  if (!playerName || playerName.trim() === "" || playerName === "undefined") {
-    // console.log("Invalid playerName:", playerName); ////debug
-    socket.close(1008, "Player name is required");
+  const clientId: number = decode.userId;
+  //  console.log("[validate token] Authenticated user id: ", clientId); ////debug
+  //! need to validate user later
+  //  const user = await getUserInfoById({ id: clientId });
+  //  if (!user || !user.data) {
+  //    socket.close(1008, "User not found");
+  //    return null;
+  //  }
+
+  const user = await fastify.db.user.findUnique({
+    where: { id: clientId },
+  });
+  if (!user) {
+    socket.close(1008, "User not found in database");
+    return null;
+  }
+  console.log("[validate token] Authenticated user: ", user); ////debug
+
+  const playerName = user.username;
+  if (!playerName) {
+    socket.close(1008, "User has no username");
     return null;
   }
 
+  //if have sprite from url param, use it; otherwise use avatarUrl from user profile
+  const playerSprite = sprite || user.avatarUrl;
   if (!playerSprite) {
-    // console.log("Invalid playerSprite:", playerSprite); ////debug
-    socket.close(1008, "Player sprite is required");
+    socket.close(1008, "User has no sprite");
     return null;
   }
 
-  const room = rooms.get(roomId);
+  const room = rooms.get(parseInt(roomId));
   if (!room) {
     // console.log("Room not found:", roomId); ////debug
     socket.close(1008, "Room not found");
@@ -77,10 +88,10 @@ export function validateConnection(socket: any, req: any): WSContext | null {
   }
 
   return {
-    clientId: Number(clientId),
-    roomId: Number(roomId),
+    clientId: clientId,
+    roomId: parseInt(roomId),
     room,
-    side: side ?? undefined,
+    side: side,
     playerName,
     playerSprite,
   };
@@ -101,10 +112,10 @@ export function updateCanStart(room: Room): {
 
   // get left and right players excluding spectators
   const leftPlayers = room.gameState.teams.left.filter(
-    (p: any) => p.role !== "spectator",
+    (p: playerInfo) => p.role !== "spectator",
   );
   const rightPlayers = room.gameState.teams.right.filter(
-    (p: any) => p.role !== "spectator",
+    (p: playerInfo) => p.role !== "spectator",
   );
 
   // combine all players and get total count
@@ -112,13 +123,16 @@ export function updateCanStart(room: Room): {
 
   // get non-leader players and check if all are ready
   const nonLeaderPlayers = leaderPlayer
-    ? allPlayers.filter((p: any) => p.clientId !== leaderId)
+    ? allPlayers.filter((p: playerInfo) => p.clientId !== leaderId)
     : allPlayers;
-  const allReady = nonLeaderPlayers.every((p: any) => p.ready);
+  const allReady = nonLeaderPlayers.every((p: playerInfo) => p.ready);
 
   // check if teams are balanced
   const teamsBalanced =
     leftPlayers.length === rightPlayers.length && leftPlayers.length > 0;
+
+  const enoughPlayers =
+    leftPlayers.length + rightPlayers.length >= room.teamSize * 2;
 
   // --- decide why ---
   let reason: string | null = null;
@@ -128,18 +142,20 @@ export function updateCanStart(room: Room): {
     reason = "Teams are not equal";
   } else if (!allReady) {
     reason = "Not all players are ready";
+  } else if (!enoughPlayers) {
+    reason = "Not enough players to start the game";
   }
 
   // set canStart based on conditions
   room.canStart = reason === null;
 
-  // console.log("updateCanStart:", { ////debug
-  //     allPlayers,
-  //     nonLeaderPlayers,
-  // 	teamsBalanced,
-  //     allReady,
-  //     canStart: room.canStart
-  // });
+  //   console.log("updateCanStart:", { ////debug
+  //       allPlayers,
+  //       nonLeaderPlayers,
+  //   	teamsBalanced,
+  //       allReady,
+  //       canStart: room.canStart
+  //   });
 
   return { canStart: room.canStart, reason };
 }
@@ -150,9 +166,11 @@ export function updateCanStart(room: Room): {
  * @param msg The message object to broadcast
  * @note Adds message to room chat history and sends to all connected clients
  */
-export function broadcast(room: Room, msg: any) {
+export function broadcast(room: Room, msg: BroadcastMessage) {
   // console.log("Broadcasting message:", msg); ////debug
-  room.chatHistory.push(msg);
+  if (msg.type === "chat") {
+    room.chatHistory.push(msg);
+  }
   for (const client of room.clients) {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(msg));
@@ -181,7 +199,7 @@ export function broadcast(room: Room, msg: any) {
  */
 export function handleSwitchSide(
   room: Room,
-  socket: any,
+  socket: WSWebSocket,
   newSide: "left" | "right",
 ): string | undefined {
   const clientId = room.sockets.get(socket);
@@ -193,12 +211,10 @@ export function handleSwitchSide(
 
   //remove the old role before reindex
   const oldRole = player.role;
-  // Remove old paddle for this client (optional since we'll rebuild paddles)
-  delete room.gameState.paddles[oldRole];
 
   // 1. collect playerInfo per team (excluding the switching client)
-  const leftPlayers: any[] = [];
-  const rightPlayers: any[] = [];
+  const leftPlayers: playerInfo[] = [];
+  const rightPlayers: playerInfo[] = [];
   for (const [cid, p] of room.clientRoles.entries()) {
     if (cid === clientId) continue; // skip moving client for now
     if (p.role.startsWith("left_player")) leftPlayers.push({ ...p });
@@ -210,7 +226,10 @@ export function handleSwitchSide(
   else rightPlayers.push({ ...player });
 
   // 2. rebuild team role + update mapping
-  function rebuildSide(players: any[], side: "left" | "right"): any[] {
+  function rebuildSide(
+    players: playerInfo[],
+    side: "left" | "right",
+  ): playerInfo[] {
     return players.map((p, i) => {
       const newRole = `${side}_player${i + 1}`;
       // preserve readiness from gameState if available
@@ -233,10 +252,6 @@ export function handleSwitchSide(
 
   room.gameState.teams.left = rebuildSide(leftPlayers, "left");
   room.gameState.teams.right = rebuildSide(rightPlayers, "right");
-
-  // 3. reset paddles and reassign positions
-  const game = new Game(); //create game object // todo sheldon: Why is there another creategame?
-  game.setPaddlePositionWithTeam(room);
 
   // 4. broadcast to all players about the switch
   const newPlayer = room.clientRoles.get(clientId);
@@ -262,7 +277,6 @@ export function handleSwitchSide(
         newPlayer: newPlayer,
         gameState: room.gameState,
         leaderId: room.leaderId,
-        disconnectPlayers: room.disconnectPlayers,
       }),
     );
   }
@@ -274,7 +288,6 @@ export function handleSwitchSide(
     newPlayer: newPlayer,
     gameState: room.gameState,
     leaderId: room.leaderId,
-    disconnectPlayers: room.disconnectPlayers,
     readyStatus: newPlayer.ready,
     canStart: canStart,
   });
@@ -287,8 +300,34 @@ export function handlePlayerDisconnect(
   clientId: number,
   gracePeriod: number,
 ) {
+  const player = room.clientRoles.get(clientId);
+  if (player) {
+    player.online = false;
+
+    //update team status
+    room.gameState.teams.left = room.gameState.teams.left.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
+    room.gameState.teams.right = room.gameState.teams.right.map(
+      (p: playerInfo) =>
+        p.clientId === clientId ? { ...p, online: false } : p,
+    );
+
+    //broadcast to all players about disconnection
+    broadcast(room, {
+      type: "playerOffline",
+      clientId,
+      playerName: player.playerName,
+    });
+  }
+
   // start time for end game
   setTimeout(() => {
+    //check if player reconnect during grace period
+    const currentPlayer = room.clientRoles.get(clientId);
+    if (currentPlayer && currentPlayer.online) return;
+
     // remove from teams and paddles
     room.gameState.teams.left = room.gameState.teams.left.filter(
       (p) => p.clientId !== clientId,
@@ -322,8 +361,8 @@ export function handlePlayerDisconnect(
 export function startCountdown(room: Room, onComplete: () => void) {
   if (room.countdownTimer) return; // already running
 
-  //set timer for 5 seconds countdown
-  let remaining = 1; //? seconds
+  //set timer for countdown
+  let remaining = 5; //? room countdown time
   room.countdownRemaining = remaining;
 
   //broadcast to clients start from 5

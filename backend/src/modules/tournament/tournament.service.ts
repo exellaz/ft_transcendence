@@ -59,6 +59,12 @@ export async function createTournament() {
  */
 export async function createTournamentPlayer(p: TournamentPlayerInput) {
   try {
+    //try to find existing tournament player first
+    const existing = await prisma.tournamentPlayer.findFirst({
+      where: { tournamentId: p.tournamentId, userId: p.userId },
+    });
+    if (existing) return { success: true, data: existing };
+
     const tournamentPlayer = await prisma.tournamentPlayer.create({
       data: {
         tournamentId: p.tournamentId,
@@ -72,7 +78,20 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
       success: true,
       data: tournamentPlayer,
     };
-  } catch (error) {
+  } catch (error: any) {
+    //if concurrent create cause unique constraint violation, try to get existing record
+    if (error?.code === "P2002") {
+      try {
+        const existingAfterRace = await prisma.tournamentPlayer.findFirst({
+          where: { tournamentId: p.tournamentId, userId: p.userId },
+        });
+        if (existingAfterRace)
+          return { success: true, data: existingAfterRace };
+      } catch (e) {
+        console.error("createTournamentPlayer: recovery lookup failed:", e);
+      }
+    }
+
     console.error("Error creating tournamentPlayer:", error);
 
     // ❌ Return standardized error response

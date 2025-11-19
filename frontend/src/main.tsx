@@ -15,11 +15,11 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <UserProvider>
-          <OnlineStatusProvider>
-            <BrowserRouter>
+          <BrowserRouter>
+            <OnlineStatusProvider>
               <App />
-            </BrowserRouter>
-          </OnlineStatusProvider>
+            </OnlineStatusProvider>
+          </BrowserRouter>
         </UserProvider>
       </LanguageProvider>
       {/* DevTools will provide a floating panel to see the state of the cache, 

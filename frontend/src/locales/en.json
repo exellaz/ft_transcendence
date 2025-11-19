@@ -25,6 +25,7 @@
     "join_doubles_game": "Join a doubles game?",
     "room_not_found": "Room not found",
     "room_is_full": "Room is full",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close"
   },
   "DoublesRoomView": {
@@ -37,6 +38,9 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
+    "room_not_found": "Room not found",
+    "unknown_error": "Unknown error",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -79,6 +83,10 @@
     "tournament_matchups": "Tournament Matchups",
     "vs": "vs"
   },
+  "GameView": {
+    "offline_error": "You are offline. Please check your connection.",
+    "close": "close"
+  },
   "LoginView": {
     "username_or_email_required": "Username or email is required",
     "password_required": "Password is required",
@@ -94,7 +102,8 @@
     "2fa": "Two-Factor Authentication",
     "enter_code": "Enter the 6-digit code from your authenticator app.",
     "verify_code": "Verify Code",
-    "invalid_code_error": "Invalid code or server error"
+    "invalid_code_error": "Invalid code or server error",
+    "user_already_logged_in": "User is already logged in from another device"
   },
   "MainMenuView": {
     "tournament_mode": "TOURNAMENT MODE",
@@ -106,6 +115,7 @@
   "MatchView": {
     "loading": "Loading...",
     "ready": "Ready",
+    "unready": "Unready",
     "pending": "Pending",
     "quarterfinals": "Quarterfinals",
     "semifinals": "Semifinals",
@@ -158,6 +168,8 @@
     "leave_room": "Leave Room",
     "leave_confirmation": "Are you sure you want to leave the room?",
     "room_is_full": "Room is full",
+    "unknown_error": "Unknown error",
+    "offline_error": "You are offline. Please check your connection.",
     "close": "close",
     "private": "Private",
     "public": "Public",
@@ -169,8 +181,12 @@
     "finals": "Finals",
     "tournament_lobby": "Tournament Lobby",
     "ready": "Ready",
+    "unready": "Unready",
     "quit": "Quit",
-    "quit_confirmation": "Are you sure you want to quit the tournament?"
+    "quit_confirmation": "Are you sure you want to quit the tournament?",
+    "room_is_full": "Room is full",
+    "offline_error": "You are offline. Please check your connection.",
+    "close": "close"
   },
   "BasicInfoPopup": {
     "username_invalid": "Username can only contain letters, numbers, underscore, and hyphen",
