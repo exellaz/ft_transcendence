@@ -151,11 +151,6 @@ const GameView: React.FC<GameViewProps> = () => {
     const [showTournamentEnd, setShowTournamentEnd] = useState(false);
     const [tournamentWinner, setTournamentWinner] = useState<string | null>(null);
 
-    const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
-    console.log("Tournament Data:", tournamentData);
-
-
-
     useEffect(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -192,17 +187,9 @@ const GameView: React.FC<GameViewProps> = () => {
           }
         }
       );
-      const tournamentData = JSON.parse(sessionStorage.getItem("tournamentData") || "{}");
-
 
       let player1Settings = location.state?.player1 ?? {};
       let player2Settings = location.state?.player2 ?? {};
-
-      var gameType = "local";
-
-      if (location.state?.type === "tournament") {
-        gameType = "tournament";
-      }
 
       const player1Name = player1Settings.name || "Player1";
       const player2Name = player2Settings.name || "Player2";
