@@ -153,7 +153,7 @@ async function friendshipRoutes(fastify: FastifyInstance) {
         requesterId: string;
         accepterId: string;
       };
-      requireOwnership(request.user?.id, Number(requesterId));
+      requireOwnership(request.user?.id, Number(accepterId));
       const { status } = request.body as {
         status?: FriendshipStatus;
       };

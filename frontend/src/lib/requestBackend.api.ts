@@ -22,7 +22,12 @@ export function ensurePlayerId() {
  */
 export async function fetchRooms() {
   try {
-    const res = await fetch(`${API_URL}/rooms`);
+    const res = await fetch(`${API_URL}/rooms`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
     if (!res.ok) throw new Error("Failed to fetch rooms");
     return await res.json();
   } catch (error) {
@@ -33,7 +38,12 @@ export async function fetchRooms() {
 
 export async function fetchRoomById(roomId: string) {
   try {
-    const res = await fetch(`${API_URL}/room/${roomId}`);
+    const res = await fetch(`${API_URL}/room/${roomId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
     if (!res.ok) throw new Error("Failed to fetch room");
     return await res.json();
   } catch (error) {
@@ -48,7 +58,12 @@ export async function fetchRoomById(roomId: string) {
  */
 export async function fetchMatches(limit = 10) {
   try {
-    const res = await fetch(`${API_URL}/matches?limit=${limit}`);
+    const res = await fetch(`${API_URL}/matches?limit=${limit}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
     if (!res.ok) throw new Error("Failed to fetch matches");
     return await res.json();
   } catch {
@@ -76,7 +91,10 @@ export async function createRoomAPI(
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
       body: JSON.stringify({
         teamSize,
         name: roomName,
@@ -130,7 +148,10 @@ export async function gameSetting(
   try {
     const res = await fetch(`${API_URL}/room/${roomId}/game-setting`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
       body: JSON.stringify({
         ballSpeed,
         ballSize,
@@ -158,7 +179,10 @@ export async function createTournamentLobby(name: string) {
   try {
     const res = await fetch(`${API_URL}/create-tournament`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
       body: JSON.stringify({ name }),
     });
     if (!res.ok) throw new Error("Failed to create tournament");
@@ -177,7 +201,10 @@ export async function updateTournamentLobby(
   try {
     const res = await fetch(`${API_URL}/update-tournament/${tournamentId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
       body: JSON.stringify({ maxPlayer, stage }),
     });
     if (!res.ok) throw new Error("Failed to update tournament");
@@ -194,7 +221,12 @@ export async function updateTournamentLobby(
  */
 export async function fetchTournaments() {
   try {
-    const res = await fetch(`${API_URL}/list-tournaments`);
+    const res = await fetch(`${API_URL}/list-tournaments`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
     if (!res.ok) throw new Error("Failed to fetch tournaments");
     return await res.json();
   } catch (error) {
@@ -205,7 +237,12 @@ export async function fetchTournaments() {
 
 export async function getTournamentById(tournamentId: number) {
   try {
-    const res = await fetch(`${API_URL}/tournament/${tournamentId}`);
+    const res = await fetch(`${API_URL}/tournament/${tournamentId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    });
     if (!res.ok) throw new Error("Failed to fetch tournament");
     const data = await res.json();
     console.log("fetch tournament: ", data);
@@ -224,7 +261,10 @@ export async function createNextTournament(
   try {
     const res = await fetch(`${API_URL}/create-next-tournament`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
       body: JSON.stringify({ stage, parentId, tournamentDb }),
     });
     if (!res.ok) throw new Error("Failed to create next tournament");

@@ -11,7 +11,6 @@ export interface ApiError {
   errorCode?: number;
 }
 
-// Standardized fetch wrapper for your 42 project
 export const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit & { requireAuth?: boolean } = {},

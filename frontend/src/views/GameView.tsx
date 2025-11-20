@@ -181,7 +181,7 @@ const GameView: React.FC<GameViewProps> = () => {
     }
   }, []);
 
-  if (mode === "remote") {
+  if (mode === "remote" || mode === "tournament" || mode === "custom") {
     // Fetch user info when the component mounts
     React.useEffect(() => {
       console.log("mode used: ", mode);

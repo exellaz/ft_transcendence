@@ -117,7 +117,12 @@ const DoublesRoomView: React.FC = () => {
   //fetch room info when request roomId change
   React.useEffect(() => {
     if (!roomId) return;
-    fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`)
+    fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         console.log("Fetched room info:", data);
