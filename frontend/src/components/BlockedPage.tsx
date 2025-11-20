@@ -24,6 +24,12 @@ export default function BlockedMultipleTabs() {
     }, 100);
   };
 
+  const handleRetry = () => {
+    // Clear the lock and navigate to home to restart the lock acquisition
+    localStorage.removeItem("app_tab_lock");
+    window.location.href = "/";
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <div className="text-center p-8 bg-gray-800 rounded-lg shadow-xl max-w-md">
@@ -39,14 +45,7 @@ export default function BlockedMultipleTabs() {
           to use this one.
         </p>
         <div className="space-y-3">
-          <Button variant="longWhite" onClick={handleClose} className="w-full">
-            Close This Tab
-          </Button>
-          <Button
-            variant="longWhite"
-            onClick={() => window.location.reload()}
-            className="w-full"
-          >
+          <Button variant="longWhite" onClick={handleRetry} className="w-full">
             Retry (Close Other Tabs First)
           </Button>
         </div>

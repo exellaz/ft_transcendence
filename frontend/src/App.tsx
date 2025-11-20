@@ -4,7 +4,6 @@ import { toast, ToastContainer, Slide } from "react-toastify";
 import type { FriendMessageMsg } from "./context/OnlineStatusProvider";
 import { useTabLock } from "./hooks/tabLock";
 
-
 // components
 import BouncingSprites from "./components/BouncingSprites";
 import CatchAllRedirect from "./components/CatchAllRedirect";
