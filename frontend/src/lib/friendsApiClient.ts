@@ -29,6 +29,7 @@ export async function getPendingFriendshipsByUserId({
 }: GetPendingFriendshipsRequest): Promise<GetPendingFriendshipsResponse> {
   const res = await fetch(`${VITE_API_URL}/friendships/${userId}/pending`, {
     method: "GET",
+    headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
   });
 
   return res.json();
@@ -40,6 +41,7 @@ export async function getAcceptedFriendshipsByUserId({
 }: GetAcceptedFriendshipsRequest): Promise<GetAcceptedFriendshipsResponse> {
   const res = await fetch(`${VITE_API_URL}/friendships/${userId}/accepted`, {
     method: "GET",
+    headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
   });
 
   return res.json();
@@ -51,7 +53,7 @@ export async function createFriendship(
 ): Promise<CreateFriendshipResponse> {
   const res = await fetch(`${VITE_API_URL}/friendships`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     body: JSON.stringify(payload),
   });
 
@@ -67,7 +69,7 @@ export async function updateFriendship(
     `${VITE_API_URL}/friendships/${requesterId}/${accepterId}`,
     {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
       body: JSON.stringify(data),
     },
   );
@@ -84,6 +86,7 @@ export async function deleteFriendship({
     `${VITE_API_URL}/friendships/${requesterId}/${accepterId}`,
     {
       method: "DELETE",
+      headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     },
   );
 
@@ -96,6 +99,7 @@ export async function getBlockedFriendshipsByUserId({
 }: GetBlockedFriendshipsRequest): Promise<GetBlockedFriendshipsResponse> {
   const res = await fetch(`${VITE_API_URL}/blockedFriendships/${userId}`, {
     method: "GET",
+    headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
   });
 
   return res.json();
@@ -107,7 +111,7 @@ export async function createBlockedFriendship(
 ): Promise<CreateBlockedFriendshipResponse> {
   const res = await fetch(`${VITE_API_URL}/blockedFriendships`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     body: JSON.stringify(payload),
   });
 
@@ -122,6 +126,7 @@ export async function deleteBlockedFriendship({
     `${VITE_API_URL}/blockedFriendships/${blockerId}/${blockedId}`,
     {
       method: "DELETE",
+      headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     },
   );
 
@@ -136,6 +141,7 @@ export async function getAllFriendChatMessages({
     `${VITE_API_URL}/friendChatMessages/${friendshipId}`,
     {
       method: "GET",
+      headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     },
   );
 
@@ -150,6 +156,7 @@ export async function getLastFriendChatMessage({
     `${VITE_API_URL}/friendChatMessages/${friendshipId}/lastMessage`,
     {
       method: "GET",
+      headers: { "Authorization": `Bearer ${localStorage.getItem('authToken')}` },
     },
   );
 
