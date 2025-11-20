@@ -13,6 +13,7 @@ export async function getTournamentHistoryRequest({
 }: GetTournamentHistoryRequest): Promise<GetTournamentHistoryResponse> {
   const res = await fetch(`${VITE_API_URL}/users/${id}/tournament-history`, {
     method: "GET",
+    headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
   });
 
   return res.json();
@@ -24,6 +25,7 @@ export async function getTournamentStatsRequest({
 }: GetTournamentStatsRequest): Promise<GetTournamentStatsResponse> {
   const res = await fetch(`${VITE_API_URL}/users/${id}/tournament-stats`, {
     method: "GET",
+    headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
   });
 
   return res.json();

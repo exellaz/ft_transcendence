@@ -47,7 +47,10 @@ export async function getUserById({
 }: GetUserRequest): Promise<GetUserResponse> {
   const res = await fetch(`${VITE_API_URL}/users/${id}`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
   });
 
   return res.json();
@@ -60,7 +63,10 @@ export async function updateUserById(
   const { id, ...data } = payload;
   const res = await fetch(`${VITE_API_URL}/users/${id}`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
     body: JSON.stringify(data),
   });
 
@@ -80,6 +86,7 @@ export async function uploadUserAvatar({
 
   const res = await fetch(`${VITE_API_URL}/users/${id}/avatar`, {
     method: "PATCH",
+    headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
     body: formData, // browser sets correct multipart headers automatically
   });
 
@@ -92,7 +99,10 @@ export async function getUserSettingsById({
 }: GetUserSettingsRequest): Promise<GetUserSettingsResponse> {
   const res = await fetch(`${VITE_API_URL}/users/${id}/settings`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
   });
 
   return res.json();
@@ -105,7 +115,10 @@ export async function updateUserSettingsById(
   const { id, ...data } = payload;
   const res = await fetch(`${VITE_API_URL}/users/${id}/settings`, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
     body: JSON.stringify(data),
   });
 
