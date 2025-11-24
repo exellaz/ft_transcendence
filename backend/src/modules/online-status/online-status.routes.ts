@@ -50,7 +50,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         ws.close(1008, "Invalid token");
         return;
       }
-      console.log("[Online Status websocket] Decoded token:", decoded);
+    //  console.log("[Online Status websocket] Decoded token:", decoded); ////debug
 
       // if not verified, close connection
       if (decoded === null || !decoded.userId) {
@@ -89,9 +89,9 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       // Add online user to Map
       addOnlineUser(uid, ws);
       console.log(`[Online Status websocket] User ${uid} connected.`);
-      console.log(
-        `[Online Status websocket] Total Online Users: ${getOnlineCount()}`,
-      );
+    //  console.log(
+    //    `[Online Status websocket] Total Online Users: ${getOnlineCount()}`,
+    //  ); ////debug
 
       // Send initial online friends list
       sendOnlineFriendsList(uid, ws);
@@ -101,7 +101,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
 
       // When client responds to ping
       ws.on("pong", () => {
-        console.log(`[Online Status websocket] Received pong from user ${uid}`);
+        //console.log(`[Online Status websocket] Received pong from user ${uid}`); ////debug
         ws.isAlive = true;
 
         notifyFriendsStatus(uid, true);
@@ -194,7 +194,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         console.log(
           `[Online Status websocket] Remaining Online Users: ${getOnlineCount()}`,
         );
-        console.log(`updated onlineUser map size: ${getOnlineCount()}`);
+        //console.log(`updated onlineUser map size: ${getOnlineCount()}`); ////debug
         // Notify friends about offline status
         notifyFriendsStatus(uid, false);
       });

@@ -65,7 +65,7 @@ export async function validateConnection(
     socket.close(1008, "User not found in database");
     return null;
   }
-  console.log("[validate token] Authenticated user: ", user); ////debug
+//  console.log("[validate token] Authenticated user: ", user); ////debug
 
   const playerName = user.username;
   if (!playerName) {
@@ -328,6 +328,16 @@ export function handlePlayerDisconnect(
     const currentPlayer = room.clientRoles.get(clientId);
     if (currentPlayer && currentPlayer.online) return;
 
+    // ✅ PRESERVE player info BEFORE removing
+    const disconnectedPlayerLeft = room.gameState.teams.left.find(
+      (p) => p.clientId === clientId,
+    );
+    const disconnectedPlayerRight = room.gameState.teams.right.find(
+      (p) => p.clientId === clientId,
+    );
+    const disconnectedPlayer = disconnectedPlayerLeft || disconnectedPlayerRight;
+    const disconnectedSide = disconnectedPlayerLeft ? "left" : "right";
+
     // remove from teams and paddles
     room.gameState.teams.left = room.gameState.teams.left.filter(
       (p) => p.clientId !== clientId,
@@ -345,8 +355,18 @@ export function handlePlayerDisconnect(
     else if (rightRemaining > 0 && leftRemaining === 0) winner = "right";
     if (winner) {
       console.log(`${winner} side wins due to opponents disconnected`);
+
+      // ✅ Temporarily restore disconnected player to teams for roomEndGame
+      if (disconnectedPlayer) {
+        if (disconnectedSide === "left") {
+          room.gameState.teams.left.push(disconnectedPlayer);
+        } else {
+          room.gameState.teams.right.push(disconnectedPlayer);
+        }
+      }
+
       room.game.forceEnd(winner);
-      setTimeout(() => roomEndGame(room, true, winner), 1000);
+      setTimeout(() => roomEndGame(room, true, winner, room.tournamentId), 1000);
       return;
     }
   }, gracePeriod);

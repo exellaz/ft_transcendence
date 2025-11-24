@@ -118,6 +118,7 @@ export function createMatchRoom(
 	leaderId: -1,
 	private: false,
 	inGame: false,
+    tournamentId: tournamentId,
   };
 
   rooms.set(roomId, newRoom);

@@ -27,9 +27,9 @@ export function isUserOnline(userId: number): boolean {
 
 // notifies all friends of a user about their online/offline status
 export async function notifyFriendsStatus(userId: number, isOnline: boolean) {
-  console.log(
-    `[Online Status websocket] Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`,
-  );
+//  console.log(
+//    `[Online Status websocket] Notify friends of ${userId}: now ${isOnline ? "online" : "offline"}`,
+//  ); ////debug
 
   const friends: number[] = await getFriendsOfUser(userId);
 
@@ -55,10 +55,10 @@ export async function sendOnlineFriendsList(
   const onlineFriendIds: number[] = friends.filter((friendId) =>
     onlineUsers.has(friendId),
   );
-  console.log(
-    `[Online Status websocket] Sending online friends to ${userId}:`,
-    onlineFriendIds,
-  );
+//  console.log(
+//    `[Online Status websocket] Sending online friends to ${userId}:`,
+//    onlineFriendIds,
+//  ); ////debug
 
   ws.send(
     JSON.stringify({
@@ -97,12 +97,12 @@ export async function notifyFriendshipUpdateToUsers(
 
 // periodic heartbeat
 setInterval(() => {
-  console.log("[Online Status websocket] Running heartbeat check...");
+//  console.log("[Online Status websocket] Running heartbeat check..."); ////debug
   for (const [uid, ws] of onlineUsers.entries()) {
     if (!ws.isAlive) {
-      console.log(
-        `[Online Status websocket] User ${uid} did not respond. Removing...`,
-      );
+    //  console.log(
+    //    `[Online Status websocket] User ${uid} did not respond. Removing...`,
+    //  ); ////debug
       ws.terminate(); // use ws.close to specify code/reason if needed
       onlineUsers.delete(uid);
       notifyFriendsStatus(uid, false);
@@ -111,6 +111,6 @@ setInterval(() => {
 
     ws.isAlive = false;
     ws.ping(); // triggers "pong" event when client replies
-    console.log(`[Online Status websocket] Sent ping to user ${uid}`);
+    //console.log(`[Online Status websocket] Sent ping to user ${uid}`); ////debug
   }
 }, HEARTBEAT_INTERVAL);

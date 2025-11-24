@@ -23,7 +23,7 @@ export function addWinnerToNextTournament(
   if (!currentTournament) return;
 
   // Get or create the next tournament
-  let nextTournamentId = currentTournament.nextTournamentId;
+  const nextTournamentId = currentTournament.nextTournamentId;
   if (!nextTournamentId) {
     console.log(
       `[Tournament ${currentTournamentId}] No next tournament created yet for winner ${winnerId}`,
@@ -47,7 +47,7 @@ export function addWinnerToNextTournament(
     nextTournament.nextStageExpectedPlayers = [];
   }
 
-  // ✅ NEW: Store winner's full info for later reference
+  // initialize expectedPlayerInfo map if needed
   if (!nextTournament.expectedPlayerInfo) {
     nextTournament.expectedPlayerInfo = new Map();
   }
@@ -75,13 +75,11 @@ export function addWinnerToNextTournament(
     `[Tournament ${nextTournamentId}] Added winner ${winnerId} to expected players. Current: ${Array.from(nextTournament.allowedPlayers).join(", ")}`,
   );
 
-  // ✅ ONLY start timeout on FIRST winner AND if timeout not already running
+  // only start countdown when collected all winners
   const allAllowedPlayer =
     nextTournament.allowedPlayers.size === nextTournament.maxPlayer;
   const timeoutNotStarted =
     !nextTournament.lobbyTimeout && !nextTournament.lobbyTimeoutStarted;
-
-  // If this is the first winner, start the lobby timeout
   if (allAllowedPlayer && timeoutNotStarted) {
     const expectedPlayerCount = nextTournament.maxPlayer;
     const timeoutSeconds = 30;
@@ -90,10 +88,6 @@ export function addWinnerToNextTournament(
       `[Tournament ${nextTournamentId}] collected all winners. Starting ${timeoutSeconds}s timeout for ${expectedPlayerCount} players`,
     );
     startLobbyTimeout(nextTournamentId, expectedPlayerCount, timeoutSeconds);
-  } else {
-    console.log(
-      `[Tournament ${nextTournamentId}] Winner added, timeout already running (started: ${nextTournament.lobbyTimeoutStarted})`,
-    );
   }
 }
 
@@ -104,7 +98,6 @@ export async function handleFinalSpecialCases(
   tournamentId: number,
   tournament: TournamentLobby,
   currentPlayerCount: number,
-  expectedPlayerCount: number,
 ) {
   const expectedPlayers = Array.from(tournament.allowedPlayers || []);
   const currentPlayerIds = tournament.players.map((p) => p.id);
@@ -156,9 +149,6 @@ export async function handleFinalSpecialCases(
           tournamentPlayerId = createResult.data.id;
 		  if (!tournamentPlayerId) return;
           tournament.playerMap.set(playerId, tournamentPlayerId);
-          console.log(
-            `[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`,
-          );
         } else {
           console.error(
             `[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK ${playerId}:`,
@@ -178,7 +168,7 @@ export async function handleFinalSpecialCases(
         if (updateResult.success) {
           tournament.rankUpdatedPlayers.add(playerId);
           console.log(
-            `[Tournament ${tournamentId}] ✅ update rank ${rank} to AFK player id: ${playerId}`,
+            `[Tournament ${tournamentId}] ✅ Successfully updated AFK player ranking`, updateResult.data
           );
         } else {
           console.error(
@@ -243,9 +233,6 @@ export async function handleFinalSpecialCases(
         winnerTournamentPlayerId = createResult.data.id;
 		if (!winnerTournamentPlayerId) return;
         tournament.playerMap.set(winner.id, winnerTournamentPlayerId);
-        console.log(
-          `[Tournament ${tournamentId}] Created tournament player ID ${winnerTournamentPlayerId} for winner ${winner.id}`,
-        );
       } else {
         console.error(
           `[Tournament ${tournamentId}] Failed to create tournament player:`,
@@ -263,7 +250,7 @@ export async function handleFinalSpecialCases(
       if (updateResult.success) {
         tournament.rankUpdatedPlayers.add(winner.id);
         console.log(
-          `[Tournament ${tournamentId}] ✅ update rank ${updateResult.data?.ranking} to ${winner.username}`,
+          `[Tournament ${tournamentId}] ✅ Successfully updated winner ranking`, updateResult.data
         );
       } else {
         console.error(
@@ -292,9 +279,6 @@ export async function handleFinalSpecialCases(
             tournamentPlayerId = createResult.data.id;
 			if (!tournamentPlayerId) return;
             tournament.playerMap.set(noShowPlayer, tournamentPlayerId);
-            console.log(
-              `[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId}for AFK player ${noShowPlayer}`,
-            );
           } else {
             console.error(
               `[Tournament ${tournamentId}] ❌ Failed to create tournament player:`,
@@ -311,7 +295,7 @@ export async function handleFinalSpecialCases(
           if (updateResult.success) {
             tournament.rankUpdatedPlayers.add(noShowPlayer);
             console.log(
-              `[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player id: ${noShowPlayer}`,
+              `[Tournament ${tournamentId}] ✅ Successfully updated AFK player ranking`, updateResult.data
             );
           } else {
             console.error(
@@ -427,9 +411,6 @@ export async function handleSemiFinalSpecialCases(
           tournamentPlayerId = createResult.data.id;
 		  if (!tournamentPlayerId) return;
           tournament.playerMap.set(playerId, tournamentPlayerId);
-          console.log(
-            `[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`,
-          );
         } else {
           console.error(
             `[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK ${playerId}:`,
@@ -451,7 +432,7 @@ export async function handleSemiFinalSpecialCases(
         if (updateResult.success) {
           tournament.rankUpdatedPlayers?.add(playerId);
           console.log(
-            `[Tournament ${tournamentId}] ✅ Awarded rank ${updateResult.data?.ranking} to AFK player ${playerId}`,
+            `[Tournament ${tournamentId}] ✅ Successfully updated AFK player ranking`, updateResult.data
           );
         } else {
           console.error(
@@ -508,9 +489,6 @@ export async function handleSemiFinalSpecialCases(
         winnerTournamentPlayerId = createResult.data.id;
 		if (!winnerTournamentPlayerId) return;
         tournament.playerMap.set(winner.id, winnerTournamentPlayerId);
-        console.log(
-          `[Tournament ${tournamentId}] Created tournament player ID ${winnerTournamentPlayerId} for winner ${winner.id}`,
-        );
       } else {
         console.error(
           `[Tournament ${tournamentId}] Failed to create tournament player for winner:`,
@@ -528,7 +506,7 @@ export async function handleSemiFinalSpecialCases(
       if (updateResult.success) {
         tournament.rankUpdatedPlayers?.add(winner.id);
         console.log(
-          `[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to ${winner.username}`,
+          `[Tournament ${tournamentId}] ✅ Successfully updated winner ranking`, updateResult.data
         );
       } else {
         console.error(
@@ -563,9 +541,6 @@ export async function handleSemiFinalSpecialCases(
           tournamentPlayerId = createResult.data.id;
 		  if (!tournamentPlayerId) return;
           tournament.playerMap.set(playerId, tournamentPlayerId);
-          console.log(
-            `[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`,
-          );
         } else {
           console.error(
             `[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK ${playerId}:`,
@@ -589,7 +564,7 @@ export async function handleSemiFinalSpecialCases(
         if (updateResult.success) {
           tournament.rankUpdatedPlayers?.add(playerId);
           console.log(
-            `[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player ${playerId}`,
+            `[Tournament ${tournamentId}] ✅ Successfully updated AFK player ranking`, updateResult.data
           );
         } else {
           console.error(
@@ -677,9 +652,6 @@ export async function handleSemiFinalSpecialCases(
           playerTournamentId = createResult.data.id;
 		  if (!playerTournamentId) return;
           tournament.playerMap.set(player.id, playerTournamentId);
-          console.log(
-            `[Tournament ${tournamentId}] Created tournament player ID ${playerTournamentId} for player ${player.id}`,
-          );
         } else {
           console.error(
             `[Tournament ${tournamentId}] Failed to create tournament player for ${player.id}:`,
@@ -787,9 +759,6 @@ export async function handleSemiFinalSpecialCases(
           tournamentPlayerId = createResult.data.id;
 		  if (!tournamentPlayerId) return;
           tournament.playerMap.set(playerId, tournamentPlayerId);
-          console.log(
-            `[Tournament ${tournamentId}] ✅ Created tournament player ID ${tournamentPlayerId} for AFK player ${playerId}`,
-          );
         } else {
           console.error(
             `[Tournament ${tournamentId}] ❌ Failed to create tournament player for AFK player ${playerId}:`,
@@ -809,7 +778,7 @@ export async function handleSemiFinalSpecialCases(
         if (updateResult.success) {
           tournament.rankUpdatedPlayers?.add(playerId);
           console.log(
-            `[Tournament ${tournamentId}] ✅ updated rank ${updateResult.data?.ranking} to AFK player ${playerId}`,
+            `[Tournament ${tournamentId}] ✅ Successfully updated AFK player ranking`, updateResult.data
           );
         } else {
           console.error(

@@ -447,20 +447,55 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
         }
         cleanupTimer();
 
-        //cancel match countdown if any //! maybe no need
-        //if (matchCountdowns.has(room.id)) {
-        //  const handle = matchCountdowns.get(room.id);
-        //  if (handle) {
-        //    clearInterval(handle);
-        //    matchCountdowns.delete(room.id);
-        //    console.log(
-        //      `[match countdown] cleared countdown for room ${room.id} due to player disconnect`,
-        //    );
-        //  }
-        //  broadcast(room, {
-        //    type: "matchCountdownCancel",
-        //  });
-        //}
+        // ✅ NEW: For match rooms, DON'T cancel countdown - let it continue
+        const isMatchRoom = room.id.toString().startsWith("1111");
+
+        if (isMatchRoom) {
+          console.log(
+            `[match room ${room.id}] Player ${clientId} disconnected, but keeping countdown active`,
+          );
+
+          // ✅ Mark player as disconnected but keep them in the room
+          const playerRecord = room.clientRoles.get(clientId);
+          if (playerRecord) {
+            playerRecord.ready = false; // Keep them unready but in room
+          }
+
+          // Update gameState to reflect disconnection
+          room.gameState.teams.left = room.gameState.teams.left.map(
+            (p: playerInfo) => {
+              if (p.clientId === clientId) {
+                return { ...p, ready: false, online: false };
+              }
+              return p;
+            },
+          );
+          room.gameState.teams.right = room.gameState.teams.right.map(
+            (p: playerInfo) => {
+              if (p.clientId === clientId) {
+                return { ...p, ready: false, online: false };
+              }
+              return p;
+            },
+          );
+
+          // ✅ Broadcast updated state (player shows as offline but still in room)
+          const { canStart } = updateCanStart(room);
+          broadcast(room, {
+            type: "roleUpdate",
+            gameState: room.gameState,
+            leaderId: room.leaderId,
+            canStart: canStart,
+            playerDisconnected: clientId, // Signal to frontend
+          });
+
+          // ✅ DON'T cancel the match countdown - let it continue
+          // The game will start even if one player is offline
+
+          // Remove socket but DON'T call handleDisconnect for match rooms
+          room.sockets.delete(socket);
+          return;
+        }
 
         if (room.game.state === 3) return;
         //  console.log("room game state: ", socket.readyState); ////debug

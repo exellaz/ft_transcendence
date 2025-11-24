@@ -483,8 +483,8 @@ function updateTournamentEliminatedOrderAndPlacements(
     assignedRank = Math.max(assignedRank, minRank);
 
     console.log(
-      `[placements] player ${cid} finished in ${gameDuration}ms → ` +
-        `${assignedRanks.size + 1}/${maxRank - minRank + 1} games finished in stage ${stage} → ` +
+      `[placements] loser player ${cid} finished in ${gameDuration}ms | ` +
+        `finished in stage ${stage} | ` +
         `rank ${assignedRank}`,
     );
 
