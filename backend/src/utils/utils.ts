@@ -65,7 +65,7 @@ export async function validateConnection(
     socket.close(1008, "User not found in database");
     return null;
   }
-//  console.log("[validate token] Authenticated user: ", user); ////debug
+  //  console.log("[validate token] Authenticated user: ", user); ////debug
 
   const playerName = user.username;
   if (!playerName) {
@@ -335,7 +335,8 @@ export function handlePlayerDisconnect(
     const disconnectedPlayerRight = room.gameState.teams.right.find(
       (p) => p.clientId === clientId,
     );
-    const disconnectedPlayer = disconnectedPlayerLeft || disconnectedPlayerRight;
+    const disconnectedPlayer =
+      disconnectedPlayerLeft || disconnectedPlayerRight;
     const disconnectedSide = disconnectedPlayerLeft ? "left" : "right";
 
     // remove from teams and paddles
@@ -366,7 +367,10 @@ export function handlePlayerDisconnect(
       }
 
       room.game.forceEnd(winner);
-      setTimeout(() => roomEndGame(room, true, winner, room.tournamentId), 1000);
+      setTimeout(
+        () => roomEndGame(room, true, winner, room.tournamentId),
+        1000,
+      );
       return;
     }
   }, gracePeriod);

@@ -1,13 +1,12 @@
 import { tournaments } from "./tournament.routes";
-import { handleSemiFinalSpecialCases, handleFinalSpecialCases } from "./handleNextTournament";
+import {
+  handleSemiFinalSpecialCases,
+  handleFinalSpecialCases,
+} from "./handleNextTournament";
 import { createMatchRoom } from "./handleMatchRoom";
 import WebSocket from "ws";
-import {
-  TournamentMatch,
-} from "../../types/interface";
-import {
-  createTournament,
-} from "./tournament.service";
+import { TournamentMatch } from "../../types/interface";
+import { createTournament } from "./tournament.service";
 
 /**
  * @brief Start a timeout timer for tournament lobby to handle no-show players
@@ -119,7 +118,9 @@ export async function startTournamentCountdown(
   // We use a placeholder timeout and overwrite it later with the real interval.
   if (tournament.countdownTimer) return;
   const placeholder = setTimeout(() => {}, 0);
-  tournament.countdownTimer = placeholder as unknown as ReturnType<typeof setTimeout>;
+  tournament.countdownTimer = placeholder as unknown as ReturnType<
+    typeof setTimeout
+  >;
 
   // If anything fails before we set a real timer, clear the placeholder lock.
   const clearPlaceholder = () => {
@@ -260,6 +261,3 @@ export function cancelTournamentCountdown(
   broadcast(JSON.stringify({ type: "countdownCancel" }));
   console.log(`Tournament ${tournamentId} countdown cancelled`); //// debug
 }
-
-
-

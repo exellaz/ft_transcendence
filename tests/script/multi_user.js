@@ -28,7 +28,7 @@ const { chromium } = require("playwright");
     const { identifier, password } = USERS[i % USERS.length];
 
     const browser = await chromium.launch({
-    //  executablePath: "/opt/google/chrome/chrome",
+      //  executablePath: "/opt/google/chrome/chrome",
       ignoreHTTPSErrors: true,
       headless: false,
     });

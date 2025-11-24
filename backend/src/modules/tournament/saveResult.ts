@@ -1,10 +1,7 @@
 import { tournaments, generateTournamentId } from "./tournament.routes";
 import { addWinnerToNextTournament } from "./handleNextTournament";
 import WebSocket from "ws";
-import {
-  PlacementEntry,
-  TournamentLobby,
-} from "../../types/interface";
+import { PlacementEntry, TournamentLobby } from "../../types/interface";
 import {
   createTournamentMatch,
   createTournamentPlayer,
@@ -236,7 +233,8 @@ export async function saveMatchResult(
       if (updateResult.success) {
         tournament.rankUpdatedPlayers.add(loserId);
         console.log(
-          `[tournament player database] ✅ Successfully updated loser ranking`, updateResult.data
+          `[tournament player database] ✅ Successfully updated loser ranking`,
+          updateResult.data,
         );
       } else {
         console.warn(
@@ -249,7 +247,9 @@ export async function saveMatchResult(
     // ✅ NEW: Update winner's ranking if it's the final match
     if (tournamentInfo.stage === "F" && typeof result.winnerId === "number") {
       const winnerRank = 1; // Winner of final gets rank 1
-      const winnerTournamentPlayerId = tournament.playerMap.get(result.winnerId);
+      const winnerTournamentPlayerId = tournament.playerMap.get(
+        result.winnerId,
+      );
 
       if (winnerTournamentPlayerId) {
         const winnerUpdateResult = await updateTournamentPlayerRanking(
@@ -259,7 +259,8 @@ export async function saveMatchResult(
         if (winnerUpdateResult.success) {
           tournament.rankUpdatedPlayers.add(result.winnerId);
           console.log(
-            `[tournament player database] ✅ Successfully updated winner ranking`, winnerUpdateResult.data
+            `[tournament player database] ✅ Successfully updated winner ranking`,
+            winnerUpdateResult.data,
           );
         } else {
           console.warn(

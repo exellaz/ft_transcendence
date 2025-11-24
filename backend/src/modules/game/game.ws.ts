@@ -78,7 +78,8 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const opponentPlayers = room.gameState.teams[opponentTeam];
 
       // ✅ Check if opponent is offline (either dummy or disconnected)
-      const hasOfflineOpponent = opponentPlayers?.some((p) => !p.online) || false;
+      const hasOfflineOpponent =
+        opponentPlayers?.some((p) => !p.online) || false;
       const offlinePlayer = opponentPlayers?.find((p) => !p.online);
       //try {
       //    socket.send(JSON.stringify({ type: "handshakePing"}));
@@ -196,7 +197,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
               }),
             );
 
-              // ✅ If opponent is offline (dummy OR disconnected), add them to game and force win
+            // ✅ If opponent is offline (dummy OR disconnected), add them to game and force win
             if (hasOfflineOpponent && offlinePlayer) {
               const dummyTeam = side === "left" ? 1 : 0;
 

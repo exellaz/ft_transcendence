@@ -50,7 +50,7 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
         ws.close(1008, "Invalid token");
         return;
       }
-    //  console.log("[Online Status websocket] Decoded token:", decoded); ////debug
+      //  console.log("[Online Status websocket] Decoded token:", decoded); ////debug
 
       // if not verified, close connection
       if (decoded === null || !decoded.userId) {
@@ -89,9 +89,9 @@ export default async function onlineStatusRoutes(fastify: FastifyInstance) {
       // Add online user to Map
       addOnlineUser(uid, ws);
       console.log(`[Online Status websocket] User ${uid} connected.`);
-    //  console.log(
-    //    `[Online Status websocket] Total Online Users: ${getOnlineCount()}`,
-    //  ); ////debug
+      //  console.log(
+      //    `[Online Status websocket] Total Online Users: ${getOnlineCount()}`,
+      //  ); ////debug
 
       // Send initial online friends list
       sendOnlineFriendsList(uid, ws);
