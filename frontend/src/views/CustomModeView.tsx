@@ -63,6 +63,7 @@ const CustomModeView: React.FC = () => {
     if (room) {
       // always handle both id and roomId
       const roomIdToUse = room.id || room.roomId;
+      sessionStorage.setItem("RoomId", roomIdToUse);
       navigate(getRoomPath(teamSize, roomIdToUse), { state: { room } });
     } else {
       alert("Failed to create room");
@@ -127,6 +128,7 @@ const CustomModeView: React.FC = () => {
 
     //if found room, navigate to it
     const roomIdToUse = room.id || room.roomId;
+    sessionStorage.setItem("RoomId", roomIdToUse);
     navigate(getRoomPath(room.teamSize, roomIdToUse), { state: { room } });
   }
 
