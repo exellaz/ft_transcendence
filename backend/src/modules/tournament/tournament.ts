@@ -1,20 +1,12 @@
-import { tournaments, generateTournamentId } from "./tournament.routes";
-import { handleSemiFinalSpecialCases, handleFinalSpecialCases, addWinnerToNextTournament } from "./handleNextTournament";
+import { tournaments } from "./tournament.routes";
+import { handleSemiFinalSpecialCases, handleFinalSpecialCases } from "./handleNextTournament";
 import { createMatchRoom } from "./handleMatchRoom";
 import WebSocket from "ws";
 import {
-  PlacementEntry,
-  playerInfo,
-  Room,
-  TournamentLobby,
   TournamentMatch,
 } from "../../types/interface";
 import {
   createTournament,
-  createTournamentMatch,
-  createTournamentPlayer,
-  updateTournamentPlayerRanking,
-  updateTournamentStatus,
 } from "./tournament.service";
 
 /**
@@ -40,7 +32,6 @@ export function startLobbyTimeout(
   }
 
   const startTime = Date.now();
-  const expectedEndTime = startTime + timeoutSeconds * 1000;
 
   console.log(
     `[Tournament ${tournamentId}] ⏰ Starting ${timeoutSeconds}s timeout`,
