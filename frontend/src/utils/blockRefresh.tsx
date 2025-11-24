@@ -36,13 +36,15 @@ export function useBlockLeave() {
     };
 
     const onPopState = (e: PopStateEvent) => {
-      // don't create a new history entry here — go forward to restore the blocked state
-      try {
-        history.go(1);
-      } catch {
-        // fallback: re-push if go(1) isn't available in some envs
-        pushState();
-      }
+      // restore the blocked state by re-pushing a history entry.
+      // setTimeout works around timing/ordering differences in Firefox.
+      setTimeout(() => {
+        try {
+          pushState();
+        } catch {
+          // ignore
+        }
+      }, 0);
     };
 
     // initialize
