@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { toast, ToastContainer, Slide } from "react-toastify";
 import type { FriendMessageMsg } from "./context/OnlineStatusProvider";
-import { useTabLock } from "./hooks/tabLock";
 
 // components
 import BouncingSprites from "./components/BouncingSprites";
@@ -29,7 +28,6 @@ import SignUpView from "./views/SignUpView";
 import TournamentLobbyView from "./views/tournament/TournamentLobbyView";
 import LocalTournamentSetup from "./views/LocalTournamentSetup"; // Adjust path if needed
 import RoomList from "./views/testRoomList";
-import BlockedMultipleTabs from "./components/BlockedPage";
 
 // wrapper to conditionally render BouncingSprites for pre-login views.
 // including BouncingSprites at the App level ensures animation consistency
@@ -61,8 +59,6 @@ const App: React.FC = () => {
     "/local-game",
   ];
   const hideToast = hideToastPaths.includes(location.pathname);
-
-  useTabLock();
 
   useEffect(() => {
     const handler = (event: CustomEvent<FriendMessageMsg>) => {
@@ -251,10 +247,6 @@ const App: React.FC = () => {
                 </RequireGameMode>
               </RequireAuth>
             }
-          />
-          <Route
-            path="/blocked-multiple-tabs"
-            element={<BlockedMultipleTabs />}
           />
           {/* Miscellaneous routes */}
           {/*<Route path="/test" element={<TestView />} />*/}
