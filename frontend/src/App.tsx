@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { toast, ToastContainer, Slide } from "react-toastify";
 import type { FriendMessageMsg } from "./context/OnlineStatusProvider";
+import { useTabLock } from "./hooks/tabLock";
 
 // components
 import BouncingSprites from "./components/BouncingSprites";
@@ -10,6 +11,7 @@ import CustomToast from "./components/CustomToast";
 import RedirectIfAuth from "./components/RedirectIfAuth";
 import RequireAuth from "./components/RequireAuth";
 import RequireGameMode from "./components/RequireGameMode";
+import BlockedMultipleTabs from "./components/BlockedPage";
 
 // views
 import AdvanceView from "./views/tournament/AdvanceView";
@@ -59,6 +61,8 @@ const App: React.FC = () => {
     "/local-game",
   ];
   const hideToast = hideToastPaths.includes(location.pathname);
+
+  useTabLock();
 
   useEffect(() => {
     const handler = (event: CustomEvent<FriendMessageMsg>) => {
@@ -247,6 +251,10 @@ const App: React.FC = () => {
                 </RequireGameMode>
               </RequireAuth>
             }
+          />
+          <Route
+            path="/blocked-multiple-tabs"
+            element={<BlockedMultipleTabs />}
           />
           {/* Miscellaneous routes */}
           {/*<Route path="/test" element={<TestView />} />*/}
