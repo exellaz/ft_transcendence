@@ -37,7 +37,7 @@ export function createMatchRoom(
       ballSpeed: 1,
       ballSize: 1,
       paddleSpeed: 1,
-      scorePoint: 1, //? point to win
+      scorePoint: 3, //? point to win
       map: "stadium",
     },
     async (winner) => {
