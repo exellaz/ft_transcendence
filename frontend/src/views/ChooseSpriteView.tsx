@@ -42,7 +42,6 @@ async function handleJoinTournament(
   // 4. Navigate into the tournament lobby
   navigate(`/tournament/${tournament.id}`, {
     state: { tournament, selectedSprite },
-    replace: true,
   });
 }
 
