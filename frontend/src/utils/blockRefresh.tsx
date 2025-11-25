@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 export function useBlockLeave() {
   useEffect(() => {
+
     // Prevent refresh (F5 / Ctrl+R)
     const keyHandler = (e: KeyboardEvent) => {
       if (
@@ -26,13 +27,15 @@ export function useBlockLeave() {
     };
 
     // Handle back/forward button - no navigation allowed
-    const onPopState = () => {
+    //initialize history to current page when first loaded
+    window.history.pushState(window.history.state, "", window.location.href);
+    const onPopState = (e: PopStateEvent) => {
       console.log("Popstate detected - preventing navigation");
+      e.preventDefault();
       // Push the current page back onto the history stack so that the user stays on the same page
       window.history.pushState(window.history.state, "", window.location.href);
     };
-    //initialize history to current page when first loaded
-    window.history.pushState(window.history.state, "", window.location.href);
+
 
     window.addEventListener("keydown", keyHandler);
     window.addEventListener("contextmenu", disableContextMenu);

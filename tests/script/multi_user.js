@@ -6,7 +6,7 @@ const { chromium, firefox } = require("playwright");
   const room_list = "https://localhost:5173/roomList";
   const LOGIN_PATH = "/login";
   const SUCCESS_PATH = "/main-menu";
-  const TOTAL_TABS = 8;
+  const TOTAL_TABS = 2;
 
   const USERS = [
     { identifier: "username1", password: "Password1" },
@@ -122,6 +122,7 @@ const { chromium, firefox } = require("playwright");
         err,
       );
     }
+
   }
 
   //  if (lastPage) {

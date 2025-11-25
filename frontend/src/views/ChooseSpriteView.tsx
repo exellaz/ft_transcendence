@@ -42,6 +42,7 @@ async function handleJoinTournament(
   // 4. Navigate into the tournament lobby
   navigate(`/tournament/${tournament.id}`, {
     state: { tournament, selectedSprite },
+    replace: true,
   });
 }
 
@@ -70,6 +71,9 @@ const ChooseSpriteView: React.FC = () => {
 
             //navigate to the tournament lobby
             await handleJoinTournament(user, navigate, selectedSprite);
+          }}
+          onClose={() => {
+            navigate("/main-menu");
           }}
         />
       </Card>

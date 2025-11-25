@@ -340,7 +340,8 @@
   },
   "ChooseSpriteContents": {
     "choose_sprite": "Choose a sprite",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   },
   "CustomToast": {
     "message_from": "New message from {{username}}"
