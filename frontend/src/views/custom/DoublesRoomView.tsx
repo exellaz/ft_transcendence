@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserProvider";
 import { getUserById } from "../../lib/usersApiClient"; // Import the function
 import type { WaitingRoomPlayer } from "../../types/apiInterfaces";
@@ -42,7 +42,6 @@ const DoublesRoomView: React.FC = () => {
     type: string;
     id: number;
   } | null>(null);
-  const { roomId: paramRoomId } = useParams();
   const roomId = sessionStorage.getItem("RoomId") || "";
   const { user } = useUser();
   const [canConnect, setCanConnect] = React.useState(false);
@@ -50,6 +49,13 @@ const DoublesRoomView: React.FC = () => {
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [sprite, setSprite] = useState<string>("/assets/yellow-ghost.png");
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  // If there's no RoomId stored (i.e. user didn't come from the app), force navigation away.
+  React.useEffect(() => {
+    if (!roomId) {
+      navigate("/main-menu");
+    }
+  }, [roomId, navigate]);
 
   // prevent player from reloading the page
   React.useEffect(() => {
@@ -106,13 +112,6 @@ const DoublesRoomView: React.FC = () => {
 
     fetchUserInfo();
   }, [user]);
-
-  //update session storage when paramRoomId change
-  React.useEffect(() => {
-    if (paramRoomId) {
-      sessionStorage.setItem("RoomId", paramRoomId);
-    }
-  }, [paramRoomId]);
 
   //fetch room info when request roomId change
   React.useEffect(() => {
@@ -198,7 +197,7 @@ const DoublesRoomView: React.FC = () => {
           role.startsWith("left") ? "left" : "right",
         );
         sessionStorage.setItem("playerSprite", sprite);
-        sessionStorage.setItem("gameMode", "custom");
+        sessionStorage.setItem("gameMode", "remote");
         navigate("/game");
       }, 1000);
       return () => clearTimeout(timer);

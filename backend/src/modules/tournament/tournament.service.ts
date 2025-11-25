@@ -63,7 +63,13 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
     const existing = await prisma.tournamentPlayer.findFirst({
       where: { tournamentId: p.tournamentId, userId: p.userId },
     });
-    if (existing) return { success: true, data: existing };
+    if (existing) {
+      console.log(
+        "[tournament player database] Tournament player already exists: ",
+        existing,
+      );
+      return { success: true, data: existing };
+    }
 
     const tournamentPlayer = await prisma.tournamentPlayer.create({
       data: {
@@ -72,6 +78,11 @@ export async function createTournamentPlayer(p: TournamentPlayerInput) {
         ranking: p.ranking,
       },
     });
+
+    console.log(
+      "[tournament player database] Tournament player created: ",
+      tournamentPlayer,
+    );
 
     // ✅ Return success response
     return {

@@ -14,6 +14,8 @@ if [ ! -f "$CERT_DIR/$DOMAIN.crt" ]; then
         -keyout "$CERT_DIR/$DOMAIN.key" \
         -out "$CERT_DIR/$DOMAIN.crt" \
         -subj "/C=MY/ST=KL/L=KualaLumpur/O=42KL/OU=ft_transcendence/CN=$DOMAIN" \
+		-config "scripts/san.cnf" \
+		-extensions v3_req
 
     echo "Certificate generated successfully!"
 else

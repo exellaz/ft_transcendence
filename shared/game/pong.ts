@@ -414,9 +414,6 @@ export class PongGame {
           const winnerPlayer = this.winningTeam!.padels[0]?.player;
           this.onScreenTitle.text = `${winnerPlayer?.name ?? this.winningTeam!.toString()} Wins!`;
         }
-        this.world.removePeriodicTimer("title");
-
-        this.state = GameState.ENDED;
       }
     });
 

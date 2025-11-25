@@ -222,7 +222,7 @@ const App: React.FC = () => {
             path="/game"
             element={
               <RequireAuth>
-                <RequireGameMode allowed={["custom", "tournament"]}>
+                <RequireGameMode allowed={["custom", "remote", "tournament"]}>
                   <GameView />
                 </RequireGameMode>
               </RequireAuth>

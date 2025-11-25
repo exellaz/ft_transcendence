@@ -40,7 +40,7 @@ const createApp = (): FastifyInstance => {
     };
 
     return Fastify({
-      logger: true,
+      logger: false,
       https: httpsOptions,
     });
   } else {

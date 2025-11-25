@@ -274,6 +274,14 @@ export function useTournamentWebSocket({
         console.log("[tournament-websocket] Advance to finals:", data); ////debug
 
         if (data.nextTournamentId) {
+          // ✅ Store the finals tournament ID
+          try {
+            sessionStorage.setItem(
+              "tournamentId",
+              String(data.nextTournamentId),
+            );
+          } catch {}
+
           // ✅ Close semi-finals connection IMMEDIATELY before navigation
           const key = `${tournamentId}-${player.id}`;
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -283,14 +291,6 @@ export function useTournamentWebSocket({
             wsRef.current.close(1000, "Advancing to finals");
             tournamentWebsocket.delete(key);
           }
-
-          // ✅ Store the finals tournament ID
-          try {
-            sessionStorage.setItem(
-              "tournamentId",
-              String(data.nextTournamentId),
-            );
-          } catch {}
 
           // ✅ Navigate to finals
           navigate(`/tournament/${data.nextTournamentId}`, {
@@ -312,7 +312,13 @@ export function useTournamentWebSocket({
         code: (ev as CloseEvent).code,
         reason: (ev as CloseEvent).reason,
       });
-      setRoomError("offline_error");
+
+      // ✅ Only show offline error if NOT transitioning
+      const reason = (ev as CloseEvent).reason;
+      if (reason !== "Advancing to finals") {
+        setRoomError("offline_error");
+      }
+
       if (tournamentWebsocket.get(key) === ws) tournamentWebsocket.delete(key);
       wsRef.current = null;
       // remove persisted id only if this is the same ws we created
