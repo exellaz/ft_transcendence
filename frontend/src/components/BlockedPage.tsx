@@ -21,8 +21,7 @@ export default function BlockedMultipleTabs() {
     const token = localStorage.getItem("authToken");
     const tabLock = localStorage.getItem("appTabLock");
 
-    if (token && tabLock)
-        return ;
+    if (token && tabLock) return;
     localStorage.removeItem("appTabLock");
     window.location.href = "/";
   };
