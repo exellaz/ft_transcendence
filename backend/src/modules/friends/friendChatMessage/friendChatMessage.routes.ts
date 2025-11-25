@@ -4,12 +4,16 @@ import {
   getFriendChatMessagesByFriendshipIdSchema,
   getLastFriendChatMessageByFriendshipIdSchema,
 } from "./friendChatMessage.schema";
+import { authenticate } from "src/plugins/authenticate";
 
 async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId
   fastify.get(
     "/friendChatMessages/:friendshipId",
-    { schema: getFriendChatMessagesByFriendshipIdSchema },
+    {
+      schema: getFriendChatMessagesByFriendshipIdSchema,
+      preHandler: authenticate,
+    },
     async (request) => {
       const { friendshipId } = request.params as { friendshipId: string };
 
@@ -31,7 +35,10 @@ async function friendChatMessageRoutes(fastify: FastifyInstance) {
   // GET /friendChatMessages/:friendshipId/lastMessage
   fastify.get(
     "/friendChatMessages/:friendshipId/lastMessage",
-    { schema: getLastFriendChatMessageByFriendshipIdSchema },
+    {
+      schema: getLastFriendChatMessageByFriendshipIdSchema,
+      preHandler: authenticate,
+    },
     async (request) => {
       const { friendshipId } = request.params as { friendshipId: string };
 

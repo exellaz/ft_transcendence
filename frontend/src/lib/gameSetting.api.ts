@@ -20,6 +20,12 @@ export function useGameSettings(roomId: string) {
       try {
         const res = await fetch(
           import.meta.env.VITE_API_URL + `/room/${roomId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          },
         );
         if (!res.ok) throw new Error("Failed to fetch room settings");
         const data = await res.json();
