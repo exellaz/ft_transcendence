@@ -35,6 +35,19 @@ const TournamentLobbyView: React.FC = () => {
   //  console.log("Tournament ID:", tournamentId); ////debug
   //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
+  // Redirect to main menu if no location state
+  React.useEffect(() => {
+    if (!location.state || !location.state.tournament) {
+      console.warn("Unauthorized tournament access - missing required data");
+      navigate("/main-menu", { replace: true });
+    }
+  }, [location.state, navigate]);
+
+  // Early return to prevent errors while redirect is pending
+  if (!location.state || !location.state.tournament) {
+    return null;
+  }
+
   //live chat websocket
   const { chatMessages, message, setMessage, handleSendMsg } =
     useLiveChatWebSocket(tournamentId || -1, {

@@ -139,6 +139,7 @@ export interface Room {
   countdownTimer?: NodeJS.Timeout | null; // Interval handle for the countdown before game start
   countdownRemaining?: number | null; // Remaining seconds in the countdown
   inGame?: boolean;
+  tournamentId?: number;
 }
 
 export interface GameSettings {
@@ -219,6 +220,7 @@ export interface roleUpdate {
   leaderId: number;
   canStart: boolean;
   readyStatus?: playerInfo["ready"];
+  playerDisconnected?: number;
 }
 
 export interface roleUpdateReadyStatus {

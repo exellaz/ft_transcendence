@@ -72,12 +72,15 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       let handshakeTimer: NodeJS.Timeout | null = null;
       const HANDSHAKE_MS = 2000;
 
-      // ✅ Check if opponent is dummy
+      // ✅ Check BOTH dummy AND disconnected offline opponents
       const playerRole = room.clientRoles.get(clientId);
       const opponentTeam = side === "left" ? "right" : "left";
       const opponentPlayers = room.gameState.teams[opponentTeam];
-      const hasOpponentDummy = opponentPlayers?.some((p) => !p.online) || false;
 
+      // ✅ Check if opponent is offline (either dummy or disconnected)
+      const hasOfflineOpponent =
+        opponentPlayers?.some((p) => !p.online) || false;
+      const offlinePlayer = opponentPlayers?.find((p) => !p.online);
       //try {
       //    socket.send(JSON.stringify({ type: "handshakePing"}));
       //    handshakeTimer = setTimeout(() => {
@@ -194,59 +197,43 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
               }),
             );
 
-            // ✅ If opponent is dummy, add dummy player to game automatically
-            if (hasOpponentDummy) {
+            // ✅ If opponent is offline (dummy OR disconnected), add them to game and force win
+            if (hasOfflineOpponent && offlinePlayer) {
               const dummyTeam = side === "left" ? 1 : 0;
-              const dummyPlayers =
-                opponentTeam === "left"
-                  ? room.gameState.teams.left
-                  : room.gameState.teams.right;
 
-              if (dummyPlayers && dummyPlayers.length > 0) {
-                const dummyPlayer = dummyPlayers[0];
-                if (!dummyPlayer) {
-                  console.error("No dummy player info found");
-                  return;
+              // Add dummy player to game (will be AI-controlled)
+              room.game.addPlayer(
+                new Player({
+                  id: offlinePlayer.clientId,
+                  name: offlinePlayer.playerName,
+                  skin: SKIN_MAPPING[offlinePlayer.spriteUrl] ?? 0,
+                  team: dummyTeam,
+                  socket: null, // ✅ No socket for dummy
+                }),
+              );
+
+              console.log(
+                `[game] Added dummy player ${offlinePlayer.clientId} to game`,
+              );
+              // ✅ Broadcast updated world first
+              const fullWorld = compile(room.game, true, room.setting);
+              for (const s of room.sockets.keys()) {
+                try {
+                  s.send(fullWorld);
+                } catch (err) {
+                  console.error("Failed to send full world:", err);
                 }
-
-                // Add dummy player to game (will be AI-controlled)
-                room.game.addPlayer(
-                  new Player({
-                    id: dummyPlayer.clientId,
-                    name: dummyPlayer.playerName,
-                    skin: SKIN_MAPPING[dummyPlayer.spriteUrl] ?? 0,
-                    team: dummyTeam,
-                    socket: null, // ✅ No socket for dummy
-                  }),
-                );
-
-                console.log(
-                  `[game] Added dummy player ${dummyPlayer.clientId} to game`,
-                );
-
-                // ✅ Broadcast updated world first
-                const fullWorld = compile(room.game, true, room.setting);
-                for (const s of room.sockets.keys()) {
-                  try {
-                    s.send(fullWorld);
-                  } catch (err) {
-                    console.error("Failed to send full world:", err);
-                  }
-                }
-
-                // ✅ Wait a bit then immediately force win for real player
-                setTimeout(() => {
-                  const winner = side === "left" ? "left" : "right";
-                  console.log(
-                    `[game] Dummy opponent detected. Real player ${clientId} (${side}) wins by forfeit.`,
-                  );
-
-                  // Use existing forceEnd method from pong.ts
-                  room.game.forceEnd(winner);
-                }, 2000); // Give 2 seconds for client to load game scene
               }
+              // ✅ Wait a bit then immediately force win for real player
+              setTimeout(() => {
+                const winner = side === "left" ? "left" : "right";
+                console.log(
+                  `[game] Dummy opponent detected. Real player ${clientId} (${side}) wins by forfeit.`,
+                );
+                // Use existing forceEnd method from pong.ts
+                room.game.forceEnd(winner);
+              }, 2000); // Give 2 seconds for client to load game scene
             }
-
             // ✅ New addition: broadcast updated world to all
             const fullWorld = compile(room.game, true, room.setting);
             for (const s of room.sockets.keys()) {

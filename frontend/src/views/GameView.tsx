@@ -156,6 +156,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mode = sessionStorage.getItem("gameMode");
+  console.log("mode use:", mode);
 
   const { t } = useTranslation();
   const translate = (key: string) =>
@@ -181,7 +182,7 @@ const GameView: React.FC<GameViewProps> = () => {
     }
   }, []);
 
-  if (mode === "remote") {
+  if (mode === "remote" || mode === "tournament") {
     // Fetch user info when the component mounts
     React.useEffect(() => {
       console.log("mode used: ", mode);
