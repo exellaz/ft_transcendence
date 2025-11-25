@@ -28,7 +28,7 @@ const { chromium, firefox } = require("playwright");
     const { identifier, password } = USERS[i % USERS.length];
 
     const browser = await firefox.launch({
-    //  executablePath: "/opt/google/chrome/chrome",
+      //  executablePath: "/opt/google/chrome/chrome",
       ignoreHTTPSErrors: true,
       headless: false,
     });
@@ -122,7 +122,6 @@ const { chromium, firefox } = require("playwright");
         err,
       );
     }
-
   }
 
   //  if (lastPage) {

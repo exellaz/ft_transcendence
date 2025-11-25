@@ -52,12 +52,12 @@ const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
         ))}
       </div>
       <div className="flex-row-center gap-6">
-          <Button variant="green" disabled={!selected} onClick={onConfirm}>
-            {translate("confirm")}
-          </Button>
-          <Button variant="red" onClick={onClose}>
-            {translate("cancel")}
-          </Button>
+        <Button variant="green" disabled={!selected} onClick={onConfirm}>
+          {translate("confirm")}
+        </Button>
+        <Button variant="red" onClick={onClose}>
+          {translate("cancel")}
+        </Button>
       </div>
     </>
   );

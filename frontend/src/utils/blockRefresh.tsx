@@ -2,7 +2,6 @@ import { useEffect } from "react";
 
 export function useBlockLeave() {
   useEffect(() => {
-
     // Prevent refresh (F5 / Ctrl+R)
     const keyHandler = (e: KeyboardEvent) => {
       if (
@@ -35,7 +34,6 @@ export function useBlockLeave() {
       // Push the current page back onto the history stack so that the user stays on the same page
       window.history.pushState(window.history.state, "", window.location.href);
     };
-
 
     window.addEventListener("keydown", keyHandler);
     window.addEventListener("contextmenu", disableContextMenu);
