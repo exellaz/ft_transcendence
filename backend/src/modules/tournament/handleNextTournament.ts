@@ -121,12 +121,12 @@ export async function handleFinalSpecialCases(
       `[Tournament ${tournamentId}] Finals: No players showed up. Assigning random ranks 1-2.`,
     );
 
-    const dummyPlayers = tournament.players.filter(
-      (p) => tournament.dummyPlayers?.has(p.id)
+    const dummyPlayers = tournament.players.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     );
 
     const AFKRanks = [1, 2];
-    const playersToRank = [...noShowPlayers, ...dummyPlayers.map(p => p.id)];
+    const playersToRank = [...noShowPlayers, ...dummyPlayers.map((p) => p.id)];
 
     for (let i = 0; i < playersToRank.length && i < AFKRanks.length; i++) {
       const playerId = playersToRank[i];
@@ -264,10 +264,10 @@ export async function handleFinalSpecialCases(
       }
     }
 
-    const dummyPlayers = tournament.players.filter(
-      (p) => tournament.dummyPlayers?.has(p.id)
+    const dummyPlayers = tournament.players.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     );
-    const playersToRank = [...noShowPlayers, ...dummyPlayers.map(p => p.id)];
+    const playersToRank = [...noShowPlayers, ...dummyPlayers.map((p) => p.id)];
 
     // Assign rank 2 to no-show player
     if (playersToRank.length > 0) {
@@ -397,12 +397,12 @@ export async function handleSemiFinalSpecialCases(
       `[Tournament ${tournamentId}] No players showed up in semi-finals. Assigning random ranks 1-4 to no-shows.`,
     );
 
-    const dummyPlayers = tournament.players.filter(
-      (p) => tournament.dummyPlayers?.has(p.id)
+    const dummyPlayers = tournament.players.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     );
 
     const AFKRanks = [1, 2, 3, 4];
-    const playersToRank = [...noShowPlayers, ...dummyPlayers.map(p => p.id)];
+    const playersToRank = [...noShowPlayers, ...dummyPlayers.map((p) => p.id)];
 
     for (let i = 0; i < playersToRank.length && i < AFKRanks.length; i++) {
       const playerId = playersToRank[i];
@@ -534,13 +534,13 @@ export async function handleSemiFinalSpecialCases(
     }
 
     //Get dummy players for ranking
-    const dummyPlayers = tournament.players.filter(
-      (p) => tournament.dummyPlayers?.has(p.id)
+    const dummyPlayers = tournament.players.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     );
 
     //get random ranks 2, 3, 4 for afk player
     const AFKRanks = [2, 3, 4];
-    const playersToRank = [...noShowPlayers, ...dummyPlayers.map(p => p.id)];
+    const playersToRank = [...noShowPlayers, ...dummyPlayers.map((p) => p.id)];
 
     for (let i = 0; i < playersToRank.length && i < AFKRanks.length; i++) {
       const playerId = playersToRank[i];
@@ -750,7 +750,7 @@ export async function handleSemiFinalSpecialCases(
 
     //Only promote REAL players (not dummies) to finals
     const realPlayers = tournament.players.filter(
-      (p) => !tournament.dummyPlayers?.has(p.id)
+      (p) => !tournament.dummyPlayers?.has(p.id),
     );
 
     for (const player of realPlayers) {
@@ -761,13 +761,13 @@ export async function handleSemiFinalSpecialCases(
     }
 
     //Get dummy players for ranking
-    const dummyPlayers = tournament.players.filter(
-      (p) => tournament.dummyPlayers?.has(p.id)
+    const dummyPlayers = tournament.players.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     );
 
     // No-shows get random ranks 3, 4
     const noShowRanks = [3, 4];
-    const playersToRank = [...noShowPlayers, ...dummyPlayers.map(p => p.id)];
+    const playersToRank = [...noShowPlayers, ...dummyPlayers.map((p) => p.id)];
 
     for (let i = 0; i < playersToRank.length && i < noShowRanks.length; i++) {
       const playerId = playersToRank[i];
