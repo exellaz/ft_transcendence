@@ -60,7 +60,6 @@ export function startLobbyTimeout(
         tournamentId,
         t,
         currentPlayerCount,
-        expectedPlayerCount,
       );
       return;
     }
@@ -158,7 +157,7 @@ export async function startTournamentCountdown(
   }
 
   // Helper function to start the tournament immediately
-  const startTournamentNow = () => {
+  const startTournamentNow = async () => {
     if (tournament.lock) return;
     clearInterval(tournament.countdownTimer);
     tournament.countdownTimer = undefined;
@@ -166,6 +165,82 @@ export async function startTournamentCountdown(
     tournament.lock = true;
 
     const shuffled = [...tournament.players].sort(() => 0.5 - Math.random());
+
+    const dummyCount = shuffled.filter(
+      (p) => tournament.dummyPlayers?.has(p.id),
+    ).length;
+    const realPlayerCount = shuffled.length - dummyCount;
+
+    console.log(
+      `[Tournament ${tournamentId}] Starting with ${realPlayerCount} real players, ${dummyCount} dummies`,
+    );
+
+   // ✅ Handle special cases based on stage
+    if (tournament.stage === "SF") {
+      if (realPlayerCount === 0) {
+        console.log(
+          `[Tournament ${tournamentId}] SF: All dummies, using special case handler`,
+        );
+        await handleSemiFinalSpecialCases(
+          tournamentId,
+          tournament,
+          0,
+          tournament.maxPlayer,
+        );
+        return;
+      }
+      if (realPlayerCount === 1) {
+        console.log(
+          `[Tournament ${tournamentId}] SF: Only 1 real player, using special case handler`,
+        );
+        await handleSemiFinalSpecialCases(
+          tournamentId,
+          tournament,
+          1,
+          tournament.maxPlayer,
+        );
+        return;
+      }
+      if (realPlayerCount === 2) {
+        console.log(
+          `[Tournament ${tournamentId}] SF: Only 2 real players, using special case handler`,
+        );
+        await handleSemiFinalSpecialCases(
+          tournamentId,
+          tournament,
+          2,
+          tournament.maxPlayer,
+        );
+        return;
+      }
+    }
+
+    if (tournament.stage === "F") {
+      if (realPlayerCount === 0) {
+        console.log(
+          `[Tournament ${tournamentId}] F: All dummies, using special case handler`,
+        );
+        await handleFinalSpecialCases(
+          tournamentId,
+          tournament,
+          0,
+        );
+        return;
+      }
+      if (realPlayerCount === 1) {
+        console.log(
+          `[Tournament ${tournamentId}] F: Only 1 real player, using special case handler`,
+        );
+        await handleFinalSpecialCases(
+          tournamentId,
+          tournament,
+          1,
+        );
+        return;
+      }
+    }
+
+    //normal case: create match rooms and assign players
     const matches: TournamentMatch[] = [];
 
     //shuffle players and pair them into match rooms

@@ -288,22 +288,112 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           }
         };
 
+        const isAdvancing = reason && reason.toString().includes("Advancing to finals");
+        if (isAdvancing) {
+          console.log(
+            `[Tournament ${tournamentId}] Player ${playerId} advancing to finals, skipping dummy creation`,
+          );
+
+          //remove player from tournament
+          tournament.players = tournament.players.filter(
+            (p) => p.id !== playerId,
+          );
+          client.delete(socket);
+
+          // Don't broadcast or create dummy - player is moving to next stage
+          return;
+        }
+
         //remove player from tournament
         tournament.players = tournament.players.filter(
           (p) => p.id !== playerId,
         );
         client.delete(socket);
 
-        //notify all clients in the same tournament about the player leaving
-        tournamentBroadcast(
-          JSON.stringify({ type: "playerLeft", players: tournament.players }),
-        );
-        console.log(
-          `Player ${playerId} left tournament ${tournamentId}: lock=${tournament.lock} : player size=${tournament.players.length}`,
-        ); //// debug
+        console.log("stage: ", tournament.stage); //// debug
+        // ✅ NEW: Handle dummy creation for SF and F stages
+        if (tournament.stage === "SF" || tournament.stage === "F") {
+          if (tournament.players.length < tournament.maxPlayer) {
+            // Get player info from expectedPlayerInfo or parent tournament
+            let playerInfo = tournament.expectedPlayerInfo?.get(playerId);
 
-        //cancel countdown if player less
-        if (tournament.players.length < tournament.maxPlayer) {
+            if (!playerInfo && tournament.parentTournamentId) {
+              const parentTournament = tournaments.get(tournament.parentTournamentId);
+              if (parentTournament) {
+                const parentPlayer = parentTournament.players.find(
+                  (p) => p.id === playerId,
+                );
+                if (parentPlayer) {
+                  playerInfo = {
+                    id: parentPlayer.id,
+                    username: parentPlayer.username,
+                    spriteUrl: parentPlayer.spriteUrl,
+                  };
+                }
+              }
+            }
+
+            const dummyPlayer = {
+              id: playerId,
+              username: playerInfo
+                ? `[Forfeited] ${playerInfo.username}`
+                : `[Forfeited] Player ${playerId}`,
+              spriteUrl: playerInfo?.spriteUrl || "/assets/skins/slime/red/idle.png",
+              ready: true,
+            };
+
+            tournament.players.push(dummyPlayer);
+
+            if (!tournament.dummyPlayers) {
+              tournament.dummyPlayers = new Set();
+            }
+            tournament.dummyPlayers.add(playerId);
+
+            console.log(
+              `[Tournament ${tournamentId}] Player ${playerId} disconnected. Created dummy replacement: ${dummyPlayer.username}`,
+            );
+
+            // Notify all clients about the dummy replacement
+            tournamentBroadcast(
+              JSON.stringify({
+                type: "playerJoined",
+                players: tournament.players
+              }),
+            );
+
+            // ✅ If lobby is now full with dummies, start countdown
+            if (
+              tournament.players.length === tournament.maxPlayer &&
+              !tournament.lock &&
+              tournament.clientMap
+            ) {
+              console.log(
+                `[Tournament ${tournamentId}] Lobby full after dummy creation, starting countdown`,
+              );
+              startTournamentCountdown(
+                tournamentId,
+                tournamentBroadcast,
+                10,
+                tournament.clientMap,
+              );
+            }
+          }
+        } else {
+          // Normal case for other stages: notify all clients about player leaving
+          tournamentBroadcast(
+            JSON.stringify({ type: "playerLeft", players: tournament.players }),
+          );
+          console.log(
+            `Player ${playerId} left tournament ${tournamentId}: lock=${tournament.lock} : player size=${tournament.players.length}`,
+          ); //// debug
+        }
+
+        //cancel countdown if player count drops below max (only for non-SF/F stages)
+        if (
+          tournament.stage !== "SF" &&
+          tournament.stage !== "F" &&
+          tournament.players.length < tournament.maxPlayer
+        ) {
           cancelTournamentCountdown(tournamentId, tournamentBroadcast);
         }
 
