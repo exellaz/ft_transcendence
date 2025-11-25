@@ -17,7 +17,13 @@ export default function BlockedMultipleTabs() {
 
   const handleRetry = () => {
     // Clear the lock and navigate to home to restart the lock acquisition
-    localStorage.removeItem("app_tab_lock");
+
+    const token = localStorage.getItem("authToken");
+    const tabLock = localStorage.getItem("appTabLock");
+
+    if (token && tabLock)
+        return ;
+    localStorage.removeItem("appTabLock");
     window.location.href = "/";
   };
 

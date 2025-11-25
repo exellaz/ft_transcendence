@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LOCK_KEY = "app_tab_lock";
+const LOCK_KEY = "appTabLock";
 const HEARTBEAT_INTERVAL = 1000; // 1 second
 const STALE_THRESHOLD = HEARTBEAT_INTERVAL * 3; // 3 seconds
 
