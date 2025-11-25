@@ -288,7 +288,8 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
           }
         };
 
-        const isAdvancing = reason && reason.toString().includes("Advancing to finals");
+        const isAdvancing =
+          reason && reason.toString().includes("Advancing to finals");
         if (isAdvancing) {
           console.log(
             `[Tournament ${tournamentId}] Player ${playerId} advancing to finals, skipping dummy creation`,
@@ -318,7 +319,9 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             let playerInfo = tournament.expectedPlayerInfo?.get(playerId);
 
             if (!playerInfo && tournament.parentTournamentId) {
-              const parentTournament = tournaments.get(tournament.parentTournamentId);
+              const parentTournament = tournaments.get(
+                tournament.parentTournamentId,
+              );
               if (parentTournament) {
                 const parentPlayer = parentTournament.players.find(
                   (p) => p.id === playerId,
@@ -338,7 +341,8 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
               username: playerInfo
                 ? `[Forfeited] ${playerInfo.username}`
                 : `[Forfeited] Player ${playerId}`,
-              spriteUrl: playerInfo?.spriteUrl || "/assets/skins/slime/red/idle.png",
+              spriteUrl:
+                playerInfo?.spriteUrl || "/assets/skins/slime/red/idle.png",
               ready: true,
             };
 
@@ -357,7 +361,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
             tournamentBroadcast(
               JSON.stringify({
                 type: "playerJoined",
-                players: tournament.players
+                players: tournament.players,
               }),
             );
 

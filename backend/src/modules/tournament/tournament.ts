@@ -56,11 +56,7 @@ export function startLobbyTimeout(
     );
 
     if (t.stage === "F") {
-      await handleFinalSpecialCases(
-        tournamentId,
-        t,
-        currentPlayerCount,
-      );
+      await handleFinalSpecialCases(tournamentId, t, currentPlayerCount);
       return;
     }
 
@@ -166,8 +162,8 @@ export async function startTournamentCountdown(
 
     const shuffled = [...tournament.players].sort(() => 0.5 - Math.random());
 
-    const dummyCount = shuffled.filter(
-      (p) => tournament.dummyPlayers?.has(p.id),
+    const dummyCount = shuffled.filter((p) =>
+      tournament.dummyPlayers?.has(p.id),
     ).length;
     const realPlayerCount = shuffled.length - dummyCount;
 
@@ -175,7 +171,7 @@ export async function startTournamentCountdown(
       `[Tournament ${tournamentId}] Starting with ${realPlayerCount} real players, ${dummyCount} dummies`,
     );
 
-   // ✅ Handle special cases based on stage
+    // ✅ Handle special cases based on stage
     if (tournament.stage === "SF") {
       if (realPlayerCount === 0) {
         console.log(
@@ -220,22 +216,14 @@ export async function startTournamentCountdown(
         console.log(
           `[Tournament ${tournamentId}] F: All dummies, using special case handler`,
         );
-        await handleFinalSpecialCases(
-          tournamentId,
-          tournament,
-          0,
-        );
+        await handleFinalSpecialCases(tournamentId, tournament, 0);
         return;
       }
       if (realPlayerCount === 1) {
         console.log(
           `[Tournament ${tournamentId}] F: Only 1 real player, using special case handler`,
         );
-        await handleFinalSpecialCases(
-          tournamentId,
-          tournament,
-          1,
-        );
+        await handleFinalSpecialCases(tournamentId, tournament, 1);
         return;
       }
     }
