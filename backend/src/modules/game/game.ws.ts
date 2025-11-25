@@ -4,8 +4,6 @@ import { Player } from "@shared/game/Player.ts";
 import { handlePlayerDisconnect } from "src/utils/utils.ts";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
-import { clear } from "console";
-import { roomEndGame } from "../room/room";
 
 function closeSocket(socket: WebSocket, statusCode: number, errorMsg: string) {
   socket.close(1003, errorMsg);
@@ -383,7 +381,7 @@ export function createAppHeartbeat(
       try {
         console.log("sending heartbeat"); ////debug
         socket.send(JSON.stringify({ type: "heartbeat" }));
-      } catch (err) {
+      } catch {
         cleanupTimers();
         try {
           socket.close(1011, "server error");

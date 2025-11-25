@@ -2,7 +2,6 @@ import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../utils/response";
 import {
   deleteUserByIdSchema,
-  getAllUserSettingsSchema,
   getUserByIdSchema,
   getUserSettingsByIdSchema,
   getUsersSchema,
@@ -12,7 +11,6 @@ import {
 } from "./users.schema";
 import { userPublicSelect, userSettingsPublicSelect } from "./users.select";
 import { Prisma } from "@prisma/client";
-import { request } from "http";
 import { authenticate, requireOwnership } from "../../plugins/authenticate";
 import { MultipartFile } from "@fastify/multipart";
 import { uploadFileToServerUploadsDir } from "./users.service";
@@ -156,8 +154,8 @@ async function userRoutes(fastify: FastifyInstance) {
   // PATCH /users/:id/avatar  (upload user avatar)
   fastify.patch(
     "/users/:id/avatar",
-    { schema: patchUserAvatarByIdSchema, preHandler: authenticate },
-    async (request, reply) => {
+    { schema: patchUserAvatarByIdSchema },
+    async (request) => {
       // get userId from param
       const { id } = request.params as { id: string };
       const userId = Number(id);

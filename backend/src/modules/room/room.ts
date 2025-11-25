@@ -10,7 +10,6 @@ import {
 import { broadcast } from "../../utils/utils";
 import { PongGame } from "@shared/game/pong.ts";
 import { tournaments } from "../tournament/tournament.routes";
-import os from "os";
 import { performance } from "perf_hooks";
 import WebSocket from "ws";
 
@@ -136,7 +135,7 @@ export function startRoomLoop(room: Room) {
 
   room.loopHandle = setInterval(() => {
     const loopStart = performance.now();
-    const loopDelta = loopStart - lastLoopTime;
+    // const loopDelta = loopStart - lastLoopTime;
     lastLoopTime = loopStart;
 
     // --- Game logic ---
@@ -184,11 +183,11 @@ export function startRoomLoop(room: Room) {
     }
 
     // --- PERFORMANCE METRICS ---
-    const loopEnd = performance.now();
-    const frameTime = loopEnd - loopStart;
+    // const loopEnd = performance.now();
+    // const frameTime = loopEnd - loopStart;
 
-    const memory = process.memoryUsage();
-    const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
+    // const memory = process.memoryUsage();
+    // const cpu = os.loadavg(); // system load over 1, 5, 15 minutes
 
     //if (Math.random() < 0.05) {
     // log ~5% of frames to avoid spamming

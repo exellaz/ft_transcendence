@@ -1,4 +1,4 @@
-import { Point2D, Vector2D } from "./Coordinates.ts";
+import { Vector2D } from "./Coordinates.ts";
 import { Glow } from "./Glow.ts";
 import { Component } from "./Component.ts";
 import { Viewport } from "./Viewport.ts";
@@ -84,7 +84,7 @@ export class Sprite extends Component {
     if (this.imagePath instanceof HTMLImageElement) this.image = this.imagePath;
     else if (ctx) {
       ctx.save();
-      let img = new Image();
+      const img = new Image();
       if (this.imagePath) img.src = this.imagePath;
       else img.src = "#ffffff";
       this.image.src = img.src;
@@ -154,7 +154,7 @@ export function drawImg(
   }
 
   // World position of host
-  const worldPos = sprite.host!.getWorldPosition();
+  // const worldPos = sprite.host!.getWorldPosition();
   const rotation = sprite.host!.rotation || 0;
   const scale = sprite.host!.scale || { x: 1, y: 1 };
   const position = sprite.host!.toScreenPosition(viewport);
