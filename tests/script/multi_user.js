@@ -1,5 +1,5 @@
 // multi-login.js
-const { chromium } = require("playwright");
+const { chromium, firefox } = require("playwright");
 
 (async () => {
   const APP_URL = "https://localhost:5173";
@@ -27,8 +27,8 @@ const { chromium } = require("playwright");
   for (let i = 0; i < TOTAL_TABS; i++) {
     const { identifier, password } = USERS[i % USERS.length];
 
-    const browser = await chromium.launch({
-      executablePath: "/opt/google/chrome/chrome",
+    const browser = await firefox.launch({
+    //  executablePath: "/opt/google/chrome/chrome",
       ignoreHTTPSErrors: true,
       headless: false,
     });

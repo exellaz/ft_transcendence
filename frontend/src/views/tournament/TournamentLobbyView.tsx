@@ -35,11 +35,18 @@ const TournamentLobbyView: React.FC = () => {
   //  console.log("Tournament ID:", tournamentId); ////debug
   //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
+  // for remove the session storage reloading flag
+  React.useEffect(() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+      sessionStorage.removeItem("reloading");
+    }
+  }, []);
+
   // Redirect to main menu if no location state
   React.useEffect(() => {
     if (!location.state || !location.state.tournament) {
       console.warn("Unauthorized tournament access - missing required data");
-      navigate("/main-menu", { replace: true });
+      navigate("/main-menu");
     }
   }, [location.state, navigate]);
 
@@ -109,14 +116,6 @@ const TournamentLobbyView: React.FC = () => {
       sessionStorage.setItem("tournamentId", paramTournamentId);
     }
   }, [paramTournamentId]);
-
-  // prevent player from reloading the page
-  React.useEffect(() => {
-    if (sessionStorage.getItem("reloading") !== null) {
-      sessionStorage.removeItem("reloading");
-      navigate("/main-menu");
-    }
-  }, []);
 
   //navigate to match when start tournament
   React.useEffect(() => {

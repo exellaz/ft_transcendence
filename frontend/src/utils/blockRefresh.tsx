@@ -22,33 +22,17 @@ export function useBlockLeave() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "";
-      sessionStorage.setItem("reloading", "yes"); // Set a flag in sessionStorage
+      sessionStorage.setItem("reloading", "yes");
     };
 
-    // Prevent back/forward by pushing a history entry and restoring it on popstate.
-    // Note: this doesn't "disable" the buttons — it makes simple back/forward navigation return here.
-    const pushState = () => {
-      try {
-        history.pushState(null, document.title, window.location.href);
-      } catch {
-        // some environments may restrict pushState
-      }
+    // Handle back/forward button - no navigation allowed
+    const onPopState = () => {
+      console.log("Popstate detected - preventing navigation");
+      // Push the current page back onto the history stack so that the user stays on the same page
+      window.history.pushState(window.history.state, "", window.location.href);
     };
-
-    const onPopState = (e: PopStateEvent) => {
-      // restore the blocked state by re-pushing a history entry.
-      // setTimeout works around timing/ordering differences in Firefox.
-      setTimeout(() => {
-        try {
-          pushState();
-        } catch {
-          // ignore
-        }
-      }, 0);
-    };
-
-    // initialize
-    pushState();
+    //initialize history to current page when first loaded
+    window.history.pushState(window.history.state, "", window.location.href);
 
     window.addEventListener("keydown", keyHandler);
     window.addEventListener("contextmenu", disableContextMenu);

@@ -35,6 +35,17 @@ const MatchView: React.FC = () => {
     }
   }, []);
 
+  React.useEffect(() => {
+    if (roomId === undefined || initialPlayers === undefined) {
+      console.warn("Unauthorized match access - missing required data");
+      navigate("/main-menu");
+    }
+  }, [roomId, initialPlayers, navigate]);
+
+  if (roomId === undefined || initialPlayers === undefined) {
+    return null;
+  }
+
   // Fetch user info
   React.useEffect(() => {
     if (!user) return;
