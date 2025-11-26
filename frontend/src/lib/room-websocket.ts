@@ -320,6 +320,7 @@ export function useRoomWebSocket(
       setRoomError("offline_error");
       return;
     }
+    if (countdown !== null) return;
     if (ready && !isLeader) return;
     const newSide = role.startsWith("left") ? "right" : "left";
     socketRef.current.send(

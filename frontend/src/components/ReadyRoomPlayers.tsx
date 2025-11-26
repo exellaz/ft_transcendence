@@ -11,6 +11,7 @@ interface ReadyRoomPlayersProps {
   onSwitchTeam?: () => void;
   userId: number;
   onSelect: (id: number) => void;
+  countdownStarted?: boolean;
 }
 
 // Component to display players in ready room with team switch functionality
@@ -20,6 +21,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
   onSwitchTeam,
   userId,
   onSelect,
+  countdownStarted = false,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ReadyRoomPlayers.${key}`);
@@ -132,10 +134,10 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
         <div
           className={`
             rounded-full absolute -top-1 left-1/2 transform -translate-x-1/2
-            ${isReady && !isLeader ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
+            ${(isReady && !isLeader) || countdownStarted ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-400 cursor-pointer"}
           `}
           onClick={() => {
-            if (!isReady || isLeader) {
+            if ((!isReady || isLeader) && !countdownStarted) {
               onSwitchTeam?.();
             }
           }}
@@ -143,7 +145,7 @@ const ReadyRoomPlayers: React.FC<ReadyRoomPlayersProps> = ({
           <img
             className={`
               h-10 transition-all duration-200
-              ${isReady && !isLeader ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
+              ${(isReady && !isLeader) || countdownStarted ? "opacity-50" : "cursor-pointer hover:scale-110 active:scale-95"}
             `}
             src="/assets/switch.png"
             alt="Switch Teams"

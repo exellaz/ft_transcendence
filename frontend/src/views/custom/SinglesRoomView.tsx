@@ -335,6 +335,7 @@ const SinglesRoomView: React.FC = () => {
                     players={players}
                     onSwitchTeam={onSwitch}
                     onSelect={setSelectedId}
+                    countdownStarted={countdown !== null}
                   />
                   <div className="flex-row-center gap-6">
                     {/* Ready button (not for leader) */}

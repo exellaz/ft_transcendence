@@ -10,7 +10,6 @@ COPY nginx.conf /etc/nginx/nginx.conf.template
 COPY scripts/ /scripts/
 RUN chmod +x /scripts/generate-certs.sh /scripts/entrypoint.sh
 
-# Expose ports
 EXPOSE 80 443
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
