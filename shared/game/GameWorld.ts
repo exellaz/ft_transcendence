@@ -1,10 +1,8 @@
-import { Point2D, Vector2D } from "../objects/Coordinates.ts";
 import { GameObject } from "../objects/GameObject.ts";
 import type { Camera } from "../objects/Camera.ts";
 import { Viewport } from "../objects/Viewport.ts";
 import { HitBox } from "../objects/HitBox.ts";
 import { PeriodicTimer, Timer } from "../objects/Timer.ts";
-import { Arrow } from "./Padel.ts";
 import { Component } from "@shared/objects/Component.ts";
 
 export class GameWorld {
@@ -111,7 +109,7 @@ export class GameWorld {
       )
         return;
 
-      let exportedObject = obj.export(includeStaticObjects);
+      const exportedObject = obj.export(includeStaticObjects);
 
       const componentIds = [];
       for (const [key, component] of obj.components) {

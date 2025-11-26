@@ -75,8 +75,7 @@ export function useGameWebSocket({
     //console.log("Game ws connecting with JWT:", userJWT); ////debug
 
     const ws = new WebSocket(
-      import.meta.env.VITE_WS_URL +
-        `/ws-game?room=${roomId}&side=${initialRole}&sprite=${encodeURIComponent(playerSprite ?? "")}`,
+      `/ws-game?room=${roomId}&side=${initialRole}&sprite=${encodeURIComponent(playerSprite ?? "")}`,
       [userJWT],
     );
     socketRef.current = true;

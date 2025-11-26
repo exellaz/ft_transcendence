@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { ok, ApiError } from "../../../utils/response";
-import { BlockedFriendship, FriendshipStatus, Prisma } from "@prisma/client";
+import { FriendshipStatus, Prisma } from "@prisma/client";
 import { userPublicSelect } from "../../users/users.select";
 import { getAcceptedFriends } from "./friendship.service";
 import {

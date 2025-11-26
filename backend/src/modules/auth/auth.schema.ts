@@ -5,7 +5,6 @@ import {
   successResponseSchema,
 } from "src/utils/common-schemas.";
 import { userResponseSchema } from "../users/users.schema";
-import { error } from "console";
 
 // POST /auth/register
 export const postUserRegisterSchema = {

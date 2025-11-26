@@ -4,26 +4,12 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
-import fs from "fs";
-
-const domainName = process.env.DOMAIN_NAME || "localhost";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    https: {
-      key: fs.readFileSync(path.join("/app/certs", `${domainName}.key`)),
-      cert: fs.readFileSync(path.join("/app/certs", `${domainName}.crt`)),
-    },
-    proxy: {
-      "/ws": {
-        target: "wss://localhost:4242",
-        ws: true,
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    // HTTPS disabled - NGINX handles SSL termination
     fs: {
       allow: [".."], // allow Vite to access ../shared
     },
@@ -34,7 +20,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"), // so "@/views/GameView" works
-      "@shared": path.resolve(__dirname, "../shared"), // 👈 add this
+      "@shared": path.resolve(__dirname, "../shared"),
     },
   },
 });

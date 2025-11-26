@@ -2,8 +2,6 @@ FROM node:22
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-
 # copy first to let Docker cache dependencies separately
 COPY package.json package-lock.json* ./
 
@@ -11,7 +9,7 @@ RUN npm install
 
 COPY . .
 COPY scripts/ ./scripts/
-RUN chmod +x ./scripts/generate-certs.sh ./scripts/entrypoint.sh
+RUN chmod +x ./scripts/entrypoint.sh
 
 EXPOSE 3000
 # Creates a new migration file if schema and DB differ.

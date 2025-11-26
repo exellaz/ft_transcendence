@@ -13,7 +13,6 @@ import { Ball } from "./ball.ts";
 import { GameWorld } from "./GameWorld.ts";
 import { Padel } from "./Padel.ts";
 import { Player } from "./Player.ts";
-import { Skin } from "./Skins.ts";
 
 export type MapType = "stadium" | "mansion" | "arcade";
 
@@ -22,7 +21,6 @@ export enum Team {
   TEAM_RIGHT = 1,
 }
 const paddleOffset = 250;
-const paddleDistance = 400;
 const goalMargin = 200;
 const paddleDistanceFromCenter = 400;
 
@@ -41,7 +39,7 @@ export class GameTeam {
     public team: number,
   ) {
     // precompute player positions
-    for (var i = 0; i < game.gameSettings!.playerCount; i++) {
+    for (let i = 0; i < game.gameSettings!.playerCount; i++) {
       this.playerPositions.push(
         new Point2D(
           team === Team.TEAM_LEFT
@@ -325,7 +323,7 @@ export class PongGame {
   }
 
   exportState(includeStaticObjects: boolean = false) {
-    let state = this.world.exportState(includeStaticObjects);
+    const state = this.world.exportState(includeStaticObjects);
     state["type"] = includeStaticObjects ? "full" : "partial";
     if (!includeStaticObjects) delete state["components"];
 

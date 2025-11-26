@@ -51,7 +51,7 @@ export class Label extends GameObject {
 
     if (this.outline) ctx.strokeStyle = this.outline.strokeStyle;
 
-    let fontSize = parseInt(this.font, 10) || 20;
+    const fontSize = parseInt(this.font, 10) || 20;
 
     ctx.lineWidth = fontSize * 0.15;
 

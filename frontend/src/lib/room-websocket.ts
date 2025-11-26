@@ -91,11 +91,9 @@ export function useRoomWebSocket(
       // create websocket connection with player id, room id, side and player name
       const chooseSide = await determineSide(roomId);
       //  console.log("ws side:", chooseSide); ////debug
-      const ws = new WebSocket(
-        import.meta.env.VITE_WS_URL +
-          `/ws-room?room=${roomId}&side=${chooseSide}`,
-        [userJWT],
-      );
+      const ws = new WebSocket(`/ws-room?room=${roomId}&side=${chooseSide}`, [
+        userJWT,
+      ]);
       socketRef.current = ws;
 
       ws.addEventListener("open", () => {
@@ -322,6 +320,7 @@ export function useRoomWebSocket(
       setRoomError("offline_error");
       return;
     }
+    if (countdown !== null) return;
     if (ready && !isLeader) return;
     const newSide = role.startsWith("left") ? "right" : "left";
     socketRef.current.send(

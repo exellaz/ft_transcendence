@@ -1,7 +1,6 @@
-import { Vector2D } from "./Coordinates.ts";
 import { Component } from "./Component.ts";
 import type { Viewport } from "./Viewport.ts";
-import { exportCleanup, type GameObject } from "./GameObject.ts";
+import { exportCleanup } from "./GameObject.ts";
 
 export class HitBox extends Component {
   isColliding: boolean = false;

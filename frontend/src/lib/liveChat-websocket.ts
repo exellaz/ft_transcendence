@@ -26,9 +26,7 @@ export function useLiveChatWebSocket(
     if (socketRef.current) return; // already connected
 
     // create websocket connection with room id
-    const ws = new WebSocket(
-      import.meta.env.VITE_WS_URL + `/ws-chat?room=${roomId}`,
-    );
+    const ws = new WebSocket(`/ws-chat?room=${roomId}`);
     socketRef.current = ws;
 
     ws.addEventListener("open", () => {

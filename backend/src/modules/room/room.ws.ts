@@ -13,7 +13,6 @@ import {
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
 import { tournaments } from "../../modules/tournament/tournament.routes";
-import { match } from "assert";
 
 const wsHandler = new WebSocketHandler();
 const matchCountdowns = new Map<number, NodeJS.Timeout>();
@@ -44,13 +43,13 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
       let player: PlayerRole | null = null;
       let expectingPong = true;
       let pongTimer: NodeJS.Timeout | null = null;
-      let isConnectionClosed = false;
+      // let isConnectionClosed = false;
       const HANDSHAKE_MS = 1500; // 1.5 seconds
       // heartbeat helper (will be created after handshake completes)
       let hb: ReturnType<typeof createAppHeartbeat> | null = null;
 
       function cleanupTimer() {
-        isConnectionClosed = true;
+        // isConnectionClosed = true;
 
         try {
           if (pongTimer) clearTimeout(pongTimer);

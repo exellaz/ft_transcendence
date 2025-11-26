@@ -31,6 +31,7 @@ const MatchView: React.FC = () => {
   React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
       sessionStorage.removeItem("reloading");
+      navigate("/main-menu");
     }
   }, []);
 

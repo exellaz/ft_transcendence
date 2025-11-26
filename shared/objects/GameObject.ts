@@ -1,12 +1,11 @@
 import { Point2D, Vector2D } from "./Coordinates.ts";
-import { type Renderable, Sprite } from "./Sprite.ts";
+import { Sprite } from "./Sprite.ts";
 import type { PongGame } from "../game/pong.ts";
 import type { Viewport } from "./Viewport.ts";
 import { Component } from "./Component.ts";
-import { HitBox } from "./HitBox.ts";
 import { clientScripts } from "../game/clientScripts.ts";
 
-const RenderableMarker = Symbol("Renderable");
+// const RenderableMarker = Symbol("Renderable");
 
 function ownsProperty(obj: object, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key);

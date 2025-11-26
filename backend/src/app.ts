@@ -24,29 +24,10 @@ import multipart from "@fastify/multipart";
 import avatarUploadStaticPlugin from "./plugins/avatar-upload";
 import assetsStaticPlugin from "./plugins/assets.static";
 import { twoFactorRoutes } from "./modules/twoFactor/twoFactor.routes";
-import fs from "fs";
-import path from "path";
 
 const createApp = (): FastifyInstance => {
-  const httpsEnabled = process.env.HTTPS_ENABLED === "true";
-
-  if (httpsEnabled) {
-    console.log("Creating HTTPS Fastify instance...");
-
-    const domainName = process.env.DOMAIN_NAME || "localhost";
-    const httpsOptions = {
-      key: fs.readFileSync(path.join("/app/certs", `${domainName}.key`)),
-      cert: fs.readFileSync(path.join("/app/certs", `${domainName}.crt`)),
-    };
-
-    return Fastify({
-      logger: false,
-      https: httpsOptions,
-    });
-  } else {
-    console.log("Creating HTTP Fastify instance...");
-    return Fastify({ logger: true });
-  }
+  console.log("Creating HTTP Fastify instance...");
+  return Fastify({ logger: true });
 };
 
 const app: FastifyInstance = createApp();
