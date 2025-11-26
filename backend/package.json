@@ -4,10 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "npx nodemon --watch src --exec tsx src/server.ts",
-    "dev2": "nodemon --watch src --exec ts-node src/loginApp.ts",
     "build": "tsc -b",
-    "start": "node dist/server.js",
-    "start2": "node dist/app.js"
+    "start": "node dist/server.js"
   },
   "allowImportingTsExtensions": true,
   "dependencies": {

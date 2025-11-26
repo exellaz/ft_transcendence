@@ -16,14 +16,6 @@ export default defineConfig({
       key: fs.readFileSync(path.join("/app/certs", `${domainName}.key`)),
       cert: fs.readFileSync(path.join("/app/certs", `${domainName}.crt`)),
     },
-    proxy: {
-      "/ws": {
-        target: "wss://localhost:4242",
-        ws: true,
-        changeOrigin: true,
-        secure: false,
-      },
-    },
     fs: {
       allow: [".."], // allow Vite to access ../shared
     },
