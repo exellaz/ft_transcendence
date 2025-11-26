@@ -132,16 +132,16 @@ export class GameClient {
   sendData(type: string, payload: Record<string, any> = {}) {
     if (this.websocketRef?.readyState === WebSocket.OPEN) {
       const msg = JSON.stringify({ type, payload });
-      console.log("[game] sending data", {
-        type,
-        payload,
-        socketState: this.websocketRef.readyState,
-      }); ////debug
+    //  console.log("[game] sending data", {
+    //    type,
+    //    payload,
+    //    socketState: this.websocketRef.readyState,
+    //  }); ////debug
       try {
         this.websocketRef.send(msg);
-        console.log("[game] data sent successfully"); ////debug
+        //console.log("[game] data sent successfully"); ////debug
       } catch (err) {
-        console.error("[game] failed to send data:", err); ////debug
+        //console.error("[game] failed to send data:", err); ////debug
       }
     } else {
       console.warn(
@@ -249,9 +249,9 @@ export class GameClient {
 
       //check for handshakePing
       if (data.type === "handshakePing") {
-        console.log("[game] 📤 received handshakePing, sending handshakePong"); ////debug
+        //console.log("[game] 📤 received handshakePing, sending handshakePong"); ////debug
         this.sendData("handshakePong");
-        console.log("[game] 📤 Sending ready after handshakePong");
+        //console.log("[game] 📤 Sending ready after handshakePong");
         this.sendData("ready");
         return;
       }

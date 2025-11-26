@@ -6,7 +6,7 @@ const { chromium, firefox } = require("playwright");
   const room_list = "https://localhost:5173/roomList";
   const LOGIN_PATH = "/login";
   const SUCCESS_PATH = "/main-menu";
-  const TOTAL_TABS = 2;
+  const TOTAL_TABS = 4;
 
   const USERS = [
     { identifier: "username1", password: "Password1" },
@@ -27,7 +27,7 @@ const { chromium, firefox } = require("playwright");
   for (let i = 0; i < TOTAL_TABS; i++) {
     const { identifier, password } = USERS[i % USERS.length];
 
-    const browser = await firefox.launch({
+    const browser = await chromium.launch({
       //  executablePath: "/opt/google/chrome/chrome",
       ignoreHTTPSErrors: true,
       headless: false,

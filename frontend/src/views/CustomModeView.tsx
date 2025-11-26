@@ -58,8 +58,8 @@ const CustomModeView: React.FC = () => {
       teamSize === 1 ? "Singles Room" : "Doubles Room",
       { leaderId: user.id, isPrivate },
     );
-    console.log("user id: ", typeof user?.id); ////debug
-    console.log("private room:", room); //// debug
+    //console.log("user id: ", typeof user?.id); ////debug
+    //console.log("private room:", room); //// debug
     if (room) {
       // always handle both id and roomId
       const roomIdToUse = room.id || room.roomId;
@@ -75,7 +75,7 @@ const CustomModeView: React.FC = () => {
     if (!user) return;
     //find a public room that is not full and not started
     const rooms = await fetchRooms();
-    console.log("all rooms:", rooms); //// debug
+    //console.log("all rooms:", rooms); //// debug
     let room = rooms.find(
       (r: listRoomsResponse) =>
         r.teamSize === teamSize &&

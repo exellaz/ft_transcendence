@@ -85,7 +85,7 @@ const TournamentLobbyView: React.FC = () => {
 
   // Fetch user info when the component mounts
   React.useEffect(() => {
-    console.log("TournamentLobbyView init:", { user, tournamentId }); ////debug
+    //console.log("TournamentLobbyView init:", { user, tournamentId }); ////debug
 
     //use context user if available
     if (user) {
@@ -94,7 +94,7 @@ const TournamentLobbyView: React.FC = () => {
         try {
           const response = await getUserById({ id: Number(user.id) }); // Call the API
           if (response.success && response.data) {
-            console.log("Fetched user info:", response.data); ////debug
+            //console.log("Fetched user info:", response.data); ////debug
             setUserinfo(response.data); // Store the user info
           }
         } catch (err) {
@@ -134,7 +134,7 @@ const TournamentLobbyView: React.FC = () => {
   //update players list when websocket data change
   React.useEffect(() => {
     if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
-      console.log("Updating players list:", currentPlayer); ////debug
+    //  console.log("Updating players list:", currentPlayer); ////debug
       setPlayers(currentPlayer);
     }
   }, [currentPlayer]);

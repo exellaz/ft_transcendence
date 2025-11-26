@@ -54,7 +54,7 @@ const MatchView: React.FC = () => {
         if (response.success && response.data) {
           setUserinfo(response.data);
         } else {
-          console.log("Failed to fetch user info");
+        //  console.log("Failed to fetch user info");
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
@@ -91,10 +91,10 @@ const MatchView: React.FC = () => {
 
   // navigate to /game when match room is ready
   React.useEffect(() => {
-    console.log("[MatchView] roomReady changed:", roomReady);
+    //console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
     sessionStorage.setItem("playerSprite", playerSprite);
-    console.log("[MatchView] navigating to /game");
+    //console.log("[MatchView] navigating to /game");
     navigate("/game", {
       state: {
         roomId: roomId,

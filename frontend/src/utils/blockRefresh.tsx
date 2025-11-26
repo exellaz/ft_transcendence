@@ -29,7 +29,6 @@ export function useBlockLeave() {
     //initialize history to current page when first loaded
     window.history.pushState(window.history.state, "", window.location.href);
     const onPopState = (e: PopStateEvent) => {
-      console.log("Popstate detected - preventing navigation");
       e.preventDefault();
       // Push the current page back onto the history stack so that the user stays on the same page
       window.history.pushState(window.history.state, "", window.location.href);

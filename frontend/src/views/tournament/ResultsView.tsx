@@ -14,7 +14,7 @@ const ResultsView: React.FC = () => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ResultsView.${key}`);
   const navigate = useNavigate();
-  console.log("ResultsView location.state:", location.state); ////debug
+//  console.log("ResultsView location.state:", location.state); ////debug
 
   const rankingData: Record<
     number,

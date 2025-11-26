@@ -80,17 +80,17 @@ export function useRoomWebSocket(
       //get JWT
       const userJWT = localStorage.getItem("authToken");
       if (!userJWT) return;
-      console.log("Room ws connecting with JWT:", userJWT); ////debug
+    //  console.log("Room ws connecting with JWT:", userJWT); ////debug
 
       // pick role (leader gets left_player1)
       const roleLocal = player.id === leaderId ? "left_player1" : "spectator";
-      console.log("Assigned role:", roleLocal); ////debug
+    //  console.log("Assigned role:", roleLocal); ////debug
       setRole(roleLocal);
       setIsLeader(player.id === leaderId);
 
       // create websocket connection with player id, room id, side and player name
       const chooseSide = await determineSide(roomId);
-      console.log("ws side:", chooseSide); ////debug
+    //  console.log("ws side:", chooseSide); ////debug
       const ws = new WebSocket(
         import.meta.env.VITE_WS_URL +
           `/ws-room?room=${roomId}&side=${chooseSide}`,
@@ -99,7 +99,7 @@ export function useRoomWebSocket(
       socketRef.current = ws;
 
       ws.addEventListener("open", () => {
-        console.log("Room ws connected"); ////debug
+        //console.log("Room ws connected"); ////debug
       });
 
       ws.addEventListener("error", (e) => {
@@ -107,10 +107,10 @@ export function useRoomWebSocket(
         ws.close(1000, "websocket error");
       });
 
-      ws.addEventListener("close", (ev) => {
-        console.log(
-          `Room ws disconnected: code=${ev.code}, reason=${ev.reason}`,
-        );
+      ws.addEventListener("close", () => {
+        //console.log(
+        //  `Room ws disconnected: code=${ev.code}, reason=${ev.reason}`,
+        //);
         setRoomError("offline_error");
         setCanStart(false);
         setReady(false);
@@ -124,13 +124,13 @@ export function useRoomWebSocket(
           try {
             data = JSON.parse(ev.data);
           } catch {
-            console.error("Invalid JSON:", ev.data);
+            //console.error("Invalid JSON:", ev.data);
             return;
           }
 
           // receive handshake ping from server and send pong back (this is to stimulate the heartbeat show that player is online)
           if (data && data.type === "handshakePing") {
-            console.log("[room-websocket] received handshakePing"); ////debug
+            //console.log("[room-websocket] received handshakePing"); ////debug
             ws.send(
               JSON.stringify({ type: "handshakePong", clientId: player.id }),
             );
@@ -138,9 +138,9 @@ export function useRoomWebSocket(
           }
           // recieve heartbeat from server and send ack back
           if (data && data.type === "heartbeat") {
-            console.log(
-              `[room.ws] received heartbeat, sending returnHeartbeat client=${player.id}`,
-            ); ////debug
+            //console.log(
+            //  `[room.ws] received heartbeat, sending returnHeartbeat client=${player.id}`,
+            //); ////debug
             ws.send(
               JSON.stringify({ type: "returnHeartbeat", clientId: player.id }),
             );
@@ -157,11 +157,11 @@ export function useRoomWebSocket(
 
           // validate message structure
           if (typeof data !== "object" || data === null) {
-            console.error("Invalid message format");
+            //console.error("Invalid message format");
             return;
           }
           if (typeof data.type !== "string") {
-            console.error("Invalid message: missing type:", data);
+            //console.error("Invalid message: missing type:", data);
             return;
           }
           const allowedTypes = [
@@ -174,7 +174,7 @@ export function useRoomWebSocket(
           ];
           if (!allowedTypes.includes(data.type)) {
             if (data.type === "chat") return;
-            console.error(`unsupported message type ${data.type}`);
+            //console.error(`unsupported message type ${data.type}`);
             return;
           }
 
@@ -190,26 +190,26 @@ export function useRoomWebSocket(
             //console.log("Right Team info:", data.gameState.teams.right);
             const leftPlayer = data.gameState.teams.left.find(
               (p: playerInfo) => {
-                console.log(
-                  "Left Player info:",
-                  p.clientId,
-                  typeof p.clientId,
-                  player.id,
-                  typeof player.id,
-                );
+                //console.log(
+                //  "Left Player info:",
+                //  p.clientId,
+                //  typeof p.clientId,
+                //  player.id,
+                //  typeof player.id,
+                //);
                 return p.clientId === player.id;
               },
             );
-            console.log("Left Player found:", leftPlayer);
+            //console.log("Left Player found:", leftPlayer);
             const rightPlayer = data.gameState.teams.right.find(
               (p: playerInfo) => {
-                console.log(
-                  "Right Player info:",
-                  p.clientId,
-                  typeof p.clientId,
-                  player.id,
-                  typeof player.id,
-                );
+                //console.log(
+                //  "Right Player info:",
+                //  p.clientId,
+                //  typeof p.clientId,
+                //  player.id,
+                //  typeof player.id,
+                //);
                 return p.clientId === player.id;
               },
             );
@@ -242,11 +242,11 @@ export function useRoomWebSocket(
             );
             // update player leader
             if (data.leaderId) {
-              console.log(
-                "Updating leader status:",
-                typeof player.id,
-                typeof data.leaderId,
-              );
+            //  console.log(
+            //    "Updating leader status:",
+            //    typeof player.id,
+            //    typeof data.leaderId,
+            //  );
               setIsLeader(player.id === data.leaderId);
             }
             // update can start status
@@ -280,7 +280,7 @@ export function useRoomWebSocket(
             setRoomInfo((prev) =>
               prev ? { ...prev, ...data.data } : data.data,
             );
-            console.log("Room privacy updated:", data.data); ////debug
+            //console.log("Room privacy updated:", data.data); ////debug
           }
           if (data.type === "playerOffline") {
             const goneId = data.clientId;

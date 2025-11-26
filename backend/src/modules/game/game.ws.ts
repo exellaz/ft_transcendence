@@ -4,8 +4,6 @@ import { Player } from "@shared/game/Player.ts";
 import { handlePlayerDisconnect } from "src/utils/utils.ts";
 import { FastifyInstance, FastifyRequest } from "fastify";
 import WebSocket from "ws";
-import { clear } from "console";
-import { roomEndGame } from "../room/room";
 
 function closeSocket(socket: WebSocket, statusCode: number, errorMsg: string) {
   socket.close(1003, errorMsg);
@@ -73,7 +71,6 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const HANDSHAKE_MS = 2000;
 
       // ✅ Check BOTH dummy AND disconnected offline opponents
-      const playerRole = room.clientRoles.get(clientId);
       const opponentTeam = side === "left" ? "right" : "left";
       const opponentPlayers = room.gameState.teams[opponentTeam];
 
@@ -81,36 +78,14 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
       const hasOfflineOpponent =
         opponentPlayers?.some((p) => !p.online) || false;
       const offlinePlayer = opponentPlayers?.find((p) => !p.online);
-      //try {
-      //    socket.send(JSON.stringify({ type: "handshakePing"}));
-      //    handshakeTimer = setTimeout(() => {
-      //        if (expectingHandshake) {
-      //            console.log(`[game websocket] Handshake pong NOT received in time from clientId=${clientId}, closing socket`);
-      //            try {
-      //                if (handshakeTimer) clearTimeout(handshakeTimer);
-      //            } catch {
-      //                console.log("failed to clear handshake timer");
-      //            }
-      //            closeSocket(socket, 1003, "Handshake timeout");
-      //        }
-      //    }, HANDSHAKE_MS);
-      //} catch (err) {
-      //    console.error("Failed to send handshake ping:", err);
-      //    try {
-      //        if (handshakeTimer) clearTimeout(handshakeTimer);
-      //    } catch {
-      //        console.log("failed to clear handshake timer");
-      //    }
-      //    closeSocket(socket, 1011, "server error");
-      //    return;
-      //}
+
 
       socket.on("error", (err) => {
         console.error("ws backend error: ", err);
       });
 
       socket.on("message", (raw: WebSocket.Data) => {
-        console.log("Game WebSocket received:", raw.toString()); //// debug
+        //console.log("Game WebSocket received:", raw.toString()); //// debug
 
         try {
           let msg;
@@ -121,10 +96,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           }
 
           if (msg.type === "handshakePong") {
-            console.log(
-              "[game] ✅ Handshake pong received from clientId=",
-              clientId,
-            ); ////debug
+            //console.log(
+            //  "[game] ✅ Handshake pong received from clientId=",
+            //  clientId,
+            //); ////debug
             expectingHandshake = false;
             if (handshakeTimer) {
               clearTimeout(handshakeTimer);
@@ -134,7 +109,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           }
 
           if (expectingHandshake) {
-            console.log(`[game] ⚠️ Drop ${msg.type} from clientId=${clientId}`);
+            //console.log(`[game] ⚠️ Drop ${msg.type} from clientId=${clientId}`);
             return;
           }
 
@@ -166,7 +141,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           };
 
           if (msg.type === "ready") {
-            console.log("player added =>", clientId, msg); ////debug
+            //console.log("player added =>", clientId, msg); ////debug
 
             // Verify socket is still open
             if (socket.readyState !== WebSocket.OPEN) {
@@ -189,7 +164,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
             //ensure the socket is up to date
             room.sockets.set(socket, clientId);
 
-            console.log("concluding handshake =>", clientId); ////debug
+            //console.log("concluding handshake =>", clientId); ////debug
             socket.send(
               JSON.stringify({
                 type: "ready_ack",
@@ -244,7 +219,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
               }
             }
           } else if (msg.type === "fetch_world") {
-            console.log("requested for full world =>", clientId); ////debug
+            //console.log("requested for full world =>", clientId); ////debug
 
             const output = compile(room.game, true, room.setting);
             //   console.log(`compiled ${output.length} bytes`); ////debug
@@ -305,10 +280,10 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
           return;
         }
 
-        console.log(`[game] 📤 Sending handshake ping to clientId=${clientId}`);
+        //console.log(`[game] 📤 Sending handshake ping to clientId=${clientId}`);
         try {
           socket.send(JSON.stringify({ type: "handshakePing" }));
-          console.log(`[game] ✅ Handshake ping sent to clientId=${clientId}`);
+        //  console.log(`[game] ✅ Handshake ping sent to clientId=${clientId}`);
         } catch (err) {
           console.error(
             `[game] ❌Failed to send handshake ping to clientId=${clientId}:`,
@@ -332,93 +307,94 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
   );
 }
 
-export function createAppHeartbeat(
-  socket: WebSocket,
-  opts?: {
-    heartbeatMs?: number;
-    receiveTimeoutMs?: number;
-    maxMissed?: number;
-    closeCode?: number;
-    closeReason?: string;
-  },
-) {
-  const heartbeatMs = opts?.heartbeatMs ?? 1000;
-  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 10000;
-  const maxMissed = opts?.maxMissed ?? 3;
-  const closeCode = opts?.closeCode ?? 1003;
-  const closeReason = opts?.closeReason ?? "Heartbeat timeout";
+//export function createAppHeartbeat(
+//  socket: WebSocket,
+//  opts?: {
+//    heartbeatMs?: number;
+//    receiveTimeoutMs?: number;
+//    maxMissed?: number;
+//    closeCode?: number;
+//    closeReason?: string;
+//  },
+//) {
+//  const heartbeatMs = opts?.heartbeatMs ?? 1000;
+//  const receiveTimeoutMs = opts?.receiveTimeoutMs ?? 10000;
+//  const maxMissed = opts?.maxMissed ?? 3;
+//  const closeCode = opts?.closeCode ?? 1003;
+//  const closeReason = opts?.closeReason ?? "Heartbeat timeout";
 
-  let isAlive = true;
-  let missed = 0;
-  let interval: NodeJS.Timeout | null = null;
-  let receiveTimeout: NodeJS.Timeout | null = null;
+//  let isAlive = true;
+//  let missed = 0;
+//  let interval: NodeJS.Timeout | null = null;
+//  let receiveTimeout: NodeJS.Timeout | null = null;
 
-  function cleanupTimers() {
-    if (interval) {
-      clearInterval(interval);
-      interval = null;
-    }
-    if (receiveTimeout) {
-      clearTimeout(receiveTimeout);
-      receiveTimeout = null;
-    }
-  }
+//  function cleanupTimers() {
+//    if (interval) {
+//      clearInterval(interval);
+//      interval = null;
+//    }
+//    if (receiveTimeout) {
+//      clearTimeout(receiveTimeout);
+//      receiveTimeout = null;
+//    }
+//  }
 
-  function start() {
-    cleanupTimers();
-    isAlive = true;
-    missed = 0;
-    interval = setInterval(() => {
-      if (!isAlive) {
-        missed++;
-        if (missed >= maxMissed) {
-          cleanupTimers();
-          try {
-            socket.close(closeCode, closeReason);
-          } catch {}
-          return;
-        }
-      }
-      isAlive = false;
-      try {
-        console.log("sending heartbeat"); ////debug
-        socket.send(JSON.stringify({ type: "heartbeat" }));
-      } catch (err) {
-        cleanupTimers();
-        try {
-          socket.close(1011, "server error");
-        } catch {}
-        return;
-      }
-      if (receiveTimeout) clearTimeout(receiveTimeout);
-      receiveTimeout = setTimeout(() => {
-        // no ack within window -> treat as missed
-        if (!isAlive) {
-          missed++;
-          if (missed >= maxMissed) {
-            cleanupTimers();
-            try {
-              socket.close(closeCode, closeReason);
-            } catch {}
-          }
-        }
-      }, receiveTimeoutMs);
-    }, heartbeatMs);
-  }
+//  function start() {
+//    cleanupTimers();
+//    isAlive = true;
+//    missed = 0;
+//    interval = setInterval(() => {
+//      if (!isAlive) {
+//        missed++;
+//        if (missed >= maxMissed) {
+//          cleanupTimers();
+//          try {
+//            socket.close(closeCode, closeReason);
+//          } catch {}
+//          return;
+//        }
+//      }
+//      isAlive = false;
+//      try {
+//        console.log("sending heartbeat"); ////debug
+//        socket.send(JSON.stringify({ type: "heartbeat" }));
+//      } catch (err) {
+//        console.error("failed to send heartbeat:", err);
+//        cleanupTimers();
+//        try {
+//          socket.close(1011, "server error");
+//        } catch {}
+//        return;
+//      }
+//      if (receiveTimeout) clearTimeout(receiveTimeout);
+//      receiveTimeout = setTimeout(() => {
+//        // no ack within window -> treat as missed
+//        if (!isAlive) {
+//          missed++;
+//          if (missed >= maxMissed) {
+//            cleanupTimers();
+//            try {
+//              socket.close(closeCode, closeReason);
+//            } catch {}
+//          }
+//        }
+//      }, receiveTimeoutMs);
+//    }, heartbeatMs);
+//  }
 
-  function onAck() {
-    console.log("heartbeat ack received"); ////debug
-    isAlive = true;
-    missed = 0;
-    if (receiveTimeout) {
-      clearTimeout(receiveTimeout);
-      receiveTimeout = null;
-    }
-  }
+//  function onAck() {
+//    console.log("heartbeat ack received"); ////debug
+//    isAlive = true;
+//    missed = 0;
+//    if (receiveTimeout) {
+//      clearTimeout(receiveTimeout);
+//      receiveTimeout = null;
+//    }
+//  }
 
-  function stop() {
-    cleanupTimers();
-  }
+//  function stop() {
+//    cleanupTimers();
+//  }
 
-  return { start, stop, onAck };
-}
+//  return { start, stop, onAck };
+//}

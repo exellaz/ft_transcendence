@@ -115,9 +115,9 @@ export function startRoomLoop(room: Room) {
       if (socket.readyState === WebSocket.OPEN) {
         try {
           socket.send(JSON.stringify({ type: "gameStart" }));
-          console.log(
-            `[room] ✅ Sent gameStart to clientId=${clientId} (${index + 1}/${socketsArray.length}) after ${index * 400}ms`,
-          );
+        //  console.log(
+        //    `[room] ✅ Sent gameStart to clientId=${clientId} (${index + 1}/${socketsArray.length}) after ${index * 400}ms`,
+        //  );
         } catch (err) {
           console.error(
             `[room] ❌ Failed to send gameStart to clientId=${clientId}:`,
