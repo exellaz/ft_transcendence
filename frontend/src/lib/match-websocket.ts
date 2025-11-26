@@ -76,10 +76,7 @@ export function useMatchWebsocket(
     const key = `${roomId}-${player.id}`;
     let ws = matchWebsocket.get(key);
     if (!ws || ws.readyState === WebSocket.CLOSED) {
-      ws = new WebSocket(
-        `/ws-room?&room=${roomId}&side=unknown`,
-        [userJWT],
-      );
+      ws = new WebSocket(`/ws-room?&room=${roomId}&side=unknown`, [userJWT]);
       matchWebsocket.set(key, ws);
     }
     socketRef.current = ws;
