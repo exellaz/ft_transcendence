@@ -80,17 +80,17 @@ export function useRoomWebSocket(
       //get JWT
       const userJWT = localStorage.getItem("authToken");
       if (!userJWT) return;
-    //  console.log("Room ws connecting with JWT:", userJWT); ////debug
+      //  console.log("Room ws connecting with JWT:", userJWT); ////debug
 
       // pick role (leader gets left_player1)
       const roleLocal = player.id === leaderId ? "left_player1" : "spectator";
-    //  console.log("Assigned role:", roleLocal); ////debug
+      //  console.log("Assigned role:", roleLocal); ////debug
       setRole(roleLocal);
       setIsLeader(player.id === leaderId);
 
       // create websocket connection with player id, room id, side and player name
       const chooseSide = await determineSide(roomId);
-    //  console.log("ws side:", chooseSide); ////debug
+      //  console.log("ws side:", chooseSide); ////debug
       const ws = new WebSocket(
         import.meta.env.VITE_WS_URL +
           `/ws-room?room=${roomId}&side=${chooseSide}`,
@@ -242,11 +242,11 @@ export function useRoomWebSocket(
             );
             // update player leader
             if (data.leaderId) {
-            //  console.log(
-            //    "Updating leader status:",
-            //    typeof player.id,
-            //    typeof data.leaderId,
-            //  );
+              //  console.log(
+              //    "Updating leader status:",
+              //    typeof player.id,
+              //    typeof data.leaderId,
+              //  );
               setIsLeader(player.id === data.leaderId);
             }
             // update can start status

@@ -156,7 +156,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mode = sessionStorage.getItem("gameMode");
-//  console.log("mode use:", mode);
+  //  console.log("mode use:", mode);
 
   const { t } = useTranslation();
   const translate = (key: string) =>
@@ -185,7 +185,7 @@ const GameView: React.FC<GameViewProps> = () => {
   if (mode === "remote" || mode === "tournament") {
     // Fetch user info when the component mounts
     React.useEffect(() => {
-    //  console.log("mode used: ", mode);
+      //  console.log("mode used: ", mode);
 
       if (!user) return; // Ensure `user` is available
 
@@ -336,7 +336,7 @@ const GameView: React.FC<GameViewProps> = () => {
       if (lastTournamentId === null) return;
       if (gameOver && !isWinner) {
         const timer = setTimeout(() => {
-        //  console.log("loser back to lobby: ", lastTournamentId); ////debug
+          //  console.log("loser back to lobby: ", lastTournamentId); ////debug
           sessionStorage.removeItem("playerSide");
           sessionStorage.removeItem("RoomId");
           sessionStorage.removeItem("RoomLeaderId");
@@ -380,7 +380,7 @@ const GameView: React.FC<GameViewProps> = () => {
                 variant="bigYellow"
                 className="px-3 py-4 text-2xl"
                 onClick={() => {
-                //  console.log("loser back to lobby: ", lastTournamentId);
+                  //  console.log("loser back to lobby: ", lastTournamentId);
                   // close match socket (room) and tournament lobby socket (if present)
                   closeMatchWebsocket(roomId, clientId);
 
@@ -461,7 +461,7 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const settings = location.state?.gameSettings ?? {};
-    //  console.log("new game");
+      //  console.log("new game");
       const game = new PongGame(
         false,
         settings,

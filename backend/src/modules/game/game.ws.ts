@@ -79,7 +79,6 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         opponentPlayers?.some((p) => !p.online) || false;
       const offlinePlayer = opponentPlayers?.find((p) => !p.online);
 
-
       socket.on("error", (err) => {
         console.error("ws backend error: ", err);
       });
@@ -283,7 +282,7 @@ export default async function gameWsRoute(fastify: FastifyInstance) {
         //console.log(`[game] 📤 Sending handshake ping to clientId=${clientId}`);
         try {
           socket.send(JSON.stringify({ type: "handshakePing" }));
-        //  console.log(`[game] ✅ Handshake ping sent to clientId=${clientId}`);
+          //  console.log(`[game] ✅ Handshake ping sent to clientId=${clientId}`);
         } catch (err) {
           console.error(
             `[game] ❌Failed to send handshake ping to clientId=${clientId}:`,

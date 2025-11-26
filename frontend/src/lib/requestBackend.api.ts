@@ -87,7 +87,7 @@ export async function createRoomAPI(
   roomName: string,
   options?: { leaderId?: number; isPrivate?: boolean },
 ) {
-//  console.log("Creating room with:", { teamSize, roomName, options }); ////debug
+  //  console.log("Creating room with:", { teamSize, roomName, options }); ////debug
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",

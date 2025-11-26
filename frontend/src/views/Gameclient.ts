@@ -132,11 +132,11 @@ export class GameClient {
   sendData(type: string, payload: Record<string, any> = {}) {
     if (this.websocketRef?.readyState === WebSocket.OPEN) {
       const msg = JSON.stringify({ type, payload });
-    //  console.log("[game] sending data", {
-    //    type,
-    //    payload,
-    //    socketState: this.websocketRef.readyState,
-    //  }); ////debug
+      //  console.log("[game] sending data", {
+      //    type,
+      //    payload,
+      //    socketState: this.websocketRef.readyState,
+      //  }); ////debug
       try {
         this.websocketRef.send(msg);
         //console.log("[game] data sent successfully"); ////debug

@@ -41,13 +41,13 @@ export function closeTournamentWebsocket(
     }
   }
 
-//  console.log(
-//    "[tournament-websocket] close called for",
-//    tournamentId,
-//    playerId,
-//    "found ws:",
-//    !!ws,
-//  );
+  //  console.log(
+  //    "[tournament-websocket] close called for",
+  //    tournamentId,
+  //    playerId,
+  //    "found ws:",
+  //    !!ws,
+  //  );
   if (ws) {
     try {
       ws.close(1000, "Tournament closed");
@@ -303,10 +303,10 @@ export function useTournamentWebSocket({
     });
 
     ws.addEventListener("close", (ev) => {
-    //  console.log("Tournament WS disconnected", {
-    //    code: (ev as CloseEvent).code,
-    //    reason: (ev as CloseEvent).reason,
-    //  });
+      //  console.log("Tournament WS disconnected", {
+      //    code: (ev as CloseEvent).code,
+      //    reason: (ev as CloseEvent).reason,
+      //  });
 
       // ✅ Only show offline error if NOT transitioning
       const reason = (ev as CloseEvent).reason;
@@ -332,7 +332,7 @@ export function useTournamentWebSocket({
     });
 
     return () => {
-    //  console.log("Cleaning up tournament websocket");
+      //  console.log("Cleaning up tournament websocket");
       wsRef.current = null;
     };
   }, [tournamentId, player.id, player.username, player.avatarUrl]);

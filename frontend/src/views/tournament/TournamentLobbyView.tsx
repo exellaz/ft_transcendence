@@ -134,7 +134,7 @@ const TournamentLobbyView: React.FC = () => {
   //update players list when websocket data change
   React.useEffect(() => {
     if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
-    //  console.log("Updating players list:", currentPlayer); ////debug
+      //  console.log("Updating players list:", currentPlayer); ////debug
       setPlayers(currentPlayer);
     }
   }, [currentPlayer]);

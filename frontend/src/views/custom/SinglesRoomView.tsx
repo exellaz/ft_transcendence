@@ -102,7 +102,7 @@ const SinglesRoomView: React.FC = () => {
         if (response.success && response.data) {
           setUserInfo(response.data); // Store the user info
         } else {
-        //  console.log("Failed to fetch user info"); // Handle API error
+          //  console.log("Failed to fetch user info"); // Handle API error
         }
       } catch (err) {
         console.error("Error fetching user info:", err);

@@ -54,7 +54,7 @@ const MatchView: React.FC = () => {
         if (response.success && response.data) {
           setUserinfo(response.data);
         } else {
-        //  console.log("Failed to fetch user info");
+          //  console.log("Failed to fetch user info");
         }
       } catch (err) {
         console.error("Error fetching user info:", err);

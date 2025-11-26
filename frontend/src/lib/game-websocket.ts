@@ -95,7 +95,7 @@ export function useGameWebSocket({
     if (!isOffline) window.addEventListener("offline", handleOffline);
 
     ws.addEventListener("open", () => {
-    //  console.log("Game ws connected");
+      //  console.log("Game ws connected");
       setSocket(ws);
 
       //initialize GameClient
@@ -103,7 +103,7 @@ export function useGameWebSocket({
         //console.log("[game-websocket] Creating GameClient");
         try {
           gameClientRef.current = new GameClient(canvasRef.current, ws);
-        //  console.log("[game-websocket] GameClient created successfully");
+          //  console.log("[game-websocket] GameClient created successfully");
         } catch (err) {
           console.error("Error creating GameClient:", err);
         }
@@ -123,7 +123,7 @@ export function useGameWebSocket({
     });
 
     ws.addEventListener("close", (ev) => {
-    //  console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
+      //  console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
 
       // destroy GameClient when socket closes
       if (gameClientRef.current) {
@@ -149,10 +149,10 @@ export function useGameWebSocket({
         }
 
         if (msg.type === "ready_ack") {
-        //  console.log(
-        //    "ready acknowledged by server for clientId=",
-        //    msg.payload.clientId,
-        //  ); ////debug
+          //  console.log(
+          //    "ready acknowledged by server for clientId=",
+          //    msg.payload.clientId,
+          //  ); ////debug
           return;
         }
 
@@ -174,10 +174,10 @@ export function useGameWebSocket({
         }
 
         if (msg.type === "game_over") {
-        //  console.log(
-        //    "==================================================== Game over message received:",
-        //    msg,
-        //  ); //// debug
+          //  console.log(
+          //    "==================================================== Game over message received:",
+          //    msg,
+          //  ); //// debug
 
           // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
           const isTournamentRoom = roomId.toString().startsWith("1111");
@@ -208,9 +208,9 @@ export function useGameWebSocket({
                   (p: { clientId: number }) => p.clientId === clientId,
                 );
                 if (placement) {
-                //  console.log(
-                //    `winner [${clientId}] placement: ${placement.rank}`,
-                //  ); ////debug
+                  //  console.log(
+                  //    `winner [${clientId}] placement: ${placement.rank}`,
+                  //  ); ////debug
                   setWinnerRank(placement.rank);
                 }
                 ws.close(1000, "game over - winner");

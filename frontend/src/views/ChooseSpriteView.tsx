@@ -27,7 +27,7 @@ async function handleJoinTournament(
     (t: TournamentLobby) =>
       !t.lock && t.players.length < 8 && t.maxPlayer === 8,
   );
-//  console.log("Found tournament:", tournament);
+  //  console.log("Found tournament:", tournament);
 
   // 3. If no suitable tournament, create one
   if (!tournament) {

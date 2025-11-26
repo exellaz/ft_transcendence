@@ -85,7 +85,7 @@ export function useMatchWebsocket(
     socketRef.current = ws;
 
     ws.addEventListener("open", () => {
-        //console.log("[match-websocket] WebSocket connection opened")
+      //console.log("[match-websocket] WebSocket connection opened")
     });
 
     ws.addEventListener("error", (err) =>
@@ -99,7 +99,7 @@ export function useMatchWebsocket(
         try {
           data = JSON.parse(event.data);
         } catch {
-        //  console.error("Invalid JSON:", event.data);
+          //  console.error("Invalid JSON:", event.data);
           return;
         }
         //console.log("[match-websocket] received data:", data); ////debug
@@ -140,11 +140,11 @@ export function useMatchWebsocket(
 
         // validate message structure
         if (typeof data !== "object" || data === null) {
-        //  console.error("Invalid message format");
+          //  console.error("Invalid message format");
           return;
         }
         if (typeof data.type !== "string") {
-        //  console.error("Invalid message: missing type:", data);
+          //  console.error("Invalid message: missing type:", data);
           return;
         }
         const allowedTypes = [
@@ -156,7 +156,7 @@ export function useMatchWebsocket(
         ];
         if (!allowedTypes.includes(data.type)) {
           if (data.type === "chat") return;
-        //  console.error(`unsupported message type ${data.type}`);
+          //  console.error(`unsupported message type ${data.type}`);
           return;
         }
 
@@ -175,17 +175,17 @@ export function useMatchWebsocket(
           );
 
           const merged = [...left, ...right];
-        //  console.log("[match-websocket] normalized merged players:", merged); ////debug
+          //  console.log("[match-websocket] normalized merged players:", merged); ////debug
           setPlayers(merged);
         }
 
         if (data.type === "gameStart") {
-        //  console.log("[match-websocket] all players ready, game starting!"); ////debug
+          //  console.log("[match-websocket] all players ready, game starting!"); ////debug
           setRoomReady(true);
         }
 
         if (data.type === "matchCountdown") {
-        //  console.log("[match-websocket] matchCountdown:", data.remaining); ////debug
+          //  console.log("[match-websocket] matchCountdown:", data.remaining); ////debug
           setCountdown(data.remaining);
           if (data.remaining === 0) {
             setRoomReady(true);
@@ -193,7 +193,7 @@ export function useMatchWebsocket(
         }
 
         if (data.type === "matchCountdownCancel") {
-        //  console.log("[match-websocket] matchCountdownCancel"); ////debug
+          //  console.log("[match-websocket] matchCountdownCancel"); ////debug
           setCountdown(null);
         }
       } catch (err) {
@@ -204,23 +204,23 @@ export function useMatchWebsocket(
     });
 
     ws.addEventListener("close", () => {
-    //  console.log(
-    //    "[match-websocket] WebSocket connection closed for room",
-    //    roomId,
-    //    {
-    //      code: (ev as CloseEvent).code,
-    //      reason: (ev as CloseEvent).reason,
-    //      wasClean: (ev as CloseEvent).wasClean,
-    //    },
-    //  );
+      //  console.log(
+      //    "[match-websocket] WebSocket connection closed for room",
+      //    roomId,
+      //    {
+      //      code: (ev as CloseEvent).code,
+      //      reason: (ev as CloseEvent).reason,
+      //      wasClean: (ev as CloseEvent).wasClean,
+      //    },
+      //  );
       // remove closed socket from cache so next hook call will create a fresh socket
       if (matchWebsocket.get(key) === ws) matchWebsocket.delete(key);
     });
 
     return () => {
-    //  if (matchWebsocket.get(key) === ws) {
-        //console.log("Cleaning up websocket for room", roomId);
-    //  }
+      //  if (matchWebsocket.get(key) === ws) {
+      //console.log("Cleaning up websocket for room", roomId);
+      //  }
       socketRef.current = null;
     };
   }, [roomId, player.id, player.name, player.spriteUrl]);
