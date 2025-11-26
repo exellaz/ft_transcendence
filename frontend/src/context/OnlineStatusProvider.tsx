@@ -153,7 +153,7 @@ export const OnlineStatusProvider: React.FC<OnlineStatusProviderProps> = ({
   useEffect(() => {
     if (isAuthenticated === false) return;
 
-    const ws = new WebSocket(import.meta.env.VITE_WS_URL + `/online-status`, [
+    const ws = new WebSocket(`/online-status`, [
       token || "",
     ]);
     wsRef.current = ws;

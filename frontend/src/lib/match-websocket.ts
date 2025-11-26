@@ -77,7 +77,7 @@ export function useMatchWebsocket(
     let ws = matchWebsocket.get(key);
     if (!ws || ws.readyState === WebSocket.CLOSED) {
       ws = new WebSocket(
-        import.meta.env.VITE_WS_URL + `/ws-room?&room=${roomId}&side=unknown`,
+        `/ws-room?&room=${roomId}&side=unknown`,
         [userJWT],
       );
       matchWebsocket.set(key, ws);

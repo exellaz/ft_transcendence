@@ -92,8 +92,7 @@ export function useRoomWebSocket(
       const chooseSide = await determineSide(roomId);
       //  console.log("ws side:", chooseSide); ////debug
       const ws = new WebSocket(
-        import.meta.env.VITE_WS_URL +
-          `/ws-room?room=${roomId}&side=${chooseSide}`,
+        `/ws-room?room=${roomId}&side=${chooseSide}`,
         [userJWT],
       );
       socketRef.current = ws;

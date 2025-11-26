@@ -139,7 +139,7 @@ export function useTournamentWebSocket({
     let ws = tournamentWebsocket.get(key);
     if (!ws || ws.readyState === WebSocket.CLOSED) {
       ws = new WebSocket(
-        `${import.meta.env.VITE_WS_URL}/ws-tournament?id=${tournamentId}&sprite=${encodeURIComponent(player.avatarUrl)}`,
+        `/ws-tournament?id=${tournamentId}&sprite=${encodeURIComponent(player.avatarUrl)}`,
         [userJWT],
       );
       tournamentWebsocket.set(key, ws);
