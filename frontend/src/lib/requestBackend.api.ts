@@ -87,7 +87,7 @@ export async function createRoomAPI(
   roomName: string,
   options?: { leaderId?: number; isPrivate?: boolean },
 ) {
-  console.log("Creating room with:", { teamSize, roomName, options }); ////debug
+  //  console.log("Creating room with:", { teamSize, roomName, options }); ////debug
   try {
     const res = await fetch(`${API_URL}/create-room`, {
       method: "POST",
@@ -102,7 +102,7 @@ export async function createRoomAPI(
         isPrivate: options?.isPrivate ?? false,
       }),
     });
-    console.log("Create room response:", res); ////debug
+    //console.log("Create room response:", res); ////debug
     if (!res.ok) throw new Error("Failed to create room");
     return await res.json();
   } catch (error) {
@@ -245,7 +245,7 @@ export async function getTournamentById(tournamentId: number) {
     });
     if (!res.ok) throw new Error("Failed to fetch tournament");
     const data = await res.json();
-    console.log("fetch tournament: ", data);
+    //console.log("fetch tournament: ", data);
     return data;
   } catch (error) {
     console.error("Failed to fetch tournament:", error);

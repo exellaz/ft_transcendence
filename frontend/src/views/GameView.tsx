@@ -156,7 +156,7 @@ const GameView: React.FC<GameViewProps> = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const mode = sessionStorage.getItem("gameMode");
-  console.log("mode use:", mode);
+  //  console.log("mode use:", mode);
 
   const { t } = useTranslation();
   const translate = (key: string) =>
@@ -185,7 +185,7 @@ const GameView: React.FC<GameViewProps> = () => {
   if (mode === "remote" || mode === "tournament") {
     // Fetch user info when the component mounts
     React.useEffect(() => {
-      console.log("mode used: ", mode);
+      //  console.log("mode used: ", mode);
 
       if (!user) return; // Ensure `user` is available
 
@@ -195,7 +195,7 @@ const GameView: React.FC<GameViewProps> = () => {
           if (response.success && response.data) {
             setUserInfo(response.data); // Store the user info
           } else {
-            console.log("Failed to fetch user info"); // Handle API error
+            //console.log("Failed to fetch user info"); // Handle API error
           }
         } catch (err) {
           console.error("Error fetching user info:", err);
@@ -207,7 +207,7 @@ const GameView: React.FC<GameViewProps> = () => {
     React.useEffect(() => {
       function handleOnline() {
         setDelayForGameOver(false);
-        console.log("Player is back online");
+        //console.log("Player is back online");
       }
 
       function handleOffline() {
@@ -215,7 +215,7 @@ const GameView: React.FC<GameViewProps> = () => {
 
         setTimeout(() => {
           if (!navigator.onLine) {
-            console.log("player offline, navigate to main menu");
+            //console.log("player offline, navigate to main menu");
             setDisconnectMessage("offline_error");
             setRoomError(true);
           }
@@ -245,12 +245,12 @@ const GameView: React.FC<GameViewProps> = () => {
     const playerSprite =
       sessionStorage.getItem("playerSprite") || navState.player?.spriteUrl;
     const initialRole = sessionStorage.getItem("playerSide") || "";
-    console.log("room id from session:", roomId); ////debug
-    console.log("room name from session:", roomName); ////debug
-    console.log("client id from session:", clientId); ////debug
-    console.log("player name from session:", playerName); ////debug
-    console.log("player sprite from session:", playerSprite); ////debug
-    console.log("initial role from session:", initialRole); ////debug
+    //console.log("room id from session:", roomId); ////debug
+    //console.log("room name from session:", roomName); ////debug
+    //console.log("client id from session:", clientId); ////debug
+    //console.log("player name from session:", playerName); ////debug
+    //console.log("player sprite from session:", playerSprite); ////debug
+    //console.log("initial role from session:", initialRole); ////debug
 
     // -------------------------------- Websockets --------------------------------
 
@@ -336,7 +336,7 @@ const GameView: React.FC<GameViewProps> = () => {
       if (lastTournamentId === null) return;
       if (gameOver && !isWinner) {
         const timer = setTimeout(() => {
-          console.log("loser back to lobby: ", lastTournamentId); ////debug
+          //  console.log("loser back to lobby: ", lastTournamentId); ////debug
           sessionStorage.removeItem("playerSide");
           sessionStorage.removeItem("RoomId");
           sessionStorage.removeItem("RoomLeaderId");
@@ -380,7 +380,7 @@ const GameView: React.FC<GameViewProps> = () => {
                 variant="bigYellow"
                 className="px-3 py-4 text-2xl"
                 onClick={() => {
-                  console.log("loser back to lobby: ", lastTournamentId);
+                  //  console.log("loser back to lobby: ", lastTournamentId);
                   // close match socket (room) and tournament lobby socket (if present)
                   closeMatchWebsocket(roomId, clientId);
 
@@ -461,7 +461,7 @@ const GameView: React.FC<GameViewProps> = () => {
       });
 
       const settings = location.state?.gameSettings ?? {};
-      console.log("new game");
+      //  console.log("new game");
       const game = new PongGame(
         false,
         settings,

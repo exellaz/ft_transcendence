@@ -72,7 +72,7 @@ export function useGameWebSocket({
       console.warn("No JWT found, cannot connect to game WebSocket");
       return;
     }
-    console.log("Game ws connecting with JWT:", userJWT); ////debug
+    //console.log("Game ws connecting with JWT:", userJWT); ////debug
 
     const ws = new WebSocket(
       import.meta.env.VITE_WS_URL +
@@ -95,15 +95,15 @@ export function useGameWebSocket({
     if (!isOffline) window.addEventListener("offline", handleOffline);
 
     ws.addEventListener("open", () => {
-      console.log("Game ws connected");
+      //  console.log("Game ws connected");
       setSocket(ws);
 
       //initialize GameClient
       if (canvasRef.current) {
-        console.log("[game-websocket] Creating GameClient");
+        //console.log("[game-websocket] Creating GameClient");
         try {
           gameClientRef.current = new GameClient(canvasRef.current, ws);
-          console.log("[game-websocket] GameClient created successfully");
+          //  console.log("[game-websocket] GameClient created successfully");
         } catch (err) {
           console.error("Error creating GameClient:", err);
         }
@@ -123,11 +123,11 @@ export function useGameWebSocket({
     });
 
     ws.addEventListener("close", (ev) => {
-      console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
+      //  console.log(`Game ws disconnected: code=${ev.code}, reason=${ev.reason}`);
 
       // destroy GameClient when socket closes
       if (gameClientRef.current) {
-        console.log("[game-websocket] Destroying GameClient");
+        //console.log("[game-websocket] Destroying GameClient");
         gameClientRef.current.destroy();
         gameClientRef.current = null;
       }
@@ -149,10 +149,10 @@ export function useGameWebSocket({
         }
 
         if (msg.type === "ready_ack") {
-          console.log(
-            "ready acknowledged by server for clientId=",
-            msg.payload.clientId,
-          ); ////debug
+          //  console.log(
+          //    "ready acknowledged by server for clientId=",
+          //    msg.payload.clientId,
+          //  ); ////debug
           return;
         }
 
@@ -174,10 +174,10 @@ export function useGameWebSocket({
         }
 
         if (msg.type === "game_over") {
-          console.log(
-            "==================================================== Game over message received:",
-            msg,
-          ); //// debug
+          //  console.log(
+          //    "==================================================== Game over message received:",
+          //    msg,
+          //  ); //// debug
 
           // console.log("=================================================== roomid: ", roomId.toString().startsWith("1111")); ////debug
           const isTournamentRoom = roomId.toString().startsWith("1111");
@@ -200,17 +200,17 @@ export function useGameWebSocket({
                 winnerClientIds = rightId[0] || null;
               // if this client is the winner
               if (winnerClientIds === clientId) {
-                console.log(
-                  "you are the winner - waiting for tournament next-round",
-                );
+                //console.log(
+                //  "you are the winner - waiting for tournament next-round",
+                //);
                 setIsWinner(true);
                 const placement = msg.placements.find(
                   (p: { clientId: number }) => p.clientId === clientId,
                 );
                 if (placement) {
-                  console.log(
-                    `winner [${clientId}] placement: ${placement.rank}`,
-                  ); ////debug
+                  //  console.log(
+                  //    `winner [${clientId}] placement: ${placement.rank}`,
+                  //  ); ////debug
                   setWinnerRank(placement.rank);
                 }
                 ws.close(1000, "game over - winner");
@@ -222,7 +222,7 @@ export function useGameWebSocket({
                 (p: { clientId: number }) => p.clientId === clientId,
               );
               if (placement) {
-                console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
+                //console.log(`loser [${clientId}] placement: ${placement.rank}`); ////debug
                 setLoserRank(placement.rank);
               }
               try {

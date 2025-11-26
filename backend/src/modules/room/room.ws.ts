@@ -96,7 +96,7 @@ export default async function roomWsRoutes(fastify: FastifyInstance) {
 
           // First: handle initial hanshake pong (server -> client handshake)
           if (msg.type === "handshakePong") {
-            console.log("Received handshake pong from client:", clientId);
+            //console.log("Received handshake pong from client:", clientId);
             expectingPong = false;
             if (pongTimer) clearTimeout(pongTimer);
 

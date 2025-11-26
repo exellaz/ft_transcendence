@@ -41,13 +41,13 @@ export function closeTournamentWebsocket(
     }
   }
 
-  console.log(
-    "[tournament-websocket] close called for",
-    tournamentId,
-    playerId,
-    "found ws:",
-    !!ws,
-  );
+  //  console.log(
+  //    "[tournament-websocket] close called for",
+  //    tournamentId,
+  //    playerId,
+  //    "found ws:",
+  //    !!ws,
+  //  );
   if (ws) {
     try {
       ws.close(1000, "Tournament closed");
@@ -61,7 +61,7 @@ export function closeTournamentWebsocket(
     for (const [k, socket] of tournamentWebsocket.entries()) {
       if (socket === ws) tournamentWebsocket.delete(k);
     }
-    console.log("[tournament-websocket] explicitly closed websocket for", key);
+    //console.log("[tournament-websocket] explicitly closed websocket for", key);
   } else {
     console.warn("[tournament-websocket] no websocket found to close for", key);
   }
@@ -133,7 +133,7 @@ export function useTournamentWebSocket({
       console.warn("No JWT found, cannot connect to tournament WebSocket");
       return;
     }
-    console.log("Tournament ws connecting with JWT:", userJWT); ////debug
+    //console.log("Tournament ws connecting with JWT:", userJWT); ////debug
 
     const key = `${tournamentId}-${player.id}`;
     let ws = tournamentWebsocket.get(key);
@@ -147,14 +147,9 @@ export function useTournamentWebSocket({
     wsRef.current = ws;
 
     ws.addEventListener("open", () => {
-      console.log("Tournament WS connected", tournamentId, player.id);
-      //  try {
-      //ws.send(JSON.stringify({ type: "requestLobby" }));
-      //persist current tournament id so UI page can close later
       try {
         sessionStorage.setItem("tournamentId", String(tournamentId));
       } catch {}
-      //  } catch {}
     });
 
     ws.addEventListener("message", (event) => {
@@ -162,7 +157,7 @@ export function useTournamentWebSocket({
       try {
         data = JSON.parse(event.data);
       } catch {
-        console.warn("invalid tournament ws msg:", event.data);
+        //console.warn("invalid tournament ws msg:", event.data);
         return;
       }
 
@@ -228,10 +223,10 @@ export function useTournamentWebSocket({
       }
 
       if (data.type === "semiFinalEnd") {
-        console.log(
-          "[tournament-websocket] Semi-final tournament ended:",
-          data,
-        );
+        //console.log(
+        //  "[tournament-websocket] Semi-final tournament ended:",
+        //  data,
+        //);
 
         // Close WebSocket
         if (ws.readyState === WebSocket.OPEN) {
@@ -251,7 +246,7 @@ export function useTournamentWebSocket({
       }
 
       if (data.type === "FinalEnded") {
-        console.log("[tournament-websocket] Final tournament ended:", data);
+        //console.log("[tournament-websocket] Final tournament ended:", data);
 
         // Close WebSocket
         if (ws.readyState === WebSocket.OPEN) {
@@ -271,7 +266,7 @@ export function useTournamentWebSocket({
       }
 
       if (data.type === "redirectToFinals") {
-        console.log("[tournament-websocket] Advance to finals:", data); ////debug
+        //console.log("[tournament-websocket] Advance to finals:", data); ////debug
 
         if (data.nextTournamentId) {
           // ✅ Store the finals tournament ID
@@ -285,9 +280,9 @@ export function useTournamentWebSocket({
           // ✅ Close semi-finals connection IMMEDIATELY before navigation
           const key = `${tournamentId}-${player.id}`;
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            console.log(
-              `[tournament-websocket] Closing semi-finals connection for player ${player.id}`,
-            );
+            //console.log(
+            //  `[tournament-websocket] Closing semi-finals connection for player ${player.id}`,
+            //);
             wsRef.current.close(1000, "Advancing to finals");
             tournamentWebsocket.delete(key);
           }
@@ -308,10 +303,10 @@ export function useTournamentWebSocket({
     });
 
     ws.addEventListener("close", (ev) => {
-      console.log("Tournament WS disconnected", {
-        code: (ev as CloseEvent).code,
-        reason: (ev as CloseEvent).reason,
-      });
+      //  console.log("Tournament WS disconnected", {
+      //    code: (ev as CloseEvent).code,
+      //    reason: (ev as CloseEvent).reason,
+      //  });
 
       // ✅ Only show offline error if NOT transitioning
       const reason = (ev as CloseEvent).reason;
@@ -337,7 +332,7 @@ export function useTournamentWebSocket({
     });
 
     return () => {
-      console.log("Cleaning up tournament websocket");
+      //  console.log("Cleaning up tournament websocket");
       wsRef.current = null;
     };
   }, [tournamentId, player.id, player.username, player.avatarUrl]);

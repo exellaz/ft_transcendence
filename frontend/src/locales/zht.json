@@ -339,7 +339,8 @@
   },
   "ChooseSpriteContents": {
     "choose_sprite": "選擇一個角色",
-    "confirm": "確認"
+    "confirm": "確認",
+    "cancel": "取消"
   },
   "CustomToast": {
     "message_from": "來自 {{username}} 的新訊息"

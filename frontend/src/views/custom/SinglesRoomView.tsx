@@ -102,7 +102,7 @@ const SinglesRoomView: React.FC = () => {
         if (response.success && response.data) {
           setUserInfo(response.data); // Store the user info
         } else {
-          console.log("Failed to fetch user info"); // Handle API error
+          //  console.log("Failed to fetch user info"); // Handle API error
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
@@ -124,7 +124,7 @@ const SinglesRoomView: React.FC = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched room info:", data);
+        //console.log("Fetched room info:", data);
         setRoomInfo({
           id: Number(data.id),
           name: data.name,
@@ -223,11 +223,11 @@ const SinglesRoomView: React.FC = () => {
     const leftTeam = Array.isArray(leftTeamHtml)
       ? (leftTeamHtml as unknown as RemotePlayer[])
       : [];
-    console.log("leftTeam:", leftTeam); //// debug
+    //console.log("leftTeam:", leftTeam); //// debug
     const rightTeam = Array.isArray(rightTeamHtml)
       ? (rightTeamHtml as unknown as RemotePlayer[])
       : [];
-    console.log("rightTeam:", rightTeam); //// debug
+    //console.log("rightTeam:", rightTeam); //// debug
     const mapToWaiting = (p: RemotePlayer): WaitingRoomPlayer => ({
       leader: !!p.leader,
       id: p.id || -1,

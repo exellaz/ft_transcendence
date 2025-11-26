@@ -31,17 +31,19 @@ export function useLiveChatWebSocket(
     );
     socketRef.current = ws;
 
-    ws.addEventListener("open", () => console.log("Chat ws connected"));
+    ws.addEventListener("open", () => {
+      //console.log("Chat ws connected")
+    });
 
     ws.addEventListener("error", (e) =>
       console.error("Live chat WebSocket error", e),
     );
 
-    ws.addEventListener("close", (ev) =>
-      console.log(
-        `live chat ws disconnected: code=${ev.code}, reason=${ev.reason}`,
-      ),
-    );
+    ws.addEventListener("close", () => {
+      //console.log(
+      //  `live chat ws disconnected: code=${ev.code}, reason=${ev.reason}`,
+      //);
+    });
 
     // handle incoming message / event from server
     ws.addEventListener("message", (ev) => {
@@ -50,21 +52,21 @@ export function useLiveChatWebSocket(
         try {
           data = JSON.parse(ev.data);
         } catch {
-          console.error("Invalid JSON");
+          //  console.error("Invalid JSON");
           return;
         }
 
         if (typeof data !== "object" || data === null) {
-          console.error("Invalid message format");
+          //  console.error("Invalid message format");
           return;
         }
         if (typeof data.type !== "string") {
-          console.error("Invalid message: missing type: ", data);
+          //  console.error("Invalid message: missing type: ", data);
           return;
         }
         const allowedTypes = ["chat"];
         if (!allowedTypes.includes(data.type)) {
-          console.error(`unsupported message type ${data.type}`);
+          //  console.error(`unsupported message type ${data.type}`);
           return;
         }
         if (data.type === "chat") {

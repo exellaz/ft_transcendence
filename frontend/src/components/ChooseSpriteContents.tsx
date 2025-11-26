@@ -19,12 +19,14 @@ interface ChooseSpriteContentsProps {
   selected: string;
   onSelectSprite: (sprite: string) => void;
   onConfirm: () => void;
+  onClose: () => void;
 }
 
 const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
   selected,
   onSelectSprite,
   onConfirm,
+  onClose,
 }) => {
   const { t } = useTranslation();
   const translate = (key: string) => t(`ChooseSpriteContents.${key}`);
@@ -49,9 +51,14 @@ const ChooseSpriteContents: React.FC<ChooseSpriteContentsProps> = ({
           </button>
         ))}
       </div>
-      <Button variant="green" disabled={!selected} onClick={onConfirm}>
-        {translate("confirm")}
-      </Button>
+      <div className="flex-row-center gap-6">
+        <Button variant="green" disabled={!selected} onClick={onConfirm}>
+          {translate("confirm")}
+        </Button>
+        <Button variant="red" onClick={onClose}>
+          {translate("cancel")}
+        </Button>
+      </div>
     </>
   );
 };
