@@ -35,11 +35,18 @@ const TournamentLobbyView: React.FC = () => {
   //  console.log("Tournament ID:", tournamentId); ////debug
   //  console.log("User info in TournamentLobbyView:", userinfo); ////debug
 
+  // for remove the session storage reloading flag
+  React.useEffect(() => {
+    if (sessionStorage.getItem("reloading") !== null) {
+      sessionStorage.removeItem("reloading");
+    }
+  }, []);
+
   // Redirect to main menu if no location state
   React.useEffect(() => {
     if (!location.state || !location.state.tournament) {
       console.warn("Unauthorized tournament access - missing required data");
-      navigate("/main-menu", { replace: true });
+      navigate("/main-menu");
     }
   }, [location.state, navigate]);
 
@@ -78,7 +85,7 @@ const TournamentLobbyView: React.FC = () => {
 
   // Fetch user info when the component mounts
   React.useEffect(() => {
-    console.log("TournamentLobbyView init:", { user, tournamentId }); ////debug
+    //console.log("TournamentLobbyView init:", { user, tournamentId }); ////debug
 
     //use context user if available
     if (user) {
@@ -87,7 +94,7 @@ const TournamentLobbyView: React.FC = () => {
         try {
           const response = await getUserById({ id: Number(user.id) }); // Call the API
           if (response.success && response.data) {
-            console.log("Fetched user info:", response.data); ////debug
+            //console.log("Fetched user info:", response.data); ////debug
             setUserinfo(response.data); // Store the user info
           }
         } catch (err) {
@@ -110,14 +117,6 @@ const TournamentLobbyView: React.FC = () => {
     }
   }, [paramTournamentId]);
 
-  // prevent player from reloading the page
-  React.useEffect(() => {
-    if (sessionStorage.getItem("reloading") !== null) {
-      sessionStorage.removeItem("reloading");
-      navigate("/main-menu");
-    }
-  }, []);
-
   //navigate to match when start tournament
   React.useEffect(() => {
     if (matchAssigned) {
@@ -135,7 +134,7 @@ const TournamentLobbyView: React.FC = () => {
   //update players list when websocket data change
   React.useEffect(() => {
     if (Array.isArray(currentPlayer) && currentPlayer.length > 0) {
-      console.log("Updating players list:", currentPlayer); ////debug
+      //  console.log("Updating players list:", currentPlayer); ////debug
       setPlayers(currentPlayer);
     }
   }, [currentPlayer]);

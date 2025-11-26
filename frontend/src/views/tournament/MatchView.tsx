@@ -31,9 +31,19 @@ const MatchView: React.FC = () => {
   React.useEffect(() => {
     if (sessionStorage.getItem("reloading") !== null) {
       sessionStorage.removeItem("reloading");
-      navigate("/main-menu");
     }
   }, []);
+
+  React.useEffect(() => {
+    if (roomId === undefined || initialPlayers === undefined) {
+      console.warn("Unauthorized match access - missing required data");
+      navigate("/main-menu");
+    }
+  }, [roomId, initialPlayers, navigate]);
+
+  if (roomId === undefined || initialPlayers === undefined) {
+    return null;
+  }
 
   // Fetch user info
   React.useEffect(() => {
@@ -44,7 +54,7 @@ const MatchView: React.FC = () => {
         if (response.success && response.data) {
           setUserinfo(response.data);
         } else {
-          console.log("Failed to fetch user info");
+          //  console.log("Failed to fetch user info");
         }
       } catch (err) {
         console.error("Error fetching user info:", err);
@@ -81,10 +91,10 @@ const MatchView: React.FC = () => {
 
   // navigate to /game when match room is ready
   React.useEffect(() => {
-    console.log("[MatchView] roomReady changed:", roomReady);
+    //console.log("[MatchView] roomReady changed:", roomReady);
     if (!roomReady) return;
     sessionStorage.setItem("playerSprite", playerSprite);
-    console.log("[MatchView] navigating to /game");
+    //console.log("[MatchView] navigating to /game");
     navigate("/game", {
       state: {
         roomId: roomId,

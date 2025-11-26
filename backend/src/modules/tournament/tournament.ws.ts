@@ -311,7 +311,7 @@ export default async function tournamentWsRoute(fastify: FastifyInstance) {
         );
         client.delete(socket);
 
-        console.log("stage: ", tournament.stage); //// debug
+        //console.log("stage: ", tournament.stage); //// debug
         // ✅ NEW: Handle dummy creation for SF and F stages
         if (tournament.stage === "SF" || tournament.stage === "F") {
           if (tournament.players.length < tournament.maxPlayer) {
